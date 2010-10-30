@@ -416,4 +416,4 @@ var _b6=m1.charCodeAt(0);
 return "~E"+_b6+"E";
 };
 };
-
+if(typeof exports!='undefined')exports.Showdown=Showdown;

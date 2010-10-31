@@ -1,4 +1,25 @@
 
+NOTE -- Showdown on GitHub
+==========================
+
+Please note that I, Corey, am not the author of Showdown. Rather, I found it
+some time back at <http://attacklab.net/showdown/> and wanted to see it
+available on GitHub.
+
+All credit and praise for authoring this library should go to John Fraser.
+
+Oh, and John Gruber of course.
+
+That said, I have recently see some GitHub forking activity and a pull
+request. As such, I will endeavor to ordain myself as a maintainer of
+Showdown, at least as it exists on GitHub.
+
+Apologies for any confusion or perceived misinformation.
+
+Cheers,  
+Corey
+
+
 Showdown -- A JavaScript port of Markdown
 =========================================
 

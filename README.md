@@ -175,3 +175,19 @@ In most cases, Showdown's output is identical to that of Perl Markdown v1.0.2b7.
         </a>
 
     Showdown won't.  But still, don't do that.
+
+
+Credits
+---------------------------
+
+  * Origins
+    * [John Fraser](http://http://attacklab.net/):  
+      Author of Showdown
+    * [John Gruber](http://daringfireball.net/projects/markdown/):  
+      Author of Markdown
+  * Maintenance
+    * [Corey Innis](http://github.com/coreyti):  
+      GitHub project maintainer
+    * [Remy Sharp](http://remysharp.com/):  
+      CommonJS-compatibility and more
+

@@ -688,7 +688,8 @@ var _DoHeaders = function(text) {
 	text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
 		function(wholeMatch,m1,m2) {
 			var h_level = m1.length;
-			return hashBlock("<h" + h_level + ">" + _RunSpanGamut(m2) + "</h" + h_level + ">");
+			var id = m2.replace(/[^\w]/g, '').toLowerCase();
+			return hashBlock("<h" + h_level + ' id="' + id + '">' + _RunSpanGamut(m2) + "</h" + h_level + ">");
 		});
 
 	return text;

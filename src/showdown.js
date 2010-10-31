@@ -661,10 +661,10 @@ var _DoHeaders = function(text) {
 	//	--------
 	//
 	text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm,
-		function(wholeMatch,m1){return hashBlock("<h1>" + _RunSpanGamut(m1) + "</h1>");});
+		function(wholeMatch,m1){return hashBlock('<h1 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h1>");});
 
 	text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm,
-		function(matchFound,m1){return hashBlock("<h2>" + _RunSpanGamut(m1) + "</h2>");});
+		function(matchFound,m1){return hashBlock('<h2 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h2>");});
 
 	// atx-style headers:
 	//  # Header 1
@@ -688,9 +688,12 @@ var _DoHeaders = function(text) {
 	text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
 		function(wholeMatch,m1,m2) {
 			var h_level = m1.length;
-			return hashBlock("<h" + h_level + ">" + _RunSpanGamut(m2) + "</h" + h_level + ">");
+			return hashBlock("<h" + h_level + ' id="' + headerId(m2) + '">' + _RunSpanGamut(m2) + "</h" + h_level + ">");
 		});
 
+	function headerId(m) {
+		return m.replace(/[^\w]/g, '').toLowerCase();
+	}
 	return text;
 }
 
@@ -1294,3 +1297,6 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 }
 
 } // end of Showdown.converter
+
+// export
+if (typeof exports != 'undefined') exports.Showdown = Showdown;

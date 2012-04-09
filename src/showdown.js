@@ -389,7 +389,7 @@ var _RunSpanGamut = function(text) {
 	// delimiters in inline links like [this](<url>).
 	text = _DoAutoLinks(text);
 	text = _EncodeAmpsAndAngles(text);
-	text = _DoItalicsAndBold(text);
+	text = _DoItalicsAndBoldAndStrikethrough(text);
 
 	// Do hard breaks:
 	text = text.replace(/  +\n/g," <br />\n");
@@ -978,18 +978,19 @@ var _EncodeCode = function(text) {
 }
 
 
-var _DoItalicsAndBold = function(text) {
+var _DoItalicsAndBoldAndStrikethrough = function(text) {
 
 	// <strong> must go first:
 	text = text.replace(/(\*\*|__)(?=\S)([^\r]*?\S[*_]*)\1/g,
 		"<strong>$2</strong>");
 
+	text = text.replace(/(~T~T)(?=\S)([^\r]*?\S[*_]*)\1/g,	"<del>$2</del>");
+		
 	text = text.replace(/(\*|_)(?=\S)([^\r]*?\S)\1/g,
 		"<em>$2</em>");
 
 	return text;
 }
-
 
 var _DoBlockQuotes = function(text) {
 

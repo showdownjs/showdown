@@ -1129,6 +1129,9 @@ var _DoAutoLinks = function(text) {
 
 	text = text.replace(/<((https?|ftp|dict):[^'">\s]+)>/gi,"<a href=\"$1\">$1</a>");
 
+  // Twitter: @twitter_username
+  text = text.replace(/\s@([-\w])/gi,"<a href=\"http://twitter.com/$1>$1</a>");
+	
 	// Email addresses: <address@domain.foo>
 
 	/*

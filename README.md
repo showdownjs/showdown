@@ -205,4 +205,6 @@ Credits
       CommonJS-compatibility and more
     * [Roger Braun](https://github.com/rogerbraun):  
       Github-style code blocks
+    * [Dominic Tarr](https://github.com/dominictarr):  
+      Documentation
 

@@ -190,4 +190,6 @@ Credits
       GitHub project maintainer
     * [Remy Sharp](http://remysharp.com/):  
       CommonJS-compatibility and more
+    * [Roger Braun](https://github.com/rogerbraun):  
+      Github-style code blocks
 

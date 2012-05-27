@@ -207,4 +207,6 @@ Credits
       Github-style code blocks
     * [Dominic Tarr](https://github.com/dominictarr):  
       Documentation
+    * [Cat Chen](https://github.com/CatChen):  
+      Export fix
 

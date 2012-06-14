@@ -208,7 +208,7 @@ Credits
 ---------------------------
 
   * Origins
-    * [John Fraser](http://http://attacklab.net/):
+    * [John Fraser](http://attacklab.net/):
       Author of Showdown
     * [John Gruber](http://daringfireball.net/projects/markdown/):
       Author of Markdown
@@ -223,4 +223,6 @@ Credits
       Documentation
     * [Cat Chen](https://github.com/CatChen):
       Export fix
+    * [Titus Stone](https://github.com/tstone):
+      Mocha tests + bug fixes
 

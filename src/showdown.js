@@ -905,7 +905,7 @@ var _DoGithubCodeBlocks = function(text) {
 	// attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
 	text += "~0";
 
-	text = text.replace(/(?:^|\n)```(.*)\n([^`]+)\n```/g,
+	text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g,
 		function(wholeMatch,m1,m2) {
 			var language = m1;
 			var codeblock = m2;

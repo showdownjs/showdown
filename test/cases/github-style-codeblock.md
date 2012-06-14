@@ -3,7 +3,7 @@ Define a function in javascript:
 
 ```
 function MyFunc(a) {
-    // ...
+    var s = '`';
 }
 ```
 

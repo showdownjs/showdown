@@ -888,7 +888,7 @@ var _DoCodeBlocks = function(text) {
 	text = text.replace(/~0/,"");
 
 	return text;
-}
+};
 
 var _DoGithubCodeBlocks = function(text) {
 //
@@ -905,7 +905,7 @@ var _DoGithubCodeBlocks = function(text) {
 	// attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
 	text += "~0";
 
-	text = text.replace(/\n```(.*)\n([^`]+)\n```/g,
+	text = text.replace(/(?:^|\n)```(.*)\n([^`]+)\n```/g,
 		function(wholeMatch,m1,m2) {
 			var language = m1;
 			var codeblock = m2;

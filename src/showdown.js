@@ -131,6 +131,10 @@ this.makeHtml = function(text) {
 	// contorted like /[ \t]*\n+/ .
 	text = text.replace(/^[ \t]+$/mg,"");
 
+	// Handle github codeblocks prior to running HashHTML so that
+	// HTML contained within the codeblock gets escaped propertly
+	text = _DoGithubCodeBlocks(text);
+
 	// Turn block-level HTML blocks into hash entries
 	text = _HashHTMLBlocks(text);
 
@@ -148,7 +152,7 @@ this.makeHtml = function(text) {
 	text = text.replace(/~T/g,"~");
 
 	return text;
-}
+};
 
 
 var _StripLinkDefinitions = function(text) {
@@ -355,7 +359,6 @@ var _RunBlockGamut = function(text) {
 	text = text.replace(/^[ ]{0,2}([ ]?\_[ ]?){3,}[ \t]*$/gm,key);
 
 	text = _DoLists(text);
-  text = _DoGithubCodeBlocks(text);
 	text = _DoCodeBlocks(text);
 	text = _DoBlockQuotes(text);
 
@@ -367,7 +370,7 @@ var _RunBlockGamut = function(text) {
 	text = _FormParagraphs(text);
 
 	return text;
-}
+};
 
 
 var _RunSpanGamut = function(text) {
@@ -910,7 +913,6 @@ var _DoGithubCodeBlocks = function(text) {
 			var language = m1;
 			var codeblock = m2;
 
-			console.log('codeblock', '|' + codeblock + '|');
 			codeblock = _EncodeCode(codeblock);
 			codeblock = _Detab(codeblock);
 			codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines

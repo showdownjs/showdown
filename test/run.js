@@ -39,10 +39,6 @@ cases.forEach(function(test){
         actual = actual.replace(/ /g, '·');
         actual = actual.replace(/\n/g, '•\n');
 
-        if (test == 'github-style-codeblock') {
-            console.log(actual);
-        }
-
         // Compare
         actual.should.equal(expected);
     });

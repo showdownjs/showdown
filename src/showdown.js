@@ -910,12 +910,13 @@ var _DoGithubCodeBlocks = function(text) {
 			var language = m1;
 			var codeblock = m2;
 
+			console.log('codeblock', '|' + codeblock + '|');
 			codeblock = _EncodeCode(codeblock);
 			codeblock = _Detab(codeblock);
 			codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines
 			codeblock = codeblock.replace(/\n+$/g,""); // trim trailing whitespace
 
-			codeblock = "<pre><code" + (language ? " class=\"" + language : "\"") + ">" + codeblock + "\n</code></pre>";
+			codeblock = "<pre><code" + (language ? " class=\"" + language + '"' : "") + ">" + codeblock + "\n</code></pre>";
 
 			return hashBlock(codeblock);
 		}

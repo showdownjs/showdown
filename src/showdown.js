@@ -100,9 +100,9 @@ this.makeHtml = function(text) {
 	// from other articles when generating a page which contains more than
 	// one article (e.g. an index page that shows the N most recent
 	// articles):
-	g_urls = new Array();
-	g_titles = new Array();
-	g_html_blocks = new Array();
+	g_urls = [];
+	g_titles = [];
+	g_html_blocks = [];
 
 	// attacklab: Replace ~ with ~T
 	// This lets us use tilde as an escape char to avoid md5 hashes
@@ -184,7 +184,7 @@ var _StripLinkDefinitions = function(text) {
 			  /gm,
 			  function(){...});
 	*/
-	var text = text.replace(/^[ ]{0,3}\[(.+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|\Z)/gm,
+	text = text.replace(/^[ ]{0,3}\[(.+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|\Z)/gm,
 		function (wholeMatch,m1,m2,m3,m4) {
 			m1 = m1.toLowerCase();
 			g_urls[m1] = _EncodeAmpsAndAngles(m2);  // Link IDs are case-insensitive
@@ -202,7 +202,7 @@ var _StripLinkDefinitions = function(text) {
 	);
 
 	return text;
-}
+};
 
 
 var _HashHTMLBlocks = function(text) {
@@ -215,8 +215,8 @@ var _HashHTMLBlocks = function(text) {
 	// "paragraphs" that are wrapped in non-block-level tags, such as anchors,
 	// phrase emphasis, and spans. The list of tags we're looking for is
 	// hard-coded:
-	var block_tags_a = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del"
-	var block_tags_b = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math"
+	var block_tags_a = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|ins|del";
+	var block_tags_b = "p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math";
 
 	// First, look for nested blocks, e.g.:
 	//   <div>
@@ -327,7 +327,7 @@ var _HashHTMLBlocks = function(text) {
 	// attacklab: Undo double lines (see comment at top of this function)
 	text = text.replace(/\n\n/g,"\n");
 	return text;
-}
+};
 
 var hashElement = function(wholeMatch,m1) {
 	var blockText = m1;
@@ -396,10 +396,10 @@ var _RunSpanGamut = function(text) {
 	text = _DoItalicsAndBold(text);
 
 	// Do hard breaks:
-	text = text.replace(/  +\n/g," <br />\n");
+	text = text.replace(/ {2}+\n/g," <br />\n");
 
 	return text;
-}
+};
 
 var _EscapeSpecialCharsWithinTagAttributes = function(text) {
 //
@@ -418,7 +418,7 @@ var _EscapeSpecialCharsWithinTagAttributes = function(text) {
 	});
 
 	return text;
-}
+};
 
 var _DoAnchors = function(text) {
 //
@@ -503,26 +503,26 @@ var _DoAnchors = function(text) {
 	text = text.replace(/(\[([^\[\]]+)\])()()()()()/g, writeAnchorTag);
 
 	return text;
-}
+};
 
 var writeAnchorTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
-	if (m7 == undefined) m7 = "";
+	if (m7 === undefined) m7 = "";
 	var whole_match = m1;
 	var link_text   = m2;
-	var link_id	 = m3.toLowerCase();
+	var link_id = m3.toLowerCase();
 	var url		= m4;
 	var title	= m7;
 
-	if (url == "") {
-		if (link_id == "") {
+	if (url === "") {
+		if (link_id === "") {
 			// lower-case and turn embedded newlines into spaces
 			link_id = link_text.toLowerCase().replace(/ ?\n/g," ");
 		}
 		url = "#"+link_id;
 
-		if (g_urls[link_id] != undefined) {
+		if (g_urls[link_id] !== undefined) {
 			url = g_urls[link_id];
-			if (g_titles[link_id] != undefined) {
+			if (g_titles[link_id] !== undefined) {
 				title = g_titles[link_id];
 			}
 		}
@@ -539,7 +539,7 @@ var writeAnchorTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 	url = escapeCharacters(url,"*_");
 	var result = "<a href=\"" + url + "\"";
 
-	if (title != "") {
+	if (title !== "") {
 		title = title.replace(/"/g,"&quot;");
 		title = escapeCharacters(title,"*_");
 		result +=  " title=\"" + title + "\"";
@@ -548,7 +548,7 @@ var writeAnchorTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 	result += ">" + link_text + "</a>";
 
 	return result;
-}
+};
 
 
 var _DoImages = function(text) {
@@ -607,27 +607,27 @@ var _DoImages = function(text) {
 	text = text.replace(/(!\[(.*?)\]\s?\([ \t]*()<?(\S+?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,writeImageTag);
 
 	return text;
-}
+};
 
 var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 	var whole_match = m1;
 	var alt_text   = m2;
-	var link_id	 = m3.toLowerCase();
+	var link_id = m3.toLowerCase();
 	var url		= m4;
 	var title	= m7;
 
 	if (!title) title = "";
 
-	if (url == "") {
-		if (link_id == "") {
+	if (url === "") {
+		if (link_id === "") {
 			// lower-case and turn embedded newlines into spaces
 			link_id = alt_text.toLowerCase().replace(/ ?\n/g," ");
 		}
 		url = "#"+link_id;
 
-		if (g_urls[link_id] != undefined) {
+		if (g_urls[link_id] !== undefined) {
 			url = g_urls[link_id];
-			if (g_titles[link_id] != undefined) {
+			if (g_titles[link_id] !== undefined) {
 				title = g_titles[link_id];
 			}
 		}
@@ -652,7 +652,7 @@ var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
 	result += " />";
 
 	return result;
-}
+};
 
 
 var _DoHeaders = function(text) {
@@ -699,7 +699,7 @@ var _DoHeaders = function(text) {
 		return m.replace(/[^\w]/g, '').toLowerCase();
 	}
 	return text;
-}
+};
 
 // This declaration keeps Dojo compressor from outputting garbage:
 var _ProcessListItems;
@@ -745,7 +745,7 @@ var _DoLists = function(text) {
 
 			// Turn double returns into triple returns, so that we can make a
 			// paragraph for the last item in a list, if necessary:
-			list = list.replace(/\n{2,}/g,"\n\n\n");;
+			list = list.replace(/\n{2,}/g,"\n\n\n");
 			var result = _ProcessListItems(list);
 
 			// Trim any trailing whitespace, to put the closing `</$list_type>`
@@ -765,7 +765,7 @@ var _DoLists = function(text) {
 			var list_type = (m3.search(/[*+-]/g)>-1) ? "ul" : "ol";
 			// Turn double returns into triple returns, so that we can make a
 			// paragraph for the last item in a list, if necessary:
-			var list = list.replace(/\n{2,}/g,"\n\n\n");;
+			list = list.replace(/\n{2,}/g,"\n\n\n");
 			var result = _ProcessListItems(list);
 			result = runup + "<"+list_type+">\n" + result + "</"+list_type+">\n";
 			return result;
@@ -776,7 +776,7 @@ var _DoLists = function(text) {
 	text = text.replace(/~0/,"");
 
 	return text;
-}
+};
 
 _ProcessListItems = function(list_str) {
 //
@@ -847,7 +847,7 @@ _ProcessListItems = function(list_str) {
 
 	g_list_level--;
 	return list_str;
-}
+};
 
 
 var _DoCodeBlocks = function(text) {
@@ -928,12 +928,12 @@ var _DoGithubCodeBlocks = function(text) {
 	text = text.replace(/~0/,"");
 
 	return text;
-}
+};
 
 var hashBlock = function(text) {
 	text = text.replace(/(^\n+|\n+$)/g,"");
 	return "\n\n~K" + (g_html_blocks.push(text)-1) + "K\n\n";
-}
+};
 
 var _DoCodeSpans = function(text) {
 //
@@ -984,7 +984,7 @@ var _DoCodeSpans = function(text) {
 		});
 
 	return text;
-}
+};
 
 var _EncodeCode = function(text) {
 //
@@ -1014,7 +1014,7 @@ var _EncodeCode = function(text) {
 //---
 
 	return text;
-}
+};
 
 
 var _DoItalicsAndBold = function(text) {
@@ -1027,7 +1027,7 @@ var _DoItalicsAndBold = function(text) {
 		"<em>$2</em>");
 
 	return text;
-}
+};
 
 
 var _DoBlockQuotes = function(text) {
@@ -1067,7 +1067,7 @@ var _DoBlockQuotes = function(text) {
 				function(wholeMatch,m1) {
 					var pre = m1;
 					// attacklab: hack around Konqueror 3.5.4 bug:
-					pre = pre.replace(/^  /mg,"~0");
+					pre = pre.replace(/^ {2}/mg,"~0");
 					pre = pre.replace(/~0/g,"");
 					return pre;
 				});
@@ -1075,7 +1075,7 @@ var _DoBlockQuotes = function(text) {
 			return hashBlock("<blockquote>\n" + bq + "\n</blockquote>");
 		});
 	return text;
-}
+};
 
 
 var _FormParagraphs = function(text) {
@@ -1089,7 +1089,7 @@ var _FormParagraphs = function(text) {
 	text = text.replace(/\n+$/g,"");
 
 	var grafs = text.split(/\n{2,}/g);
-	var grafsOut = new Array();
+	var grafsOut = [];
 
 	//
 	// Wrap <p> tags.
@@ -1105,7 +1105,7 @@ var _FormParagraphs = function(text) {
 		else if (str.search(/\S/) >= 0) {
 			str = _RunSpanGamut(str);
 			str = str.replace(/^([ \t]*)/g,"<p>");
-			str += "</p>"
+			str += "</p>";
 			grafsOut.push(str);
 		}
 
@@ -1115,7 +1115,7 @@ var _FormParagraphs = function(text) {
 	// Unhashify HTML blocks
 	//
 	end = grafsOut.length;
-	for (var i=0; i<end; i++) {
+	for (i=0; i<end; i++) {
 		// if this is a marker for an html block...
 		while (grafsOut[i].search(/~K(\d+)K/) >= 0) {
 			var blockText = g_html_blocks[RegExp.$1];
@@ -1125,7 +1125,7 @@ var _FormParagraphs = function(text) {
 	}
 
 	return grafsOut.join("\n\n");
-}
+};
 
 
 var _EncodeAmpsAndAngles = function(text) {
@@ -1139,7 +1139,7 @@ var _EncodeAmpsAndAngles = function(text) {
 	text = text.replace(/<(?![a-z\/?\$!])/gi,"&lt;");
 
 	return text;
-}
+};
 
 
 var _EncodeBackslashEscapes = function(text) {
@@ -1161,7 +1161,7 @@ var _EncodeBackslashEscapes = function(text) {
 	text = text.replace(/\\(\\)/g,escapeCharacters_callback);
 	text = text.replace(/\\([`*_{}\[\]()>#+-.!])/g,escapeCharacters_callback);
 	return text;
-}
+};
 
 
 var _DoAutoLinks = function(text) {
@@ -1189,7 +1189,7 @@ var _DoAutoLinks = function(text) {
 	);
 
 	return text;
-}
+};
 
 
 var _EncodeEmailAddress = function(addr) {
@@ -1244,7 +1244,7 @@ var _EncodeEmailAddress = function(addr) {
 	addr = addr.replace(/">.+:/g,"\">"); // strip the mailto: from the visible part
 
 	return addr;
-}
+};
 
 
 var _UnescapeSpecialChars = function(text) {
@@ -1253,12 +1253,12 @@ var _UnescapeSpecialChars = function(text) {
 //
 	text = text.replace(/~E(\d+)E/g,
 		function(wholeMatch,m1) {
-			var charCodeToReplace = parseInt(m1);
+			var charCodeToReplace = parseInt(m1, 10);
 			return String.fromCharCode(charCodeToReplace);
 		}
 	);
 	return text;
-}
+};
 
 
 var _Outdent = function(text) {
@@ -1272,10 +1272,10 @@ var _Outdent = function(text) {
 	text = text.replace(/^(\t|[ ]{1,4})/gm,"~0"); // attacklab: g_tab_width
 
 	// attacklab: clean up hack
-	text = text.replace(/~0/g,"")
+	text = text.replace(/~0/g,"");
 
 	return text;
-}
+};
 
 var _Detab = function(text) {
 // attacklab: Detab's completely rewritten for speed.
@@ -1306,7 +1306,7 @@ var _Detab = function(text) {
 	text = text.replace(/~B/g,"");
 
 	return text;
-}
+};
 
 
 //
@@ -1327,15 +1327,15 @@ var escapeCharacters = function(text, charsToEscape, afterBackslash) {
 	text = text.replace(regex,escapeCharacters_callback);
 
 	return text;
-}
+};
 
 
 var escapeCharacters_callback = function(wholeMatch,m1) {
 	var charCodeToEscape = m1.charCodeAt(0);
 	return "~E"+charCodeToEscape+"E";
-}
+};
 
-} // end of Showdown.converter
+}; // end of Showdown.converter
 
 // export
 if (typeof exports != 'undefined') exports.Showdown = Showdown;

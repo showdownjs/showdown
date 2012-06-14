@@ -16,6 +16,10 @@
         "type": "git",
         "url": "https://github.com/coreyti/showdown.git"
     },
+    "devDependencies": {
+        "mocha": "*",
+        "should": "*"
+    },
     "licenses": [{ "type": "BSD" }],
     "main": "./src/showdown"
 }

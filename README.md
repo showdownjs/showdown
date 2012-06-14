@@ -195,11 +195,11 @@ Tests
 ---------------------------
 A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the development dependencies:
 
-  npm install --dev
+    npm install --dev
 
 Once installed the tests can be run from the project root using:
 
-  mocha test/run.js
+    mocha test/run.js
 
 New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.  Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
 

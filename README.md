@@ -38,10 +38,10 @@ Quick Example
 -------------
 
 ```  js
-var Showdown = require('showdown').Showdown
-var converter = new Showdown().converter()
+var Showdown = require('showdown');
+var converter = new Showdown.converter();
 
-converter.makeHtml('#hello markdown!')
+converter.makeHtml('#hello markdown!');
 
 // <h1 id="hellomarkdown">hello, markdown</h1>
 

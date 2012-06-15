@@ -1,5 +1,4 @@
-
-var showdown    = new require('../src/showdown').Showdown,
+var showdown    = new require('../src/showdown'),
     convertor   = new showdown.converter(),
     fs          = require('fs'),
     path        = require('path'),

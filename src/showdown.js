@@ -1338,4 +1338,4 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 } // end of Showdown.converter
 
 // export
-if (typeof exports != 'undefined') exports.Showdown = Showdown;
+if (typeof module !== 'undefined') module.exports = Showdown;

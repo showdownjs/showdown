@@ -72,7 +72,7 @@ var Showdown = {};
 // Wraps all "globals" so that the only thing
 // exposed is makeHtml().
 //
-Showdown.converter = function() {
+Showdown.converter = function(converter_options) {
 
 //
 // Globals:
@@ -87,6 +87,40 @@ var g_html_blocks;
 // (see _ProcessListItems() for details):
 var g_list_level = 0;
 
+// Global extensions
+var g_lang_extensions = new Showdown.Array();
+var g_output_modifiers = new Showdown.Array();
+
+
+//
+// Options:
+//
+
+// Parse extensinos options into separate arrays
+if (converter_options && converter_options.extensions) {
+
+	// Iterate over each plugin
+	var plugins = new Showown.Array(converter_options.extensions);
+	plugins.forEach(function(plugin){
+
+		// Iterate over each extensino within that plugin
+		var extensions = new Showdown.Array(plugin(this));
+		extensions.forEach(function(ext){
+			// Sort extensions by type
+			if (x.type) {
+				if (x.type === 'language' || x.type === 'lang') {
+					g_lang_extensions.push(x);
+				} else if (x.type === 'output' || x.type === 'html') {
+					g_output_modifiers.push(x);
+				}
+			} else {
+				// Assume language extension
+				g_lang_extensions.push(x);
+			}
+		});
+
+	});
+}
 
 this.makeHtml = function(text) {
 //
@@ -131,6 +165,11 @@ this.makeHtml = function(text) {
 	// contorted like /[ \t]*\n+/ .
 	text = text.replace(/^[ \t]+$/mg,"");
 
+	// Run language extensions
+	g_lang_extensions.forEach(function(x){
+		text = _ExecuteExtension(x, text);
+	});
+
 	// Handle github codeblocks prior to running HashHTML so that
 	// HTML contained within the codeblock gets escaped propertly
 	text = _DoGithubCodeBlocks(text);
@@ -151,9 +190,22 @@ this.makeHtml = function(text) {
 	// attacklab: Restore tildes
 	text = text.replace(/~T/g,"~");
 
+	// Run output modifiers
+	g_output_modifiers.forEach(function(x){
+		text = _ExecuteExtension(x, text);
+	});
+
 	return text;
 };
 
+var _ExecuteExtension = function(ext, text) {
+	if (ext.regex) {
+		var re = new RegExp(ext.regex, 'g');
+		return text.replace(re, ext.replace);
+	} else if (ext.filter) {
+		return ext.filter(text);
+	}
+};
 
 var _StripLinkDefinitions = function(text) {
 //
@@ -1336,6 +1388,28 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 }
 
 } // end of Showdown.converter
+
+
+//
+// Showdown.Array
+// (some) ES5 methods that don't modify Array.prototype
+//
+
+Showdown.Array = function(baseArray) { this.base = baseArray ? baseArray : []; }
+Showdown.Array.prototype = [];
+(function(array, parent) {
+
+	array.forEach = function(callback) {
+		if (this.base.forEach) { this.base.forEach(callback); }
+		else {
+			var i, len = this.base.length;
+			for (i = 0; i < len; i++) {
+				callback(this.base[i], i, this.base);
+			}
+		}
+	};
+
+}(Showdown.Array.prototype, Array.prototype));
 
 // export
 if (typeof module !== 'undefined') module.exports = Showdown;

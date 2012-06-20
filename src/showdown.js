@@ -64,7 +64,21 @@
 //
 // Showdown namespace
 //
-var Showdown = {};
+var Showdown = { extensions: {} };
+
+//
+// forEach
+//
+var forEach = Showdown.forEach = function(obj, callback) {
+	if (typeof obj.forEach === 'function') {
+		obj.forEach(callback);
+	} else {
+		var i, len = obj.length;
+		for (i = 0; i < len; i++) {
+			callback(obj[i], i, obj);
+		}
+	}
+};
 
 //
 // converter
@@ -88,8 +102,8 @@ var g_html_blocks;
 var g_list_level = 0;
 
 // Global extensions
-var g_lang_extensions = new Showdown.Array();
-var g_output_modifiers = new Showdown.Array();
+var g_lang_extensions = [];
+var g_output_modifiers = [];
 
 
 //
@@ -100,22 +114,20 @@ var g_output_modifiers = new Showdown.Array();
 if (converter_options && converter_options.extensions) {
 
 	// Iterate over each plugin
-	var plugins = new Showown.Array(converter_options.extensions);
-	plugins.forEach(function(plugin){
+	converter_options.extensions.forEach(function(plugin){
 
 		// Iterate over each extensino within that plugin
-		var extensions = new Showdown.Array(plugin(this));
-		extensions.forEach(function(ext){
+		plugin(this).forEach(function(ext){
 			// Sort extensions by type
-			if (x.type) {
-				if (x.type === 'language' || x.type === 'lang') {
-					g_lang_extensions.push(x);
-				} else if (x.type === 'output' || x.type === 'html') {
-					g_output_modifiers.push(x);
+			if (ext.type) {
+				if (ext.type === 'language' || ext.type === 'lang') {
+					g_lang_extensions.push(ext);
+				} else if (ext.type === 'output' || ext.type === 'html') {
+					g_output_modifiers.push(ext);
 				}
 			} else {
 				// Assume language extension
-				g_lang_extensions.push(x);
+				g_output_modifiers.push(ext);
 			}
 		});
 
@@ -1389,27 +1401,6 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 
 } // end of Showdown.converter
 
-
-//
-// Showdown.Array
-// (some) ES5 methods that don't modify Array.prototype
-//
-
-Showdown.Array = function(baseArray) { this.base = baseArray ? baseArray : []; }
-Showdown.Array.prototype = [];
-(function(array, parent) {
-
-	array.forEach = function(callback) {
-		if (this.base.forEach) { this.base.forEach(callback); }
-		else {
-			var i, len = this.base.length;
-			for (i = 0; i < len; i++) {
-				callback(this.base[i], i, this.base);
-			}
-		}
-	};
-
-}(Showdown.Array.prototype, Array.prototype));
 
 // export
 if (typeof module !== 'undefined') module.exports = Showdown;

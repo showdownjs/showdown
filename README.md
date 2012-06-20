@@ -105,6 +105,33 @@ Showdown has been tested successfully with:
 In theory, Showdown will work in any browser that supports ECMA 262 3rd Edition (JavaScript 1.5).  The converter itself might even work in things that aren't web browsers, like Acrobat.  No promises.
 
 
+Extensions
+----------
+
+Showdown allows additional functionality to be loaded via extensions.
+
+### Client-side Extension Usage
+
+```js
+<script src="src/showdown.js" />
+<script src="src/extensions/twitter.js" />
+
+var converter = new Showdown().converter({
+  extensions: [
+    Showdown.extensions.twitter
+  ]
+})
+```
+
+### Server-side Extension Usage
+
+```js
+var Showdown = require('showdown');
+var twitter = require('showdown.extensions.twitter');
+var converter = new Showdown().converter({ extensions: [twitter] });
+```
+
+
 Known Differences in Output
 ---------------------------
 

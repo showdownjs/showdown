@@ -1,4 +1,9 @@
 
+//
+//  Twitter Extension
+//  @username   ->  <a href="http://twitter.com/username">@username</a>
+//  #hashtag    ->  <a href="http://twitter.com/search/%23hashtag">#hashtag</a>
+//
 
 (function(){
 

@@ -78,7 +78,7 @@ if (path.existsSync('test/extensions')) {
             }
 
             // Build converter with extension included
-            var extension = showdown.extensions[ext];
+            var extension = showdown.extensions[ext.replace(/[_-]||\s/g, '').toLowerCase()];
             if (!extension) {
                 throw "Could not load extension '" + ext + "'.  Did you forget module.exports?";
             }

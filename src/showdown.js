@@ -228,7 +228,8 @@ if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof req
 		});
 		// Load extensions into Showdown namespace
 		extensions.forEach(function(ext){
-			Showdown.extensions[ext] = require('./extensions/' + ext);
+			var name = ext.replace(/[_-]|\\s/g, '').toLowerCase();
+			Showdown.extensions[name] = require('./extensions/' + ext);
 		});
 	}
 }

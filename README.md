@@ -17,7 +17,7 @@ Showdown, at least as it exists on GitHub.
 
 Apologies for any confusion or perceived misinformation.
 
-Cheers,
+Cheers,<br/>
 Corey
 
 
@@ -38,10 +38,10 @@ Quick Example
 -------------
 
 ```  js
-var Showdown = require('showdown').Showdown
-var converter = new Showdown().converter()
+var Showdown = require('showdown');
+var converter = new Showdown.converter();
 
-converter.makeHtml('#hello markdown!')
+converter.makeHtml('#hello markdown!');
 
 // <h1 id="hellomarkdown">hello, markdown</h1>
 
@@ -308,21 +308,21 @@ Credits
 ---------------------------
 
   * Origins
-    * [John Fraser](http://attacklab.net/):
+    * [John Fraser](http://attacklab.net/):<br/>
       Author of Showdown
-    * [John Gruber](http://daringfireball.net/projects/markdown/):
+    * [John Gruber](http://daringfireball.net/projects/markdown/):<br/>
       Author of Markdown
   * Maintenance
-    * [Corey Innis](http://github.com/coreyti):
+    * [Corey Innis](http://github.com/coreyti):<br/>
       GitHub project maintainer
-    * [Remy Sharp](http://remysharp.com/):
+    * [Remy Sharp](http://remysharp.com/):<br/>
       CommonJS-compatibility and more
-    * [Roger Braun](https://github.com/rogerbraun):
+    * [Roger Braun](https://github.com/rogerbraun):<br/>
       Github-style code blocks
-    * [Dominic Tarr](https://github.com/dominictarr):
+    * [Dominic Tarr](https://github.com/dominictarr):<br/>
       Documentation
-    * [Cat Chen](https://github.com/CatChen):
+    * [Cat Chen](https://github.com/CatChen):<br/>
       Export fix
-    * [Titus Stone](https://github.com/tstone):
+    * [Titus Stone](https://github.com/tstone):<br/>
       Mocha tests + bug fixes
 

@@ -1,6 +1,6 @@
 {
     "name": "showdown",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "author": "John Fraser",
     "contributors": [
         "John Gruber",
@@ -10,7 +10,8 @@
         "Konstantin Käfer",
         "Roger Braun",
         "Dominic Tarr",
-        "Cat Chen"
+        "Cat Chen",
+        "Titus Stone"
     ],
     "repository": {
         "type": "git",

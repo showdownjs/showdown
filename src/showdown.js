@@ -210,6 +210,29 @@ this.makeHtml = function(text) {
 	return text;
 };
 
+
+//
+// Scan extensions folder for extensions
+// (if in a node environment)
+//
+
+if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof require !== 'undefind') {
+	var fs = require('fs');
+
+	if (fs) {
+		// Search extensions folder
+		var extensions = fs.readdirSync('./src/extensions').filter(function(file){
+			return ~file.indexOf('.js');
+		}).map(function(file){
+			return file.replace('.js', '');
+		});
+		// Load extensions into Showdown namespace
+		extensions.forEach(function(ext){
+			Showdown.extensions[ext] = require('./extensions/' + ext);
+		});
+	}
+}
+
 var _ExecuteExtension = function(ext, text) {
 	if (ext.regex) {
 		var re = new RegExp(ext.regex, 'g');

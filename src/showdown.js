@@ -81,6 +81,13 @@ var forEach = Showdown.forEach = function(obj, callback) {
 };
 
 //
+// Standard extension naming
+//
+var stdExtName = function(s) {
+	return s.replace(/[_-]||\s/g, '').toLowerCase();
+};
+
+//
 // converter
 //
 // Wraps all "globals" so that the only thing
@@ -107,6 +114,28 @@ var g_output_modifiers = [];
 
 
 //
+// Automatic Extension Loading (node only):
+//
+
+if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof require !== 'undefind') {
+	var fs = require('fs');
+
+	if (fs) {
+		// Search extensions folder
+		var extensions = fs.readdirSync('./src/extensions').filter(function(file){
+			return ~file.indexOf('.js');
+		}).map(function(file){
+			return file.replace('.js', '');
+		});
+		// Load extensions into Showdown namespace
+		extensions.forEach(function(ext){
+			var name = stdExtName(ext);
+			Showdown.extensions[name] = require('./extensions/' + ext);
+		});
+	}
+}
+
+//
 // Options:
 //
 
@@ -116,21 +145,29 @@ if (converter_options && converter_options.extensions) {
 	// Iterate over each plugin
 	converter_options.extensions.forEach(function(plugin){
 
-		// Iterate over each extensino within that plugin
-		plugin(this).forEach(function(ext){
-			// Sort extensions by type
-			if (ext.type) {
-				if (ext.type === 'language' || ext.type === 'lang') {
-					g_lang_extensions.push(ext);
-				} else if (ext.type === 'output' || ext.type === 'html') {
+		// Assume it's a bundled plugin if a string is given
+		if (typeof plugin === 'string') {
+			plugin = Showdown.extensions[stdExtName(plugin)];
+		}
+
+		if (typeof plugin === 'function') {
+			// Iterate over each extension within that plugin
+			plugin(this).forEach(function(ext){
+				// Sort extensions by type
+				if (ext.type) {
+					if (ext.type === 'language' || ext.type === 'lang') {
+						g_lang_extensions.push(ext);
+					} else if (ext.type === 'output' || ext.type === 'html') {
+						g_output_modifiers.push(ext);
+					}
+				} else {
+					// Assume language extension
 					g_output_modifiers.push(ext);
 				}
-			} else {
-				// Assume language extension
-				g_output_modifiers.push(ext);
-			}
-		});
-
+			});
+		} else {
+			throw "Extension '" + plugin + "' could not be loaded.  It was either not found or is not a valid extension.";
+		}
 	});
 }
 
@@ -210,29 +247,6 @@ this.makeHtml = function(text) {
 	return text;
 };
 
-
-//
-// Scan extensions folder for extensions
-// (if in a node environment)
-//
-
-if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof require !== 'undefind') {
-	var fs = require('fs');
-
-	if (fs) {
-		// Search extensions folder
-		var extensions = fs.readdirSync('./src/extensions').filter(function(file){
-			return ~file.indexOf('.js');
-		}).map(function(file){
-			return file.replace('.js', '');
-		});
-		// Load extensions into Showdown namespace
-		extensions.forEach(function(ext){
-			var name = ext.replace(/[_-]|\\s/g, '').toLowerCase();
-			Showdown.extensions[name] = require('./extensions/' + ext);
-		});
-	}
-}
 
 var _ExecuteExtension = function(ext, text) {
 	if (ext.regex) {

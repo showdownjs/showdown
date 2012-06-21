@@ -77,13 +77,7 @@ if (path.existsSync('test/extensions')) {
                 throw "Attempting tests for '" + ext + "' but sourc file (" + src + ") was not found.";
             }
 
-            // Build converter with extension included
-            var extension = showdown.extensions[ext.replace(/[_-]||\s/g, '').toLowerCase()];
-            if (!extension) {
-                throw "Could not load extension '" + ext + "'.  Did you forget module.exports?";
-            }
-
-            var converter = new showdown.converter({ extensions: [ extension ] });
+            var converter = new showdown.converter({ extensions: [ ext ] });
             var dir = 'test/extensions/' + ext;
             runTestsInDir(dir, converter);
         });

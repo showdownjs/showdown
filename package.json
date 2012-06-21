@@ -15,12 +15,16 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/coreyti/showdown.git"
+        "url":  "https://github.com/coreyti/showdown.git",
+        "web":  "https://github.com/coreyti/showdown"
     },
     "devDependencies": {
         "mocha": "*",
         "should": "*"
     },
-    "licenses": [{ "type": "BSD" }],
+    "licenses": [{
+        "type": "BSD",
+        "url":  "https://github.com/coreyti/showdown/raw/master/license.txt"
+    }],
     "main": "./src/showdown"
 }

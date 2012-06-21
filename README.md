@@ -116,20 +116,21 @@ Showdown allows additional functionality to be loaded via extensions.
 <script src="src/showdown.js" />
 <script src="src/extensions/twitter.js" />
 
-var converter = new Showdown().converter({
-  extensions: [
-    Showdown.extensions.twitter
-  ]
-})
+var converter = new Showdown().converter({ extensions: 'twitter' });
 ```
 
 ### Server-side Extension Usage
 
 ```js
+// Using a bundled extension
 var Showdown = require('showdown');
-var twitter = Showdown.extensions.twitter;
-var converter = new Showdown().converter({ extensions: [twitter] });
+var converter = new Showdown().converter({ extensions: ['twitter'] });
+
+// Using a custom extension
+var mine = require('./custom-extensions/mine');
+var converter = new Showdown().converter({ extensions: ['twitter', mine] });
 ```
+
 
 
 Known Differences in Output

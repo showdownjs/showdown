@@ -127,7 +127,7 @@ var converter = new Showdown().converter({
 
 ```js
 var Showdown = require('showdown');
-var twitter = require('showdown.extensions.twitter');
+var twitter = Showdown.extensions.twitter;
 var converter = new Showdown().converter({ extensions: [twitter] });
 ```
 

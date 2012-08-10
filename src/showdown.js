@@ -483,7 +483,7 @@ var _DoAnchors = function(text) {
 		)
 		/g,writeAnchorTag);
 	*/
-	text = text.replace(/(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()<?(.*?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,writeAnchorTag);
+	text = text.replace(/(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()<?(.*?(?:\(.*?\).*?)?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,writeAnchorTag);
 
 	//
 	// Last, handle reference-style shortcuts: [link text]

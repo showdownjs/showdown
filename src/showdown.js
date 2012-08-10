@@ -122,10 +122,10 @@ if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof req
 
 	if (fs) {
 		// Search extensions folder
-		var extensions = fs.readdirSync('./src/extensions').filter(function(file){
+		var extensions = fs.readdirSync((__dirname || '.')+'/extensions').filter(function(file){
 			return ~file.indexOf('.js');
 		}).map(function(file){
-			return file.replace('.js', '');
+			return file.replace(/\.js$/, '');
 		});
 		// Load extensions into Showdown namespace
 		extensions.forEach(function(ext){

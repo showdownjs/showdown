@@ -64,7 +64,28 @@
 //
 // Showdown namespace
 //
-var Showdown = {};
+var Showdown = { extensions: {} };
+
+//
+// forEach
+//
+var forEach = Showdown.forEach = function(obj, callback) {
+	if (typeof obj.forEach === 'function') {
+		obj.forEach(callback);
+	} else {
+		var i, len = obj.length;
+		for (i = 0; i < len; i++) {
+			callback(obj[i], i, obj);
+		}
+	}
+};
+
+//
+// Standard extension naming
+//
+var stdExtName = function(s) {
+	return s.replace(/[_-]||\s/g, '').toLowerCase();
+};
 
 //
 // converter
@@ -72,7 +93,7 @@ var Showdown = {};
 // Wraps all "globals" so that the only thing
 // exposed is makeHtml().
 //
-Showdown.converter = function() {
+Showdown.converter = function(converter_options) {
 
 //
 // Globals:
@@ -87,6 +108,68 @@ var g_html_blocks;
 // (see _ProcessListItems() for details):
 var g_list_level = 0;
 
+// Global extensions
+var g_lang_extensions = [];
+var g_output_modifiers = [];
+
+
+//
+// Automatic Extension Loading (node only):
+//
+
+if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof require !== 'undefind') {
+	var fs = require('fs');
+
+	if (fs) {
+		// Search extensions folder
+		var extensions = fs.readdirSync('./src/extensions').filter(function(file){
+			return ~file.indexOf('.js');
+		}).map(function(file){
+			return file.replace('.js', '');
+		});
+		// Load extensions into Showdown namespace
+		extensions.forEach(function(ext){
+			var name = stdExtName(ext);
+			Showdown.extensions[name] = require('./extensions/' + ext);
+		});
+	}
+}
+
+//
+// Options:
+//
+
+// Parse extensinos options into separate arrays
+if (converter_options && converter_options.extensions) {
+
+	// Iterate over each plugin
+	converter_options.extensions.forEach(function(plugin){
+
+		// Assume it's a bundled plugin if a string is given
+		if (typeof plugin === 'string') {
+			plugin = Showdown.extensions[stdExtName(plugin)];
+		}
+
+		if (typeof plugin === 'function') {
+			// Iterate over each extension within that plugin
+			plugin(this).forEach(function(ext){
+				// Sort extensions by type
+				if (ext.type) {
+					if (ext.type === 'language' || ext.type === 'lang') {
+						g_lang_extensions.push(ext);
+					} else if (ext.type === 'output' || ext.type === 'html') {
+						g_output_modifiers.push(ext);
+					}
+				} else {
+					// Assume language extension
+					g_output_modifiers.push(ext);
+				}
+			});
+		} else {
+			throw "Extension '" + plugin + "' could not be loaded.  It was either not found or is not a valid extension.";
+		}
+	});
+}
 
 this.makeHtml = function(text) {
 //
@@ -131,6 +214,11 @@ this.makeHtml = function(text) {
 	// contorted like /[ \t]*\n+/ .
 	text = text.replace(/^[ \t]+$/mg,"");
 
+	// Run language extensions
+	g_lang_extensions.forEach(function(x){
+		text = _ExecuteExtension(x, text);
+	});
+
 	// Handle github codeblocks prior to running HashHTML so that
 	// HTML contained within the codeblock gets escaped propertly
 	text = _DoGithubCodeBlocks(text);
@@ -151,9 +239,23 @@ this.makeHtml = function(text) {
 	// attacklab: Restore tildes
 	text = text.replace(/~T/g,"~");
 
+	// Run output modifiers
+	g_output_modifiers.forEach(function(x){
+		text = _ExecuteExtension(x, text);
+	});
+
 	return text;
 };
 
+
+var _ExecuteExtension = function(ext, text) {
+	if (ext.regex) {
+		var re = new RegExp(ext.regex, 'g');
+		return text.replace(re, ext.replace);
+	} else if (ext.filter) {
+		return ext.filter(text);
+	}
+};
 
 var _StripLinkDefinitions = function(text) {
 //
@@ -1329,6 +1431,7 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 }
 
 } // end of Showdown.converter
+
 
 // export
 if (typeof module !== 'undefined') module.exports = Showdown;

@@ -105,6 +105,34 @@ Showdown has been tested successfully with:
 In theory, Showdown will work in any browser that supports ECMA 262 3rd Edition (JavaScript 1.5).  The converter itself might even work in things that aren't web browsers, like Acrobat.  No promises.
 
 
+Extensions
+----------
+
+Showdown allows additional functionality to be loaded via extensions.
+
+### Client-side Extension Usage
+
+```js
+<script src="src/showdown.js" />
+<script src="src/extensions/twitter.js" />
+
+var converter = new Showdown().converter({ extensions: 'twitter' });
+```
+
+### Server-side Extension Usage
+
+```js
+// Using a bundled extension
+var Showdown = require('showdown');
+var converter = new Showdown().converter({ extensions: ['twitter'] });
+
+// Using a custom extension
+var mine = require('./custom-extensions/mine');
+var converter = new Showdown().converter({ extensions: ['twitter', mine] });
+```
+
+
+
 Known Differences in Output
 ---------------------------
 
@@ -202,6 +230,78 @@ Once installed the tests can be run from the project root using:
     mocha test/run.js
 
 New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.  Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
+
+
+Creating Markdown Extensions
+----------------------------
+
+A showdown extension is simply a function which returns an array of extensions.  Each single extension can be one of two types:
+
+  - Language Extension -- Language extensions are ones that that add new markdown syntax to showdown.  For example, say you wanted `^^youtube http://www.youtube.com/watch?v=oHg5SJYRHA0` to automatically render as an embedded YouTube video, that would be a language extension.
+  - Output Modifiers -- After showdown has run, and generated HTML, an output modifier would change that HTML.  For example, say you wanted to change `<div class="header">` to be `<header>`, that would be an output modifier.
+
+Each extension can provide two combinations of interfaces for showdown.
+
+#### Regex/Replace
+
+Regex/replace style extensions are very similar to javascripts `string.replace` function.  Two properties are given, `regex` and `replace`.  `regex` is a string and `replace` can be either a string or a function.  If `replace` is a string, it can use the `$1` syntax for group substituation, exactly as if it were making use of `string.replace` (internally it does this actually);  The value of `regex` is assumed to be a global replacement.
+
+#### Regex/Replace Example
+
+``` js
+var demo = function(converter) {
+  return [
+    // Replace escaped @ symbols
+    { type: 'lang', regex: '\\@', replace: '@' }
+  ];
+}
+```
+
+#### Filter
+
+Alternately, if you'd just like to do everything yourself, you can specify a filter which is a callback with a single input parameter, text (the current source text within the showdown engine).
+
+#### Filter Example
+
+``` js
+var demo = function(converter) {
+  return [
+    // Replace escaped @ symbols
+    { type: 'lang', function(text) {
+      return text.replace(/\\@/g, '@');
+    }}
+  ];
+}
+```
+
+#### Implementation Concerns
+
+One bit which should be taken into account is maintaining both client-side and server-side compatibility.  This can be achieved with a few lines of boilerplate code.  First, to prevent polluting the global scope for client-side code, the extension definition should be wrapped in a self executing function.
+
+``` js
+(function(){
+  // Your extension here
+}());
+```
+
+Second, client-side extensions should add a property onto `Showdown.extensions` which matches the name of the file.  As an example, a file named `demo.js` should then add `Showdown.extensions.demo`.  Server-side extensions can simply export themselves.
+
+``` js
+(function(){
+  var demo = function(converter) {
+    // ... extension code here ...
+  };
+
+  // Client-side export
+  if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) { window.Showdown.extensions.demo = demo; }
+  // Server-side export
+  if (typeof module !== 'undefined') module.exports = demo;
+}());
+```
+
+#### Testing Extensions
+
+The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension, create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.  Place any test cases into the filder using the md/html format and they will automatically be run when tests are run.
 
 
 Credits

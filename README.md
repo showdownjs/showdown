@@ -1,8 +1,7 @@
-
 NOTE -- Showdown on GitHub
 ==========================
 
-Please note that I, Corey, am not the author of Showdown. Rather, I found it
+**Please note** that I, Corey, am not the author of Showdown. Rather, I found it
 some time back at <http://attacklab.net/showdown/>
 (website removed, see: <http://wayback.archive.org/web/*/http://attacklab.net/showdown>)
 and wanted to see it available on GitHub.

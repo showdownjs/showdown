@@ -184,7 +184,11 @@ var _StripLinkDefinitions = function(text) {
 			  /gm,
 			  function(){...});
 	*/
-	var text = text.replace(/^[ ]{0,3}\[(.+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|\Z)/gm,
+
+	// attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
+	text += "~0";
+
+	var text = text.replace(/^[ ]{0,3}\[(.+)\]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|(?=~0))/gm,
 		function (wholeMatch,m1,m2,m3,m4) {
 			m1 = m1.toLowerCase();
 			g_urls[m1] = _EncodeAmpsAndAngles(m2);  // Link IDs are case-insensitive
@@ -200,6 +204,9 @@ var _StripLinkDefinitions = function(text) {
 			return "";
 		}
 	);
+
+	// attacklab: strip sentinel
+	text = text.replace(/~0/,"");
 
 	return text;
 }

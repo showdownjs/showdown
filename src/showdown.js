@@ -119,6 +119,12 @@ this.makeHtml = function(text) {
 	text = text.replace(/\r\n/g,"\n"); // DOS to Unix
 	text = text.replace(/\r/g,"\n"); // Mac to Unix
 
+	//Trim white space so we can still indent
+    text = text.replace(/\s*/,'')
+ 
+    //Trim middle whitespace so indentation of a whole block is possible without converting it to a <pre>
+    text = text.replace(/\n\s*(\n*\s*)*/,'\n\n');
+
 	// Make sure text begins and ends with a couple of newlines:
 	text = "\n\n" + text + "\n\n";
 

@@ -123,7 +123,7 @@ this.makeHtml = function(text) {
     text = text.replace(/\s*/,'');
  
     //Trim middle whitespace so indentation of a whole block is possible without converting it to a <pre>
-    text = text.replace(/\n[\s|\t]*(\n*\s*)*/g,'\n\n');
+    text = text.replace(/\n[\s|\t]*(\n*[\s|\t]*)*/g,'\n\n');
 
 	// Make sure text begins and ends with a couple of newlines:
 	text = "\n\n" + text + "\n\n";

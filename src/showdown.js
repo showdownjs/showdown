@@ -122,29 +122,38 @@ this.makeHtml = function(text) {
     // Convert all tabs to spaces.
     text = _Detab(text);
     
-    var textSplitArr = text.split(/\n/);
+    // If text is being pulled from indented HTML elements, i.e.
+    // <body>
+    //     <div>
+    //         ## Content to be converted
+    //     </div>
+    // </body>
+    
+    //Split the given array by it's new line characters
+    var textSplitArr = text.split("\n");
+    //We'll use this later to determine if there are leading whitespace characters
     var leadingWhiteChars = 0;
-    var i;
+    var i; //So the linter doesn't yell at me
     for(i=0; i<=textSplitArr.length;i++) {
         if(textSplitArr[i] !== undefined) {
-            textSplitArr[i].replace(new RegExp(/[\s]*$/),'');
-            if(textSplitArr[i].length > 0) {
-                var lineLeadingWhiteChars = (textSplitArr[i].match(/^(\s)*/))[0].length;
-                if(leadingWhiteChars === 0 || (lineLeadingWhiteChars < leadingWhiteChars)) {
-                    if(textSplitArr[i].match(/[^\s]$/) !== null) {
-                        leadingWhiteChars = lineLeadingWhiteChars;
-                    }
+            textSplitArr[i].replace(new RegExp(/[\s]*$/),''); //trim all trailing whitespaces from each line
+            if(textSplitArr[i].length > 0) { // roots out empty array values
+                var lineLeadingWhiteChars = (textSplitArr[i].match(/^(\s)*/))[0].length; // defines this single line's leading whitespace
+                if(leadingWhiteChars === 0 || (lineLeadingWhiteChars < leadingWhiteChars)) { // Determine how much the text is indented
+                    if(textSplitArr[i].match(/[^\s]$/) !== null) {                           // by. This fixes nesting issues and also
+                        leadingWhiteChars = lineLeadingWhiteChars;                           // doesn't break MarkDown syntax if code is on
+                    }                                                                        // the first lines
                 }
             }
         }
     }
-    var reg = '^\\s{'+leadingWhiteChars+'}';
+    var reg = '^\\s{'+leadingWhiteChars+'}'; // Only a regex that will replace how much it is indented by
     for(i=0; i<=textSplitArr.length;i++) {
         if(textSplitArr[i] !== undefined) {
-            textSplitArr[i] = textSplitArr[i].replace(new RegExp(reg),'');
+            textSplitArr[i] = textSplitArr[i].replace(new RegExp(reg),''); // Replace leading indents
         }
     }
-    text = textSplitArr.join("\n\n");
+    text = textSplitArr.join("\n\n"); //Join it all back together
     //Trim middle whitespace so indentation of a whole block is possible without converting it to a <pre>
     //text = text.replace(/\n[\s|\t]*(\n*[\s|\t]*)*/g,'\n\n');
 
@@ -1031,7 +1040,7 @@ var _EncodeCode = function(text) {
     text = text.replace(/>/g,"&gt;");
 
     // Now, escape characters that are magic in Markdown:
-    text = escapeCharacters(text,"\*_{}[]\\",false);
+    text = escapeCharacters(text,"\\*_{}[]\\",false);
 
 // jj the line above breaks this:
 //---

@@ -143,7 +143,7 @@ if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof req
 if (converter_options && converter_options.extensions) {
 
 	// Iterate over each plugin
-	converter_options.extensions.forEach(function(plugin){
+	forEach(converter_options.extensions, function(plugin){
 
 		// Assume it's a bundled plugin if a string is given
 		if (typeof plugin === 'string') {

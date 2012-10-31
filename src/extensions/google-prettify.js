@@ -1,4 +1,3 @@
-
 //
 //  Google Prettify
 //  A showdown extension to add Google Prettify (http://code.google.com/p/google-code-prettify/)

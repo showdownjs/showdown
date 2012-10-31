@@ -139,7 +139,7 @@ if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof req
 // Options:
 //
 
-// Parse extensinos options into separate arrays
+// Parse extensions options into separate arrays
 if (converter_options && converter_options.extensions) {
 
 	// Iterate over each plugin
@@ -190,7 +190,7 @@ this.makeHtml = function(text) {
 	// attacklab: Replace ~ with ~T
 	// This lets us use tilde as an escape char to avoid md5 hashes
 	// The choice of character is arbitray; anything that isn't
-    // magic in Markdown will work.
+	// magic in Markdown will work.
 	text = text.replace(/~/g,"~T");
 
 	// attacklab: Replace $ with ~D

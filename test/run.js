@@ -74,7 +74,7 @@ if (path.existsSync('test/extensions')) {
             // Make sure extension exists
             var src = 'src/extensions/' + ext + '.js';
             if (!path.existsSync(src)) {
-                throw "Attempting tests for '" + ext + "' but sourc file (" + src + ") was not found.";
+                throw "Attempting tests for '" + ext + "' but source file (" + src + ") was not found.";
             }
 
             var converter = new showdown.converter({ extensions: [ ext ] });

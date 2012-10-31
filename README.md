@@ -310,5 +310,5 @@ Credits
     * [Cat Chen](https://github.com/CatChen):<br/>
       Export fix
     * [Titus Stone](https://github.com/tstone):<br/>
-      Mocha tests + bug fixes
+      Mocha tests, **extension mechanism**, and bug fixes
 

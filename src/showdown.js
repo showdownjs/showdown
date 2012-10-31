@@ -208,6 +208,9 @@ this.makeHtml = function(text) {
     // Convert all tabs to spaces.
     text = _Detab(text);
 
+    // Allow for indented code blocks in HTML
+    text = _AllowForBlockIndents(text);
+
     // Strip any lines consisting only of spaces and tabs.
     // This makes subsequent regexen easier to write, because we can
     // match consecutive blank lines with /\n+/ instead of something
@@ -312,7 +315,6 @@ var _StripLinkDefinitions = function(text) {
 
     return text;
 }
-
 
 var _HashHTMLBlocks = function(text) {
     // attacklab: Double up blank lines to reduce lookaround
@@ -763,6 +765,56 @@ var writeImageTag = function(wholeMatch,m1,m2,m3,m4,m5,m6,m7) {
     return result;
 }
 
+var _AllowForBlockIndents = function(text) {
+    // If text is being pulled from indented HTML elements, i.e.
+    // <body>
+    //     <div>
+    //         ## Content to be converted
+    //     </div>
+    // </body>
+    
+    //Split the given array by it's new line characters
+    var textSplitArr = text.split("\n");
+    //We'll use this later to determine if there are leading whitespace characters
+    var leadingWhiteChars = 0;
+    var i;
+    
+    for(i=0; i<=textSplitArr.length;i++) {
+        if(textSplitArr[i] !== undefined) {
+
+            // Trim all trailing whitespaces from each line
+            textSplitArr[i].replace(new RegExp(/[\s]*$/),'');
+
+            // roots out empty array values
+            if(textSplitArr[i].length > 0) {
+
+                // Defines this single line's leading whitespace
+                var lineLeadingWhiteChars = (textSplitArr[i].match(/^(\s)*/))[0].length;
+
+                // Determine how much the text is indented
+                // by. This fixes nesting issues and also
+                // doesn't break MarkDown syntax if code is on
+                // the first lines
+                if(leadingWhiteChars === 0 || (lineLeadingWhiteChars < leadingWhiteChars)) {
+                    if(textSplitArr[i].match(/[^\s]$/) !== null) {
+                        leadingWhiteChars = lineLeadingWhiteChars;
+                    }
+                }
+            }
+        }
+    }
+
+    // Only a regex that will replace how much it is indented by
+    var reg = '^\\s{'+leadingWhiteChars+'}';
+    for(i=0; i<=textSplitArr.length;i++) {
+        if(textSplitArr[i] !== undefined) {
+            // Replace leading indents
+            textSplitArr[i] = textSplitArr[i].replace(new RegExp(reg),'');
+        }
+    }
+    text = textSplitArr.join("\n\n"); //Join it all back together
+    return text;
+};
 
 var _DoHeaders = function(text) {
 

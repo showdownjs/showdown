@@ -1,0 +1,32 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title></title>
+    <script type="text/javascript" src="showdown.js"></script>
+</head>
+<body>
+
+    <div id="test1">
+        #Example of markdown
+        - Markdown list
+            - Nested list
+                - Further and nested
+
+        Match this please.
+    </div>
+    <div id="test2">
+    </div>
+    <pre id="code">
+
+    </pre>
+<script type="text/javascript">
+    var test = document.getElementById("test1").firstChild;
+    text = test.nodeValue;
+    var conv=new Showdown.converter();
+    var text = conv.makeHtml(text);
+    var code = document.getElementById("code");
+    test2.innerHTML=text;
+</script>
+
+</body>
+</html>

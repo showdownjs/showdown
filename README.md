@@ -319,4 +319,6 @@ Credits
       Code cleanup
     * [Ben Combee](https://github.com/unwiredben):<br/>
       Regex optimization
+    * [Adam Backstrom](https://github.com/abackstrom):<br/>
+      WebKit bugfix
 

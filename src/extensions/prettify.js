@@ -22,7 +22,7 @@
     };
 
     // Client-side export
-    if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) { window.Showdown.extensions.googlePrettify = prettify; }
+    if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) { window.Showdown.extensions.prettify = prettify; }
     // Server-side export
     if (typeof module !== 'undefined') module.exports = prettify;
 

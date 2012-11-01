@@ -135,42 +135,6 @@ if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof req
 	}
 }
 
-//
-// Options:
-//
-
-// Parse extensions options into separate arrays
-if (converter_options && converter_options.extensions) {
-
-	// Iterate over each plugin
-	Showdown.forEach(converter_options.extensions, function(plugin){
-
-		// Assume it's a bundled plugin if a string is given
-		if (typeof plugin === 'string') {
-			plugin = Showdown.extensions[stdExtName(plugin)];
-		}
-
-		if (typeof plugin === 'function') {
-			// Iterate over each extension within that plugin
-			Showdown.forEach(plugin(this), function(ext){
-				// Sort extensions by type
-				if (ext.type) {
-					if (ext.type === 'language' || ext.type === 'lang') {
-						g_lang_extensions.push(ext);
-					} else if (ext.type === 'output' || ext.type === 'html') {
-						g_output_modifiers.push(ext);
-					}
-				} else {
-					// Assume language extension
-					g_output_modifiers.push(ext);
-				}
-			});
-		} else {
-			throw "Extension '" + plugin + "' could not be loaded.  It was either not found or is not a valid extension.";
-		}
-	});
-}
-
 this.makeHtml = function(text) {
 //
 // Main function. The order in which other subs are called here is
@@ -246,6 +210,43 @@ this.makeHtml = function(text) {
 
 	return text;
 };
+//
+// Options:
+//
+
+// Parse extensions options into separate arrays
+if (converter_options && converter_options.extensions) {
+
+  var self = this;
+
+	// Iterate over each plugin
+	Showdown.forEach(converter_options.extensions, function(plugin){
+
+		// Assume it's a bundled plugin if a string is given
+		if (typeof plugin === 'string') {
+			plugin = Showdown.extensions[stdExtName(plugin)];
+		}
+
+		if (typeof plugin === 'function') {
+			// Iterate over each extension within that plugin
+			Showdown.forEach(plugin(self), function(ext){
+				// Sort extensions by type
+				if (ext.type) {
+					if (ext.type === 'language' || ext.type === 'lang') {
+						g_lang_extensions.push(ext);
+					} else if (ext.type === 'output' || ext.type === 'html') {
+						g_output_modifiers.push(ext);
+					}
+				} else {
+					// Assume language extension
+					g_output_modifiers.push(ext);
+				}
+			});
+		} else {
+			throw "Extension '" + plugin + "' could not be loaded.  It was either not found or is not a valid extension.";
+		}
+	});
+}
 
 
 var _ExecuteExtension = function(ext, text) {

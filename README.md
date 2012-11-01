@@ -1,4 +1,8 @@
-# NOTE -- Showdown on GitHub
+# Showdown [![build status](https://secure.travis-ci.org/pdeschen/showdown.png)](http://travis-ci.org/pdeschen/showdown)
+
+A JavaScript port of Markdown
+
+## Note
 
 **Please note** that I, Corey, am not the author of Showdown. Rather, I found it
 some time back at <http://attacklab.net/showdown/>
@@ -19,7 +23,7 @@ Cheers,<br/>
 Corey
 
 
-# Showdown -- A JavaScript port of Markdown
+## Original Attributions
 
 Showdown Copyright (c) 2007 John Fraser.
 <http://www.attacklab.net/>
@@ -29,7 +33,6 @@ Original Markdown Copyright (c) 2004-2005 John Gruber
 
 Redistributable under a BSD-style open source license.
 See license.txt for more information.
-
 
 ## Quick Example
 
@@ -214,7 +217,7 @@ A suite of tests is available which require node.js.  Once node is installed, ru
 
 Once installed the tests can be run from the project root using:
 
-    mocha test/run.js
+    npm test
 
 New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.  Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
 
@@ -291,7 +294,7 @@ The showdown test runner is setup to automatically test cases for extensions.  T
 
 
 Credits
----------------------------
+-------
 
   * Origins
     * [John Fraser](http://attacklab.net/):<br/>

@@ -14,7 +14,7 @@ var runTestsInDir = function(dir, converter) {
     });
 
     // Run each test case (markdown -> html)
-    cases.forEach(function(test){
+    showdown.forEach(cases, function(test){
         var name = test.replace(/[-.]/g, ' ');
         it (name, function(){
             var mdpath = path.join(dir, test + '.md'),
@@ -70,7 +70,7 @@ if (path.existsSync('test/extensions')) {
         });
 
         // Run tests in each extension sub-folder
-        extensions.forEach(function(ext){
+        showdown.forEach(extensions, function(ext){
             // Make sure extension exists
             var src = 'src/extensions/' + ext + '.js';
             if (!path.existsSync(src)) {

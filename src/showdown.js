@@ -128,7 +128,7 @@ if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof req
 			return file.replace(/\.js$/, '');
 		});
 		// Load extensions into Showdown namespace
-		extensions.forEach(function(ext){
+		Showdown.forEach(extensions, function(ext){
 			var name = stdExtName(ext);
 			Showdown.extensions[name] = require('./extensions/' + ext);
 		});
@@ -143,7 +143,7 @@ if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof req
 if (converter_options && converter_options.extensions) {
 
 	// Iterate over each plugin
-	converter_options.extensions.forEach(function(plugin){
+	Showdown.forEach(converter_options.extensions, function(plugin){
 
 		// Assume it's a bundled plugin if a string is given
 		if (typeof plugin === 'string') {
@@ -152,7 +152,7 @@ if (converter_options && converter_options.extensions) {
 
 		if (typeof plugin === 'function') {
 			// Iterate over each extension within that plugin
-			plugin(this).forEach(function(ext){
+			Showdown.forEach(plugin(this), function(ext){
 				// Sort extensions by type
 				if (ext.type) {
 					if (ext.type === 'language' || ext.type === 'lang') {
@@ -215,7 +215,7 @@ this.makeHtml = function(text) {
 	text = text.replace(/^[ \t]+$/mg,"");
 
 	// Run language extensions
-	g_lang_extensions.forEach(function(x){
+	Showdown.forEach(g_lang_extensions, function(x){
 		text = _ExecuteExtension(x, text);
 	});
 
@@ -240,7 +240,7 @@ this.makeHtml = function(text) {
 	text = text.replace(/~T/g,"~");
 
 	// Run output modifiers
-	g_output_modifiers.forEach(function(x){
+	Showdown.forEach(g_output_modifiers, function(x){
 		text = _ExecuteExtension(x, text);
 	});
 

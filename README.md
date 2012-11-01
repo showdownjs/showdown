@@ -1,4 +1,6 @@
 
+[![Build Status](https://travis-ci.org/pdeschen/showdown.png)](https://travis-ci.org/pdeschen/showdown])
+
 NOTE -- Showdown on GitHub
 ==========================
 

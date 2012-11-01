@@ -1,4 +1,18 @@
 /*global module:true*/
+/*
+ * Basic table support with re-entrant parsing, where cell content
+ * can also specify markdown.
+ *
+ * Tables
+ * ======
+ *
+ * | Col 1   | Col 2                                              |
+ * |======== |====================================================|
+ * |**bold** | ![Valid XHTML] (http://w3.org/Icons/valid-xhtml10) |
+ * | Plain   | Value                                              |
+ *
+ */
+
 (function(){
   var table = function(converter) {
     var tables = {}, style = 'text-align:left;', filter; 
@@ -8,7 +22,7 @@
       return '<th id="' + id + '" style="'+style+'">' + header + '</th>';
     };
     tables.td = function(cell) {
-      return '<td style="'+style+'">' + cell + '</td>';
+      return '<td style="'+style+'">' + converter.makeHtml(cell) + '</td>';
     };
     tables.ths = function(){
       var out = "", i = 0, hs = [].slice.apply(arguments);
@@ -67,7 +81,6 @@
             tbl.push('</table>');
             // we are done with this table and we move along
             out.push(tbl.join('\n'));
-            ++i;
             continue;
           }
         }

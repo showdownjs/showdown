@@ -7,5 +7,10 @@ These HTML5 tags should pass through just fine.
 <nav>navigation</nav>
 <article>read me</article>
 <aside>ignore me</aside>
+<article>read
+me</article>
+<aside>
+ignore me
+</aside>
 
 the end

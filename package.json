@@ -1,6 +1,6 @@
 {
     "name": "showdown",
-    "version": "0.2.0",
+    "version": "0.3.0",
     "author": "John Fraser",
     "scripts": {
         "test": "mocha ./test/run.js"
@@ -14,7 +14,11 @@
         "Roger Braun",
         "Dominic Tarr",
         "Cat Chen",
-        "Titus Stone"
+        "Titus Stone",
+        "Rob Sutherland",
+        "Pavel Lang",
+        "Ben Combee",
+        "Adam Backstrom"
     ],
     "repository": {
         "type": "git",

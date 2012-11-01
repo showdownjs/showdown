@@ -1,4 +1,3 @@
-
 //
 //  Twitter Extension
 //  @username   ->  <a href="http://twitter.com/username">@username</a>

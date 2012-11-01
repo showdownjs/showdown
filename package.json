@@ -2,6 +2,9 @@
     "name": "showdown",
     "version": "0.2.0",
     "author": "John Fraser",
+    "scripts": {
+        "test": "mocha ./test/run.js"
+    },
     "contributors": [
         "John Gruber",
         "John Fraser",
@@ -19,8 +22,8 @@
         "web":  "https://github.com/coreyti/showdown"
     },
     "devDependencies": {
-        "mocha": "*",
-        "should": "*"
+        "mocha": "1.3.0",
+        "should": "1.2.0"
     },
     "licenses": [{
         "type": "BSD",

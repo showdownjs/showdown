@@ -1,6 +1,6 @@
 {
     "name": "showdown",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "author": "John Fraser",
     "scripts": {
         "test": "mocha ./test/run.js"

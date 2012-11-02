@@ -4,23 +4,22 @@ A JavaScript port of Markdown
 
 ## Note
 
-**Please note** that I, Corey, am not the author of Showdown. Rather, I found it
-some time back at <http://attacklab.net/showdown/>
-(website removed, see: <http://wayback.archive.org/web/*/http://attacklab.net/showdown>)
-and wanted to see it available on GitHub.
-
-All credit and praise for authoring this library should go to John Fraser.
-
-Oh, and John Gruber of course.
-
-That said, I have recently see some GitHub forking activity and a pull
-request. As such, I will endeavor to ordain myself as a maintainer of
-Showdown, at least as it exists on GitHub.
-
-Apologies for any confusion or perceived misinformation.
-
-Cheers,<br/>
-Corey
+  > **Please note** that I, [Corey](https://github.com/coreyti), am not the author
+  > of Showdown. Rather, I found it some time back at <http://attacklab.net/showdown/>
+  > (website removed, see: <http://wayback.archive.org/web/*/http://attacklab.net/showdown>)
+  > and wanted to see it available on GitHub.
+  >
+  > All credit and praise for authoring this library should go to John Fraser.
+  >
+  > Oh, and John Gruber of course.
+  >
+  > That said, Showdown *is* evolving. See below for a list of contributors and an
+  > overview of their contributions to the project.
+  >
+  > Apologies for any confusion or perceived misinformation.
+  >
+  > Cheers,<br/>
+  > Corey
 
 
 ## Original Attributions
@@ -211,6 +210,7 @@ In most cases, Showdown's output is identical to that of Perl Markdown v1.0.2b7.
 
 
 ## Tests
+
 A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the development dependencies:
 
     npm install --dev
@@ -237,7 +237,7 @@ Regex/replace style extensions are very similar to javascripts `string.replace` 
 
 **Example:**
 
-``` js
+```js
 var demo = function(converter) {
   return [
     // Replace escaped @ symbols
@@ -252,7 +252,7 @@ Alternately, if you'd just like to do everything yourself, you can specify a fil
 
 **Example:**
 
-``` js
+```js
 var demo = function(converter) {
   return [
     // Replace escaped @ symbols
@@ -267,7 +267,7 @@ var demo = function(converter) {
 
 One bit which should be taken into account is maintaining both client-side and server-side compatibility.  This can be achieved with a few lines of boilerplate code.  First, to prevent polluting the global scope for client-side code, the extension definition should be wrapped in a self-executing function.
 
-``` js
+```js
 (function(){
   // Your extension here
 }());
@@ -275,7 +275,7 @@ One bit which should be taken into account is maintaining both client-side and s
 
 Second, client-side extensions should add a property onto `Showdown.extensions` which matches the name of the file.  As an example, a file named `demo.js` should then add `Showdown.extensions.demo`.  Server-side extensions can simply export themselves.
 
-``` js
+```js
 (function(){
   var demo = function(converter) {
     // ... extension code here ...
@@ -293,8 +293,7 @@ Second, client-side extensions should add a property onto `Showdown.extensions` 
 The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension, create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.  Place any test cases into the filder using the md/html format and they will automatically be run when tests are run.
 
 
-Credits
--------
+## Credits
 
   * Origins
     * [John Fraser](http://attacklab.net/):<br/>

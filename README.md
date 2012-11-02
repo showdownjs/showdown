@@ -300,7 +300,7 @@ The showdown test runner is setup to automatically test cases for extensions.  T
       Author of Showdown
     * [John Gruber](http://daringfireball.net/projects/markdown/):<br/>
       Author of Markdown
-  * Maintenance/Contributions
+  * Maintenance/Contributions (roughly chronologically)
     * [Corey Innis](http://github.com/coreyti):<br/>
       GitHub project maintainer
     * [Remy Sharp](https://github.com/remy/):<br/>
@@ -314,7 +314,7 @@ The showdown test runner is setup to automatically test cases for extensions.  T
     * [Cat Chen](https://github.com/CatChen):<br/>
       Export fix
     * [Titus Stone](https://github.com/tstone):<br/>
-      **Mocha tests**, **extension mechanism**, and bug fixes
+      Mocha tests, extension mechanism, and bug fixes
     * [Rob Sutherland](https://github.com/roberocity):<br/>
       The idea that lead to extensions
     * [Pavel Lang](https://github.com/langpavel):<br/>
@@ -323,4 +323,5 @@ The showdown test runner is setup to automatically test cases for extensions.  T
       Regex optimization
     * [Adam Backstrom](https://github.com/abackstrom):<br/>
       WebKit bugfix
-
+    * [Pascal Deschênes](https://github.com/pdeschen):<br/>
+      Grunt support, extension fixes + additions, packaging improvements, documentation

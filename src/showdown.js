@@ -87,6 +87,20 @@ var stdExtName = function(s) {
     return s.replace(/[_-]||\s/g, '').toLowerCase();
 };
 
+// Extend as jQuery plugin
+//
+// Usage:
+// $(element).showdown();
+(function( $ ){
+    $.showdown = $.fn.showdown = function() {
+        var converter = new Showdown.converter();
+        return this.each(function() {
+            $(this).html(converter.makeHtml($(this).text()));
+        });
+    };
+})(jQuery);
+
+
 //
 // converter
 //
@@ -1490,7 +1504,6 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 }
 
 } // end of Showdown.converter
-
 
 // export
 if (typeof module !== 'undefined') module.exports = Showdown;

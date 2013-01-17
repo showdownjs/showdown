@@ -81,6 +81,8 @@
             tbl.push('</table>');
             // we are done with this table and we move along
             out.push(tbl.join('\n'));
+            // and reset tbl in case their are further tables in the document.
+            tbl = [];
             continue;
           }
         }

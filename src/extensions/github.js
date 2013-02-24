@@ -14,6 +14,14 @@
               replace : function(match, prefix, content, suffix) {
                   return '<del>' + content + '</del>';
               }
+            },
+            {
+              // @mentions
+              type    : 'lang',
+              regex   : '(@([A-Za-z0-9-_]+))',
+              replace : function(match, content, user) {
+                  return '<a href="//github.com/' + user + '">' + content + '</a>'
+              }
             }
         ];
     };

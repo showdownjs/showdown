@@ -55,11 +55,12 @@
       return out;
     };
     filter = function(text) { 
-      var i=0, lines = text.split('\n'), tbl = [], line, hs, rows, out = [];
+      var i=0, lines = text.split('\n'), line, hs, rows, out = [];
       for (i; i<lines.length;i+=1) {
         line = lines[i];
         // looks like a table heading
         if (line.trim().match(/^[|]{1}.*[|]{1}$/)) {
+          var tbl = [];
           line = line.trim();
           tbl.push('<table>');
           hs = line.substring(1, line.length -1).split('|');

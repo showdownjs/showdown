@@ -110,7 +110,7 @@ Showdown allows additional functionality to be loaded via extensions.
 <script src="src/showdown.js" />
 <script src="src/extensions/twitter.js" />
 
-var converter = new Showdown.converter({ extensions: 'twitter' });
+var converter = new Showdown.converter({ extensions: ['twitter'] });
 ```
 
 ### Server-side Extension Usage
@@ -256,7 +256,7 @@ Alternately, if you'd just like to do everything yourself, you can specify a fil
 var demo = function(converter) {
   return [
     // Replace escaped @ symbols
-    { type: 'lang', function(text) {
+    { type: 'lang', filter: function(text) {
       return text.replace(/\\@/g, '@');
     }}
   ];

@@ -218,6 +218,12 @@ this.makeHtml = function(text) {
 if (converter_options && converter_options.extensions) {
 
   var self = this;
+  
+  // if a string is given like this new Showdown.converter({ extensions: 'github' })
+  // Ensure it can traverse the extensions list
+  if(typeof converter_options.extensions === 'string'){
+  	converter_options.extensions = [converter_options.extensions];
+  }
 
 	// Iterate over each plugin
 	Showdown.forEach(converter_options.extensions, function(plugin){

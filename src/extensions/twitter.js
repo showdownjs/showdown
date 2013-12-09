@@ -14,9 +14,9 @@
         return [
 
             // @username syntax
-            { type: 'lang', regex: '\\B(\\\\)?@([\\S]+)\\b', replace: function(match, leadingSlash, username) {
-                // Check if we matched the leading \ and return nothing changed if so
-                if (leadingSlash === '\\') {
+            { type: 'lang', regex: '\\B(.)?@([\\S]+)\\b', replace: function(match, leading, username) {
+                // Check if we matched the leading \ or [ and return nothing changed if so
+                if (['\\','['].indexOf(leading) > -1) {
                     return match;
                 } else {
                     return '<a href="http://twitter.com/' + username + '">@' + username + '</a>';
@@ -24,9 +24,9 @@
             }},
 
             // #hashtag syntax
-            { type: 'lang', regex: '\\B(\\\\)?#([\\S]+)\\b', replace: function(match, leadingSlash, tag) {
-                // Check if we matched the leading \ and return nothing changed if so
-                if (leadingSlash === '\\') {
+            { type: 'lang', regex: '\\B(\\\\)?#([\\S]+)\\b', replace: function(match, leading, tag) {
+                // Check if we matched the leading \ or [ and return nothing changed if so
+                if (['\\','['].indexOf(leading) > -1) {
                     return match;
                 } else {
                     return '<a href="http://twitter.com/search/%23' + tag + '">#' + tag + '</a>';

@@ -2,6 +2,10 @@
 //  Twitter Extension
 //  @username   ->  <a href="http://twitter.com/username">@username</a>
 //  #hashtag    ->  <a href="http://twitter.com/search/%23hashtag">#hashtag</a>
+//  https://twitter.com/jack/status/20 -> <blockquote class="twitter-tweet">
+//                                          <a href="https://twitter.com/jack/status/20">Tweet from @jack</a>
+//                                        </blockquote>
+//                                        <script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>
 //
 
 (function(){
@@ -30,7 +34,16 @@
             }},
 
             // Escaped @'s
-            { type: 'lang', regex: '\\\\@', replace: '@' }
+            { type: 'lang', regex: '\\\\@', replace: '@' },
+            
+            // New line with a twitter url => embedded tweet
+            {
+                type    : 'lang',
+                regex   : '\n(https?:\/\/twitter\.com\/([^\/]{1,15})\/status(es)?\/[0-9]{1,100})',
+                replace : function (match, permalink, username) {
+                    return '<blockquote class="twitter-tweet"><a href="'+permalink+'">Tweet from @'+username+'</a></blockquote><script async src="//platform.twitter.com/widgets.js" charset="utf-8"></script>';
+                }
+            }
         ];
     };
 

@@ -123,7 +123,7 @@ if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof req
 	if (fs) {
 		// Search extensions folder
 		var extensions = fs.readdirSync((__dirname || '.')+'/extensions').filter(function(file){
-			return ~file.indexOf('.js');
+			return file.match(/\.js$/);
 		}).map(function(file){
 			return file.replace(/\.js$/, '');
 		});

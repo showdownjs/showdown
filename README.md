@@ -215,6 +215,10 @@ A suite of tests is available which require node.js.  Once node is installed, ru
 
     npm install --dev
 
+Grunt is used to task run mocha tests and jshint validation. Install the grunt-cli tool globally:
+
+    npm install grunt-cli -g
+
 Once installed the tests can be run from the project root using:
 
     npm test

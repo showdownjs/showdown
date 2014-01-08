@@ -3,10 +3,13 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
-    lint: {
-      all: ['src/**/*.js', 'test/**/*.js']
-    },
     jshint: {
+      src: {
+        src: ['src/**/*.js']
+      },
+      test: {
+        src: ['test/**/*.js']
+      },
       options: {
         browser: true
       }
@@ -24,7 +27,8 @@ module.exports = function(grunt) {
     }
   });
   
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-simple-mocha');
 
-  grunt.registerTask('default', ['simplemocha', 'lint']);
+  grunt.registerTask('test', ['simplemocha', 'jshint']);
 };

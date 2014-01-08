@@ -767,6 +767,26 @@ Showdown.converter = function(converter_options) {
 
   var _DoHeaders = function(text) {
 
+    // Keep track of ids used for headers for hash-linking. If any duplicates
+    // are used, append a unique string based on the count of identical ids.
+    // This prevents the result of having duplicate ids if a user creates
+    // similar headers.
+    var hashLinkCounts = {};
+    function headerId(m) {
+      var title,
+          escapedId = m.replace(/[^\w]/g, '').toLowerCase();
+
+      if (hashLinkCounts[escapedId]) {
+        title = escapedId + "-" + (hashLinkCounts[escapedId]++);
+      } else {
+        title = escapedId;
+        hashLinkCounts[escapedId] = 1;
+      }
+
+      // Prefix id to prevent causing inadverntent pre-existing style matches.
+      return "section-" + title;
+    }
+
     // Setext-style headers:
     //      Header 1
     //      ========
@@ -774,11 +794,13 @@ Showdown.converter = function(converter_options) {
     //      Header 2
     //      --------
     //
-    text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm,
-        function(wholeMatch,m1){return hashBlock('<h1 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h1>");});
+    text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm, function(wholeMatch,m1){
+      return hashBlock('<h1 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h1>");
+    });
 
-    text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm,
-        function(matchFound,m1){return hashBlock('<h2 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h2>");});
+    text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm, function(matchFound,m1){
+      return hashBlock('<h2 id="' + headerId(m1) + '">' + _RunSpanGamut(m1) + "</h2>");
+    });
 
     // atx-style headers:
     //  # Header 1
@@ -799,15 +821,11 @@ Showdown.converter = function(converter_options) {
        /gm, function() {...});
        */
 
-    text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm,
-        function(wholeMatch,m1,m2) {
-          var h_level = m1.length;
-          return hashBlock("<h" + h_level + ' id="' + headerId(m2) + '">' + _RunSpanGamut(m2) + "</h" + h_level + ">");
-        });
+    text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm, function(wholeMatch,m1,m2) {
+      var h_level = m1.length;
+      return hashBlock("<h" + h_level + ' id="' + headerId(m2) + '">' + _RunSpanGamut(m2) + "</h" + h_level + ">");
+    });
 
-    function headerId(m) {
-      return m.replace(/[^\w]/g, '').toLowerCase();
-    }
     return text;
   };
 

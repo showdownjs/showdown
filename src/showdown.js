@@ -1440,6 +1440,10 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 
 } // end of Showdown.converter
 
+// client-side export
+if (typeof window !== 'undefined') {
+  window.Showdown = Showdown;
+}
 
 // export
 if (typeof module !== 'undefined') module.exports = Showdown;

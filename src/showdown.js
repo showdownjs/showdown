@@ -1028,6 +1028,11 @@ Showdown.converter = function(converter_options) {
           codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines
           codeblock = codeblock.replace(/\n+$/g,""); // trim trailing whitespace
 
+          //http://www.w3.org/TR/html5/text-level-semantics.html#the-code-element
+          if (!language.match('^language-')) {
+            language = 'language-' + language;
+          }
+
           codeblock = "<pre><code" + (language ? " class=\"" + language + '"' : "") + ">" + codeblock + "\n</code></pre>";
 
           return hashBlock(codeblock);

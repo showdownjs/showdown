@@ -8,7 +8,7 @@ A JavaScript port of Markdown
   > 
   > The organization needs members to maintain Showdown.
   > 
-  > Please see [this issue](https://github.com/showdownjs/showdown/issues/1) to express interest or comment on this note.
+  > Please see [this issue](https://github.com/showdownjs/showdown/issues/114) to express interest or comment on this note.
 
 ## Original Attributions
 

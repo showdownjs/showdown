@@ -1,26 +1,14 @@
-# Showdown [![build status](https://secure.travis-ci.org/coreyti/showdown.png)](http://travis-ci.org/coreyti/showdown)
+# Showdown
 
 A JavaScript port of Markdown
 
 ## Note
 
-  > **Please note** that I, [Corey](https://github.com/coreyti), am not the author
-  > of Showdown. Rather, I found it some time back at <http://attacklab.net/showdown/>
-  > (website removed, see: <http://wayback.archive.org/web/*/http://attacklab.net/showdown>)
-  > and wanted to see it available on GitHub.
-  >
-  > All credit and praise for authoring this library should go to John Fraser.
-  >
-  > Oh, and John Gruber of course.
-  >
-  > That said, Showdown *is* evolving. See below for a list of contributors and an
-  > overview of their contributions to the project.
-  >
-  > Apologies for any confusion or perceived misinformation.
-  >
-  > Cheers,<br/>
-  > Corey
-
+  > Showdown is now maintained by the [showdownjs](https://github.com/showdownjs) organization on Github.
+  > 
+  > The organization needs members to maintain Showdown.
+  > 
+  > Please see [this issue](https://github.com/showdownjs/showdown/issues/1) to express interest or comment on this note.
 
 ## Original Attributions
 

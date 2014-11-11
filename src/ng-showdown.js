@@ -38,6 +38,8 @@ if (angular && Showdown) {
              */
             this.setOption = function (key, value) {
                 config.key = value;
+
+                return this;
             };
 
             /**
@@ -61,6 +63,8 @@ if (angular && Showdown) {
              */
             this.loadExtension = function (extensionName) {
                 config.extensions.push(extensionName);
+
+                return this;
             };
 
             function SDObject() {

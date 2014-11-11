@@ -3,7 +3,10 @@
     "description": "JavaScript port of Markdown",
     "homepage": "https://github.com/showdownjs/showdown",
     "authors": [
-        "John Fraser"
+        "John Fraser",
+        "Corey Innis (https://github.com/coreyti)",
+        "Pascal Deschênes (https://github.com/pdeschen)",
+        "Estevão Santos (https://github.com/tivie)"
     ],
     "main": ["src/showdown.js"],
     "ignore": [

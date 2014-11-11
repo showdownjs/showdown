@@ -6,6 +6,10 @@
         "John Fraser"
     ],
     "main": ["src/showdown.js"],
+    "ignore": [
+        ".jshintrc",
+        "perlMarkdown/*"
+    ],
     "repository": {
         "type": "git",
         "url": "https://github.com/showdownjs/showdown.git"

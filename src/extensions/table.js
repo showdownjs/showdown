@@ -60,6 +60,7 @@
         line = lines[i];
         // looks like a table heading
         if (line.trim().match(/^[|]{1}.*[|]{1}$/)) {
+          var tbl = [];
           line = line.trim();
           var tbl = [];
           tbl.push('<table>');

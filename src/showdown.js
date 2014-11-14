@@ -95,6 +95,9 @@ var stdExtName = function(s) {
 //
 Showdown.converter = function(converter_options) {
 
+// set converter_options to a plain object if its undefined
+converter_options = converter_options === undefined ? {} : converter_options
+
 //
 // Globals:
 //
@@ -117,7 +120,7 @@ var g_output_modifiers = [];
 // Automatic Extension Loading (node only):
 //
 
-if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof require !== 'undefind') {
+if (converter_options.node !== false && typeof module !== 'undefined' && typeof exports !== 'undefined' && typeof require !== 'undefind') {
 	var fs = require('fs');
 
 	if (fs) {

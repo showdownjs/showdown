@@ -1,11 +1,13 @@
 {
-  "name": "showdown",
-  "version": "0.3.3-ghost",
+  "name": "showdown-ghost",
+  "version": "0.3.4",
+  "descriotion": "Slightly updated version of showdown used in Ghost",
   "author": "John Fraser",
   "scripts": {
     "test": "grunt test"
   },
   "contributors": [
+    "Hannah Wolfe",
     "John Gruber",
     "John Fraser",
     "Corey Innis",
@@ -23,7 +25,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/coreyti/showdown.git",
+    "url": "https://github.com/erisds/showdown.git#ghost",
     "web": "https://github.com/coreyti/showdown"
   },
   "devDependencies": {
@@ -32,7 +34,7 @@
     "grunt-simple-mocha": "*",
     "grunt-mocha": "~0.4.7",
     "should": "1.2.0",
-    "grunt-contrib-jshint": "~0.8.0"
+    "grunt-contrib-jshint": "0.10.0"
   },
   "licenses": [
     {

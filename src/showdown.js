@@ -1029,7 +1029,7 @@ Showdown.converter = function(converter_options) {
           codeblock = codeblock.replace(/\n+$/g,""); // trim trailing whitespace
 
           //http://www.w3.org/TR/html5/text-level-semantics.html#the-code-element
-          if (!language.match('^language-')) {
+          if (language && !language.match('^language-')) {
             language = 'language-' + language;
           }
 

@@ -508,6 +508,9 @@ var _RunSpanGamut = function(text) {
 	// Do hard breaks:
 	text = text.replace(/  +\n/g," <br />\n");
 
+  // Un-escape the escaped underscores now that italics are done
+  text = text.replace(/\%5F/g, '_')
+
 	return text;
 }
 
@@ -1277,6 +1280,9 @@ var _EncodeBackslashEscapes = function(text) {
 var _DoAutoLinks = function(text) {
 
 	text = text.replace(/<((https?|ftp|dict):[^'">\s]+)>/gi,"<a href=\"$1\">$1</a>");
+
+  // Escape the underscores in text links temporarily
+  text = text.replace(/_/g,"%5F")
 
 	// Email addresses: <address@domain.foo>
 

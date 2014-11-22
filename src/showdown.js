@@ -117,10 +117,10 @@ var g_output_modifiers = [];
 // Automatic Extension Loading (node only):
 //
 
-if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof require !== 'undefind') {
+if (typeof module !== 'undefined' && typeof exports !== 'undefined' && typeof require !== 'undefined') {
 	var fs = require('fs');
 
-	if (fs) {
+	if (fs && fs.readdirSync) {
 		// Search extensions folder
 		var extensions = fs.readdirSync((__dirname || '.')+'/extensions').filter(function(file){
 			return ~file.indexOf('.js');

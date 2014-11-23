@@ -64,7 +64,9 @@
 //
 // Showdown namespace
 //
-var Showdown = { extensions: {} };
+var Showdown = typeof exports === 'object' ? exports : {};
+
+Showdown.extensions = {};
 
 //
 // forEach
@@ -1440,9 +1442,6 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 
 } // end of Showdown.converter
 
-
-// export
-if (typeof module !== 'undefined') module.exports = Showdown;
 
 // stolen from AMD branch of underscore
 // AMD define happens at the end for compatibility with AMD loaders

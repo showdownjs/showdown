@@ -1,0 +1,16 @@
+{
+  "name": "showdown",
+  "version": "0.3.1",
+  "homepage": "https://github.com/coreyti/showdown",
+  "authors": [
+    "John Fraser"
+  ],
+  "description": "JavaScript port of Markdown",
+  "main": ["src/showdown.js"],
+  "keywords": [
+    "markdown",
+    "md",
+    "mdown"
+  ],
+  "license": "BSD"
+}

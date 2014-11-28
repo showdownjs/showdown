@@ -244,7 +244,7 @@ Alternately, if you'd just like to do everything yourself, you can specify a fil
 var demo = function(converter) {
   return [
     // Replace escaped @ symbols
-    { type: 'lang', function(text) {
+    { type: 'output', filter: function(text) {
       return text.replace(/\\@/g, '@');
     }}
   ];

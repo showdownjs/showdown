@@ -1442,7 +1442,7 @@ var escapeCharacters_callback = function(wholeMatch,m1) {
 
 
 // export
-if (typeof module !== 'undefined') module.exports = Showdown;
+if (typeof module !== 'undefined' && module.exports) module.exports = Showdown;
 
 // stolen from AMD branch of underscore
 // AMD define happens at the end for compatibility with AMD loaders

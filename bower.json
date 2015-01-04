@@ -1,0 +1,26 @@
+{
+    "name": "showdown",
+    "description": "JavaScript port of Markdown",
+    "homepage": "https://github.com/showdownjs/showdown",
+    "authors": [
+        "John Fraser",
+        "Corey Innis (https://github.com/coreyti)",
+        "Pascal Deschênes (https://github.com/pdeschen)",
+        "Estevão Santos (https://github.com/tivie)"
+    ],
+    "main": ["src/showdown.js"],
+    "ignore": [
+        ".jshintrc",
+        "perlMarkdown/*"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/showdownjs/showdown.git"
+    },
+    "keywords": [
+        "markdown",
+        "md",
+        "mdown"
+    ],
+    "license": "https://github.com/showdownjs/showdown/blob/master/license.txt"
+}

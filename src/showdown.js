@@ -116,7 +116,7 @@ Showdown.converter = function (converter_options) {
 //
 // Automatic Extension Loading (node only):
 //
-    if (typeof module !== 'undefind' && typeof exports !== 'undefined' && typeof require !== 'undefind') {
+    if (typeof module !== 'undefined' && typeof exports !== 'undefined' && typeof require !== 'undefined') {
         var fs = require('fs');
 
         if (fs) {

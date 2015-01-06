@@ -4,7 +4,7 @@
 
 
 //Check if AngularJs and Showdown is defined and only load ng-Showdown if both are present
-if (angular && Showdown) {
+if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
 
     (function (module, Showdown) {
 

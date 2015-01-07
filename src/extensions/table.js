@@ -66,7 +66,7 @@
           hs = line.substring(1, line.length -1).split('|');
           tbl.push(tables.thead.apply(this, hs));
           line = lines[++i];
-          if (!line.trim().match(/^[|]{1}[-=| ]+[|]{1}$/)) {
+          if (!line.trim().match(/^[|]{1}[-=|: ]+[|]{1}$/)) {
             // not a table rolling back
             line = lines[--i];
           }

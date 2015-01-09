@@ -15,7 +15,7 @@
 
 (function(){
   var table = function(converter) {
-    var tables = {}, style = 'text-align:left;', filter; 
+    var tables = {}, style = 'text-align:left;', filter;
     tables.th = function(header){
       if (header.trim() === "") { return "";}
       var id = header.trim().replace(/ /g, '_').toLowerCase();
@@ -54,7 +54,7 @@
       out += "</tr>\n";
       return out;
     };
-    filter = function(text) { 
+    filter = function(text) {
       var i=0, lines = text.split('\n'), line, hs, rows, out = [];
       for (i; i<lines.length;i+=1) {
         line = lines[i];
@@ -66,7 +66,7 @@
           hs = line.substring(1, line.length -1).split('|');
           tbl.push(tables.thead.apply(this, hs));
           line = lines[++i];
-          if (!line.trim().match(/^[|]{1}[-=| ]+[|]{1}$/)) {
+          if (!line.trim().match(/^[|]{1}[-=|: ]+[|]{1}$/)) {
             // not a table rolling back
             line = lines[--i];
           }
@@ -86,12 +86,12 @@
           }
         }
         out.push(line);
-      }             
+      }
       return out.join('\n');
     };
     return [
-    { 
-      type: 'lang', 
+    {
+      type: 'lang',
       filter: filter
     }
     ];

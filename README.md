@@ -1,6 +1,7 @@
-# Showdown
+Showdown
+--------
 
-A JavaScript port of Markdown
+A Markdown to HTML converter written in Javascript
 
 ## Note
 
@@ -221,7 +222,7 @@ Each extension can provide two combinations of interfaces for showdown.
 
 ### Regex/Replace
 
-Regex/replace style extensions are very similar to javascripts `string.replace` function.  Two properties are given, `regex` and `replace`.  `regex` is a string and `replace` can be either a string or a function.  If `replace` is a string, it can use the `$1` syntax for group substitution, exactly as if it were making use of `string.replace` (internally it does this actually);  The value of `regex` is assumed to be a global replacement.
+Regex/replace style extensions are very similar to Javascript's `string.replace` function.  Two properties are given, `regex` and `replace`.  `regex` is a string and `replace` can be either a string or a function.  If `replace` is a string, it can use the `$1` syntax for group substitution, exactly as if it were making use of `string.replace` (internally it does this actually);  The value of `regex` is assumed to be a global replacement.
 
 **Example:**
 
@@ -278,17 +279,16 @@ Second, client-side extensions should add a property onto `Showdown.extensions` 
 
 ### Testing Extensions
 
-The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension, create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.  Place any test cases into the filder using the md/html format and they will automatically be run when tests are run.
+The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension, create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.  Place any test cases into the folder using the md/html format and they will automatically be run when tests are run.
 
 
 ## Credits
 
-  * Origins
-    * [John Fraser](http://attacklab.net/):<br/>
-      Author of Showdown
-    * [John Gruber](http://daringfireball.net/projects/markdown/):<br/>
-      Author of Markdown
-  * Maintenance/Contributions (roughly chronologically)
+  - Showdown v2
+    * [Estevão Santos](http://soares-dos-santos.com)<br/>
+      Code Refactoring and Project Maintainer
+
+  - Showdown v1
     * [Corey Innis](http://github.com/coreyti):<br/>
       GitHub project maintainer
     * [Remy Sharp](https://github.com/remy/):<br/>
@@ -313,3 +313,11 @@ The showdown test runner is setup to automatically test cases for extensions.  T
       WebKit bugfix
     * [Pascal Deschênes](https://github.com/pdeschen):<br/>
       Grunt support, extension fixes + additions, packaging improvements, documentation
+    * [Estevão Santos](http://soares-dos-santos.com):<br/>
+      Bug fixes and later maintainer
+
+  - Original Project
+    * [John Gruber](http://daringfireball.net/projects/markdown/)<br/>
+      Author of Markdown
+    * [John Fraser](http://attacklab.net/)<br/>
+      Author of Showdown

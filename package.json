@@ -33,7 +33,7 @@
   ],
   "main": "./dist/showdown.js",
   "scripts": {
-    "test": "mocha ./test/run.js"
+    "test": "mocha ./test/**/*.js"
   },
   "devDependencies": {
     "angular": "^1.3.2",

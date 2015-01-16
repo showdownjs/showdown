@@ -8,29 +8,54 @@
     require('source-map-support').install();
     require('chai').should();
 
-    var fs = require('fs'),
-        dir = 'test/cases/',
-        showdown = require('../../../dist/showdown.js'),
-        converter = new showdown.Converter();
+    var fs        = require('fs'),
+        showdown  = require('../../../dist/showdown.js'),
+        converter = new showdown.Converter(),
+        cases     = fs
+            .readdirSync('test/cases/')
+            .filter(filter())
+            .map(map('test/cases/')),
+        issues    = fs
+            .readdirSync('test/issues/')
+            .filter(filter())
+            .map(map('test/issues/'));
 
-    // Load test cases from disk
-    var cases = fs.readdirSync(dir).filter(function (file) {
-        var ext = file.slice(-3);
-        return (ext === '.md');
-    }).map(function (file) {
-
-        var name = file.replace('.md', ''),
-            htmlPath = dir + name + '.html',
-            html = fs.readFileSync(htmlPath, 'utf8'),
-            mdPath = dir + name + '.md',
-            md = fs.readFileSync(mdPath, 'utf8');
-
-        return {
-            name: name,
-            input: md,
-            expected: html
-        };
+    //Tests
+    describe('Converter.makeHtml() simple testcases', function () {
+        for (var i = 0; i < cases.length; ++i) {
+            it(cases[i].name, assertion(cases[i]));
+        }
     });
+
+    describe('Converter.makeHtml() issues testcase', function () {
+        for (var i = 0; i < issues.length; ++i) {
+            it(issues[i].name, assertion(issues[i]));
+        }
+    });
+
+
+    function filter() {
+        return function(file) {
+            var ext = file.slice(-3);
+            return (ext === '.md');
+        };
+    }
+
+    function map(dir) {
+        return function(file) {
+            var name = file.replace('.md', ''),
+                htmlPath = dir + name + '.html',
+                html = fs.readFileSync(htmlPath, 'utf8'),
+                mdPath = dir + name + '.md',
+                md = fs.readFileSync(mdPath, 'utf8');
+
+            return {
+                name: name,
+                input: md,
+                expected: html
+            };
+        };
+    }
 
     //Normalize input/output
     function normalize(testCase) {
@@ -69,12 +94,4 @@
             testCase.actual.should.equal(testCase.expected);
         };
     }
-
-    //Tests
-    describe('Converter.makeHtml()', function () {
-        for (var i = 0; i < cases.length; ++i) {
-            it(cases[i].name, assertion(cases[i]));
-        }
-    });
-
 })();

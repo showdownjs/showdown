@@ -32,12 +32,18 @@ module.exports = function (grunt) {
             files: ['Gruntfile.js', 'src/**/*.js']
         },
         simplemocha: {
-            all: {
-                src: 'test/**/*.js',
+            node: {
+                src: 'test/node/**/*.js',
                 options: {
                     globals: ['should'],
                     timeout: 3000,
                     ignoreLeaks: false,
+                    reporter: 'spec'
+                }
+            },
+            browser: {
+                src: 'test/browser/**/*.js',
+                options: {
                     reporter: 'spec'
                 }
             }

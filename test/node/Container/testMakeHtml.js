@@ -10,7 +10,7 @@
 
     var fs = require('fs'),
         dir = 'test/cases/',
-        showdown = require('../../dist/showdown.js'),
+        showdown = require('../../../dist/showdown.js'),
         converter = new showdown.Converter();
 
     // Load test cases from disk

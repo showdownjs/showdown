@@ -20,6 +20,7 @@ module.exports = function (grunt) {
         },
         uglify: {
             options: {
+                sourceMap: true,
                 banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
             },
             dist: {
@@ -55,21 +56,9 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks('grunt-contrib-jshint');
     grunt.loadNpmTasks('grunt-simple-mocha');
 
-    // test
-    /*
-    grunt.registerTask('sourceMapsSupport', function() {
-        'use strict';
-
-        //# sourceMappingURL=path/to/source.map
-        sourceMapSupport.install();
-    });
-    */
-    grunt.registerTask('lint', ['jshint']);
     grunt.registerTask('test', ['jshint', 'concat', 'simplemocha']);
     grunt.registerTask('test-without-building', ['simplemocha']);
-
-    // build with uglify
-    grunt.registerTask('build', ['concat', 'uglify']);
+    grunt.registerTask('build', ['jshint', 'concat', 'test', 'uglify']);
 
     // Default task(s).
     grunt.registerTask('default', []);

@@ -6,7 +6,8 @@
 var showdown = {},
     parsers = {},
     globalOptions = {
-        omitExtraWLInCodeBlocks: false
+        omitExtraWLInCodeBlocks: false,
+        allowBlockIndents: true
     };
 
 ///////////////////////////////////////////////////////////////////////////

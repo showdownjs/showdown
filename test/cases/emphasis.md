@@ -1,8 +1,14 @@
+*single asterisks*
 
-*important*
+_single underscores_
 
-_important_
+**double asterisks**
 
-this mid*important*sentence
+__double underscores__
 
-\*not important\*
+text *with italic sentence* in middle
+
+text __with bold sentence__ in middle
+
+text with __bold text that
+spans across multiple__ lines

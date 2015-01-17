@@ -212,12 +212,12 @@ New test cases can easily be added.  Create a markdown file (ending in `.md`) wh
 
 ## Creating Markdown Extensions
 
-A showdown extension is simply a function which returns an array of extensions.  Each single extension can be one of two types:
+A showdown extension is simply a function which returns an array of language extensions and/or output modifiers:
 
-  * Language Extension -- Language extensions are ones that that add new markdown syntax to showdown.  For example, say you wanted `^^youtube http://www.youtube.com/watch?v=oHg5SJYRHA0` to automatically render as an embedded YouTube video, that would be a language extension.
-  * Output Modifiers -- After showdown has run, and generated HTML, an output modifier would change that HTML.  For example, say you wanted to change `<div class="header">` to be `<header>`, that would be an output modifier.
+  * Language Extension -- Language extensions are specified with the `lang` type, and add new markdown syntax to showdown.  For example, say you wanted `^^youtube http://www.youtube.com/watch?v=oHg5SJYRHA0` to automatically render as an embedded YouTube video, that would be a language extension.
+  * Output Modifiers -- Output Modifiers are specified with the `output` type. After showdown has generated HTML, an output modifier can make changes to the generated HTML.  For example, if you wanted to change `<div class="header">` to be `<header>`, you could implement an output modifier.
 
-Each extension can provide two combinations of interfaces for showdown.
+Each showdown extension can provide language extensions and/or output modifiers.
 
 ### Regex/Replace
 

@@ -1,4 +1,4 @@
-;/*! showdown 16-01-2015 */
+;/*! showdown 18-01-2015 */
 (function(){
  'use strict';
 /**
@@ -9,7 +9,8 @@
 var showdown = {},
     parsers = {},
     globalOptions = {
-        omitExtraWLInCodeBlocks: false
+        omitExtraWLInCodeBlocks: false,
+        prefixHeaderId: false
     };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -32,8 +33,15 @@ showdown.extensions = {};
 //Public methods
 showdown.setOption = function (key, value) {
     globalOptions[key] = value;
-
     return this;
+};
+
+showdown.getOption = function (key) {
+    return globalOptions[key];
+};
+
+showdown.getOptions = function () {
+    return globalOptions;
 };
 
 /**
@@ -100,7 +108,8 @@ showdown.Converter = function (converterOptions) {
             gHtmlBlocks: [],
             gUrls: {},
             gTitles: {},
-            gListLevel: 0
+            gListLevel: 0,
+            hashLinkCounts: {}
         };
 
         // attacklab: Replace ~ with ~T
@@ -1028,6 +1037,8 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 showdown.subParser('headers', function (text, options, globals) {
     'use strict';
 
+    var prefixHeader = options.prefixHeaderId;
+
     // Set text-style headers:
     //	Header 1
     //	========
@@ -1075,7 +1086,25 @@ showdown.subParser('headers', function (text, options, globals) {
         });
 
     function headerId(m) {
-        return m.replace(/[^\w]/g, '').toLowerCase();
+        var title,
+            escapedId = m.replace(/[^\w]/g, '').toLowerCase();
+
+        if (globals.hashLinkCounts[escapedId]) {
+            title = escapedId + '-' + (globals.hashLinkCounts[escapedId]++);
+        } else {
+            title = escapedId;
+            globals.hashLinkCounts[escapedId] = 1;
+        }
+
+        // Prefix id to prevent causing inadvertent pre-existing style matches.
+        if (prefixHeader === true) {
+            prefixHeader = 'section';
+        }
+
+        if (showdown.helper.isString(prefixHeader)) {
+            return prefixHeader + title;
+        }
+        return title;
     }
 
     return text;

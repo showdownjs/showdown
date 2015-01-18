@@ -6,7 +6,8 @@
 var showdown = {},
     parsers = {},
     globalOptions = {
-        omitExtraWLInCodeBlocks: false
+        omitExtraWLInCodeBlocks: false,
+        prefixHeaderId: false
     };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -29,8 +30,15 @@ showdown.extensions = {};
 //Public methods
 showdown.setOption = function (key, value) {
     globalOptions[key] = value;
-
     return this;
+};
+
+showdown.getOption = function (key) {
+    return globalOptions[key];
+};
+
+showdown.getOptions = function () {
+    return globalOptions;
 };
 
 /**
@@ -97,7 +105,8 @@ showdown.Converter = function (converterOptions) {
             gHtmlBlocks: [],
             gUrls: {},
             gTitles: {},
-            gListLevel: 0
+            gListLevel: 0,
+            hashLinkCounts: {}
         };
 
         // attacklab: Replace ~ with ~T

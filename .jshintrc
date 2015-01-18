@@ -14,7 +14,7 @@
   "quotmark": "single",
   "undef": false,
   "unused": true,
-  "strict": false,
+  "strict": true,
   "trailing": true,
   "smarttabs": true,
   "globals": {

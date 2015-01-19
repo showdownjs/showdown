@@ -16,7 +16,8 @@ showdown.subParser('detab', function (text) {
 
   // use the sentinel to anchor our regex so it doesn't explode
   text = text.replace(/~B(.+?)~A/g, function (wholeMatch, m1) {
-    var leadingText = m1, numSpaces = 4 - leadingText.length % 4;  // g_tab_width
+    var leadingText = m1,
+        numSpaces = 4 - leadingText.length % 4;  // g_tab_width
 
     // there *must* be a better way to do this:
     for (var i = 0; i < numSpaces; i++) {

@@ -9,9 +9,10 @@ if (typeof angular !== 'undefined' && typeof showdown !== 'undefined') {
   (function (module, showdown) {
     'use strict';
 
-    module.provider('$showdown', provider).directive('sdModelToHtml',
-                                                     ['$showdown', markdownToHtmlDirective]).filter('sdStripHtml',
-                                                                                                    stripHtmlFilter);
+    module
+      .provider('$showdown', provider)
+      .directive('sdModelToHtml',['$showdown', markdownToHtmlDirective])
+      .filter('sdStripHtml', stripHtmlFilter);
 
     /**
      * Angular Provider

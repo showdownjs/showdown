@@ -109,7 +109,8 @@ showdown.subParser('lists', function (text, options, globals) {
 
   if (globals.gListLevel) {
     text = text.replace(wholeList, function (wholeMatch, m1, m2) {
-      var list = m1, listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+      var list = m1,
+          listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
 
       // Turn double returns into triple returns, so that we can make a
       // paragraph for the last item in a list, if necessary:
@@ -132,8 +133,9 @@ showdown.subParser('lists', function (text, options, globals) {
 
       // Turn double returns into triple returns, so that we can make a
       // paragraph for the last item in a list, if necessary:
-      var list = m2.replace(/\n{2,}/g,
-                            '\n\n\n'), listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol', result = processListItems(list);
+      var list = m2.replace(/\n{2,}/g, '\n\n\n'),
+          listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol',
+          result = processListItems(list);
 
       return m1 + '<' + listType + '>\n' + result + '</' + listType + '>\n';
     });

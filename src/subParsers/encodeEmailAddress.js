@@ -23,9 +23,11 @@ showdown.subParser('encodeEmailAddress', function (addr) {
   var encode = [
     function (ch) {
       return '&#' + ch.charCodeAt(0) + ';';
-    }, function (ch) {
+    },
+    function (ch) {
       return '&#x' + ch.charCodeAt(0).toString(16) + ';';
-    }, function (ch) {
+    },
+    function (ch) {
       return ch;
     }
   ];
@@ -51,5 +53,4 @@ showdown.subParser('encodeEmailAddress', function (addr) {
   addr = addr.replace(/">.+:/g, '">'); // strip the mailto: from the visible part
 
   return addr;
-
 });

@@ -29,5 +29,4 @@ showdown.subParser('encodeCode', function (text) {
   // ---
 
   return text;
-
 });

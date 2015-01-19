@@ -11,6 +11,7 @@ if (typeof module !== 'undefined' && module.exports) {
 // AMD Loader
 else if (typeof define === 'function' && define.amd) {
   define('showdown', function () {
+    'use strict';
     return showdown;
   });
 }

@@ -5,7 +5,7 @@
 showdown.subParser('autoLinks', function (text) {
   'use strict';
 
-  text = text.replace(/<((https?|ftp|dict):[^'">\s]+)>/gi, "<a href=\"$1\">$1</a>");
+  text = text.replace(/<((https?|ftp|dict):[^'">\s]+)>/gi, '<a href=\"$1\">$1</a>');
 
   // Email addresses: <address@domain.foo>
 
@@ -19,9 +19,10 @@ showdown.subParser('autoLinks', function (text) {
    [-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+
    )
    >
-   /gi, _DoAutoLinks_callback());
+   /gi);
    */
-  text = text.replace(/<(?:mailto:)?([-.\w]+\@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi, function (wholeMatch, m1) {
+  var pattern = /<(?:mailto:)?([-.\w]+\@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
+  text = text.replace(pattern, function (wholeMatch, m1) {
     var unescapedStr = showdown.subParser('unescapeSpecialChars')(m1);
     return showdown.subParser('encodeEmailAddress')(unescapedStr);
   });

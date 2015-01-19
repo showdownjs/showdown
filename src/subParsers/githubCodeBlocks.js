@@ -18,7 +18,9 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
   text += '~0';
 
   text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, m1, m2) {
-    var language = m1, codeblock = m2, end = '\n';
+    var language = m1,
+        codeblock = m2,
+        end = '\n';
 
     if (options.omitExtraWLInCodeBlocks) {
       end = '';

@@ -24,20 +24,20 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '~0';
 
-  text = text.replace(/(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g,
-                      function (wholeMatch, m1, m2) {
-                        var codeblock = m1, nextChar = m2;
+  var pattern = /(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g;
+  text = text.replace(pattern, function (wholeMatch, m1, m2) {
+    var codeblock = m1, nextChar = m2;
 
-                        codeblock = showdown.subParser('outdent')(codeblock);
-                        codeblock = showdown.subParser('encodeCode')(codeblock);
-                        codeblock = showdown.subParser('detab')(codeblock);
-                        codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
-                        codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing whitespace
+    codeblock = showdown.subParser('outdent')(codeblock);
+    codeblock = showdown.subParser('encodeCode')(codeblock);
+    codeblock = showdown.subParser('detab')(codeblock);
+    codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
+    codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing whitespace
 
-                        codeblock = '<pre><code>' + codeblock + '\n</code></pre>';
+    codeblock = '<pre><code>' + codeblock + '\n</code></pre>';
 
-                        return showdown.subParser('hashBlock')(codeblock, options, globals) + nextChar;
-                      });
+    return showdown.subParser('hashBlock')(codeblock, options, globals) + nextChar;
+  });
 
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');

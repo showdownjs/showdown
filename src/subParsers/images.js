@@ -11,7 +11,12 @@ showdown.subParser('images', function (text, options, globals) {
   var writeImageTag = function (wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
 
     wholeMatch = m1;
-    var altText = m2, linkId = m3.toLowerCase(), url = m4, title = m7, gUrls = globals.gUrls, gTitles = globals.gTitles;
+    var altText = m2,
+        linkId = m3.toLowerCase(),
+        url = m4,
+        title = m7,
+        gUrls = globals.gUrls,
+        gTitles = globals.gTitles;
 
     if (!title) {
       title = '';

@@ -13,34 +13,30 @@
  * ```
  */
 showdown.subParser('githubCodeBlocks', function (text, options, globals) {
-    'use strict';
+  'use strict';
 
-    text += '~0';
+  text += '~0';
 
-    text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g,
-        function (wholeMatch, m1, m2) {
-            var language = m1,
-                codeblock = m2,
-                end = '\n';
+  text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, m1, m2) {
+    var language = m1, codeblock = m2, end = '\n';
 
-            if (options.omitExtraWLInCodeBlocks) {
-                end = '';
-            }
+    if (options.omitExtraWLInCodeBlocks) {
+      end = '';
+    }
 
-            codeblock = showdown.subParser('encodeCode')(codeblock);
-            codeblock = showdown.subParser('detab')(codeblock);
-            codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
-            codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing whitespace
+    codeblock = showdown.subParser('encodeCode')(codeblock);
+    codeblock = showdown.subParser('detab')(codeblock);
+    codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
+    codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing whitespace
 
-            codeblock = '<pre><code' + (language ? ' class="' + language + '"' : '') + '>' + codeblock + end + '</code></pre>';
+    codeblock = '<pre><code' + (language ? ' class="' + language + '"' : '') + '>' + codeblock + end + '</code></pre>';
 
-            return showdown.subParser('hashBlock')(codeblock, options, globals);
-        }
-    );
+    return showdown.subParser('hashBlock')(codeblock, options, globals);
+  });
 
-    // attacklab: strip sentinel
-    text = text.replace(/~0/, '');
+  // attacklab: strip sentinel
+  text = text.replace(/~0/, '');
 
-    return text;
+  return text;
 
 });

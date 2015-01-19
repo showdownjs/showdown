@@ -28,30 +28,29 @@
  *         ... type <code>`bar`</code> ...
  */
 showdown.subParser('codeSpans', function (text) {
-    'use strict';
+  'use strict';
 
-    /*
-     text = text.replace(/
-     (^|[^\\])					// Character before opening ` can't be a backslash
-     (`+)						// $2 = Opening run of `
-     (							// $3 = The code block
-     [^\r]*?
-     [^`]					// attacklab: work around lack of lookbehind
-     )
-     \2							// Matching closer
-     (?!`)
-     /gm, function(){...});
-     */
+  /*
+   text = text.replace(/
+   (^|[^\\])					// Character before opening ` can't be a backslash
+   (`+)						// $2 = Opening run of `
+   (							// $3 = The code block
+   [^\r]*?
+   [^`]					// attacklab: work around lack of lookbehind
+   )
+   \2							// Matching closer
+   (?!`)
+   /gm, function(){...});
+   */
 
-    text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
-        function (wholeMatch, m1, m2, m3) {
-            var c = m3;
-            c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
-            c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
-            c = showdown.subParser('encodeCode')(c);
-            return m1 + '<code>' + c + '</code>';
-        });
+  text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm, function (wholeMatch, m1, m2, m3) {
+    var c = m3;
+    c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
+    c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
+    c = showdown.subParser('encodeCode')(c);
+    return m1 + '<code>' + c + '</code>';
+  });
 
-    return text;
+  return text;
 
 });

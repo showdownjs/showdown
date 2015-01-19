@@ -9,6 +9,6 @@
  * contorted like /[ \t]*\n+/
  */
 showdown.subParser('stripBlankLines', function (text) {
-    'use strict';
-    return text.replace(/^[ \t]+$/mg, '');
+  'use strict';
+  return text.replace(/^[ \t]+$/mg, '');
 });

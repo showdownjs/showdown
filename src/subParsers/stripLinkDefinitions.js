@@ -28,30 +28,30 @@
  *
  */
 showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
-    'use strict';
+  'use strict';
 
-    // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
-    text += '~0';
+  // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
+  text += '~0';
 
-    text = text.replace(/^[ ]{0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|(?=~0))/gm,
-        function (wholeMatch, m1, m2, m3, m4) {
-            m1 = m1.toLowerCase();
-            globals.gUrls[m1] = showdown.subParser('encodeAmpsAndAngles')(m2);  // Link IDs are case-insensitive
-            if (m3) {
-                // Oops, found blank lines, so it's not a title.
-                // Put back the parenthetical statement we stole.
-                return m3 + m4;
-            } else if (m4) {
-                globals.gTitles[m1] = m4.replace(/"/g, '&quot;');
-            }
+  text = text.replace(/^[ ]{0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|(?=~0))/gm,
+                      function (wholeMatch, m1, m2, m3, m4) {
+                        m1 = m1.toLowerCase();
+                        globals.gUrls[m1] = showdown.subParser('encodeAmpsAndAngles')(m2);  // Link IDs are
+                                                                                            // case-insensitive
+                        if (m3) {
+                          // Oops, found blank lines, so it's not a title.
+                          // Put back the parenthetical statement we stole.
+                          return m3 + m4;
+                        } else if (m4) {
+                          globals.gTitles[m1] = m4.replace(/"/g, '&quot;');
+                        }
 
-            // Completely remove the definition from the text
-            return '';
-        }
-    );
+                        // Completely remove the definition from the text
+                        return '';
+                      });
 
-    // attacklab: strip sentinel
-    text = text.replace(/~0/, '');
+  // attacklab: strip sentinel
+  text = text.replace(/~0/, '');
 
-    return text;
+  return text;
 });

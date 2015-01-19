@@ -3,50 +3,56 @@
  */
 
 function isString(a) {
-    return (typeof a === 'string' || a instanceof String);
+  'use strict';
+  return (typeof a === 'string' || a instanceof String);
 }
 
 function forEach(obj, callback) {
-    if (typeof obj.forEach === 'function') {
-        obj.forEach(callback);
-    } else {
-        var i, len = obj.length;
-        for (i = 0; i < len; i++) {
-            callback(obj[i], i, obj);
-        }
+  'use strict';
+  if (typeof obj.forEach === 'function') {
+    obj.forEach(callback);
+  } else {
+    var i, len = obj.length;
+    for (i = 0; i < len; i++) {
+      callback(obj[i], i, obj);
     }
+  }
 }
 
 function isArray(a) {
-    return a.constructor === Array;
+  'use strict';
+  return a.constructor === Array;
 }
 
 function isUndefined(value) {
-    return typeof value === 'undefined';
+  'use strict';
+  return typeof value === 'undefined';
 }
 
 var escapeCharactersCallback = function (wholeMatch, m1) {
-    var charCodeToEscape = m1.charCodeAt(0);
-    return '~E' + charCodeToEscape + 'E';
+  'use strict';
+  var charCodeToEscape = m1.charCodeAt(0);
+  return '~E' + charCodeToEscape + 'E';
 };
 
 var escapeCharacters = function (text, charsToEscape, afterBackslash) {
-    // First we have to escape the escape characters so that
-    // we can build a character class out of them
-    var regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
+  'use strict';
+  // First we have to escape the escape characters so that
+  // we can build a character class out of them
+  var regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
 
-    if (afterBackslash) {
-        regexString = '\\\\' + regexString;
-    }
+  if (afterBackslash) {
+    regexString = '\\\\' + regexString;
+  }
 
-    var regex = new RegExp(regexString, 'g');
-    text = text.replace(regex, escapeCharactersCallback);
+  var regex = new RegExp(regexString, 'g');
+  text = text.replace(regex, escapeCharactersCallback);
 
-    return text;
+  return text;
 };
 
 if (!showdown.hasOwnProperty('helper')) {
-    showdown.helper = {};
+  showdown.helper = {};
 }
 
 /**

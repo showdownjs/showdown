@@ -159,15 +159,29 @@ showdown.Converter = function (converterOptions) {
 };
 
 /**
- * Created by Estevao on 11-01-2015.
+ * showdownjs helper functions
  */
 
-function isString(a) {
-  'use strict';
-  return (typeof a === 'string' || a instanceof String);
+if (!showdown.hasOwnProperty('helper')) {
+  showdown.helper = {};
 }
 
-function forEach(obj, callback) {
+/**
+ * Check if var is string
+ * @param {string} a
+ * @returns {boolean}
+ */
+showdown.helper.isString = function isString(a) {
+  'use strict';
+  return (typeof a === 'string' || a instanceof String);
+};
+
+/**
+ * ForEach helper function
+ * @param {*} obj
+ * @param {function} callback
+ */
+showdown.helper.forEach = function forEach(obj, callback) {
   'use strict';
   if (typeof obj.forEach === 'function') {
     obj.forEach(callback);
@@ -177,64 +191,17 @@ function forEach(obj, callback) {
       callback(obj[i], i, obj);
     }
   }
-}
-
-function isArray(a) {
-  'use strict';
-  return a.constructor === Array;
-}
-
-function isUndefined(value) {
-  'use strict';
-  return typeof value === 'undefined';
-}
-
-var escapeCharactersCallback = function (wholeMatch, m1) {
-  'use strict';
-  var charCodeToEscape = m1.charCodeAt(0);
-  return '~E' + charCodeToEscape + 'E';
 };
-
-var escapeCharacters = function (text, charsToEscape, afterBackslash) {
-  'use strict';
-  // First we have to escape the escape characters so that
-  // we can build a character class out of them
-  var regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
-
-  if (afterBackslash) {
-    regexString = '\\\\' + regexString;
-  }
-
-  var regex = new RegExp(regexString, 'g');
-  text = text.replace(regex, escapeCharactersCallback);
-
-  return text;
-};
-
-if (!showdown.hasOwnProperty('helper')) {
-  showdown.helper = {};
-}
-
-/**
- * isString helper function
- * @param a
- * @returns {boolean}
- */
-showdown.helper.isString = isString;
-
-/**
- * ForEach helper function
- * @param {*} obj
- * @param callback
- */
-showdown.helper.forEach = forEach;
 
 /**
  * isArray helper function
  * @param {*} a
  * @returns {boolean}
  */
-showdown.helper.isArray = isArray;
+showdown.helper.isArray = function isArray(a) {
+  'use strict';
+  return a.constructor === Array;
+};
 
 /**
  * Check if value is undefined
@@ -243,7 +210,16 @@ showdown.helper.isArray = isArray;
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is `undefined`, else `false`.
  */
-showdown.helper.isUndefined = isUndefined;
+showdown.helper.isUndefined = function isUndefined(value) {
+  'use strict';
+  return typeof value === 'undefined';
+};
+
+function escapeCharactersCallback(wholeMatch, m1) {
+  'use strict';
+  var charCodeToEscape = m1.charCodeAt(0);
+  return '~E' + charCodeToEscape + 'E';
+}
 
 /**
  * Callback used to escape characters when passing through String.replace
@@ -261,11 +237,21 @@ showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
  * @param {boolean} afterBackslash
  * @returns {XML|string|void|*}
  */
-showdown.helper.escapeCharacters = escapeCharacters;
+showdown.helper.escapeCharacters = function escapeCharacters(text, charsToEscape, afterBackslash) {
+  'use strict';
+  // First we have to escape the escape characters so that
+  // we can build a character class out of them
+  var regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
 
-/**
- * Created by Estevao on 11-01-2015.
- */
+  if (afterBackslash) {
+    regexString = '\\\\' + regexString;
+  }
+
+  var regex = new RegExp(regexString, 'g');
+  text = text.replace(regex, escapeCharactersCallback);
+
+  return text;
+};
 
 /**
  * Turn Markdown link shortcuts into XHTML <a> tags.
@@ -305,12 +291,12 @@ showdown.subParser('anchors', function (text, config, globals) {
       }
     }
 
-    url = showdown.helper.escapeCharacters(url, '*_');
+    url = showdown.helper.escapeCharacters(url, '*_', false);
     var result = '<a href="' + url + '"';
 
     if (title !== '' && title !== null) {
       title = title.replace(/"/g, '&quot;');
-      title = showdown.helper.escapeCharacters(title, '*_');
+      title = showdown.helper.escapeCharacters(title, '*_', false);
       result += ' title="' + title + '"';
     }
 
@@ -386,11 +372,11 @@ showdown.subParser('anchors', function (text, config, globals) {
 
   /*
    text = text.replace(/
-   (		 					// wrap whole match in $1
+   (                // wrap whole match in $1
    \[
-   ([^\[\]]+)				// link text = $2; can't contain '[' or ']'
+   ([^\[\]]+)       // link text = $2; can't contain '[' or ']'
    \]
-   )()()()()()					// pad rest of backreferences
+   )()()()()()      // pad rest of backreferences
    /g, writeAnchorTag);
    */
   text = text.replace(/(\[([^\[\]]+)\])()()()()()/g, writeAnchorTag);
@@ -398,10 +384,6 @@ showdown.subParser('anchors', function (text, config, globals) {
   return text;
 
 });
-
-/**
- * Created by Estevao on 12-01-2015.
- */
 
 showdown.subParser('autoLinks', function (text) {
   'use strict';
@@ -433,10 +415,6 @@ showdown.subParser('autoLinks', function (text) {
 });
 
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * These are all the transformations that form block-level
  * tags like paragraphs, headers, and list items.
  */
@@ -463,12 +441,8 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = showdown.subParser('paragraphs')(text, options, globals);
 
   return text;
+
 });
-
-
-/**
- * Created by Estevao on 12-01-2015.
- */
 
 showdown.subParser('blockQuotes', function (text, options, globals) {
   'use strict';
@@ -515,10 +489,6 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
 });
 
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  * Process Markdown `<pre><code>` blocks.
  */
 showdown.subParser('codeBlocks', function (text, options, globals) {
@@ -560,10 +530,6 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
 
   return text;
 });
-
-/**
- * Created by Estevao on 11-01-2015.
- */
 
 /**
  *
@@ -619,10 +585,6 @@ showdown.subParser('codeSpans', function (text) {
 });
 
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Convert all tabs to spaces
  */
 showdown.subParser('detab', function (text) {
@@ -656,10 +618,6 @@ showdown.subParser('detab', function (text) {
 });
 
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Smart processing for ampersands and angle brackets that need to be encoded.
  */
 showdown.subParser('encodeAmpsAndAngles', function (text) {
@@ -673,10 +631,6 @@ showdown.subParser('encodeAmpsAndAngles', function (text) {
 
   return text;
 });
-
-/**
- * Created by Estevao on 11-01-2015.
- */
 
 /**
  * Returns the string, with after processing the following backslash escape sequences.
@@ -695,10 +649,6 @@ showdown.subParser('encodeBackslashEscapes', function (text) {
   text = text.replace(/\\([`*_{}\[\]()>#+-.!])/g, showdown.helper.escapeCharactersCallback);
   return text;
 });
-
-/**
- * Created by Estevao on 11-01-2015.
- */
 
 /**
  * Encode/escape certain characters inside Markdown code runs.
@@ -728,10 +678,6 @@ showdown.subParser('encodeCode', function (text) {
 
   return text;
 });
-
-/**
- * Created by Estevao on 12-01-2015.
- */
 
 /**
  *  Input: an email address, e.g. "foo@example.com"
@@ -787,10 +733,6 @@ showdown.subParser('encodeEmailAddress', function (addr) {
 });
 
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Within tags -- meaning between < and > -- encode [\ ` * _] so they
  * don't conflict with their use in Markdown for code, italics and strong.
  */
@@ -803,16 +745,12 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text) {
 
   text = text.replace(regex, function (wholeMatch) {
     var tag = wholeMatch.replace(/(.)<\/?code>(?=.)/g, '$1`');
-    tag = showdown.helper.escapeCharacters(tag, '\\`*_');
+    tag = showdown.helper.escapeCharacters(tag, '\\`*_', false);
     return tag;
   });
 
   return text;
 });
-
-/**
- * Created by Estevao on 11-01-2015.
- */
 
 /**
  * Handle github codeblocks prior to running HashHTML so that
@@ -855,19 +793,11 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
 
 });
 
-/**
- * Created by Estevao on 11-01-2015.
- */
-
 showdown.subParser('hashBlock', function (text, options, globals) {
   'use strict';
   text = text.replace(/(^\n+|\n+$)/g, '');
   return '\n\n~K' + (globals.gHtmlBlocks.push(text) - 1) + 'K\n\n';
 });
-
-/**
- * Created by Estevao on 11-01-2015.
- */
 
 showdown.subParser('hashElement', function (text, options, globals) {
   'use strict';
@@ -888,10 +818,6 @@ showdown.subParser('hashElement', function (text, options, globals) {
     return blockText;
   };
 });
-
-/**
- * Created by Estevao on 11-01-2015.
- */
 
 showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
   'use strict';
@@ -1027,10 +953,6 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 
 });
 
-/**
- * Created by Estevao on 11-01-2015.
- */
-
 showdown.subParser('headers', function (text, options, globals) {
   'use strict';
 
@@ -1106,10 +1028,6 @@ showdown.subParser('headers', function (text, options, globals) {
 });
 
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Turn Markdown image shortcuts into <img> tags.
  */
 showdown.subParser('images', function (text, options, globals) {
@@ -1147,7 +1065,7 @@ showdown.subParser('images', function (text, options, globals) {
     }
 
     altText = altText.replace(/"/g, '&quot;');
-    url = showdown.helper.escapeCharacters(url, '*_');
+    url = showdown.helper.escapeCharacters(url, '*_', false);
     var result = '<img src="' + url + '" alt="' + altText + '"';
 
     // attacklab: Markdown.pl adds empty title attributes to images.
@@ -1155,7 +1073,7 @@ showdown.subParser('images', function (text, options, globals) {
 
     //if (title != "") {
     title = title.replace(/"/g, '&quot;');
-    title = escapeCharacters(title, '*_');
+    title = showdown.helper.escapeCharacters(title, '*_', false);
     result += ' title="' + title + '"';
     //}
 
@@ -1212,10 +1130,6 @@ showdown.subParser('images', function (text, options, globals) {
   return text;
 });
 
-/**
- * Created by Estevao on 12-01-2015.
- */
-
 showdown.subParser('italicsAndBold', function (text) {
   'use strict';
   // <strong> must go first:
@@ -1227,10 +1141,6 @@ showdown.subParser('italicsAndBold', function (text) {
 });
 
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  * Form HTML ordered (numbered) and unordered (bulleted) lists.
  */
 showdown.subParser('lists', function (text, options, globals) {
@@ -1239,7 +1149,7 @@ showdown.subParser('lists', function (text, options, globals) {
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
-   * @param listStr
+   * @param {string} listStr
    * @returns {string|*}
    */
   var processListItems = function (listStr) {
@@ -1376,10 +1286,6 @@ showdown.subParser('lists', function (text, options, globals) {
 });
 
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  * Remove one level of line-leading tabs or spaces
  */
 showdown.subParser('outdent', function (text) {
@@ -1396,10 +1302,6 @@ showdown.subParser('outdent', function (text) {
 });
 
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  *
  */
 showdown.subParser('paragraphs', function (text, options, globals) {
@@ -1409,10 +1311,10 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
 
-  var grafs = text.split(/\n{2,}/g), grafsOut = [];
+  var grafs = text.split(/\n{2,}/g),
+      grafsOut = [],
+      end = grafs.length; // Wrap <p> tags
 
-  /** Wrap <p> tags. */
-  var end = grafs.length;
   for (var i = 0; i < end; i++) {
     var str = grafs[i];
 
@@ -1440,10 +1342,6 @@ showdown.subParser('paragraphs', function (text, options, globals) {
 
   return grafsOut.join('\n\n');
 });
-
-/**
- * Created by Estevao on 11-01-2015.
- */
 
 /**
  * These are all the transformations that occur *within* block-level
@@ -1476,10 +1374,6 @@ showdown.subParser('spanGamut', function (text, options, globals) {
 });
 
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Strip any lines consisting only of spaces and tabs.
  * This makes subsequent regexs easier to write, because we can
  * match consecutive blank lines with /\n+/ instead of something
@@ -1489,10 +1383,6 @@ showdown.subParser('stripBlankLines', function (text) {
   'use strict';
   return text.replace(/^[ \t]+$/mg, '');
 });
-
-/**
- * Created by Estevao on 11-01-2015.
- */
 
 /**
  * Strips link definitions from text, stores the URLs and titles in
@@ -1550,10 +1440,6 @@ showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
 });
 
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  * Swap back in all the special characters we've hidden.
  */
 showdown.subParser('unescapeSpecialChars', function (text) {
@@ -1566,25 +1452,21 @@ showdown.subParser('unescapeSpecialChars', function (text) {
   return text;
 });
 
-/**
- * Created by Estevao on 15-01-2015.
- */
-
 var root = this;
 
 // CommonJS/nodeJS Loader
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = showdown;
-}
+
 // AMD Loader
-else if (typeof define === 'function' && define.amd) {
+} else if (typeof define === 'function' && define.amd) {
   define('showdown', function () {
     'use strict';
     return showdown;
   });
-}
+
 // Regular Browser loader
-else {
+} else {
   root.showdown = showdown;
 }
 }).call(this)

@@ -55,17 +55,19 @@ showdown.helper.isUndefined = function isUndefined(value) {
   return typeof value === 'undefined';
 };
 
+function escapeCharactersCallback(wholeMatch, m1) {
+  'use strict';
+  var charCodeToEscape = m1.charCodeAt(0);
+  return '~E' + charCodeToEscape + 'E';
+}
+
 /**
  * Callback used to escape characters when passing through String.replace
  * @param {string} wholeMatch
  * @param {string} m1
  * @returns {string}
  */
-showdown.helper.escapeCharactersCallback = function escapeCharactersCallback(wholeMatch, m1) {
-  'use strict';
-  var charCodeToEscape = m1.charCodeAt(0);
-  return '~E' + charCodeToEscape + 'E';
-};
+showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
 
 /**
  * Escape characters in a string

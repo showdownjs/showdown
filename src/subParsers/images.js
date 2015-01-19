@@ -44,7 +44,7 @@ showdown.subParser('images', function (text, options, globals) {
 
     //if (title != "") {
     title = title.replace(/"/g, '&quot;');
-    title = escapeCharacters(title, '*_');
+    title = showdown.helper.escapeCharacters(title, '*_', false);
     result += ' title="' + title + '"';
     //}
 

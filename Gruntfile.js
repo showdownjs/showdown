@@ -51,6 +51,9 @@ module.exports = function (grunt) {
         ]
       }
     },
+    changelog: {
+      options: {}
+    },
     simplemocha: {
       node: {
         src: 'test/node/**/*.js',
@@ -77,6 +80,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-simple-mocha');
   grunt.loadNpmTasks('grunt-jscs');
+  grunt.loadNpmTasks('grunt-conventional-changelog');
 
   grunt.registerTask('lint', ['jshint', 'jscs']);
   grunt.registerTask('test', ['lint', 'concat', 'simplemocha']);

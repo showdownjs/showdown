@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Turn Markdown link shortcuts into XHTML <a> tags.
  */
 showdown.subParser('anchors', function (text, config, globals) {
@@ -40,12 +36,12 @@ showdown.subParser('anchors', function (text, config, globals) {
       }
     }
 
-    url = showdown.helper.escapeCharacters(url, '*_');
+    url = showdown.helper.escapeCharacters(url, '*_', false);
     var result = '<a href="' + url + '"';
 
     if (title !== '' && title !== null) {
       title = title.replace(/"/g, '&quot;');
-      title = showdown.helper.escapeCharacters(title, '*_');
+      title = showdown.helper.escapeCharacters(title, '*_', false);
       result += ' title="' + title + '"';
     }
 
@@ -121,11 +117,11 @@ showdown.subParser('anchors', function (text, config, globals) {
 
   /*
    text = text.replace(/
-   (		 					// wrap whole match in $1
+   (                // wrap whole match in $1
    \[
-   ([^\[\]]+)				// link text = $2; can't contain '[' or ']'
+   ([^\[\]]+)       // link text = $2; can't contain '[' or ']'
    \]
-   )()()()()()					// pad rest of backreferences
+   )()()()()()      // pad rest of backreferences
    /g, writeAnchorTag);
    */
   text = text.replace(/(\[([^\[\]]+)\])()()()()()/g, writeAnchorTag);

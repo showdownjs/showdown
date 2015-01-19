@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Handle github codeblocks prior to running HashHTML so that
  * HTML contained within the codeblock gets escaped properly
  * Example:

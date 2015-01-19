@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  *  Input: an email address, e.g. "foo@example.com"
  *
  *  Output: the email address as a mailto link, with each character

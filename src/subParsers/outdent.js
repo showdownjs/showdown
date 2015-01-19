@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  * Remove one level of line-leading tabs or spaces
  */
 showdown.subParser('outdent', function (text) {

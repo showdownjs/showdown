@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Within tags -- meaning between < and > -- encode [\ ` * _] so they
  * don't conflict with their use in Markdown for code, italics and strong.
  */
@@ -15,7 +11,7 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text) {
 
   text = text.replace(regex, function (wholeMatch) {
     var tag = wholeMatch.replace(/(.)<\/?code>(?=.)/g, '$1`');
-    tag = showdown.helper.escapeCharacters(tag, '\\`*_');
+    tag = showdown.helper.escapeCharacters(tag, '\\`*_', false);
     return tag;
   });
 

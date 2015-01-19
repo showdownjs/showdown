@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Returns the string, with after processing the following backslash escape sequences.
  *
  * attacklab: The polite way to do this is with the new escapeCharacters() function:

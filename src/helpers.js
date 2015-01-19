@@ -1,13 +1,27 @@
 /**
- * Created by Estevao on 11-01-2015.
+ * showdownjs helper functions
  */
 
-function isString(a) {
-  'use strict';
-  return (typeof a === 'string' || a instanceof String);
+if (!showdown.hasOwnProperty('helper')) {
+  showdown.helper = {};
 }
 
-function forEach(obj, callback) {
+/**
+ * Check if var is string
+ * @param {string} a
+ * @returns {boolean}
+ */
+showdown.helper.isString = function isString(a) {
+  'use strict';
+  return (typeof a === 'string' || a instanceof String);
+};
+
+/**
+ * ForEach helper function
+ * @param {*} obj
+ * @param {function} callback
+ */
+showdown.helper.forEach = function forEach(obj, callback) {
   'use strict';
   if (typeof obj.forEach === 'function') {
     obj.forEach(callback);
@@ -17,25 +31,51 @@ function forEach(obj, callback) {
       callback(obj[i], i, obj);
     }
   }
-}
+};
 
-function isArray(a) {
+/**
+ * isArray helper function
+ * @param {*} a
+ * @returns {boolean}
+ */
+showdown.helper.isArray = function isArray(a) {
   'use strict';
   return a.constructor === Array;
-}
+};
 
-function isUndefined(value) {
+/**
+ * Check if value is undefined
+ *
+ * @static
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is `undefined`, else `false`.
+ */
+showdown.helper.isUndefined = function isUndefined(value) {
   'use strict';
   return typeof value === 'undefined';
-}
+};
 
-var escapeCharactersCallback = function (wholeMatch, m1) {
+/**
+ * Callback used to escape characters when passing through String.replace
+ * @param {string} wholeMatch
+ * @param {string} m1
+ * @returns {string}
+ */
+showdown.helper.escapeCharactersCallback = function escapeCharactersCallback(wholeMatch, m1) {
   'use strict';
   var charCodeToEscape = m1.charCodeAt(0);
   return '~E' + charCodeToEscape + 'E';
 };
 
-var escapeCharacters = function (text, charsToEscape, afterBackslash) {
+/**
+ * Escape characters in a string
+ *
+ * @param {string} text
+ * @param {string} charsToEscape
+ * @param {boolean} afterBackslash
+ * @returns {XML|string|void|*}
+ */
+showdown.helper.escapeCharacters = function escapeCharacters(text, charsToEscape, afterBackslash) {
   'use strict';
   // First we have to escape the escape characters so that
   // we can build a character class out of them
@@ -50,55 +90,3 @@ var escapeCharacters = function (text, charsToEscape, afterBackslash) {
 
   return text;
 };
-
-if (!showdown.hasOwnProperty('helper')) {
-  showdown.helper = {};
-}
-
-/**
- * isString helper function
- * @param a
- * @returns {boolean}
- */
-showdown.helper.isString = isString;
-
-/**
- * ForEach helper function
- * @param {*} obj
- * @param callback
- */
-showdown.helper.forEach = forEach;
-
-/**
- * isArray helper function
- * @param {*} a
- * @returns {boolean}
- */
-showdown.helper.isArray = isArray;
-
-/**
- * Check if value is undefined
- *
- * @static
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is `undefined`, else `false`.
- */
-showdown.helper.isUndefined = isUndefined;
-
-/**
- * Callback used to escape characters when passing through String.replace
- * @param {string} wholeMatch
- * @param {string} m1
- * @returns {string}
- */
-showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
-
-/**
- * Escape characters in a string
- *
- * @param {string} text
- * @param {string} charsToEscape
- * @param {boolean} afterBackslash
- * @returns {XML|string|void|*}
- */
-showdown.helper.escapeCharacters = escapeCharacters;

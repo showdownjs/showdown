@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  * Process Markdown `<pre><code>` blocks.
  */
 showdown.subParser('codeBlocks', function (text, options, globals) {

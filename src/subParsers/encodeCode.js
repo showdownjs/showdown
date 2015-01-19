@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Encode/escape certain characters inside Markdown code runs.
  * The point is that in code, these characters are literals,
  * and lose their special Markdown meanings.

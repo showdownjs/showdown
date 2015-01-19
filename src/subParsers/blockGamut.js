@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * These are all the transformations that form block-level
  * tags like paragraphs, headers, and list items.
  */
@@ -29,5 +25,5 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = showdown.subParser('paragraphs')(text, options, globals);
 
   return text;
-});
 
+});

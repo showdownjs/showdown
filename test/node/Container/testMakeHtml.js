@@ -8,7 +8,15 @@
   require('source-map-support').install();
   require('chai').should();
 
-  var fs = require('fs'), showdown = require('../../../dist/showdown.js'), converter = new showdown.Converter(), cases = fs.readdirSync('test/cases/').filter(filter()).map(map('test/cases/')), issues = fs.readdirSync('test/issues/').filter(filter()).map(map('test/issues/'));
+  var fs = require('fs'),
+      showdown = require('../../../dist/showdown.js'),
+      converter = new showdown.Converter(),
+      cases = fs.readdirSync('test/cases/')
+        .filter(filter())
+        .map(map('test/cases/')),
+      issues = fs.readdirSync('test/issues/')
+        .filter(filter())
+        .map(map('test/issues/'));
 
   //Tests
   describe('Converter.makeHtml() simple testcases', function () {
@@ -23,7 +31,6 @@
     }
   });
 
-
   function filter() {
     return function (file) {
       var ext = file.slice(-3);
@@ -33,9 +40,11 @@
 
   function map(dir) {
     return function (file) {
-      var name = file.replace('.md', ''), htmlPath = dir + name + '.html', html = fs.readFileSync(htmlPath,
-                                                                                                  'utf8'), mdPath = dir + name + '.md', md = fs.readFileSync(mdPath,
-                                                                                                                                                             'utf8');
+      var name = file.replace('.md', ''),
+          htmlPath = dir + name + '.html',
+          html = fs.readFileSync(htmlPath, 'utf8'),
+          mdPath = dir + name + '.md',
+          md = fs.readFileSync(mdPath, 'utf8');
 
       return {
         name:     name,

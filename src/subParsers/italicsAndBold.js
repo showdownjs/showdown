@@ -1,7 +1,3 @@
-/**
- * Created by Estevao on 12-01-2015.
- */
-
 showdown.subParser('italicsAndBold', function (text) {
   'use strict';
   // <strong> must go first:

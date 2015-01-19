@@ -1,7 +1,3 @@
-/**
- * Created by Estevao on 11-01-2015.
- */
-
 showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
   'use strict';
 

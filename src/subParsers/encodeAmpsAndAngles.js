@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Smart processing for ampersands and angle brackets that need to be encoded.
  */
 showdown.subParser('encodeAmpsAndAngles', function (text) {

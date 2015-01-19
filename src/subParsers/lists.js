@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  * Form HTML ordered (numbered) and unordered (bulleted) lists.
  */
 showdown.subParser('lists', function (text, options, globals) {
@@ -11,7 +7,7 @@ showdown.subParser('lists', function (text, options, globals) {
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
-   * @param listStr
+   * @param {string} listStr
    * @returns {string|*}
    */
   var processListItems = function (listStr) {

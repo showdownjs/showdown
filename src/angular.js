@@ -1,8 +1,3 @@
-/**
- * Created by Tivie on 04-11-2014.
- */
-
-
 //Check if AngularJs and Showdown is defined and only load ng-Showdown if both are present
 if (typeof angular !== 'undefined' && typeof showdown !== 'undefined') {
 
@@ -11,7 +6,7 @@ if (typeof angular !== 'undefined' && typeof showdown !== 'undefined') {
 
     module
       .provider('$showdown', provider)
-      .directive('sdModelToHtml',['$showdown', markdownToHtmlDirective])
+      .directive('sdModelToHtml', ['$showdown', markdownToHtmlDirective])
       .filter('sdStripHtml', stripHtmlFilter);
 
     /**
@@ -104,7 +99,7 @@ if (typeof angular !== 'undefined' && typeof showdown !== 'undefined') {
      * Usage example:
      * <div sd-md-to-html-model="markdownText" ></div>
      *
-     * @param $showdown
+     * @param {showdown.Converter} $showdown
      * @returns {*}
      */
     function markdownToHtmlDirective($showdown) {

@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  *
  *   *  Backtick quotes are used for <code></code> spans.
  *

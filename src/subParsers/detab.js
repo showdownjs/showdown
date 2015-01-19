@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Convert all tabs to spaces
  */
 showdown.subParser('detab', function (text) {

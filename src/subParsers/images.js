@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Turn Markdown image shortcuts into <img> tags.
  */
 showdown.subParser('images', function (text, options, globals) {
@@ -40,7 +36,7 @@ showdown.subParser('images', function (text, options, globals) {
     }
 
     altText = altText.replace(/"/g, '&quot;');
-    url = showdown.helper.escapeCharacters(url, '*_');
+    url = showdown.helper.escapeCharacters(url, '*_', false);
     var result = '<img src="' + url + '" alt="' + altText + '"';
 
     // attacklab: Markdown.pl adds empty title attributes to images.

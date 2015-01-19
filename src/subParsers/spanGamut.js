@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * These are all the transformations that occur *within* block-level
  * tags like paragraphs, headers, and list items.
  */

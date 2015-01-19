@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  * Swap back in all the special characters we've hidden.
  */
 showdown.subParser('unescapeSpecialChars', function (text) {

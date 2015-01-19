@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 12-01-2015.
- */
-
-/**
  *
  */
 showdown.subParser('paragraphs', function (text, options, globals) {
@@ -12,10 +8,10 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
 
-  var grafs = text.split(/\n{2,}/g), grafsOut = [];
+  var grafs = text.split(/\n{2,}/g),
+      grafsOut = [],
+      end = grafs.length; // Wrap <p> tags
 
-  /** Wrap <p> tags. */
-  var end = grafs.length;
   for (var i = 0; i < end; i++) {
     var str = grafs[i];
 

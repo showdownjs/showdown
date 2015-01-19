@@ -1,8 +1,4 @@
 /**
- * Created by Estevao on 11-01-2015.
- */
-
-/**
  * Strips link definitions from text, stores the URLs and titles in
  * hash references.
  * Link defs are in the form: ^[id]: url "optional title"

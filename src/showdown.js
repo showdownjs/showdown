@@ -7,7 +7,7 @@ var showdown = {},
     parsers = {},
     globalOptions = {
       omitExtraWLInCodeBlocks: false,
-      prefixHeaderId:          false
+      prefixHeaderId: false
     };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -27,24 +27,42 @@ showdown.helper = {};
 showdown.extensions = {};
 
 //Public methods
+
+/**
+ * Set a global option
+ *
+ * @param {string} key
+ * @param {string} value
+ * @returns {showdown}
+ */
 showdown.setOption = function (key, value) {
   'use strict';
   globalOptions[key] = value;
   return this;
 };
 
+/**
+ * Get a global option
+ *
+ * @param {string} key
+ * @returns {*}
+ */
 showdown.getOption = function (key) {
   'use strict';
   return globalOptions[key];
 };
 
+/**
+ * Get the global options
+ * @returns {{omitExtraWLInCodeBlocks: boolean, prefixHeaderId: boolean}}
+ */
 showdown.getOptions = function () {
   'use strict';
   return globalOptions;
 };
 
 /**
- * Static Method
+ * Get or set a subParser
  *
  * subParser(name)       - Get a registered subParser
  * subParser(name, func) - Register a subParser
@@ -68,6 +86,7 @@ showdown.subParser = function (name, func) {
 };
 
 /**
+ * Showdown Converter class
  *
  * @param {object} [converterOptions]
  * @returns {{makeHtml: Function}}
@@ -98,7 +117,12 @@ showdown.Converter = function (converterOptions) {
     }
   }
 
-  var makeHtml = function (text) {
+  /**
+   * Converts a markdown string into HTML
+   * @param {string} text
+   * @returns {*}
+   */
+  function makeHtml(text) {
 
     //check if text is not falsy
     if (!text) {
@@ -149,7 +173,7 @@ showdown.Converter = function (converterOptions) {
     //});
 
     return text;
-  };
+  }
 
   return {
     makeHtml: makeHtml

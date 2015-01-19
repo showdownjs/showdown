@@ -43,6 +43,7 @@
     "grunt-contrib-jshint": "^0.10.0",
     "grunt-contrib-uglify": "^0.6.0",
     "grunt-simple-mocha": "^0.4.0",
+    "jscs": "^1.10.0",
     "mocha": "*",
     "should": "^4.4.2",
     "source-map-support": "^0.2.9"

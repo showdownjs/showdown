@@ -17,6 +17,7 @@
   "strict": true,
   "trailing": true,
   "smarttabs": true,
+  "onevar": true,
   "globals": {
     "angular": true,
     "module": true,

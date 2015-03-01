@@ -5,32 +5,24 @@
 // Private properties
 var showdown = {},
     parsers = {},
+    extensions = {},
     globalOptions = {
       omitExtraWLInCodeBlocks: false,
-      prefixHeaderId: false
+      prefixHeaderId:          false
     };
 
-///////////////////////////////////////////////////////////////////////////
-// Public API
-//
 /**
  * helper namespace
  * @type {{}}
  */
 showdown.helper = {};
 
-///////////////////////////////////////////////////////////////////////////
-// API
-//
-
 // Public properties
 showdown.extensions = {};
 
-//Public methods
-
 /**
  * Set a global option
- *
+ * @static
  * @param {string} key
  * @param {string} value
  * @returns {showdown}
@@ -43,7 +35,7 @@ showdown.setOption = function (key, value) {
 
 /**
  * Get a global option
- *
+ * @static
  * @param {string} key
  * @returns {*}
  */
@@ -54,6 +46,7 @@ showdown.getOption = function (key) {
 
 /**
  * Get the global options
+ * @static
  * @returns {{omitExtraWLInCodeBlocks: boolean, prefixHeaderId: boolean}}
  */
 showdown.getOptions = function () {
@@ -66,6 +59,7 @@ showdown.getOptions = function () {
  *
  * subParser(name)       - Get a registered subParser
  * subParser(name, func) - Register a subParser
+ * @static
  * @param {string} name
  * @param {function} [func]
  * @returns {*}
@@ -85,6 +79,47 @@ showdown.subParser = function (name, func) {
   }
 };
 
+showdown.extension = function (name, ext) {
+  'use strict';
+
+  if (!showdown.helper.isString(name)) {
+    throw Error('Extension \'name\' must be a string');
+  }
+
+  name = showdown.helper.stdExtName(name);
+
+  if (showdown.helper.isUndefined(ext)) {
+    return getExtension();
+  } else {
+    return setExtension();
+  }
+};
+
+function getExtension(name) {
+  'use strict';
+
+  if (!extensions.hasOwnProperty(name)) {
+    throw Error('Extension named ' + name + ' is not registered!');
+  }
+  return extensions[name];
+}
+
+function setExtension(name, ext) {
+  'use strict';
+
+  if (typeof ext !== 'object') {
+    throw Error('A Showdown Extension must be an object, ' + typeof ext + ' given');
+  }
+
+  if (!showdown.helper.isString(ext.type)) {
+    throw Error('When registering a showdown extension, "type" must be a string, ' + typeof ext.type + ' given');
+  }
+
+  ext.type = ext.type.toLowerCase();
+
+  extensions[name] = ext;
+}
+
 /**
  * Showdown Converter class
  *
@@ -97,10 +132,9 @@ showdown.Converter = function (converterOptions) {
   converterOptions = converterOptions || {};
 
   var options = globalOptions,
+      langExtensions = [],
+      outputModifiers = [],
       parserOrder = [
-        'detab',
-        'stripBlankLines',
-        //runLanguageExtensions,
         'githubCodeBlocks',
         'hashHTMLBlocks',
         'stripLinkDefinitions',
@@ -117,6 +151,38 @@ showdown.Converter = function (converterOptions) {
     }
   }
 
+  // Parse options
+  if (options.extensions) {
+
+    // Iterate over each plugin
+    showdown.helper.forEach(options.extensions, function (plugin) {
+
+      // Assume it's a bundled plugin if a string is given
+      if (typeof plugin === 'string') {
+        plugin = extensions[showdown.helper.stdExtName(plugin)];
+      }
+
+      if (typeof plugin === 'function') {
+        // Iterate over each extension within that plugin
+        showdown.helper.forEach(plugin(self), function (ext) {
+          // Sort extensions by type
+          if (ext.type) {
+            if (ext.type === 'language' || ext.type === 'lang') {
+              langExtensions.push(ext);
+            } else if (ext.type === 'output' || ext.type === 'html') {
+              outputModifiers.push(ext);
+            }
+          } else {
+            // Assume language extension
+            outputModifiers.push(ext);
+          }
+        });
+      } else {
+        throw 'Extension "' + plugin + '" could not be loaded.  It was either not found or is not a valid extension.';
+      }
+    });
+  }
+
   /**
    * Converts a markdown string into HTML
    * @param {string} text
@@ -130,11 +196,13 @@ showdown.Converter = function (converterOptions) {
     }
 
     var globals = {
-      gHtmlBlocks:    [],
-      gUrls:          {},
-      gTitles:        {},
-      gListLevel:     0,
-      hashLinkCounts: {}
+      gHtmlBlocks:     [],
+      gUrls:           {},
+      gTitles:         {},
+      gListLevel:      0,
+      hashLinkCounts:  {},
+      langExtensions:  langExtensions,
+      outputModifiers: outputModifiers
     };
 
     // attacklab: Replace ~ with ~T
@@ -155,6 +223,15 @@ showdown.Converter = function (converterOptions) {
     // Make sure text begins and ends with a couple of newlines:
     text = '\n\n' + text + '\n\n';
 
+    // detab
+    text = parsers.detab(text, options, globals);
+
+    // stripBlankLines
+    text = parsers.stripBlankLines(text, options, globals);
+
+    //run languageExtensions
+    text = parsers.languageExtensions(text, options, globals);
+
     // Run all registered parsers
     for (var i = 0; i < parserOrder.length; ++i) {
       var name = parserOrder[i];
@@ -168,9 +245,7 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/~T/g, '~');
 
     // Run output modifiers
-    //showdown.forEach(g_output_modifiers, function (x) {
-    //    text = _ExecuteExtension(x, text);
-    //});
+    text = parsers.outputModifiers(text, options, globals);
 
     return text;
   }

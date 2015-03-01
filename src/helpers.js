@@ -8,6 +8,7 @@ if (!showdown.hasOwnProperty('helper')) {
 
 /**
  * Check if var is string
+ * @static
  * @param {string} a
  * @returns {boolean}
  */
@@ -18,6 +19,7 @@ showdown.helper.isString = function isString(a) {
 
 /**
  * ForEach helper function
+ * @static
  * @param {*} obj
  * @param {function} callback
  */
@@ -26,8 +28,7 @@ showdown.helper.forEach = function forEach(obj, callback) {
   if (typeof obj.forEach === 'function') {
     obj.forEach(callback);
   } else {
-    var i, len = obj.length;
-    for (i = 0; i < len; i++) {
+    for (var i = 0; i < obj.length; i++) {
       callback(obj[i], i, obj);
     }
   }
@@ -35,6 +36,7 @@ showdown.helper.forEach = function forEach(obj, callback) {
 
 /**
  * isArray helper function
+ * @static
  * @param {*} a
  * @returns {boolean}
  */
@@ -45,7 +47,6 @@ showdown.helper.isArray = function isArray(a) {
 
 /**
  * Check if value is undefined
- *
  * @static
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is `undefined`, else `false`.
@@ -53,6 +54,17 @@ showdown.helper.isArray = function isArray(a) {
 showdown.helper.isUndefined = function isUndefined(value) {
   'use strict';
   return typeof value === 'undefined';
+};
+
+/**
+ * Standardidize extension name
+ * @static
+ * @param {string} s extension name
+ * @returns {string}
+ */
+showdown.helper.stdExtName = function (s) {
+  'use strict';
+  return s.replace(/[_-]||\s/g, '').toLowerCase();
 };
 
 function escapeCharactersCallback(wholeMatch, m1) {
@@ -63,6 +75,7 @@ function escapeCharactersCallback(wholeMatch, m1) {
 
 /**
  * Callback used to escape characters when passing through String.replace
+ * @static
  * @param {string} wholeMatch
  * @param {string} m1
  * @returns {string}
@@ -71,7 +84,7 @@ showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
 
 /**
  * Escape characters in a string
- *
+ * @static
  * @param {string} text
  * @param {string} charsToEscape
  * @param {boolean} afterBackslash

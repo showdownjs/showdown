@@ -1,4 +1,4 @@
-;/*! showdown 19-01-2015 */
+;/*! showdown 01-03-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -7,49 +7,61 @@
 // Private properties
 var showdown = {},
     parsers = {},
+    extensions = {},
     globalOptions = {
       omitExtraWLInCodeBlocks: false,
       prefixHeaderId:          false
     };
 
-///////////////////////////////////////////////////////////////////////////
-// Public API
-//
 /**
  * helper namespace
  * @type {{}}
  */
 showdown.helper = {};
 
-///////////////////////////////////////////////////////////////////////////
-// API
-//
-
 // Public properties
 showdown.extensions = {};
 
-//Public methods
+/**
+ * Set a global option
+ * @static
+ * @param {string} key
+ * @param {string} value
+ * @returns {showdown}
+ */
 showdown.setOption = function (key, value) {
   'use strict';
   globalOptions[key] = value;
   return this;
 };
 
+/**
+ * Get a global option
+ * @static
+ * @param {string} key
+ * @returns {*}
+ */
 showdown.getOption = function (key) {
   'use strict';
   return globalOptions[key];
 };
 
+/**
+ * Get the global options
+ * @static
+ * @returns {{omitExtraWLInCodeBlocks: boolean, prefixHeaderId: boolean}}
+ */
 showdown.getOptions = function () {
   'use strict';
   return globalOptions;
 };
 
 /**
- * Static Method
+ * Get or set a subParser
  *
  * subParser(name)       - Get a registered subParser
  * subParser(name, func) - Register a subParser
+ * @static
  * @param {string} name
  * @param {function} [func]
  * @returns {*}
@@ -69,7 +81,49 @@ showdown.subParser = function (name, func) {
   }
 };
 
+showdown.extension = function (name, ext) {
+  'use strict';
+
+  if (!showdown.helper.isString(name)) {
+    throw Error('Extension \'name\' must be a string');
+  }
+
+  name = showdown.helper.stdExtName(name);
+
+  if (showdown.helper.isUndefined(ext)) {
+    return getExtension();
+  } else {
+    return setExtension();
+  }
+};
+
+function getExtension(name) {
+  'use strict';
+
+  if (!extensions.hasOwnProperty(name)) {
+    throw Error('Extension named ' + name + ' is not registered!');
+  }
+  return extensions[name];
+}
+
+function setExtension(name, ext) {
+  'use strict';
+
+  if (typeof ext !== 'object') {
+    throw Error('A Showdown Extension must be an object, ' + typeof ext + ' given');
+  }
+
+  if (!showdown.helper.isString(ext.type)) {
+    throw Error('When registering a showdown extension, "type" must be a string, ' + typeof ext.type + ' given');
+  }
+
+  ext.type = ext.type.toLowerCase();
+
+  extensions[name] = ext;
+}
+
 /**
+ * Showdown Converter class
  *
  * @param {object} [converterOptions]
  * @returns {{makeHtml: Function}}
@@ -80,10 +134,9 @@ showdown.Converter = function (converterOptions) {
   converterOptions = converterOptions || {};
 
   var options = globalOptions,
+      langExtensions = [],
+      outputModifiers = [],
       parserOrder = [
-        'detab',
-        'stripBlankLines',
-        //runLanguageExtensions,
         'githubCodeBlocks',
         'hashHTMLBlocks',
         'stripLinkDefinitions',
@@ -100,7 +153,44 @@ showdown.Converter = function (converterOptions) {
     }
   }
 
-  var makeHtml = function (text) {
+  // Parse options
+  if (options.extensions) {
+
+    // Iterate over each plugin
+    showdown.helper.forEach(options.extensions, function (plugin) {
+
+      // Assume it's a bundled plugin if a string is given
+      if (typeof plugin === 'string') {
+        plugin = extensions[showdown.helper.stdExtName(plugin)];
+      }
+
+      if (typeof plugin === 'function') {
+        // Iterate over each extension within that plugin
+        showdown.helper.forEach(plugin(self), function (ext) {
+          // Sort extensions by type
+          if (ext.type) {
+            if (ext.type === 'language' || ext.type === 'lang') {
+              langExtensions.push(ext);
+            } else if (ext.type === 'output' || ext.type === 'html') {
+              outputModifiers.push(ext);
+            }
+          } else {
+            // Assume language extension
+            outputModifiers.push(ext);
+          }
+        });
+      } else {
+        throw 'Extension "' + plugin + '" could not be loaded.  It was either not found or is not a valid extension.';
+      }
+    });
+  }
+
+  /**
+   * Converts a markdown string into HTML
+   * @param {string} text
+   * @returns {*}
+   */
+  function makeHtml(text) {
 
     //check if text is not falsy
     if (!text) {
@@ -108,11 +198,13 @@ showdown.Converter = function (converterOptions) {
     }
 
     var globals = {
-      gHtmlBlocks:    [],
-      gUrls:          {},
-      gTitles:        {},
-      gListLevel:     0,
-      hashLinkCounts: {}
+      gHtmlBlocks:     [],
+      gUrls:           {},
+      gTitles:         {},
+      gListLevel:      0,
+      hashLinkCounts:  {},
+      langExtensions:  langExtensions,
+      outputModifiers: outputModifiers
     };
 
     // attacklab: Replace ~ with ~T
@@ -133,6 +225,15 @@ showdown.Converter = function (converterOptions) {
     // Make sure text begins and ends with a couple of newlines:
     text = '\n\n' + text + '\n\n';
 
+    // detab
+    text = parsers.detab(text, options, globals);
+
+    // stripBlankLines
+    text = parsers.stripBlankLines(text, options, globals);
+
+    //run languageExtensions
+    text = parsers.languageExtensions(text, options, globals);
+
     // Run all registered parsers
     for (var i = 0; i < parserOrder.length; ++i) {
       var name = parserOrder[i];
@@ -146,12 +247,10 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/~T/g, '~');
 
     // Run output modifiers
-    //showdown.forEach(g_output_modifiers, function (x) {
-    //    text = _ExecuteExtension(x, text);
-    //});
+    text = parsers.outputModifiers(text, options, globals);
 
     return text;
-  };
+  }
 
   return {
     makeHtml: makeHtml
@@ -168,6 +267,7 @@ if (!showdown.hasOwnProperty('helper')) {
 
 /**
  * Check if var is string
+ * @static
  * @param {string} a
  * @returns {boolean}
  */
@@ -178,6 +278,7 @@ showdown.helper.isString = function isString(a) {
 
 /**
  * ForEach helper function
+ * @static
  * @param {*} obj
  * @param {function} callback
  */
@@ -186,8 +287,7 @@ showdown.helper.forEach = function forEach(obj, callback) {
   if (typeof obj.forEach === 'function') {
     obj.forEach(callback);
   } else {
-    var i, len = obj.length;
-    for (i = 0; i < len; i++) {
+    for (var i = 0; i < obj.length; i++) {
       callback(obj[i], i, obj);
     }
   }
@@ -195,6 +295,7 @@ showdown.helper.forEach = function forEach(obj, callback) {
 
 /**
  * isArray helper function
+ * @static
  * @param {*} a
  * @returns {boolean}
  */
@@ -205,7 +306,6 @@ showdown.helper.isArray = function isArray(a) {
 
 /**
  * Check if value is undefined
- *
  * @static
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is `undefined`, else `false`.
@@ -213,6 +313,17 @@ showdown.helper.isArray = function isArray(a) {
 showdown.helper.isUndefined = function isUndefined(value) {
   'use strict';
   return typeof value === 'undefined';
+};
+
+/**
+ * Standardidize extension name
+ * @static
+ * @param {string} s extension name
+ * @returns {string}
+ */
+showdown.helper.stdExtName = function (s) {
+  'use strict';
+  return s.replace(/[_-]||\s/g, '').toLowerCase();
 };
 
 function escapeCharactersCallback(wholeMatch, m1) {
@@ -223,6 +334,7 @@ function escapeCharactersCallback(wholeMatch, m1) {
 
 /**
  * Callback used to escape characters when passing through String.replace
+ * @static
  * @param {string} wholeMatch
  * @param {string} m1
  * @returns {string}
@@ -231,7 +343,7 @@ showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
 
 /**
  * Escape characters in a string
- *
+ * @static
  * @param {string} text
  * @param {string} charsToEscape
  * @param {boolean} afterBackslash
@@ -1141,6 +1253,18 @@ showdown.subParser('italicsAndBold', function (text) {
 });
 
 /**
+ * Run language extensions
+ */
+showdown.subParser('languageExtensions', function (text, config, globals) {
+  'use strict';
+
+  showdown.helper.forEach(globals.langExtensions, function (ext) {
+    text = showdown.subParser('runExtension')(ext, text);
+  });
+  return text;
+});
+
+/**
  * Form HTML ordered (numbered) and unordered (bulleted) lists.
  */
 showdown.subParser('lists', function (text, options, globals) {
@@ -1302,6 +1426,18 @@ showdown.subParser('outdent', function (text) {
 });
 
 /**
+ * Run language extensions
+ */
+showdown.subParser('outputModifiers', function (text, config, globals) {
+  'use strict';
+
+  showdown.helper.forEach(globals.outputModifiers, function (ext) {
+    text = showdown.subParser('runExtension')(ext, text);
+  });
+  return text;
+});
+
+/**
  *
  */
 showdown.subParser('paragraphs', function (text, options, globals) {
@@ -1341,6 +1477,20 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   }
 
   return grafsOut.join('\n\n');
+});
+
+/**
+ * Run language extensions
+ */
+showdown.subParser('runExtension', function (ext, text) {
+  'use strict';
+
+  if (ext.regex) {
+    var re = new RegExp(ext.regex, 'g');
+    return text.replace(re, ext.replace);
+  } else if (ext.filter) {
+    return ext.filter(text);
+  }
 });
 
 /**

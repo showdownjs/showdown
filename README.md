@@ -313,3 +313,5 @@ The showdown test runner is setup to automatically test cases for extensions.  T
       WebKit bugfix
     * [Pascal Deschênes](https://github.com/pdeschen):<br/>
       Grunt support, extension fixes + additions, packaging improvements, documentation
+    * [Estevão Santos](http://github.com/coreyti):<br/>
+      GitHub project maintainer

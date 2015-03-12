@@ -29,7 +29,7 @@ var converter = new Showdown.converter();
 
 converter.makeHtml('#hello markdown!');
 
-// <h1 id="hellomarkdown">hello, markdown</h1>
+// <h1 id="hellomarkdown">hello markdown!</h1>
 ```
 
 ## What's it for?

@@ -10,11 +10,11 @@
         return [
             { type: 'output', filter: function(source){
 
-                return source.replace(/(<pre>)?<code>/gi, function(match, pre) {
+                return source.replace(/(<pre(.)*>)?<code/gi, function(match, pre) {
                     if (pre) {
-                        return '<pre class="prettyprint linenums" tabIndex="0"><code data-inner="1">';
+                        return '<pre class="prettyprint linenums" tabIndex="0"><code data-inner="1"';
                     } else {
-                        return '<code class="prettyprint">';
+                        return '<code class="prettyprint"';
                     }
                 });
             }}

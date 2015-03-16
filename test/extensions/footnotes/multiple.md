@@ -1,0 +1,1 @@
+This is a sentence[^1] with multiple[^n] footnotes[^2]

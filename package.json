@@ -1,6 +1,6 @@
 {
   "name": "showdown-ghost",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "descriotion": "Slightly updated version of showdown used in Ghost",
   "author": "John Fraser",
   "scripts": {

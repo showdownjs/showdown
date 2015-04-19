@@ -11,29 +11,9 @@
         return [
             {
                 type: 'html',
+                extract: 'all',
                 filter: function (text) {
-                    var highlightRegex = /(=){2}([\s\S]+?)(=){2}/gim,
-                        preExtractions = {},
-                        codeExtractions = {},
-                        hashID = 0;
-
-                    function hashId() {
-                        return hashID += 1;
-                    }
-
-                    // Extract pre blocks
-                    text = text.replace(/<pre>[\s\S]*?<\/pre>/gim, function (x) {
-                        var hash = hashId();
-                        preExtractions[hash] = x;
-                        return '{gfm-js-extract-pre-' + hash + '}';
-                    }, 'm');
-
-                    // Extract code blocks
-                    text = text.replace(/<code>[\s\S]*?<\/code>/gim, function (x) {
-                        var hash = hashId();
-                        codeExtractions[hash] = x;
-                        return '{gfm-js-extract-code-' + hash + '}';
-                    }, 'm');
+                    var highlightRegex = /(=){2}([\s\S]+?)(=){2}/gim;
 
                     text = text.replace(highlightRegex, function (match, n, content) {
                         // Check the content isn't just an `=`
@@ -44,17 +24,15 @@
                         return match;
                     });
 
-                    // replace pre extractions
-                    text = text.replace(/\{gfm-js-extract-pre-([0-9]+)\}/gm, function (x, y) {
-                        return preExtractions[y];
-                    });
-
-                    // replace code extractions
-                    text = text.replace(/\{gfm-js-extract-code-([0-9]+)\}/gm, function (x, y) {
-                        return codeExtractions[y];
-                    });
-
                     return text;
+                }
+            },
+            {
+                // Escaped equals
+                type: 'html',
+                regex: '\\\\(=)',
+                replace: function (match, content) {
+                    return content;
                 }
             }
         ];

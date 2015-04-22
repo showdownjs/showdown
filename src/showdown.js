@@ -245,6 +245,9 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/~T/g, '~');
 
     // Run output modifiers
+    showdown.helper.forEach(globals.outputModifiers, function (ext) {
+      text = showdown.subParser('runExtension')(ext, text);
+    });
     text = parsers.outputModifiers(text, options, globals);
 
     return text;

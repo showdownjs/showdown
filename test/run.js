@@ -61,7 +61,7 @@ describe('Markdown', function() {
 // :: Extensions Testing ::
 //
 
-if (path.existsSync('test/extensions')) {
+if (fs.existsSync('test/extensions')) {
 
     describe('extensions', function() {
         // Search all sub-folders looking for directory-specific tests
@@ -73,7 +73,7 @@ if (path.existsSync('test/extensions')) {
         showdown.forEach(extensions, function(ext){
             // Make sure extension exists
             var src = 'src/extensions/' + ext + '.js';
-            if (!path.existsSync(src)) {
+            if (!fs.existsSync(src)) {
                 throw "Attempting tests for '" + ext + "' but source file (" + src + ") was not found.";
             }
 

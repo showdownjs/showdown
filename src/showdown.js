@@ -151,6 +151,14 @@ showdown.Converter = function (converterOptions) {
     }
   }
 
+  // This is a dirty workaround to maintain backwards extension compatibility
+  // We define a self var (which is a copy of this) and inject the makeHtml function
+  // directly to it. This ensures a full converter object is available when iterating over extensions
+  // We should rewrite the extension loading mechanism and use some kind of interface or decorator pattern
+  // and inject the object reference there instead.
+  var self = this;
+  self.makeHtml = makeHtml;
+
   // Parse options
   if (options.extensions) {
 

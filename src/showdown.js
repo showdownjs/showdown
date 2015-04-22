@@ -156,10 +156,19 @@ showdown.Converter = function (converterOptions) {
 
     // Iterate over each plugin
     showdown.helper.forEach(options.extensions, function (plugin) {
+      var pluginName = plugin;
 
       // Assume it's a bundled plugin if a string is given
       if (typeof plugin === 'string') {
-        plugin = extensions[showdown.helper.stdExtName(plugin)];
+        var tPluginName = showdown.helper.stdExtName(plugin);
+
+        if (!showdown.helper.isUndefined(showdown.extensions[tPluginName]) && showdown.extensions[tPluginName]) {
+          //Trigger some kind of deprecated alert
+          plugin = showdown.extensions[tPluginName];
+
+        } else if (!showdown.helper.isUndefined(extensions[tPluginName])) {
+          plugin = extensions[tPluginName];
+        }
       }
 
       if (typeof plugin === 'function') {
@@ -178,7 +187,11 @@ showdown.Converter = function (converterOptions) {
           }
         });
       } else {
-        throw 'Extension "' + plugin + '" could not be loaded.  It was either not found or is not a valid extension.';
+        var errMsg = 'An extension could not be loaded. It was either not found or is not a valid extension.';
+        if (typeof pluginName === 'string') {
+          errMsg = 'Extension "' + pluginName + '" could not be loaded.  It was either not found or is not a valid extension.';
+        }
+        throw errMsg;
       }
     });
   }

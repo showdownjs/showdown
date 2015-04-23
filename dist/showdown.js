@@ -1020,7 +1020,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
    )						// attacklab: there are sentinel newlines at end of document
    /gm,function(){...}};
    */
-  text = text.replace(/^(<(p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|style|section|header|footer|nav|article|aside)\b[^\r]*?<\/\2>[ \t]*(?=\n+)\n)/gm,
+  text = text.replace(/^(<(p|div|h[1-6]|blockquote|pre|table|dl|ol|ul|script|noscript|form|fieldset|iframe|math|style|section|header|footer|nav|article|aside|address|audio|canvas|figure|hgroup|output|video)\b[^\r]*?<\/\2>[ \t]*(?=\n+)\n)/gm,
                       showdown.subParser('hashElement')(text, options, globals));
 
   // Special case just for <hr />. It was easier to make a special case than

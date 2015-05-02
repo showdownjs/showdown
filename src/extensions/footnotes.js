@@ -70,41 +70,12 @@ function replaceEndFootnotes(text, converter) {
         return [
             {
                 type: 'lang',
+                extract: ['code', 'url', 'a', 'image-html'],
                 filter: function (text) {
-                    var preExtractions = {},
-                        hashID = 0;
-
-                    function hashId() {
-                        return hashID += 1;
-                    }
-
-                    // Extract pre blocks
-                    text = text.replace(/<(pre|code)>[\s\S]*?<\/(\1)>/gim, function (x) {
-                        var hash = hashId();
-                        preExtractions[hash] = x;
-                        return '{gfm-js-extract-pre-' + hash + '}';
-                    }, 'm');
-
-                    text = text.replace(/```[\s\S]*?\n```/gim, function (x) {
-                        var hash = hashId();
-                        preExtractions[hash] = x;
-                        return '{gfm-js-extract-pre-' + hash + '}';
-                    }, 'm');
-
-                    // Extract code blocks
-                    text = text.replace(/`[\s\S]*?`/gim, function (x) {
-                        var hash = hashId();
-                        preExtractions[hash] = x;
-                        return '{gfm-js-extract-pre-' + hash + '}';
-                    }, 'm');
-
+                    // Note that footnotes cannot be used inside of an anchor
+                    // we don't enforce this because it's relatively tricky and unnecessary because it's just wrong :)
                     text = replaceInlineFootnotes(text);
                     text = replaceEndFootnotes(text, converter);
-
-                    // replace extractions
-                    text = text.replace(/\{gfm-js-extract-pre-([0-9]+)\}/gm, function (x, y) {
-                        return preExtractions[y];
-                    });
 
                     return text;
                 }

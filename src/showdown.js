@@ -251,12 +251,118 @@ Showdown.converter = function(converter_options) {
 
 
   var _ExecuteExtension = function(ext, text) {
+    var extractions;
+
+    function doExtractions(text, type) {
+      var hashID = 0;
+      // reset the extractions
+      extractions = [];
+
+      function hashId() {
+        /*jshint plusplus:false*/
+        return hashID++;
+      }
+
+      if (type === 'all') {
+        type = ['code', 'image', 'a', 'url'];
+      }
+
+      if (type.indexOf('code') > -1) {
+        // extract HTML pre, code and script blocks
+        text = text.replace(/<(pre|code|script)[^>]*?>[\s\S]*?<\/(\1)>/gim, function (x) {
+          var hash = hashId();
+          extractions[hash] = x;
+          return '{gfm-js-extract-' + hash + '}';
+        }, 'm');
+        // extract markdown ``` fenced code blocks
+        text = text.replace(/```[\s\S]*?\n```/gim, function (x) {
+          var hash = hashId();
+          extractions[hash] = x;
+          return '{gfm-js-extract-' + hash + '}';
+        }, 'm');
+        // extract markdown ` inline code blocks
+        text = text.replace(/`[^\n\`]+?`/gim, function (x) {
+          var hash = hashId();
+          extractions[hash] = x;
+          return '{gfm-js-extract-' + hash + '}';
+        }, 'm');
+        // extract markdown indented code lines
+        text = text.replace(/(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)/gim, function (x) {
+          var hash = hashId();
+          extractions[hash] = x;
+          return '{gfm-js-extract-' + hash + '}';
+        }, 'm');
+      }
+      if (type.indexOf('image') > -1 || type.indexOf('image-md') > -1) {
+        // extract markdown images
+        text = text.replace(/(!\[(.*?)\]\s?\([ \t]*()<?(\S+?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/gim, function (x) {
+          var hash = hashId();
+          extractions[hash] = x;
+          return '{gfm-js-extract-' + hash + '}';
+        }, 'm');
+      }
+      if (type.indexOf('image') > -1 || type.indexOf('image-html') > -1) {
+        // extract html images
+        text = text.replace(/<img[^>]*?>/gim, function (x) {
+          var hash = hashId();
+          extractions[hash] = x;
+          return '{gfm-js-extract-' + hash + '}';
+        }, 'm');
+      }
+
+      if (type.indexOf('a') > -1) {
+        // extract the first part of a tags
+        text = text.replace(/(<a[^>]*?>)([\s\S]*?<\/a>)/gim, function (match, start, end) {
+          var hash = hashId();
+          extractions[hash] = start;
+          return '{gfm-js-extract-' + hash + '}' + end;
+        }, 'm');
+      }
+
+      if (type.indexOf('def') > -1) {
+        // filter out def urls
+        // from Marked https://github.com/chjj/marked/blob/master/lib/marked.js#L24
+        text = text.replace(/^ *\[([^\]]+)\]: *<?([^\s>]+)>?(?: +["(]([^\n]+)[")])? *(?:\n+|$)/gmi, function (x) {
+          var hash = hashId();
+          '{gfm-js-extract-'[hash] = x;
+          return '{gfm-js-extract-' + hash + '}';
+        });
+      }
+
+      if (type.indexOf('url') > -1) {
+        // extract remaining urls
+        text = text.replace(/(\]\(|\]|\[|<a[^>]*?>)?https?\:\/\/[^"\s<>]*[^.,;'"<>\:\s\)\]\!]/gim, function (x) {
+          var hash = hashId();
+          extractions[hash] = x;
+          return '{gfm-js-extract-' + hash + '}';
+        }, 'm');
+      }
+
+      return text;
+    }
+
+    function undoExtractions(text) {
+      return text.replace(/\{gfm-js-extract-(\d+)\}/gm, function (x, y) {
+        return extractions[y];
+      });
+    }
+
+    if (ext.extract) {
+      text = doExtractions(text, ext.extract);
+    }
+
     if (ext.regex) {
       var re = new RegExp(ext.regex, 'g');
-      return text.replace(re, ext.replace);
+      text = text.replace(re, ext.replace);
     } else if (ext.filter) {
-      return ext.filter(text);
+      text = ext.filter(text);
     }
+
+    if (ext.extract) {
+      text = undoExtractions(text);
+    }
+
+    return text;
   };
 
   var _StripLinkDefinitions = function(text) {

@@ -82,6 +82,7 @@
             tbl.push('</table>');
             // we are done with this table and we move along
             out.push(tbl.join('\n'));
+            tbl = [];
             continue;
           }
         }

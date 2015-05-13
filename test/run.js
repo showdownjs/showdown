@@ -54,6 +54,7 @@ var runTestsInDir = function(dir, converter) {
 describe('Markdown', function() {
     var converter = new showdown.converter();
     runTestsInDir('test/cases', converter);
+    runTestsInDir('test/issues', converter);
 });
 
 

@@ -222,6 +222,7 @@ Showdown.converter = function (converter_options) {
 
         // Iterate over each plugin
         Showdown.forEach(converter_options.extensions, function (plugin) {
+            var pluginName = plugin;
 
             // Assume it's a bundled plugin if a string is given
             if (typeof plugin === 'string') {
@@ -244,7 +245,7 @@ Showdown.converter = function (converter_options) {
                     }
                 });
             } else {
-                throw "Extension '" + plugin + "' could not be loaded.  It was either not found or is not a valid extension.";
+                throw "Extension '" + pluginName + "' could not be loaded.  It was either not found or is not a valid extension.";
             }
         });
     }

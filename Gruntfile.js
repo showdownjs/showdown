@@ -54,7 +54,10 @@ module.exports = function (grunt) {
       }
     },
     changelog: {
-      options: {}
+      options: {
+        repository: 'http://github.com/showdownjs/showdown',
+        dest: 'CHANGELOG.md'
+      }
     },
     simplemocha: {
       node: {

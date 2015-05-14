@@ -1,7 +1,8 @@
 {
   "name": "showdown",
-  "version": "0.5.0",
-  "author": "John Fraser",
+  "version": "1.0.0-alpha1",
+  "description": "A Markdown to HTML converter written in Javascript",
+  "authors": "Estevão Santos",
   "contributors": [
     "John Gruber",
     "John Fraser",
@@ -27,21 +28,25 @@
   "licenses": [
     {
       "type": "BSD",
-      "url": "https://github.com/coreyti/showdown/raw/master/license.txt"
+      "url": "https://github.com/showdownjs/showdown/blob/master/license.txt"
     }
   ],
-  "main": "./src/showdown",
+  "main": "./dist/showdown.js",
   "scripts": {
-    "test": "mocha ./test/run.js"
+    "test": "mocha ./test/**/*.js"
   },
   "devDependencies": {
-    "angular": "^1.3.2",
+    "chai": "^1.10.0",
     "grunt": "^0.4.5",
     "grunt-contrib-concat": "^0.5.0",
     "grunt-contrib-jshint": "^0.10.0",
     "grunt-contrib-uglify": "^0.6.0",
+    "grunt-conventional-changelog": "^1.1.0",
+    "grunt-jscs": "^1.2.0",
     "grunt-simple-mocha": "^0.4.0",
+    "jscs": "^1.10.0",
     "mocha": "*",
-    "should": "^4.4.2"
+    "should": "^4.4.2",
+    "source-map-support": "^0.2.9"
   }
 }

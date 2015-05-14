@@ -1,77 +1,23 @@
-# Showdown
+![Showdown](https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png)
 
-A JavaScript port of Markdown
+[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown)
 
-## Note
+Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber. Showdown can be used client side (in the browser) or server side (with NodeJs).
 
-  > Showdown is now maintained by the [showdownjs](https://github.com/showdownjs) organization on Github.
-  > 
-  > The organization needs members to maintain Showdown.
-  > 
-  > Please see [this issue](https://github.com/showdownjs/showdown/issues/114) to express interest or comment on this note.
 
-## Original Attributions
+## Installation
 
-Showdown Copyright (c) 2007 John Fraser.
-<http://www.attacklab.net/>
+### Download tarball
 
-Original Markdown Copyright (c) 2004-2005 John Gruber
-<http://daringfireball.net/projects/markdown/>
+You can download the latest release's tarball directly from https://github.com/showdownjs/showdown/releases
 
-Redistributable under a BSD-style open source license.
-See license.txt for more information.
+### Bower
 
-## Quick Example
+    bower install showdown
 
-```js
-var Showdown = require('showdown');
-var converter = new Showdown.converter();
+### npm (server-side)
 
-converter.makeHtml('#hello markdown!');
-
-// <h1 id="hellomarkdown">hello markdown!</h1>
-```
-
-## What's it for?
-
-Developers can use Showdown to:
-
-  * Add in-browser preview to existing Markdown apps
-
-    Showdown's output is (almost always) identical to
-    markdown.pl's, so the server can reproduce exactly
-    the output that the user saw.  (See below for
-    exceptions.)
-
-  * Add Markdown input to programs that don't support it
-
-    Any app that accepts HTML input can now be made to speak
-    Markdown by modifying the input pages's HTML.  If your
-    application lets users edit documents again later,
-    then they won't have access to the original Markdown
-    text.  But this should be good enough for many
-    uses -- and you can do it with just a two-line
-    `onsubmit` function!
-
-  * Add Markdown input to closed-source web apps
-
-    You can write bookmarklets or userscripts to extend
-    any standard textarea on the web so that it accepts
-    Markdown instead of HTML.  With a little more hacking,
-    the same can probably be done with  many rich edit
-    controls.
-
-  * Build new web apps from scratch
-
-    A Showdown front-end can send back text in Markdown,
-    HTML or both, so you can trade bandwidth for server
-    load to reduce your cost of operation.  If your app
-    requires JavaScript, you won't need to do any
-    Markdown processing on the server at all.  (For most
-    uses, you'll still need to sanitize the HTML before
-    showing it to other users -- but you'd need to do
-    that anyway if you're allowing raw HTML in your
-    Markdown.)
+    npm install showdown
 
 
 ## Browser Compatibility
@@ -88,6 +34,39 @@ Showdown has been tested successfully with:
 In theory, Showdown will work in any browser that supports ECMA 262 3rd Edition (JavaScript 1.5).  The converter itself might even work in things that aren't web browsers, like Acrobat.  No promises.
 
 
+## Node compatibility
+
+Showdown has been tested with node 0.8 and 0.10. However, it should work with previous versions, such as node 0.6.
+
+
+## Quick Example
+
+### Node
+
+```js
+var showdown  = require('showdown'),
+    converter = new showdown.Converter(),
+    text      = '#hello, markdown!',
+    html      = converter.makeHtml(text);
+```
+
+### Browser
+
+```js
+var converter = new showdown.Converter(),
+    text      = '#hello, markdown!',
+    html      = converter.makeHtml(text);
+```
+
+### Output 
+
+Both examples should output...
+
+```html
+<h1 id="hellomarkdown">hello, markdown!</h1>
+```
+
+
 ## Extensions
 
 Showdown allows additional functionality to be loaded via extensions.
@@ -95,23 +74,31 @@ Showdown allows additional functionality to be loaded via extensions.
 ### Client-side Extension Usage
 
 ```js
-<script src="src/showdown.js" />
-<script src="src/extensions/twitter.js" />
+<script src="showdown.js" />
+<script src="twitter-extension.js" />
 
-var converter = new Showdown.converter({ extensions: ['twitter'] });
+var converter = new showdown.Converter({ extensions: 'twitter' });
 ```
 
 ### Server-side Extension Usage
 
 ```js
-// Using a bundled extension
-var Showdown = require('showdown');
-var converter = new Showdown.converter({ extensions: ['twitter'] });
-
-// Using a custom extension
-var mine = require('./custom-extensions/mine');
-var converter = new Showdown.converter({ extensions: ['twitter', mine] });
+var showdown    = require('showdown'),
+    myExtension = require('myExtension'),
+    converter = new showdown.Converter({ extensions: ['myExtension'] });
 ```
+
+## Tests
+
+A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the development dependencies:
+
+    npm install --dev
+
+Once installed the tests can be run from the project root using:
+
+    npm test
+
+New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.  Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
 
 
 ## Known Differences in Output
@@ -197,31 +184,18 @@ In most cases, Showdown's output is identical to that of Perl Markdown v1.0.2b7.
     Showdown won't.  But still, don't do that.
 
 
-## Tests
-
-A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the development dependencies:
-
-    npm install --dev
-
-Once installed the tests can be run from the project root using:
-
-    npm test
-
-New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.  Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
-
-
 ## Creating Markdown Extensions
 
-A showdown extension is simply a function which returns an array of language extensions and/or output modifiers:
+A showdown extension is simply a function which returns an array of extensions.  Each single extension can be one of two types:
 
-  * Language Extension -- Language extensions are specified with the `lang` type, and add new markdown syntax to showdown.  For example, say you wanted `^^youtube http://www.youtube.com/watch?v=oHg5SJYRHA0` to automatically render as an embedded YouTube video, that would be a language extension.
-  * Output Modifiers -- Output Modifiers are specified with the `output` type. After showdown has generated HTML, an output modifier can make changes to the generated HTML.  For example, if you wanted to change `<div class="header">` to be `<header>`, you could implement an output modifier.
+  * Language Extension -- Language extensions are ones that that add new markdown syntax to showdown.  For example, say you wanted `^^youtube http://www.youtube.com/watch?v=oHg5SJYRHA0` to automatically render as an embedded YouTube video, that would be a language extension.
+  * Output Modifiers -- After showdown has run, and generated HTML, an output modifier would change that HTML.  For example, say you wanted to change `<div class="header">` to be `<header>`, that would be an output modifier.
 
-Each showdown extension can provide language extensions and/or output modifiers.
+Each extension can provide two combinations of interfaces for showdown.
 
 ### Regex/Replace
 
-Regex/replace style extensions are very similar to javascripts `string.replace` function.  Two properties are given, `regex` and `replace`.  `regex` is a string and `replace` can be either a string or a function.  If `replace` is a string, it can use the `$1` syntax for group substitution, exactly as if it were making use of `string.replace` (internally it does this actually);  The value of `regex` is assumed to be a global replacement.
+Regex/replace style extensions are very similar to Javascript's `string.replace` function.  Two properties are given, `regex` and `replace`.  `regex` is a string and `replace` can be either a string or a function.  If `replace` is a string, it can use the `$1` syntax for group substitution, exactly as if it were making use of `string.replace` (internally it does this actually);  The value of `regex` is assumed to be a global replacement.
 
 **Example:**
 
@@ -278,19 +252,23 @@ Second, client-side extensions should add a property onto `Showdown.extensions` 
 
 ### Testing Extensions
 
-The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension, create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.  Place any test cases into the filder using the md/html format and they will automatically be run when tests are run.
+The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension, create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.  Place any test cases into the folder using the md/html format and they will automatically be run when tests are run.
+
+
+## Contributing
+The organization needs members to maintain Showdown.
+Please see [this issue](https://github.com/showdownjs/showdown/issues/114) to express interest or comment on this note.
 
 
 ## Credits
 
-  * Origins
-    * [John Fraser](http://attacklab.net/):<br/>
-      Author of Showdown
-    * [John Gruber](http://daringfireball.net/projects/markdown/):<br/>
-      Author of Markdown
-  * Maintenance/Contributions (roughly chronologically)
-    * [Corey Innis](http://github.com/coreyti):<br/>
+  - Showdown
+    * [Estevão Santos](http://soares-dos-santos.com):<br/>
       GitHub project maintainer
+    * [Pascal Deschênes](https://github.com/pdeschen):<br/>
+      Grunt support, extension fixes + additions, packaging improvements, documentation
+    * [Corey Innis](http://github.com/coreyti):<br/>
+      Original GitHub project maintainer
     * [Remy Sharp](https://github.com/remy/):<br/>
       CommonJS-compatibility and more
     * [Konstantin Käfer](https://github.com/kkaefer/):<br/>
@@ -311,7 +289,10 @@ The showdown test runner is setup to automatically test cases for extensions.  T
       Regex optimization
     * [Adam Backstrom](https://github.com/abackstrom):<br/>
       WebKit bugfix
-    * [Pascal Deschênes](https://github.com/pdeschen):<br/>
-      Grunt support, extension fixes + additions, packaging improvements, documentation
-    * [Estevão Santos](http://github.com/coreyti):<br/>
-      GitHub project maintainer
+    
+
+  - Original Project
+    * [John Gruber](http://daringfireball.net/projects/markdown/)<br/>
+      Author of Markdown
+    * [John Fraser](http://attacklab.net/)<br/>
+      Author of Showdown

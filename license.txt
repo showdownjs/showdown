@@ -1,9 +1,9 @@
-Copyright (c) 2007, John Fraser  
-<http://www.attacklab.net/>  
+Showdown Copyright (c) 2007, John Fraser
+<http://www.attacklab.net/>
 All rights reserved.
 
-Original Markdown copyright (c) 2004, John Gruber  
-<http://daringfireball.net/>  
+Original Markdown copyright (c) 2004, John Gruber
+<http://daringfireball.net/>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

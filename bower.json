@@ -1,12 +1,12 @@
 {
     "name": "showdown",
-    "description": "JavaScript port of Markdown",
+    "description": "A Markdown to HTML converter written in Javascript",
     "homepage": "https://github.com/showdownjs/showdown",
     "authors": [
-        "John Fraser",
-        "Corey Innis (https://github.com/coreyti)",
+        "Estevão Santos (https://github.com/tivie)",
         "Pascal Deschênes (https://github.com/pdeschen)",
-        "Estevão Santos (https://github.com/tivie)"
+        "Corey Innis (https://github.com/coreyti)",
+        "John Fraser"
     ],
     "main": ["src/showdown.js"],
     "ignore": [

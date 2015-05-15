@@ -1,6 +1,6 @@
 {
   "name": "showdown",
-  "version": "1.0.0-alpha1",
+  "version": "1.0.0-alpha.2",
   "description": "A Markdown to HTML converter written in Javascript",
   "authors": "Estevão Santos",
   "contributors": [
@@ -25,12 +25,7 @@
     "url": "https://github.com/showdownjs/showdown.git",
     "web": "https://github.com/showdownjs/showdown"
   },
-  "licenses": [
-    {
-      "type": "BSD",
-      "url": "https://github.com/showdownjs/showdown/blob/master/license.txt"
-    }
-  ],
+  "license": "BSD",
   "main": "./dist/showdown.js",
   "scripts": {
     "test": "mocha ./test/**/*.js"

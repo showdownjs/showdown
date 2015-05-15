@@ -6,3 +6,10 @@ node_js:
 before_install:
   - '[ "${TRAVIS_NODE_VERSION}" != "0.8" ] || npm install -g npm@1.4.28'
   - npm install -g npm@latest
+  - npm install -g grunt-cli
+
+#travis build  speed up
+sudo: false
+cache:
+  directories:
+    - node_modules

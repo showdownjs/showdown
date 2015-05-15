@@ -315,3 +315,6 @@ The showdown test runner is setup to automatically test cases for extensions.  T
       Grunt support, extension fixes + additions, packaging improvements, documentation
     * [Estevão Santos](http://github.com/coreyti):<br/>
       GitHub project maintainer
+
+Showdown is powered by:
+[![webstorm](https://www.jetbrains.com/webstorm/documentation/docs/logo_webstorm.png)](https://www.jetbrains.com/webstorm/)

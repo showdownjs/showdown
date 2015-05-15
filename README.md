@@ -311,3 +311,6 @@ Please see [this issue](https://github.com/showdownjs/showdown/issues/114) to ex
 
 ## Credits
 Full credit list at https://github.com/showdownjs/showdown/blob/master/CREDITS.md
+
+Showdown is powered by:
+[![webstorm](https://www.jetbrains.com/webstorm/documentation/docs/logo_webstorm.png)](https://www.jetbrains.com/webstorm/)

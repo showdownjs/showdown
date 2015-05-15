@@ -28,7 +28,7 @@
   "license": "BSD",
   "main": "./dist/showdown.js",
   "scripts": {
-    "test": "mocha ./test/**/*.js"
+    "test": "grunt test"
   },
   "devDependencies": {
     "chai": "^1.10.0",

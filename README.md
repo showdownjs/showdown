@@ -66,6 +66,11 @@ Both examples should output...
 <h1 id="hellomarkdown">hello, markdown!</h1>
 ```
 
+## Integration with AngularJS
+
+ShowdownJS project also provides seamlessly integration with AngularJS via a "plugin".
+Please visit https://github.com/showdownjs/ngShowdown for more information.
+
 
 ## Extensions
 
@@ -252,47 +257,57 @@ Second, client-side extensions should add a property onto `Showdown.extensions` 
 
 ### Testing Extensions
 
-The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension, create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.  Place any test cases into the folder using the md/html format and they will automatically be run when tests are run.
+The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension,
+create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.
+Place any test cases into the folder using the md/html format and they will automatically be run when tests are run.
 
 
 ## Contributing
-The organization needs members to maintain Showdown.
+
+If you wish to contribute please read the following quick guide.
+
+### Want a Feature?
+You can request a new feature by submitting an issue. If you would like to implement a new feature feel free to issue a
+Pull Request.
+
+
+### Pull requests (PRs)
+PRs are awesome. However, before you submit your pull request consider the following guidelines:
+
+ - Search GitHub for an open or closed Pull Request that relates to your submission. You don't want to duplicate effort.
+ - When issuing PRs that change code, make your changes in a new git branch based on master:
+
+   ```bash
+   git checkout -b my-fix-branch master
+   ```
+
+ - Documentation (i.e: README.md) changes can be made directly against master.
+ - Run the full test suite before submitting and make sure all tests pass (obviously =P).
+ - Try to follow our [**coding style rules**](https://github.com/showdownjs/code-style/blob/master/README.md).
+   Breaking them prevents the PR to pass the tests.
+ - Refrain from fixing multiple issues in the same pull request. It's preferable to open multiple small PRs instead of one
+   hard to review big one.
+ - If the PR introduces a new feature or fixes an issue, please add the appropriate test case.
+ - We use commit notes to generate the changelog. It's extremely helpful if your commit messages adhere to the
+ [**AngularJS Git Commit Guidelines**](https://github.com/showdownjs/code-style/blob/master/README.md#commit-message-convention).
+ - If we suggest changes then:
+   - Make the required updates.
+   - Re-run the Angular test suite to ensure tests are still passing.
+   - Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
+
+   ```bash
+   git rebase master -i
+   git push origin my-fix-branch -f
+   ```
+ - After your pull request is merged, you can safely delete your branch.
+
+If you have time to contribute to this project, we feel obliged that you get credit for it.
+These rules enable us to review your PR faster and will give you appropriate credit in your GitHub profile.
+We thank you in advance for your contribution!
+
+### Joining the team
+We're looking for members to help maintaining Showdown.
 Please see [this issue](https://github.com/showdownjs/showdown/issues/114) to express interest or comment on this note.
 
-
 ## Credits
-
-  - Showdown
-    * [Estevão Santos](http://soares-dos-santos.com):<br/>
-      GitHub project maintainer
-    * [Pascal Deschênes](https://github.com/pdeschen):<br/>
-      Grunt support, extension fixes + additions, packaging improvements, documentation
-    * [Corey Innis](http://github.com/coreyti):<br/>
-      Original GitHub project maintainer
-    * [Remy Sharp](https://github.com/remy/):<br/>
-      CommonJS-compatibility and more
-    * [Konstantin Käfer](https://github.com/kkaefer/):<br/>
-      CommonJS packaging
-    * [Roger Braun](https://github.com/rogerbraun):<br/>
-      Github-style code blocks
-    * [Dominic Tarr](https://github.com/dominictarr):<br/>
-      Documentation
-    * [Cat Chen](https://github.com/CatChen):<br/>
-      Export fix
-    * [Titus Stone](https://github.com/tstone):<br/>
-      Mocha tests, extension mechanism, and bug fixes
-    * [Rob Sutherland](https://github.com/roberocity):<br/>
-      The idea that lead to extensions
-    * [Pavel Lang](https://github.com/langpavel):<br/>
-      Code cleanup
-    * [Ben Combee](https://github.com/unwiredben):<br/>
-      Regex optimization
-    * [Adam Backstrom](https://github.com/abackstrom):<br/>
-      WebKit bugfix
-    
-
-  - Original Project
-    * [John Gruber](http://daringfireball.net/projects/markdown/)<br/>
-      Author of Markdown
-    * [John Fraser](http://attacklab.net/)<br/>
-      Author of Showdown
+Full credit list at https://github.com/showdownjs/showdown/blob/master/CREDITS.md

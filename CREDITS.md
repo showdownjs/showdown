@@ -1,12 +1,12 @@
 Credits
 =======
-  - Showdown v2
-    * [Estevão Santos](http://soares-dos-santos.com)
+  - Showdown v1
+    * [Estevão Santos](https://github.com/tivie)
     * [Pascal Deschênes](https://github.com/pdeschen)
 
-  - Showdown v1
+  - Showdown v0
     * [Corey Innis](http://github.com/coreyti):<br/>
-      GitHub project maintainer
+      Original GitHub project maintainer
     * [Remy Sharp](https://github.com/remy/):<br/>
       CommonJS-compatibility and more
     * [Konstantin Käfer](https://github.com/kkaefer/):<br/>
@@ -29,8 +29,10 @@ Credits
       WebKit bugfix
     * [Pascal Deschênes](https://github.com/pdeschen):<br/>
       Grunt support, extension fixes + additions, packaging improvements, documentation
-    * [Estevão Santos](http://soares-dos-santos.com)<br/>
-      Bug fixing and later maintainer
+    * [Estevão Santos](https://github.com/tivie)<br/>
+      Bug fixing and late maintainer
+    * [Hannah Wolfe](https://github.com/ErisDS)<br/>
+      Bug fixes
 
   - Original Project
     * [John Gruber](http://daringfireball.net/projects/markdown/)<br/>

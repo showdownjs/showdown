@@ -1,8 +1,8 @@
 Credits
 =======
   - Showdown v2
-    * [Estevão Santos](http://soares-dos-santos.com)<br/>
-      Code Refactoring and project maintainer
+    * [Estevão Santos](http://soares-dos-santos.com)
+    * [Pascal Deschênes](https://github.com/pdeschen)
 
   - Showdown v1
     * [Corey Innis](http://github.com/coreyti):<br/>

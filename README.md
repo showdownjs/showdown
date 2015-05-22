@@ -2,14 +2,6 @@
 
 A JavaScript port of Markdown
 
-## Note
-
-  > Showdown is now maintained by the [showdownjs](https://github.com/showdownjs) organization on Github.
-  > 
-  > The organization needs members to maintain Showdown.
-  > 
-  > Please see [this issue](https://github.com/showdownjs/showdown/issues/114) to express interest or comment on this note.
-
 ## Original Attributions
 
 Showdown Copyright (c) 2007 John Fraser.

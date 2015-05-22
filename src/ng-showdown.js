@@ -10,7 +10,7 @@ if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
 
         module
             .provider('$Showdown', provider)
-            .directive('sdModelToHtml', ['$Showdown', markdownToHtmlDirective])
+            .directive('sdModelToHtml', ['$Showdown', '$sanitize', markdownToHtmlDirective])
             .filter('sdStripHtml', stripHtmlFilter);
 
         /**
@@ -106,13 +106,13 @@ if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
          * @param $Showdown
          * @returns {*}
          */
-        function markdownToHtmlDirective($Showdown) {
+        function markdownToHtmlDirective($Showdown, $sanitize) {
 
             var link = function (scope, element) {
                 scope.$watch('model', function (newValue) {
                     var val;
                     if (typeof newValue === 'string') {
-                        val = $Showdown.makeHtml(newValue);
+                        val = $sanitize($Showdown.makeHtml(newValue));
                     } else {
                         val = typeof newValue;
                     }
@@ -140,7 +140,7 @@ if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
             };
         }
 
-    })(angular.module('Showdown', []), Showdown);
+    })(angular.module('Showdown', ['ngSanitize']), Showdown);
 
 } else {
 

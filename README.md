@@ -1,6 +1,7 @@
 # Showdown
+[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=legacy)](https://travis-ci.org/showdownjs/showdown)
 
-A JavaScript port of Markdown
+**Showdown**: An extensible Markdown to HTML converter written in Javascript.
 
 ## Original Attributions
 

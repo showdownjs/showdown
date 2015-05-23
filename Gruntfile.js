@@ -91,6 +91,7 @@ module.exports = function (grunt) {
   grunt.registerTask('test', ['lint', 'concat', 'simplemocha']);
   grunt.registerTask('test-without-building', ['simplemocha']);
   grunt.registerTask('build', ['lint', 'test', 'uglify']);
+  grunt.registerTask('prep-release', ['build', 'changelog']);
 
   // Default task(s).
   grunt.registerTask('default', []);

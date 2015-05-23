@@ -101,7 +101,7 @@ if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
          * AngularJS Directive to Md to HTML transformation
          *
          * Usage example:
-         * <div sd-md-to-html-model="markdownText" ></div>
+         * <div sd-model-to-html="markdownText" ></div>
          *
          * @param $Showdown
          * @returns {*}

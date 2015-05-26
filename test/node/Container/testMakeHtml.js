@@ -10,7 +10,6 @@
 
   var fs = require('fs'),
       showdown = require('../../../dist/showdown.js'),
-      converter = new showdown.Converter(),
       cases = fs.readdirSync('test/cases/')
         .filter(filter())
         .map(map('test/cases/')),
@@ -20,15 +19,32 @@
 
   //Tests
   describe('Converter.makeHtml() simple testcases', function () {
+    var converter = new showdown.Converter();
     for (var i = 0; i < cases.length; ++i) {
-      it(cases[i].name, assertion(cases[i]));
+      if (cases[i].name === 'github-style-at-start') {
+        console.log(showdown.getOptions());
+      }
+      it(cases[i].name, assertion(cases[i], converter));
     }
   });
 
   describe('Converter.makeHtml() issues testcase', function () {
+    var converter = new showdown.Converter();
     for (var i = 0; i < issues.length; ++i) {
-      it(issues[i].name, assertion(issues[i]));
+      it(issues[i].name, assertion(issues[i], converter));
     }
+  });
+
+  describe('Converter.options omitExtraWLInCodeBlocks', function () {
+    var converter = new showdown.Converter({omitExtraWLInCodeBlocks: true}),
+        text = 'var foo = bar;',
+        html = converter.makeHtml('    ' + text);
+    it('should omit extra line after code tag', function () {
+      var expectedHtml = '<pre><code>' + text + '</code></pre>';
+
+      // Compare
+      html.should.equal(expectedHtml);
+    });
   });
 
   function filter() {
@@ -82,7 +98,7 @@
 
   }
 
-  function assertion(testCase) {
+  function assertion(testCase, converter) {
     return function () {
       testCase.actual = converter.makeHtml(testCase.input);
       testCase = normalize(testCase);

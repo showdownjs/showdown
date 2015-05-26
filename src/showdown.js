@@ -131,7 +131,7 @@ showdown.Converter = function (converterOptions) {
 
   converterOptions = converterOptions || {};
 
-  var options = globalOptions,
+  var options = {},
       langExtensions = [],
       outputModifiers = [],
       parserOrder = [
@@ -141,6 +141,12 @@ showdown.Converter = function (converterOptions) {
         'blockGamut',
         'unescapeSpecialChars'
       ];
+
+  for (var gOpt in globalOptions) {
+    if (globalOptions.hasOwnProperty(gOpt)) {
+      options[gOpt] = globalOptions[gOpt];
+    }
+  }
 
   // Merge options
   if (typeof converterOptions === 'object') {

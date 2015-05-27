@@ -341,4 +341,5 @@ See license.txt for more information.
       GitHub project maintainer
 
 Showdown is powered by:
+
 [![webstorm](https://www.jetbrains.com/webstorm/documentation/docs/logo_webstorm.png)](https://www.jetbrains.com/webstorm/)

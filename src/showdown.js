@@ -280,7 +280,36 @@ showdown.Converter = function (converterOptions) {
     return text;
   }
 
+  /**
+   * Set an option of this Converter instance
+   * @param {string} key
+   * @param {string} value
+   */
+  function setOption (key, value) {
+    options[key] = value;
+  }
+
+  /**
+   * Get the option of this Converter instance
+   * @param {string} key
+   * @returns {*}
+   */
+  function getOption(key) {
+    return options[key];
+  }
+
+  /**
+   * Get the options of this Converter instance
+   * @returns {{}}
+   */
+  function getOptions() {
+    return options;
+  }
+
   return {
-    makeHtml: makeHtml
+    makeHtml: makeHtml,
+    setOption: setOption,
+    getOption: getOption,
+    getOptions: getOptions
   };
 };

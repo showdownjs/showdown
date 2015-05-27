@@ -1,4 +1,4 @@
-;/*! showdown 26-05-2015 */
+;/*! showdown 27-05-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -282,8 +282,37 @@ showdown.Converter = function (converterOptions) {
     return text;
   }
 
+  /**
+   * Set an option of this Converter instance
+   * @param {string} key
+   * @param {string} value
+   */
+  function setOption (key, value) {
+    options[key] = value;
+  }
+
+  /**
+   * Get the option of this Converter instance
+   * @param {string} key
+   * @returns {*}
+   */
+  function getOption(key) {
+    return options[key];
+  }
+
+  /**
+   * Get the options of this Converter instance
+   * @returns {{}}
+   */
+  function getOptions() {
+    return options;
+  }
+
   return {
-    makeHtml: makeHtml
+    makeHtml: makeHtml,
+    setOption: setOption,
+    getOption: getOption,
+    getOptions: getOptions
   };
 };
 
@@ -654,15 +683,21 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
 
   var pattern = /(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g;
   text = text.replace(pattern, function (wholeMatch, m1, m2) {
-    var codeblock = m1, nextChar = m2;
+    var codeblock = m1,
+        nextChar = m2,
+        end = '\n';
 
     codeblock = showdown.subParser('outdent')(codeblock);
     codeblock = showdown.subParser('encodeCode')(codeblock);
     codeblock = showdown.subParser('detab')(codeblock);
     codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
-    codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing whitespace
+    codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing newlines
 
-    codeblock = '<pre><code>' + codeblock + '\n</code></pre>';
+    if (options.omitExtraWLInCodeBlocks) {
+      end = '';
+    }
+
+    codeblock = '<pre><code>' + codeblock + end + '</code></pre>';
 
     return showdown.subParser('hashBlock')(codeblock, options, globals) + nextChar;
   });

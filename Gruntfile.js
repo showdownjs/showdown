@@ -86,15 +86,12 @@ module.exports = function (grunt) {
 
     // test
     grunt.registerTask('lint', ['jshint']);
-    grunt.registerTask('test', ['simplemocha']);
+    grunt.registerTask('test', ['concat', 'lint', 'simplemocha']);
 
     // build with uglify
-    grunt.registerTask('build', ['concat', 'uglify']);
-
-    // Build with closure compiler
-    grunt.registerTask('build-with-closure', ['test', 'concat', 'closure-compiler']);
+    grunt.registerTask('build', ['test', 'concat', 'uglify']);
 
     // Default task(s).
-    grunt.registerTask('default', []);
+    grunt.registerTask('default', ['build']);
 
 };

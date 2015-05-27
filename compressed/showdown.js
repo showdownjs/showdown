@@ -222,6 +222,7 @@ Showdown.converter = function (converter_options) {
 
         // Iterate over each plugin
         Showdown.forEach(converter_options.extensions, function (plugin) {
+            var pluginName = plugin;
 
             // Assume it's a bundled plugin if a string is given
             if (typeof plugin === 'string') {
@@ -244,7 +245,7 @@ Showdown.converter = function (converter_options) {
                     }
                 });
             } else {
-                throw "Extension '" + plugin + "' could not be loaded.  It was either not found or is not a valid extension.";
+                throw "Extension '" + pluginName + "' could not be loaded.  It was either not found or is not a valid extension.";
             }
         });
     }
@@ -1464,7 +1465,7 @@ if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
 
         module
             .provider('$Showdown', provider)
-            .directive('sdModelToHtml', ['$Showdown', markdownToHtmlDirective])
+            .directive('sdModelToHtml', ['$Showdown', '$sanitize', markdownToHtmlDirective])
             .filter('sdStripHtml', stripHtmlFilter);
 
         /**
@@ -1555,18 +1556,18 @@ if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
          * AngularJS Directive to Md to HTML transformation
          *
          * Usage example:
-         * <div sd-md-to-html-model="markdownText" ></div>
+         * <div sd-model-to-html="markdownText" ></div>
          *
          * @param $Showdown
          * @returns {*}
          */
-        function markdownToHtmlDirective($Showdown) {
+        function markdownToHtmlDirective($Showdown, $sanitize) {
 
             var link = function (scope, element) {
                 scope.$watch('model', function (newValue) {
                     var val;
                     if (typeof newValue === 'string') {
-                        val = $Showdown.makeHtml(newValue);
+                        val = $sanitize($Showdown.makeHtml(newValue));
                     } else {
                         val = typeof newValue;
                     }
@@ -1594,7 +1595,7 @@ if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
             };
         }
 
-    })(angular.module('Showdown', []), Showdown);
+    })(angular.module('Showdown', ['ngSanitize']), Showdown);
 
 } else {
 

@@ -1,6 +1,8 @@
 ![Showdown](https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png)
 
-[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown)
+[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown) [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown) [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
+
+------
 
 Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber. Showdown can be used client side (in the browser) or server side (with NodeJs).
 
@@ -37,6 +39,11 @@ In theory, Showdown will work in any browser that supports ECMA 262 3rd Edition 
 ## Node compatibility
 
 Showdown has been tested with node 0.8 and 0.10. However, it should work with previous versions, such as node 0.6.
+
+
+## Legacy version
+
+If you're looking for showdown v<1.0.0, you can find it in the [**legacy branch**](https://github.com/showdownjs/showdown/tree/legacy).
 
 
 ## Quick Example

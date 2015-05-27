@@ -1,3 +1,12 @@
+<a name"1.0.1"></a>
+### 1.0.1 (2015-05-27)
+
+
+#### Bug Fixes
+
+* **bower.json:** update bower.json main attribute to point to dist directory ([bc3a092f](http://github.com/showdownjs/showdown/commit/bc3a092f))
+
+
 <a name"1.0.0"></a>
 ## 1.0.0 (2015-05-27)
 

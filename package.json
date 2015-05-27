@@ -1,6 +1,6 @@
 {
   "name": "showdown",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A Markdown to HTML converter written in Javascript",
   "authors": "Estevão Santos",
   "contributors": [

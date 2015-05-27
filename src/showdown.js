@@ -24,7 +24,7 @@ showdown.extensions = {};
  * Set a global option
  * @static
  * @param {string} key
- * @param {string} value
+ * @param {*} value
  * @returns {showdown}
  */
 showdown.setOption = function (key, value) {
@@ -283,7 +283,7 @@ showdown.Converter = function (converterOptions) {
   /**
    * Set an option of this Converter instance
    * @param {string} key
-   * @param {string} value
+   * @param {*} value
    */
   function setOption (key, value) {
     options[key] = value;

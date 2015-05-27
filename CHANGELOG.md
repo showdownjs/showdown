@@ -25,6 +25,19 @@ This is a major code refactor with some big changes such as:
 * **registerExtension():** new extension loading mechanism. Now extensions can be registered using this function.
 The system, however, is not final and will probably be changed until the final version([0fd10cb] (http://github.com/showdownjs/showdown/commit/0fd10cb))
 * **allowBlockIndents:** indented inline block elements can now be parsed as markdown ([f6326b84](http://github.com/showdownjs/showdown/commit/f6326b84))
+* **omitExtraWLInCodeBlocks:**  add option to omit extra newline at the end of codeblocks ([141e3f5](http://github.com/showdownjs/showdown/commit/141e3f5))
+* **prefixHeaderId:** add options to prefix header ids to prevent id clash ([141e3f5](http://github.com/showdownjs/showdown/commit/141e3f5))
 
 #### Breaking Changes
+* **NAMESPACE:** showdown's namespace changed.
+
+   To migrate your code you should update all references to `Showdown` with `showdown`.
+
+* **Converter:** converter reference changed from `converter` to `Converter`.
+
+   To migrate you should update all references to `Showdown.converter` with `showdown.Converter`
+
 * **angular:** angular integration was removed from core and now lives in it's own [repository](http://github.com/showdownjs/angular/).
+
+   If you're using angular integration, you should install ng-showdown. Ex: `bower install ng-showdown`
+

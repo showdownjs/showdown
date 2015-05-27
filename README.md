@@ -9,7 +9,7 @@ Showdown is a Javascript Markdown to HTML converter, based on the original works
 
 ### Download tarball
 
-You can download the latest release's tarball directly from https://github.com/showdownjs/showdown/releases
+You can download the latest release tarball directly from https://github.com/showdownjs/showdown/releases
 
 ### Bower
 
@@ -65,6 +65,78 @@ Both examples should output...
 ```html
 <h1 id="hellomarkdown">hello, markdown!</h1>
 ```
+
+## Options
+
+You can change some of showdown's default behavior through options. 
+
+### Setting options
+
+Options can be set:
+
+#### Globally
+
+Setting a "global" option affects all instances of showdown
+
+```js
+showdown.setOption('optionKey', 'value');
+```
+
+#### Locally
+Setting a "local" option only affects the specified Converter object. 
+Local options can be set:
+
+ * **through the constructor**
+    ```js
+    var converter = new showdown.Converter({optionKey: 'value');
+    ```
+
+ * **through the setOption() method**
+    ```js
+    var converter = new showdown.Converter();
+    conveter.setOption('optionKey', 'value');
+    ```
+
+### Getting an option
+
+Showdown provides 2 methods (both local and global) to retrieve previous set options.
+
+#### getOption()
+
+```js
+// Global
+var myOption = showdown.getOption('optionKey');
+
+//Local
+var myOption = conveter.getOption('optionKey');
+```
+
+#### getOptions()
+
+```js
+// Global
+var showdownGlobalOptions = showdown.getOptions();
+
+//Local
+var thisConverterSpecificOptions = conveter.getOptions();
+```
+
+### Valid Options
+
+ * **omitExtraWLInCodeBlocks**: (boolean) Omits the trailing newline in a code block. Ex:
+   
+    This:
+    ```html
+    <code><pre>var foo = 'bar';
+    </pre></code>
+    ```
+    Becomes this:
+    ```html
+    <code><pre>var foo = 'bar';</pre></code>
+    ```
+
+ * **prefixHeaderId**: (string/boolean) Adds a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
+
 
 ## Integration with AngularJS
 

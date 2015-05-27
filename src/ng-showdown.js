@@ -104,6 +104,7 @@ if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
          * <div sd-model-to-html="markdownText" ></div>
          *
          * @param $Showdown
+         * @param $sanitize
          * @returns {*}
          */
         function markdownToHtmlDirective($Showdown, $sanitize) {
@@ -126,7 +127,7 @@ if (typeof angular !== 'undefined'  && typeof Showdown !== 'undefined') {
                 scope: {
                     model: '=sdModelToHtml'
                 }
-            }
+            };
         }
 
         /**

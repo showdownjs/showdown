@@ -80,6 +80,34 @@ Showdown has been tested successfully with:
 
 In theory, Showdown will work in any browser that supports ECMA 262 3rd Edition (JavaScript 1.5).  The converter itself might even work in things that aren't web browsers, like Acrobat.  No promises.
 
+## Angular integration
+
+Showdown provides a wrapper for angular. Using it is very simple:
+
+ * include showdown.js in your index.html file as usual, but after angular.
+ * in your app module you need to require Showdown and ngSanitize as a dependency
+ * in your view, use the `sd-model-to-html` directive to bind a model to a view and render it as HTML.
+
+### Usage example:
+
+```html
+<body>
+
+<div ng-controller="myController">
+    <div sd-model-to-html="mdText"></div>
+</div>
+
+<script src="js/angular.js"></script>
+<script src="js/showdown.js"></script>
+<script>
+var myApp = angular.module('myApp', ['ngSanitize', 'Showdown']);
+
+myApp.controller('myController', ['$scope'], function($scope) {
+  $scope.mdText = '# this is a markdown text';
+});
+</script>
+</body>
+```
 
 ## Extensions
 

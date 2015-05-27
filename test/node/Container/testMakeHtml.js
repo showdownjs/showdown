@@ -41,8 +41,6 @@
         html = converter.makeHtml('    ' + text);
     it('should omit extra line after code tag', function () {
       var expectedHtml = '<pre><code>' + text + '</code></pre>';
-
-      // Compare
       html.should.equal(expectedHtml);
     });
   });

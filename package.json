@@ -1,6 +1,7 @@
 {
   "name": "showdown",
-  "version": "0.5.3",
+  "version": "0.5.4",
+  "description": "A Markdown to HTML converter written in Javascript",
   "author": "John Fraser",
   "contributors": [
     "John Gruber",

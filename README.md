@@ -1,18 +1,10 @@
 # Showdown
-[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=legacy)](https://travis-ci.org/showdownjs/showdown)
 
-**Showdown**: An extensible Markdown to HTML converter written in Javascript.
+[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=legacy)](https://travis-ci.org/showdownjs/showdown) [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown) [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
 
-## Original Attributions
+------
 
-Showdown Copyright (c) 2007 John Fraser.
-<http://www.attacklab.net/>
-
-Original Markdown Copyright (c) 2004-2005 John Gruber
-<http://daringfireball.net/projects/markdown/>
-
-Redistributable under a BSD-style open source license.
-See license.txt for more information.
+**Showdown**: An extensible Markdown to HTML converter written in Javascript.<br/>
 
 ## Quick Example
 
@@ -301,6 +293,17 @@ Second, client-side extensions should add a property onto `Showdown.extensions` 
 
 The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension, create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.  Place any test cases into the filder using the md/html format and they will automatically be run when tests are run.
 
+
+## Original Attributions
+
+Showdown Copyright (c) 2007 John Fraser.
+<http://www.attacklab.net/>
+
+Original Markdown Copyright (c) 2004-2005 John Gruber
+<http://daringfireball.net/projects/markdown/>
+
+Redistributable under a BSD-style open source license.
+See license.txt for more information.
 
 ## Credits
 

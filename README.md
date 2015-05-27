@@ -115,7 +115,7 @@ Showdown provides 2 methods (both local and global) to retrieve previous set opt
 var myOption = showdown.getOption('optionKey');
 
 //Local
-var myOption = conveter.getOption('optionKey');
+var myOption = converter.getOption('optionKey');
 ```
 
 #### getOptions()

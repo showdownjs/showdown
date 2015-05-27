@@ -153,7 +153,7 @@ Please visit https://github.com/showdownjs/ngShowdown for more information.
 
 ## Extensions
 
-Showdown allows additional functionality to be loaded via extensions.
+Showdown allows additional functionality to be loaded via extensions. (you can find a list of known showdown extensions [here](https://github.com/showdownjs/showdown/wiki/extensions))
 
 ### Client-side Extension Usage
 

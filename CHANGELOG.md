@@ -1,3 +1,12 @@
+<a name"1.0.2"></a>
+### 1.0.2 (2015-05-28)
+
+#### Bug Fixes
+
+ * **Gruntfile.js** add missing comma in footer. This bug prevented concatenating other js scripts and libraries
+ with showdown([5315508](http://github.com/showdownjs/showdown/commit/5315508). Credits to Alexandre Courtiol.
+
+
 <a name"1.0.1"></a>
 ### 1.0.1 (2015-05-27)
 

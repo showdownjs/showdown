@@ -33,6 +33,7 @@ Credits
       Bug fixing and late maintainer
     * [Hannah Wolfe](https://github.com/ErisDS)<br/>
       Bug fixes
+    * [Alexandre Courtiol](https://github.com/acourtiol)
 
   - Original Project
     * [John Gruber](http://daringfireball.net/projects/markdown/)<br/>

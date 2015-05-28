@@ -2,7 +2,12 @@
   "name": "showdown",
   "version": "1.0.1",
   "description": "A Markdown to HTML converter written in Javascript",
-  "authors": "Estevão Santos",
+  "author": "Estevão Santos",
+  "homepage": "http://showdownjs.github.io/showdown/",
+  "keywords": [
+    "markdown",
+    "converter"
+  ],
   "contributors": [
     "John Gruber",
     "John Fraser",

@@ -1,6 +1,6 @@
 ![Showdown](https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png)
 
-[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown) [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown) [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
+[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown) [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown) [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown) [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ------
 
@@ -21,6 +21,11 @@ You can download the latest release tarball directly from https://github.com/sho
 
     npm install showdown
 
+### CDN
+
+You can also use github CDN directly in your html file(s).
+
+    https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
 
 ## Browser Compatibility
 

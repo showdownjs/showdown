@@ -159,6 +159,16 @@ var thisConverterSpecificOptions = conveter.getOptions();
 ShowdownJS project also provides seamlessly integration with AngularJS via a "plugin".
 Please visit https://github.com/showdownjs/ngShowdown for more information.
 
+## XSS vulnerability
+
+Showdown doesn't sanitize the input. This is by design since markdown relies on it to allow certain features to be correctly parsed into HTML. This, however, means XSS injection is quite possible.
+
+If you use showdown to parse untrusted input (such as user contributed data), you should: 
+
+ - DEFINITELY sanitize the content but only AFTER converting to HTML, not before.
+ - PREFERABLY that should be done server side, not client side.
+
+There are a couple of libraries in the wild for your preferred language.
 
 ## Extensions
 

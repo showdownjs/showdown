@@ -62,3 +62,4 @@ The system, however, is not final and will probably be changed until the final v
 
    If you're using angular integration, you should install ng-showdown. Ex: `bower install ng-showdown`
 
+* **extensions:** showdown extensions were removed from core package and now live in their own repository. See the [project's github page](https://github.com/showdownjs) for available extensions

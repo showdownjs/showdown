@@ -15,16 +15,23 @@
         .map(map('test/cases/')),
       issues = fs.readdirSync('test/issues/')
         .filter(filter())
-        .map(map('test/issues/'));
+        .map(map('test/issues/')),
+      extra = fs.readdirSync('test/extra/')
+        .filter(filter())
+        .map(map('test/extra/'));
 
   //Tests
   describe('Converter.makeHtml() simple testcases', function () {
     var converter = new showdown.Converter();
     for (var i = 0; i < cases.length; ++i) {
-      if (cases[i].name === 'github-style-at-start') {
-        console.log(showdown.getOptions());
-      }
       it(cases[i].name, assertion(cases[i], converter));
+    }
+  });
+
+  describe('Converter.makeHtml() EXTRA testcases', function () {
+    var converter = new showdown.Converter();
+    for (var i = 0; i < extra.length; ++i) {
+      it(extra[i].name, assertion(extra[i], converter));
     }
   });
 

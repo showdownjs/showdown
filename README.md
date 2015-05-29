@@ -27,6 +27,10 @@ You can also use github CDN directly in your html file(s).
 
     https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
 
+## Changelog
+
+You can check the full changelog at https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
+
 ## Browser Compatibility
 
 Showdown has been tested successfully with:

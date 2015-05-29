@@ -1,4 +1,4 @@
-;/*! showdown 29-05-2015 */
+;/*! showdown 28-05-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -1432,7 +1432,7 @@ showdown.subParser('lists', function (text, options, globals) {
    )
    )/g
    */
-  var wholeList = /^(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:\2)[ \t]+)))/gm;
+  var wholeList = /^(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
 
   if (globals.gListLevel) {
     text = text.replace(wholeList, function (wholeMatch, m1, m2) {
@@ -1454,7 +1454,7 @@ showdown.subParser('lists', function (text, options, globals) {
       return result;
     });
   } else {
-    wholeList = /(\n\n|^\n?)(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:\3)[ \t]+)))/g;
+    wholeList = /(\n\n|^\n?)(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/g;
 
     text = text.replace(wholeList, function (wholeMatch, m1, m2, m3) {
 

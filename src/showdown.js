@@ -6,10 +6,11 @@
 var showdown = {},
     parsers = {},
     extensions = {},
-    globalOptions = {
+    defaultOptions = {
       omitExtraWLInCodeBlocks: false,
       prefixHeaderId:          false
-    };
+    },
+    globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 
 /**
  * helper namespace
@@ -17,7 +18,10 @@ var showdown = {},
  */
 showdown.helper = {};
 
-// Public properties
+/**
+ * TODO LEGACY SUPPORT CODE
+ * @type {{}}
+ */
 showdown.extensions = {};
 
 /**
@@ -54,6 +58,11 @@ showdown.getOptions = function () {
   return globalOptions;
 };
 
+showdown.resetOptions = function () {
+  'use strict';
+  globalOptions = JSON.parse(JSON.stringify(defaultOptions));
+};
+
 /**
  * Get or set a subParser
  *
@@ -79,6 +88,13 @@ showdown.subParser = function (name, func) {
   }
 };
 
+/**
+ * Gets or registers an extension
+ * @static
+ * @param {string} name
+ * @param {object|function=} ext
+ * @returns {*}
+ */
 showdown.extension = function (name, ext) {
   'use strict';
 
@@ -88,228 +104,149 @@ showdown.extension = function (name, ext) {
 
   name = showdown.helper.stdExtName(name);
 
+  // Getter
   if (showdown.helper.isUndefined(ext)) {
-    return getExtension();
+    if (!extensions.hasOwnProperty(name)) {
+      throw Error('Extension named ' + name + ' is not registered!');
+    }
+    return extensions[name];
+
+    // Setter
   } else {
-    return setExtension();
+    if (typeof ext === 'function') {
+      ext = ext();
+    }
+
+    var validExtension = validate(ext, name);
+
+    if (validExtension.valid) {
+      extensions[name] = ext;
+    } else {
+      throw Error(validExtension.error);
+    }
   }
 };
 
-function getExtension(name) {
+/**
+ * Gets all extensions registered
+ * @returns {{}}
+ */
+showdown.getAllExtensions = function () {
+  'use strict';
+  return extensions;
+};
+
+/**
+ * Remove an extension
+ * @param {string} name
+ */
+showdown.removeExtension = function (name) {
+  'use strict';
+  delete extensions[name];
+};
+
+/**
+ * Removes all extensions
+ */
+showdown.resetExtensions = function () {
+  'use strict';
+  extensions = {};
+};
+
+/**
+ * Validate extension
+ * @param {object} ext
+ * @param {string} name
+ * @returns {{valid: boolean, error: string}}
+ */
+function validate(ext, name) {
   'use strict';
 
-  if (!extensions.hasOwnProperty(name)) {
-    throw Error('Extension named ' + name + ' is not registered!');
-  }
-  return extensions[name];
-}
-
-function setExtension(name, ext) {
-  'use strict';
+  var baseMsg = (name) ? 'Error in ' + name + ' extension: ' : 'Error in unnamed extension',
+    ret = {
+      valid: true,
+      error: baseMsg
+    };
 
   if (typeof ext !== 'object') {
-    throw Error('A Showdown Extension must be an object, ' + typeof ext + ' given');
+    ret.valid = false;
+    ret.error = baseMsg + 'it must be an object, but ' + typeof ext + ' given';
+    return ret;
   }
 
   if (!showdown.helper.isString(ext.type)) {
-    throw Error('When registering a showdown extension, "type" must be a string, ' + typeof ext.type + ' given');
+    ret.valid = false;
+    ret.error = baseMsg + 'property "type" must be a string, but ' + typeof ext.type + ' given';
+    return ret;
   }
 
-  ext.type = ext.type.toLowerCase();
+  var type = ext.type = ext.type.toLowerCase();
 
-  extensions[name] = ext;
+  // normalize extension type
+  if (type === 'language') {
+    type = ext.type = 'lang';
+  }
+
+  if (type === 'html') {
+    type = ext.type = 'output';
+  }
+
+  if (type !== 'lang' && type !== 'output') {
+    ret.valid = false;
+    ret.error = baseMsg + 'type ' + type + ' is not recognized. Valid values: "lang" or "output"';
+    return ret;
+  }
+
+  if (ext.filter) {
+    if (typeof ext.filter !== 'function') {
+      ret.valid = false;
+      ret.error = baseMsg + '"filter" must be a function, but ' + typeof ext.filter + ' given';
+      return ret;
+    }
+
+  } else if (ext.regex) {
+    if (showdown.helper.isString(ext.regex)) {
+      ext.regex = new RegExp(ext.regex, 'g');
+    }
+    if (!ext.regex instanceof RegExp) {
+      ret.valid = false;
+      ret.error = baseMsg + '"regex" property must either be a string or a RegExp object, but ' +
+        typeof ext.regex + ' given';
+      return ret;
+    }
+    if (showdown.helper.isUndefined(ext.replace)) {
+      ret.valid = false;
+      ret.error = baseMsg + '"regex" extensions must implement a replace string or function';
+      return ret;
+    }
+
+  } else {
+    ret.valid = false;
+    ret.error = baseMsg + 'extensions must define either a "regex" property or a "filter" method';
+    return ret;
+  }
+
+  if (showdown.helper.isUndefined(ext.filter) && showdown.helper.isUndefined(ext.regex)) {
+    ret.valid = false;
+    ret.error = baseMsg + 'output extensions must define a filter property';
+    return ret;
+  }
+
+  return ret;
 }
 
 /**
- * Showdown Converter class
- *
- * @param {object} [converterOptions]
- * @returns {{makeHtml: Function}}
+ * Validate extension
+ * @param {object} ext
+ * @returns {boolean}
  */
-showdown.Converter = function (converterOptions) {
+showdown.validateExtension = function (ext) {
   'use strict';
 
-  converterOptions = converterOptions || {};
-
-  var options = {},
-      langExtensions = [],
-      outputModifiers = [],
-      parserOrder = [
-        'githubCodeBlocks',
-        'hashHTMLBlocks',
-        'stripLinkDefinitions',
-        'blockGamut',
-        'unescapeSpecialChars'
-      ];
-
-  for (var gOpt in globalOptions) {
-    if (globalOptions.hasOwnProperty(gOpt)) {
-      options[gOpt] = globalOptions[gOpt];
-    }
+  var validateExtension = validate(ext, null);
+  if (!validateExtension.valid) {
+    console.warn(validateExtension.error);
+    return false;
   }
-
-  // Merge options
-  if (typeof converterOptions === 'object') {
-    for (var opt in converterOptions) {
-      if (converterOptions.hasOwnProperty(opt)) {
-        options[opt] = converterOptions[opt];
-      }
-    }
-  }
-
-  // This is a dirty workaround to maintain backwards extension compatibility
-  // We define a self var (which is a copy of this) and inject the makeHtml function
-  // directly to it. This ensures a full converter object is available when iterating over extensions
-  // We should rewrite the extension loading mechanism and use some kind of interface or decorator pattern
-  // and inject the object reference there instead.
-  var self = this;
-  self.makeHtml = makeHtml;
-
-  // Parse options
-  if (options.extensions) {
-
-    // Iterate over each plugin
-    showdown.helper.forEach(options.extensions, function (plugin) {
-      var pluginName = plugin;
-
-      // Assume it's a bundled plugin if a string is given
-      if (typeof plugin === 'string') {
-        var tPluginName = showdown.helper.stdExtName(plugin);
-
-        if (!showdown.helper.isUndefined(showdown.extensions[tPluginName]) && showdown.extensions[tPluginName]) {
-          //Trigger some kind of deprecated alert
-          plugin = showdown.extensions[tPluginName];
-
-        } else if (!showdown.helper.isUndefined(extensions[tPluginName])) {
-          plugin = extensions[tPluginName];
-        }
-      }
-
-      if (typeof plugin === 'function') {
-        // Iterate over each extension within that plugin
-        showdown.helper.forEach(plugin(self), function (ext) {
-          // Sort extensions by type
-          if (ext.type) {
-            if (ext.type === 'language' || ext.type === 'lang') {
-              langExtensions.push(ext);
-            } else if (ext.type === 'output' || ext.type === 'html') {
-              outputModifiers.push(ext);
-            }
-          } else {
-            // Assume language extension
-            outputModifiers.push(ext);
-          }
-        });
-      } else {
-        var errMsg = 'An extension could not be loaded. It was either not found or is not a valid extension.';
-        if (typeof pluginName === 'string') {
-          errMsg = 'Extension "' + pluginName + '" could not be loaded.  It was either not found or is not a valid extension.';
-        }
-        throw errMsg;
-      }
-    });
-  }
-
-  /**
-   * Converts a markdown string into HTML
-   * @param {string} text
-   * @returns {*}
-   */
-  function makeHtml(text) {
-
-    //check if text is not falsy
-    if (!text) {
-      return text;
-    }
-
-    var globals = {
-      gHtmlBlocks:     [],
-      gUrls:           {},
-      gTitles:         {},
-      gListLevel:      0,
-      hashLinkCounts:  {},
-      langExtensions:  langExtensions,
-      outputModifiers: outputModifiers
-    };
-
-    // attacklab: Replace ~ with ~T
-    // This lets us use tilde as an escape char to avoid md5 hashes
-    // The choice of character is arbitrary; anything that isn't
-    // magic in Markdown will work.
-    text = text.replace(/~/g, '~T');
-
-    // attacklab: Replace $ with ~D
-    // RegExp interprets $ as a special character
-    // when it's in a replacement string
-    text = text.replace(/\$/g, '~D');
-
-    // Standardize line endings
-    text = text.replace(/\r\n/g, '\n'); // DOS to Unix
-    text = text.replace(/\r/g, '\n'); // Mac to Unix
-
-    // Make sure text begins and ends with a couple of newlines:
-    text = '\n\n' + text + '\n\n';
-
-    // detab
-    text = parsers.detab(text, options, globals);
-
-    // stripBlankLines
-    text = parsers.stripBlankLines(text, options, globals);
-
-    //run languageExtensions
-    text = parsers.languageExtensions(text, options, globals);
-
-    // Run all registered parsers
-    for (var i = 0; i < parserOrder.length; ++i) {
-      var name = parserOrder[i];
-      text = parsers[name](text, options, globals);
-    }
-
-    // attacklab: Restore dollar signs
-    text = text.replace(/~D/g, '$$');
-
-    // attacklab: Restore tildes
-    text = text.replace(/~T/g, '~');
-
-    // Run output modifiers
-    showdown.helper.forEach(globals.outputModifiers, function (ext) {
-      text = showdown.subParser('runExtension')(ext, text);
-    });
-    text = parsers.outputModifiers(text, options, globals);
-
-    return text;
-  }
-
-  /**
-   * Set an option of this Converter instance
-   * @param {string} key
-   * @param {*} value
-   */
-  function setOption (key, value) {
-    options[key] = value;
-  }
-
-  /**
-   * Get the option of this Converter instance
-   * @param {string} key
-   * @returns {*}
-   */
-  function getOption(key) {
-    return options[key];
-  }
-
-  /**
-   * Get the options of this Converter instance
-   * @returns {{}}
-   */
-  function getOptions() {
-    return options;
-  }
-
-  return {
-    makeHtml: makeHtml,
-    setOption: setOption,
-    getOption: getOption,
-    getOptions: getOptions
-  };
+  return true;
 };

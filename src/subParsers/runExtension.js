@@ -1,13 +1,20 @@
 /**
- * Run language extensions
+ * Run extension
  */
-showdown.subParser('runExtension', function (ext, text) {
+showdown.subParser('runExtension', function (ext, text, options, globals) {
   'use strict';
 
-  if (ext.regex) {
-    var re = new RegExp(ext.regex, 'g');
-    return text.replace(re, ext.replace);
-  } else if (ext.filter) {
-    return ext.filter(text);
+  if (ext.filter) {
+    text = ext.filter(text, globals.converter, options);
+
+  } else if (ext.regex) {
+    // TODO remove this when old extension loading mechanism is deprecated
+    var re = ext.regex;
+    if (!re instanceof RegExp) {
+      re = new RegExp(re, 'g');
+    }
+    text = text.replace(re, ext.replace);
   }
+
+  return text;
 });

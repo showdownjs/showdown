@@ -1,4 +1,4 @@
-;/*! showdown 28-05-2015 */
+;/*! showdown 31-05-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -8,10 +8,11 @@
 var showdown = {},
     parsers = {},
     extensions = {},
-    globalOptions = {
+    defaultOptions = {
       omitExtraWLInCodeBlocks: false,
       prefixHeaderId:          false
-    };
+    },
+    globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 
 /**
  * helper namespace
@@ -19,7 +20,10 @@ var showdown = {},
  */
 showdown.helper = {};
 
-// Public properties
+/**
+ * TODO LEGACY SUPPORT CODE
+ * @type {{}}
+ */
 showdown.extensions = {};
 
 /**
@@ -56,6 +60,11 @@ showdown.getOptions = function () {
   return globalOptions;
 };
 
+showdown.resetOptions = function () {
+  'use strict';
+  globalOptions = JSON.parse(JSON.stringify(defaultOptions));
+};
+
 /**
  * Get or set a subParser
  *
@@ -81,6 +90,13 @@ showdown.subParser = function (name, func) {
   }
 };
 
+/**
+ * Gets or registers an extension
+ * @static
+ * @param {string} name
+ * @param {object|function=} ext
+ * @returns {*}
+ */
 showdown.extension = function (name, ext) {
   'use strict';
 
@@ -90,230 +106,151 @@ showdown.extension = function (name, ext) {
 
   name = showdown.helper.stdExtName(name);
 
+  // Getter
   if (showdown.helper.isUndefined(ext)) {
-    return getExtension();
+    if (!extensions.hasOwnProperty(name)) {
+      throw Error('Extension named ' + name + ' is not registered!');
+    }
+    return extensions[name];
+
+    // Setter
   } else {
-    return setExtension();
+    if (typeof ext === 'function') {
+      ext = ext();
+    }
+
+    var validExtension = validate(ext, name);
+
+    if (validExtension.valid) {
+      extensions[name] = ext;
+    } else {
+      throw Error(validExtension.error);
+    }
   }
 };
 
-function getExtension(name) {
+/**
+ * Gets all extensions registered
+ * @returns {{}}
+ */
+showdown.getAllExtensions = function () {
+  'use strict';
+  return extensions;
+};
+
+/**
+ * Remove an extension
+ * @param {string} name
+ */
+showdown.removeExtension = function (name) {
+  'use strict';
+  delete extensions[name];
+};
+
+/**
+ * Removes all extensions
+ */
+showdown.resetExtensions = function () {
+  'use strict';
+  extensions = {};
+};
+
+/**
+ * Validate extension
+ * @param {object} ext
+ * @param {string} name
+ * @returns {{valid: boolean, error: string}}
+ */
+function validate(ext, name) {
   'use strict';
 
-  if (!extensions.hasOwnProperty(name)) {
-    throw Error('Extension named ' + name + ' is not registered!');
-  }
-  return extensions[name];
-}
-
-function setExtension(name, ext) {
-  'use strict';
+  var baseMsg = (name) ? 'Error in ' + name + ' extension: ' : 'Error in unnamed extension',
+    ret = {
+      valid: true,
+      error: baseMsg
+    };
 
   if (typeof ext !== 'object') {
-    throw Error('A Showdown Extension must be an object, ' + typeof ext + ' given');
+    ret.valid = false;
+    ret.error = baseMsg + 'it must be an object, but ' + typeof ext + ' given';
+    return ret;
   }
 
   if (!showdown.helper.isString(ext.type)) {
-    throw Error('When registering a showdown extension, "type" must be a string, ' + typeof ext.type + ' given');
+    ret.valid = false;
+    ret.error = baseMsg + 'property "type" must be a string, but ' + typeof ext.type + ' given';
+    return ret;
   }
 
-  ext.type = ext.type.toLowerCase();
+  var type = ext.type = ext.type.toLowerCase();
 
-  extensions[name] = ext;
+  // normalize extension type
+  if (type === 'language') {
+    type = ext.type = 'lang';
+  }
+
+  if (type === 'html') {
+    type = ext.type = 'output';
+  }
+
+  if (type !== 'lang' && type !== 'output') {
+    ret.valid = false;
+    ret.error = baseMsg + 'type ' + type + ' is not recognized. Valid values: "lang" or "output"';
+    return ret;
+  }
+
+  if (ext.filter) {
+    if (typeof ext.filter !== 'function') {
+      ret.valid = false;
+      ret.error = baseMsg + '"filter" must be a function, but ' + typeof ext.filter + ' given';
+      return ret;
+    }
+
+  } else if (ext.regex) {
+    if (showdown.helper.isString(ext.regex)) {
+      ext.regex = new RegExp(ext.regex, 'g');
+    }
+    if (!ext.regex instanceof RegExp) {
+      ret.valid = false;
+      ret.error = baseMsg + '"regex" property must either be a string or a RegExp object, but ' +
+        typeof ext.regex + ' given';
+      return ret;
+    }
+    if (showdown.helper.isUndefined(ext.replace)) {
+      ret.valid = false;
+      ret.error = baseMsg + '"regex" extensions must implement a replace string or function';
+      return ret;
+    }
+
+  } else {
+    ret.valid = false;
+    ret.error = baseMsg + 'extensions must define either a "regex" property or a "filter" method';
+    return ret;
+  }
+
+  if (showdown.helper.isUndefined(ext.filter) && showdown.helper.isUndefined(ext.regex)) {
+    ret.valid = false;
+    ret.error = baseMsg + 'output extensions must define a filter property';
+    return ret;
+  }
+
+  return ret;
 }
 
 /**
- * Showdown Converter class
- *
- * @param {object} [converterOptions]
- * @returns {{makeHtml: Function}}
+ * Validate extension
+ * @param {object} ext
+ * @returns {boolean}
  */
-showdown.Converter = function (converterOptions) {
+showdown.validateExtension = function (ext) {
   'use strict';
 
-  converterOptions = converterOptions || {};
-
-  var options = {},
-      langExtensions = [],
-      outputModifiers = [],
-      parserOrder = [
-        'githubCodeBlocks',
-        'hashHTMLBlocks',
-        'stripLinkDefinitions',
-        'blockGamut',
-        'unescapeSpecialChars'
-      ];
-
-  for (var gOpt in globalOptions) {
-    if (globalOptions.hasOwnProperty(gOpt)) {
-      options[gOpt] = globalOptions[gOpt];
-    }
+  var validateExtension = validate(ext, null);
+  if (!validateExtension.valid) {
+    console.warn(validateExtension.error);
+    return false;
   }
-
-  // Merge options
-  if (typeof converterOptions === 'object') {
-    for (var opt in converterOptions) {
-      if (converterOptions.hasOwnProperty(opt)) {
-        options[opt] = converterOptions[opt];
-      }
-    }
-  }
-
-  // This is a dirty workaround to maintain backwards extension compatibility
-  // We define a self var (which is a copy of this) and inject the makeHtml function
-  // directly to it. This ensures a full converter object is available when iterating over extensions
-  // We should rewrite the extension loading mechanism and use some kind of interface or decorator pattern
-  // and inject the object reference there instead.
-  var self = this;
-  self.makeHtml = makeHtml;
-
-  // Parse options
-  if (options.extensions) {
-
-    // Iterate over each plugin
-    showdown.helper.forEach(options.extensions, function (plugin) {
-      var pluginName = plugin;
-
-      // Assume it's a bundled plugin if a string is given
-      if (typeof plugin === 'string') {
-        var tPluginName = showdown.helper.stdExtName(plugin);
-
-        if (!showdown.helper.isUndefined(showdown.extensions[tPluginName]) && showdown.extensions[tPluginName]) {
-          //Trigger some kind of deprecated alert
-          plugin = showdown.extensions[tPluginName];
-
-        } else if (!showdown.helper.isUndefined(extensions[tPluginName])) {
-          plugin = extensions[tPluginName];
-        }
-      }
-
-      if (typeof plugin === 'function') {
-        // Iterate over each extension within that plugin
-        showdown.helper.forEach(plugin(self), function (ext) {
-          // Sort extensions by type
-          if (ext.type) {
-            if (ext.type === 'language' || ext.type === 'lang') {
-              langExtensions.push(ext);
-            } else if (ext.type === 'output' || ext.type === 'html') {
-              outputModifiers.push(ext);
-            }
-          } else {
-            // Assume language extension
-            outputModifiers.push(ext);
-          }
-        });
-      } else {
-        var errMsg = 'An extension could not be loaded. It was either not found or is not a valid extension.';
-        if (typeof pluginName === 'string') {
-          errMsg = 'Extension "' + pluginName + '" could not be loaded.  It was either not found or is not a valid extension.';
-        }
-        throw errMsg;
-      }
-    });
-  }
-
-  /**
-   * Converts a markdown string into HTML
-   * @param {string} text
-   * @returns {*}
-   */
-  function makeHtml(text) {
-
-    //check if text is not falsy
-    if (!text) {
-      return text;
-    }
-
-    var globals = {
-      gHtmlBlocks:     [],
-      gUrls:           {},
-      gTitles:         {},
-      gListLevel:      0,
-      hashLinkCounts:  {},
-      langExtensions:  langExtensions,
-      outputModifiers: outputModifiers
-    };
-
-    // attacklab: Replace ~ with ~T
-    // This lets us use tilde as an escape char to avoid md5 hashes
-    // The choice of character is arbitrary; anything that isn't
-    // magic in Markdown will work.
-    text = text.replace(/~/g, '~T');
-
-    // attacklab: Replace $ with ~D
-    // RegExp interprets $ as a special character
-    // when it's in a replacement string
-    text = text.replace(/\$/g, '~D');
-
-    // Standardize line endings
-    text = text.replace(/\r\n/g, '\n'); // DOS to Unix
-    text = text.replace(/\r/g, '\n'); // Mac to Unix
-
-    // Make sure text begins and ends with a couple of newlines:
-    text = '\n\n' + text + '\n\n';
-
-    // detab
-    text = parsers.detab(text, options, globals);
-
-    // stripBlankLines
-    text = parsers.stripBlankLines(text, options, globals);
-
-    //run languageExtensions
-    text = parsers.languageExtensions(text, options, globals);
-
-    // Run all registered parsers
-    for (var i = 0; i < parserOrder.length; ++i) {
-      var name = parserOrder[i];
-      text = parsers[name](text, options, globals);
-    }
-
-    // attacklab: Restore dollar signs
-    text = text.replace(/~D/g, '$$');
-
-    // attacklab: Restore tildes
-    text = text.replace(/~T/g, '~');
-
-    // Run output modifiers
-    showdown.helper.forEach(globals.outputModifiers, function (ext) {
-      text = showdown.subParser('runExtension')(ext, text);
-    });
-    text = parsers.outputModifiers(text, options, globals);
-
-    return text;
-  }
-
-  /**
-   * Set an option of this Converter instance
-   * @param {string} key
-   * @param {*} value
-   */
-  function setOption (key, value) {
-    options[key] = value;
-  }
-
-  /**
-   * Get the option of this Converter instance
-   * @param {string} key
-   * @returns {*}
-   */
-  function getOption(key) {
-    return options[key];
-  }
-
-  /**
-   * Get the options of this Converter instance
-   * @returns {{}}
-   */
-  function getOptions() {
-    return options;
-  }
-
-  return {
-    makeHtml: makeHtml,
-    setOption: setOption,
-    getOption: getOption,
-    getOptions: getOptions
-  };
+  return true;
 };
 
 /**
@@ -422,6 +359,291 @@ showdown.helper.escapeCharacters = function escapeCharacters(text, charsToEscape
   text = text.replace(regex, escapeCharactersCallback);
 
   return text;
+};
+
+/**
+ * POLYFILLS
+ */
+if (showdown.helper.isUndefined(console)) {
+  console = {
+    warn: function (msg) {
+      'use strict';
+      alert(msg);
+    },
+    log: function (msg) {
+      'use strict';
+      alert(msg);
+    }
+  };
+}
+
+/**
+ * Created by Estevao on 31-05-2015.
+ */
+
+/**
+ * Showdown Converter class
+ * @class
+ * @param {object} [converterOptions]
+ * @returns {
+ *  {makeHtml: Function},
+ *  {setOption: Function},
+ *  {getOption: Function},
+ *  {getOptions: Function}
+ * }
+ */
+showdown.Converter = function (converterOptions) {
+  'use strict';
+
+  var
+      /**
+       * Options used by this converter
+       * @private
+       * @type {{}}
+       */
+      options = {
+        omitExtraWLInCodeBlocks: false,
+        prefixHeaderId:          false
+      },
+
+      /**
+       * Language extensions used by this converter
+       * @private
+       * @type {Array}
+       */
+      langExtensions = [],
+
+      /**
+       * Output modifiers extensions used by this converter
+       * @private
+       * @type {Array}
+       */
+      outputModifiers = [],
+
+      /**
+       * The parser Order
+       * @private
+       * @type {string[]}
+       */
+      parserOrder = [
+        'githubCodeBlocks',
+        'hashHTMLBlocks',
+        'stripLinkDefinitions',
+        'blockGamut',
+        'unescapeSpecialChars'
+      ];
+
+  _constructor();
+
+  /**
+   * Converter constructor
+   * @private
+   */
+  function _constructor() {
+    converterOptions = converterOptions || {};
+
+    for (var gOpt in globalOptions) {
+      if (globalOptions.hasOwnProperty(gOpt)) {
+        options[gOpt] = globalOptions[gOpt];
+      }
+    }
+
+    // Merge options
+    if (typeof converterOptions === 'object') {
+      for (var opt in converterOptions) {
+        if (converterOptions.hasOwnProperty(opt)) {
+          options[opt] = converterOptions[opt];
+        }
+      }
+    }
+
+    if (options.extensions) {
+      showdown.helper.forEach(options.extensions, _parseExtension);
+    }
+  }
+
+  /**
+   * Parse extension
+   * @param {*} ext
+   * @private
+   */
+  function _parseExtension(ext) {
+
+    // If it's a string, the extension was previously loaded
+    if (showdown.helper.isString(ext)) {
+      ext = showdown.helper.stdExtName(ext);
+
+      // TODO LEGACY SUPPORT CODE
+      if (!showdown.helper.isUndefined(showdown.extensions[ext]) && showdown.extensions[ext]) {
+        console.warn(ext + ' is an old extension that uses a deprecated loading method.' +
+          'Please inform the developer that the extension should be updated!');
+        ext = showdown.extensions[ext];
+      // END LEGACY SUPPORT CODE
+
+      } else if (!showdown.helper.isUndefined(extensions[ext])) {
+        ext = extensions[ext];
+
+      } else {
+        throw Error('Extension "' + ext + '" could not be loaded. It was either not found or is not a valid extension.');
+      }
+    } else if (typeof ext === 'function') {
+      ext = ext();
+    }
+
+    if (!showdown.validateExtension(ext)) {
+      return;
+    }
+
+    switch (ext.type) {
+      case 'lang':
+        langExtensions.push(ext);
+        break;
+
+      case 'output':
+        outputModifiers.push(ext);
+        break;
+
+      default:
+        // should never reach here
+        throw Error('Extension loader error: Type unrecognized!!!');
+    }
+  }
+
+  /**
+   * Converts a markdown string into HTML
+   * @param {string} text
+   * @returns {*}
+   */
+  this.makeHtml = function (text) {
+    //check if text is not falsy
+    if (!text) {
+      return text;
+    }
+
+    var globals = {
+      gHtmlBlocks:     [],
+      gUrls:           {},
+      gTitles:         {},
+      gListLevel:      0,
+      hashLinkCounts:  {},
+      langExtensions:  langExtensions,
+      outputModifiers: outputModifiers,
+      converter:       this
+    };
+
+    // attacklab: Replace ~ with ~T
+    // This lets us use tilde as an escape char to avoid md5 hashes
+    // The choice of character is arbitrary; anything that isn't
+    // magic in Markdown will work.
+    text = text.replace(/~/g, '~T');
+
+    // attacklab: Replace $ with ~D
+    // RegExp interprets $ as a special character
+    // when it's in a replacement string
+    text = text.replace(/\$/g, '~D');
+
+    // Standardize line endings
+    text = text.replace(/\r\n/g, '\n'); // DOS to Unix
+    text = text.replace(/\r/g, '\n'); // Mac to Unix
+
+    // Make sure text begins and ends with a couple of newlines:
+    text = '\n\n' + text + '\n\n';
+
+    // detab
+    text = showdown.subParser('detab')(text, options, globals);
+
+    // stripBlankLines
+    text = showdown.subParser('stripBlankLines')(text, options, globals);
+
+    //run languageExtensions
+    showdown.helper.forEach(langExtensions, function (ext) {
+      text = showdown.subParser('runExtension')(ext, text, options, globals);
+    });
+
+    // Run all registered parsers
+    for (var i = 0; i < parserOrder.length; ++i) {
+      var name = parserOrder[i];
+      text = parsers[name](text, options, globals);
+    }
+
+    // attacklab: Restore dollar signs
+    text = text.replace(/~D/g, '$$');
+
+    // attacklab: Restore tildes
+    text = text.replace(/~T/g, '~');
+
+    // Run output modifiers
+    showdown.helper.forEach(outputModifiers, function (ext) {
+      text = showdown.subParser('runExtension')(ext, text, options, globals);
+    });
+    text = parsers.outputModifiers(text, options, globals);
+
+    return text;
+  };
+
+  /**
+   * Set an option of this Converter instance
+   * @param {string} key
+   * @param {*} value
+   */
+  this.setOption = function (key, value) {
+    options[key] = value;
+  };
+
+  /**
+   * Get the option of this Converter instance
+   * @param {string} key
+   * @returns {*}
+   */
+  this.getOption = function (key) {
+    return options[key];
+  };
+
+  /**
+   * Get the options of this Converter instance
+   * @returns {{}}
+   */
+  this.getOptions = function () {
+    return options;
+  };
+
+  /**
+   * Add extension to THIS converter
+   * @param {{}} extension
+   */
+  this.addExtension = function (extension) {
+    _parseExtension(extension);
+  };
+
+  /**
+   * Remove an extension from THIS converter
+   * @param {{}} extension
+   */
+  this.removeExtension = function (extension) {
+    for (var i = 0; i < langExtensions.length; ++i) {
+      if (langExtensions[i] === extension) {
+        langExtensions[i].splice(i, 1);
+        return;
+      }
+    }
+    for (var ii = 0; ii < outputModifiers.length; ++i) {
+      if (outputModifiers[ii] === extension) {
+        outputModifiers[ii].splice(i, 1);
+        return;
+      }
+    }
+  };
+
+  /**
+   * Get all extension of THIS converter
+   * @returns {{language: Array, output: Array}}
+   */
+  this.getAllExtensions = function () {
+    return {
+      language: langExtensions,
+      output: outputModifiers
+    };
+  };
 };
 
 /**
@@ -1318,18 +1540,6 @@ showdown.subParser('italicsAndBold', function (text) {
 });
 
 /**
- * Run language extensions
- */
-showdown.subParser('languageExtensions', function (text, config, globals) {
-  'use strict';
-
-  showdown.helper.forEach(globals.langExtensions, function (ext) {
-    text = showdown.subParser('runExtension')(ext, text);
-  });
-  return text;
-});
-
-/**
  * Form HTML ordered (numbered) and unordered (bulleted) lists.
  */
 showdown.subParser('lists', function (text, options, globals) {
@@ -1545,17 +1755,24 @@ showdown.subParser('paragraphs', function (text, options, globals) {
 });
 
 /**
- * Run language extensions
+ * Run extension
  */
-showdown.subParser('runExtension', function (ext, text) {
+showdown.subParser('runExtension', function (ext, text, options, globals) {
   'use strict';
 
-  if (ext.regex) {
-    var re = new RegExp(ext.regex, 'g');
-    return text.replace(re, ext.replace);
-  } else if (ext.filter) {
-    return ext.filter(text);
+  if (ext.filter) {
+    text = ext.filter(text, globals.converter, options);
+
+  } else if (ext.regex) {
+    // TODO remove this when old extension loading mechanism is deprecated
+    var re = ext.regex;
+    if (!re instanceof RegExp) {
+      re = new RegExp(re, 'g');
+    }
+    text = text.replace(re, ext.replace);
   }
+
+  return text;
 });
 
 /**

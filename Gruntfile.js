@@ -18,12 +18,14 @@ module.exports = function (grunt) {
         src:  [
           'src/showdown.js',
           'src/helpers.js',
+          'src/converter.js',
           'src/subParsers/*.js',
           'src/loader.js'
         ],
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
+
     uglify: {
       options: {
         sourceMap: true,

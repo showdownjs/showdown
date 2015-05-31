@@ -1,6 +1,6 @@
 {
   "name": "showdown",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
   "homepage": "http://showdownjs.github.io/showdown/",
@@ -46,8 +46,10 @@
     "grunt-jscs": "^1.2.0",
     "grunt-simple-mocha": "^0.4.0",
     "jscs": "^1.10.0",
+    "load-grunt-tasks": "^3.2.0",
     "mocha": "*",
     "should": "^4.4.2",
+    "sinon": "^1.14.1",
     "source-map-support": "^0.2.9"
   }
 }

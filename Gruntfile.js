@@ -7,6 +7,7 @@ module.exports = function (grunt) {
   // Project configuration.
   var config = {
     pkg: grunt.file.readJSON('package.json'),
+
     concat: {
       options: {
         sourceMap: true,
@@ -34,6 +35,7 @@ module.exports = function (grunt) {
         }
       }
     },
+
     jshint: {
       files: [
         'Gruntfile.js',
@@ -41,9 +43,10 @@ module.exports = function (grunt) {
         'test/**/*.js'
       ]
     },
+
     jscs: {
       options: {
-        config: '.jscs.json',
+        config: '.jscs.json'
       },
       files:  {
         src: [
@@ -53,12 +56,14 @@ module.exports = function (grunt) {
         ]
       }
     },
+
     changelog: {
       options: {
         repository: 'http://github.com/showdownjs/showdown',
         dest: 'CHANGELOG.md'
       }
     },
+
     bump: {
       options: {
         files: ['package.json'],
@@ -77,6 +82,7 @@ module.exports = function (grunt) {
         regExp: false
       }
     },
+
     simplemocha: {
       node: {
         src: 'test/node/**/*.js',
@@ -98,13 +104,7 @@ module.exports = function (grunt) {
 
   grunt.initConfig(config);
 
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-simple-mocha');
-  grunt.loadNpmTasks('grunt-jscs');
-  grunt.loadNpmTasks('grunt-conventional-changelog');
-  grunt.loadNpmTasks('grunt-bump');
+  require('load-grunt-tasks')(grunt);
 
   grunt.registerTask('lint', ['jshint', 'jscs']);
   grunt.registerTask('test', ['lint', 'concat', 'simplemocha']);

@@ -105,3 +105,19 @@ showdown.helper.escapeCharacters = function escapeCharacters(text, charsToEscape
 
   return text;
 };
+
+/**
+ * POLYFILLS
+ */
+if (showdown.helper.isUndefined(console)) {
+  console = {
+    warn: function (msg) {
+      'use strict';
+      alert(msg);
+    },
+    log: function (msg) {
+      'use strict';
+      alert(msg);
+    }
+  };
+}

@@ -78,7 +78,7 @@ showdown.Converter = function (converterOptions) {
       }
     } else {
       throw Error('Converter expects the passed parameter to be an object, but ' + typeof converterOptions +
-      ' was passed instead.')
+      ' was passed instead.');
     }
 
     if (options.extensions) {

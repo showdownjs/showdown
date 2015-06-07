@@ -64,6 +64,26 @@
     });
   });
 
+  describe('Converter.options extensions', function () {
+    showdown.extensions.testext = function () {
+      return [{
+        type: 'output',
+        filter: function (text) {
+          runCount = runCount + 1;
+          return text;
+        }
+      }];
+    };
+    var runCount,
+        converter = new showdown.Converter({extensions: ['testext']});
+
+    it('output extensions should run once', function () {
+      runCount = 0;
+      converter.makeHtml('# testext');
+      runCount.should.equal(1);
+    });
+  });
+
   function filter() {
     return function (file) {
       var ext = file.slice(-3);

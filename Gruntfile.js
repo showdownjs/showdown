@@ -108,10 +108,11 @@ module.exports = function (grunt) {
 
   require('load-grunt-tasks')(grunt);
 
+  grunt.registerTask('concatenate', ['concat']);
   grunt.registerTask('lint', ['jshint', 'jscs']);
   grunt.registerTask('test', ['lint', 'concat', 'simplemocha']);
   grunt.registerTask('test-without-building', ['simplemocha']);
-  grunt.registerTask('build', ['lint', 'test', 'uglify']);
+  grunt.registerTask('build', ['test', 'uglify']);
   grunt.registerTask('prep-release', ['build', 'changelog']);
 
   // Default task(s).

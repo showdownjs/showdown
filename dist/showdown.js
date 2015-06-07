@@ -1,4 +1,4 @@
-;/*! showdown 31-05-2015 */
+;/*! showdown 07-06-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -115,8 +115,14 @@ showdown.extension = function (name, ext) {
 
     // Setter
   } else {
+    // Expand extension if it's wrapped in a function
     if (typeof ext === 'function') {
       ext = ext();
+    }
+
+    // Ensure extension is an array
+    if (!showdown.helper.isArray(ext)) {
+      ext = [ext];
     }
 
     var validExtension = validate(ext, name);
@@ -157,83 +163,90 @@ showdown.resetExtensions = function () {
 
 /**
  * Validate extension
- * @param {object} ext
+ * @param {array} extension
  * @param {string} name
  * @returns {{valid: boolean, error: string}}
  */
-function validate(ext, name) {
+function validate(extension, name) {
   'use strict';
 
-  var baseMsg = (name) ? 'Error in ' + name + ' extension: ' : 'Error in unnamed extension',
+  var errMsg = (name) ? 'Error in ' + name + ' extension->' : 'Error in unnamed extension',
     ret = {
       valid: true,
-      error: baseMsg
+      error: ''
     };
 
-  if (typeof ext !== 'object') {
-    ret.valid = false;
-    ret.error = baseMsg + 'it must be an object, but ' + typeof ext + ' given';
-    return ret;
+  if (!showdown.helper.isArray(extension)) {
+    extension = [extension];
   }
 
-  if (!showdown.helper.isString(ext.type)) {
-    ret.valid = false;
-    ret.error = baseMsg + 'property "type" must be a string, but ' + typeof ext.type + ' given';
-    return ret;
-  }
-
-  var type = ext.type = ext.type.toLowerCase();
-
-  // normalize extension type
-  if (type === 'language') {
-    type = ext.type = 'lang';
-  }
-
-  if (type === 'html') {
-    type = ext.type = 'output';
-  }
-
-  if (type !== 'lang' && type !== 'output') {
-    ret.valid = false;
-    ret.error = baseMsg + 'type ' + type + ' is not recognized. Valid values: "lang" or "output"';
-    return ret;
-  }
-
-  if (ext.filter) {
-    if (typeof ext.filter !== 'function') {
+  for (var i = 0; i < extension.length; ++i) {
+    var baseMsg = errMsg + 'sub-extension ' + i + ': ',
+        ext = extension[i];
+    if (typeof ext !== 'object') {
       ret.valid = false;
-      ret.error = baseMsg + '"filter" must be a function, but ' + typeof ext.filter + ' given';
+      ret.error = baseMsg + 'must be an object, but ' + typeof ext + ' given';
       return ret;
     }
 
-  } else if (ext.regex) {
-    if (showdown.helper.isString(ext.regex)) {
-      ext.regex = new RegExp(ext.regex, 'g');
-    }
-    if (!ext.regex instanceof RegExp) {
+    if (!showdown.helper.isString(ext.type)) {
       ret.valid = false;
-      ret.error = baseMsg + '"regex" property must either be a string or a RegExp object, but ' +
-        typeof ext.regex + ' given';
-      return ret;
-    }
-    if (showdown.helper.isUndefined(ext.replace)) {
-      ret.valid = false;
-      ret.error = baseMsg + '"regex" extensions must implement a replace string or function';
+      ret.error = baseMsg + 'property "type" must be a string, but ' + typeof ext.type + ' given';
       return ret;
     }
 
-  } else {
-    ret.valid = false;
-    ret.error = baseMsg + 'extensions must define either a "regex" property or a "filter" method';
-    return ret;
-  }
+    var type = ext.type = ext.type.toLowerCase();
 
-  if (showdown.helper.isUndefined(ext.filter) && showdown.helper.isUndefined(ext.regex)) {
-    ret.valid = false;
-    ret.error = baseMsg + 'output extensions must define a filter property';
-    return ret;
-  }
+    // normalize extension type
+    if (type === 'language') {
+      type = ext.type = 'lang';
+    }
 
+    if (type === 'html') {
+      type = ext.type = 'output';
+    }
+
+    if (type !== 'lang' && type !== 'output') {
+      ret.valid = false;
+      ret.error = baseMsg + 'type ' + type + ' is not recognized. Valid values: "lang" or "output"';
+      return ret;
+    }
+
+    if (ext.filter) {
+      if (typeof ext.filter !== 'function') {
+        ret.valid = false;
+        ret.error = baseMsg + '"filter" must be a function, but ' + typeof ext.filter + ' given';
+        return ret;
+      }
+
+    } else if (ext.regex) {
+      if (showdown.helper.isString(ext.regex)) {
+        ext.regex = new RegExp(ext.regex, 'g');
+      }
+      if (!ext.regex instanceof RegExp) {
+        ret.valid = false;
+        ret.error = baseMsg + '"regex" property must either be a string or a RegExp object, but ' +
+          typeof ext.regex + ' given';
+        return ret;
+      }
+      if (showdown.helper.isUndefined(ext.replace)) {
+        ret.valid = false;
+        ret.error = baseMsg + '"regex" extensions must implement a replace string or function';
+        return ret;
+      }
+
+    } else {
+      ret.valid = false;
+      ret.error = baseMsg + 'extensions must define either a "regex" property or a "filter" method';
+      return ret;
+    }
+
+    if (showdown.helper.isUndefined(ext.filter) && showdown.helper.isUndefined(ext.regex)) {
+      ret.valid = false;
+      ret.error = baseMsg + 'output extensions must define a filter property';
+      return ret;
+    }
+  }
   return ret;
 }
 
@@ -455,6 +468,9 @@ showdown.Converter = function (converterOptions) {
           options[opt] = converterOptions[opt];
         }
       }
+    } else {
+      throw Error('Converter expects the passed parameter to be an object, but ' + typeof converterOptions +
+      ' was passed instead.');
     }
 
     if (options.extensions) {
@@ -473,11 +489,12 @@ showdown.Converter = function (converterOptions) {
     if (showdown.helper.isString(ext)) {
       ext = showdown.helper.stdExtName(ext);
 
-      // TODO LEGACY SUPPORT CODE
-      if (!showdown.helper.isUndefined(showdown.extensions[ext]) && showdown.extensions[ext]) {
-        console.warn(ext + ' is an old extension that uses a deprecated loading method.' +
+      // LEGACY_SUPPORT CODE
+      if (showdown.extensions[ext]) {
+        console.warn('DEPRECATION WARNING: ' + ext + ' is an old extension that uses a deprecated loading method.' +
           'Please inform the developer that the extension should be updated!');
-        ext = showdown.extensions[ext];
+        legacyExtensionLoading(showdown.extensions[ext], ext);
+        return;
       // END LEGACY SUPPORT CODE
 
       } else if (!showdown.helper.isUndefined(extensions[ext])) {
@@ -486,26 +503,66 @@ showdown.Converter = function (converterOptions) {
       } else {
         throw Error('Extension "' + ext + '" could not be loaded. It was either not found or is not a valid extension.');
       }
-    } else if (typeof ext === 'function') {
+    }
+
+    if (typeof ext === 'function') {
       ext = ext();
+    }
+
+    if (!showdown.helper.isArray(ext)) {
+      ext = [ext];
     }
 
     if (!showdown.validateExtension(ext)) {
       return;
     }
 
-    switch (ext.type) {
-      case 'lang':
-        langExtensions.push(ext);
-        break;
+    for (var i = 0; i < ext.length; ++i) {
+      switch (ext[i].type) {
+        case 'lang':
+          langExtensions.push(ext[i]);
+          break;
 
-      case 'output':
-        outputModifiers.push(ext);
-        break;
+        case 'output':
+          outputModifiers.push(ext[i]);
+          break;
 
-      default:
-        // should never reach here
-        throw Error('Extension loader error: Type unrecognized!!!');
+        default:
+          // should never reach here
+          throw Error('Extension loader error: Type unrecognized!!!');
+      }
+    }
+  }
+
+  /**
+   * LEGACY_SUPPORT
+   * @param {*} ext
+   * @param {string} name
+   */
+  function legacyExtensionLoading(ext, name) {
+    if (typeof ext === 'function') {
+      ext = ext(new showdown.Converter());
+    }
+    if (!showdown.helper.isArray(ext)) {
+      ext = [ext];
+    }
+    var valid = validate(ext, name);
+
+    if (!valid.valid) {
+      throw Error(valid.error);
+    }
+
+    for (var i = 0; i < ext.length; ++i) {
+      switch (ext[i].type) {
+        case 'lang':
+          langExtensions.push(ext[i]);
+          break;
+        case 'output':
+          outputModifiers.push(ext[i]);
+          break;
+        default:// should never reach here
+          throw Error('Extension loader error: Type unrecognized!!!');
+      }
     }
   }
 
@@ -576,7 +633,6 @@ showdown.Converter = function (converterOptions) {
     showdown.helper.forEach(outputModifiers, function (ext) {
       text = showdown.subParser('runExtension')(ext, text, options, globals);
     });
-    text = parsers.outputModifiers(text, options, globals);
 
     return text;
   };
@@ -616,20 +672,34 @@ showdown.Converter = function (converterOptions) {
   };
 
   /**
-   * Remove an extension from THIS converter
-   * @param {{}} extension
+   * Use a global registered extension with THIS converter
+   * @param {string} extensionName Name of the previously registered extension
+   */
+  this.useExtension = function (extensionName) {
+    _parseExtension(extensionName);
+  };
+
+  /**
+   * Remove an extension from THIS converter.
+   * Note: This is a costly operation. It's better to initialize a new converter
+   * and specify the extensions you wish to use
+   * @param {Array} extension
    */
   this.removeExtension = function (extension) {
-    for (var i = 0; i < langExtensions.length; ++i) {
-      if (langExtensions[i] === extension) {
-        langExtensions[i].splice(i, 1);
-        return;
-      }
+    if (!showdown.helper.isArray(extension)) {
+      extension = [extension];
     }
-    for (var ii = 0; ii < outputModifiers.length; ++i) {
-      if (outputModifiers[ii] === extension) {
-        outputModifiers[ii].splice(i, 1);
-        return;
+    for (var a = 0; a < extension.length; ++a) {
+      var ext = extension[a];
+      for (var i = 0; i < langExtensions.length; ++i) {
+        if (langExtensions[i] === ext) {
+          langExtensions[i].splice(i, 1);
+        }
+      }
+      for (var ii = 0; ii < outputModifiers.length; ++i) {
+        if (outputModifiers[ii] === ext) {
+          outputModifiers[ii].splice(i, 1);
+        }
       }
     }
   };
@@ -1697,18 +1767,6 @@ showdown.subParser('outdent', function (text) {
   // attacklab: clean up hack
   text = text.replace(/~0/g, '');
 
-  return text;
-});
-
-/**
- * Run language extensions
- */
-showdown.subParser('outputModifiers', function (text, config, globals) {
-  'use strict';
-
-  showdown.helper.forEach(globals.outputModifiers, function (ext) {
-    text = showdown.subParser('runExtension')(ext, text);
-  });
   return text;
 });
 

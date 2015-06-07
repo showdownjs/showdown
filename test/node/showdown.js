@@ -16,7 +16,7 @@ describe('showdown.options', function () {
   });
 });
 
-describe('showdown.extension', function () {
+describe('showdown.extension()', function () {
   'use strict';
 
   var extObjMock = {
@@ -28,15 +28,15 @@ describe('showdown.extension', function () {
       };
 
   describe('should register', function () {
-    it('should register an extension object', function () {
+    it('an extension object', function () {
       showdown.extension('foo', extObjMock);
-      showdown.extension('foo').should.equal(extObjMock);
+      showdown.extension('foo').should.eql([extObjMock]);
       showdown.resetExtensions();
     });
 
-    it('should register an extension function', function () {
+    it('an extension function', function () {
       showdown.extension('foo', extObjFunc);
-      showdown.extension('foo').should.equal(extObjMock);
+      showdown.extension('foo').should.eql([extObjMock]);
       showdown.resetExtensions();
     });
   });
@@ -78,6 +78,6 @@ describe('showdown.getAllExtensions()', function () {
 
   it('should return all extensions', function () {
     showdown.extension('bar', extObjMock);
-    showdown.getAllExtensions().should.eql({bar: extObjMock});
+    showdown.getAllExtensions().should.eql({bar: [extObjMock]});
   });
 });

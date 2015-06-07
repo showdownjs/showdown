@@ -97,11 +97,12 @@ showdown.Converter = function (converterOptions) {
     if (showdown.helper.isString(ext)) {
       ext = showdown.helper.stdExtName(ext);
 
-      // TODO LEGACY SUPPORT CODE
-      if (!showdown.helper.isUndefined(showdown.extensions[ext]) && showdown.extensions[ext]) {
-        console.warn(ext + ' is an old extension that uses a deprecated loading method.' +
+      // LEGACY_SUPPORT CODE
+      if (showdown.extensions[ext]) {
+        console.warn('DEPRECATION WARNING: ' + ext + ' is an old extension that uses a deprecated loading method.' +
           'Please inform the developer that the extension should be updated!');
-        ext = showdown.extensions[ext];
+        legacyExtensionLoading(showdown.extensions[ext], ext);
+        return;
       // END LEGACY SUPPORT CODE
 
       } else if (!showdown.helper.isUndefined(extensions[ext])) {
@@ -110,26 +111,66 @@ showdown.Converter = function (converterOptions) {
       } else {
         throw Error('Extension "' + ext + '" could not be loaded. It was either not found or is not a valid extension.');
       }
-    } else if (typeof ext === 'function') {
+    }
+
+    if (typeof ext === 'function') {
       ext = ext();
+    }
+
+    if (!showdown.helper.isArray(ext)) {
+      ext = [ext];
     }
 
     if (!showdown.validateExtension(ext)) {
       return;
     }
 
-    switch (ext.type) {
-      case 'lang':
-        langExtensions.push(ext);
-        break;
+    for (var i = 0; i < ext.length; ++i) {
+      switch (ext[i].type) {
+        case 'lang':
+          langExtensions.push(ext[i]);
+          break;
 
-      case 'output':
-        outputModifiers.push(ext);
-        break;
+        case 'output':
+          outputModifiers.push(ext[i]);
+          break;
 
-      default:
-        // should never reach here
-        throw Error('Extension loader error: Type unrecognized!!!');
+        default:
+          // should never reach here
+          throw Error('Extension loader error: Type unrecognized!!!');
+      }
+    }
+  }
+
+  /**
+   * LEGACY_SUPPORT
+   * @param {*} ext
+   * @param {string} name
+   */
+  function legacyExtensionLoading(ext, name) {
+    if (typeof ext === 'function') {
+      ext = ext(new showdown.Converter());
+    }
+    if (!showdown.helper.isArray(ext)) {
+      ext = [ext];
+    }
+    var valid = validate(ext, name);
+
+    if (!valid.valid) {
+      throw Error(valid.error);
+    }
+
+    for (var i = 0; i < ext.length; ++i) {
+      switch (ext[i].type) {
+        case 'lang':
+          langExtensions.push(ext[i]);
+          break;
+        case 'output':
+          outputModifiers.push(ext[i]);
+          break;
+        default:// should never reach here
+          throw Error('Extension loader error: Type unrecognized!!!');
+      }
     }
   }
 
@@ -200,7 +241,6 @@ showdown.Converter = function (converterOptions) {
     showdown.helper.forEach(outputModifiers, function (ext) {
       text = showdown.subParser('runExtension')(ext, text, options, globals);
     });
-    text = parsers.outputModifiers(text, options, globals);
 
     return text;
   };
@@ -240,20 +280,34 @@ showdown.Converter = function (converterOptions) {
   };
 
   /**
-   * Remove an extension from THIS converter
-   * @param {{}} extension
+   * Use a global registered extension with THIS converter
+   * @param {string} extensionName Name of the previously registered extension
+   */
+  this.useExtension = function (extensionName) {
+    _parseExtension(extensionName);
+  };
+
+  /**
+   * Remove an extension from THIS converter.
+   * Note: This is a costly operation. It's better to initialize a new converter
+   * and specify the extensions you wish to use
+   * @param {Array} extension
    */
   this.removeExtension = function (extension) {
-    for (var i = 0; i < langExtensions.length; ++i) {
-      if (langExtensions[i] === extension) {
-        langExtensions[i].splice(i, 1);
-        return;
-      }
+    if (!showdown.helper.isArray(extension)) {
+      extension = [extension];
     }
-    for (var ii = 0; ii < outputModifiers.length; ++i) {
-      if (outputModifiers[ii] === extension) {
-        outputModifiers[ii].splice(i, 1);
-        return;
+    for (var a = 0; a < extension.length; ++a) {
+      var ext = extension[a];
+      for (var i = 0; i < langExtensions.length; ++i) {
+        if (langExtensions[i] === ext) {
+          langExtensions[i].splice(i, 1);
+        }
+      }
+      for (var ii = 0; ii < outputModifiers.length; ++i) {
+        if (outputModifiers[ii] === ext) {
+          outputModifiers[ii].splice(i, 1);
+        }
       }
     }
   };

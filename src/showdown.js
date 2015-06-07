@@ -113,8 +113,14 @@ showdown.extension = function (name, ext) {
 
     // Setter
   } else {
+    // Expand extension if it's wrapped in a function
     if (typeof ext === 'function') {
       ext = ext();
+    }
+
+    // Ensure extension is an array
+    if (!showdown.helper.isArray(ext)) {
+      ext = [ext];
     }
 
     var validExtension = validate(ext, name);
@@ -155,83 +161,90 @@ showdown.resetExtensions = function () {
 
 /**
  * Validate extension
- * @param {object} ext
+ * @param {array} extension
  * @param {string} name
  * @returns {{valid: boolean, error: string}}
  */
-function validate(ext, name) {
+function validate(extension, name) {
   'use strict';
 
-  var baseMsg = (name) ? 'Error in ' + name + ' extension: ' : 'Error in unnamed extension',
+  var errMsg = (name) ? 'Error in ' + name + ' extension->' : 'Error in unnamed extension',
     ret = {
       valid: true,
-      error: baseMsg
+      error: ''
     };
 
-  if (typeof ext !== 'object') {
-    ret.valid = false;
-    ret.error = baseMsg + 'it must be an object, but ' + typeof ext + ' given';
-    return ret;
+  if (!showdown.helper.isArray(extension)) {
+    extension = [extension];
   }
 
-  if (!showdown.helper.isString(ext.type)) {
-    ret.valid = false;
-    ret.error = baseMsg + 'property "type" must be a string, but ' + typeof ext.type + ' given';
-    return ret;
-  }
-
-  var type = ext.type = ext.type.toLowerCase();
-
-  // normalize extension type
-  if (type === 'language') {
-    type = ext.type = 'lang';
-  }
-
-  if (type === 'html') {
-    type = ext.type = 'output';
-  }
-
-  if (type !== 'lang' && type !== 'output') {
-    ret.valid = false;
-    ret.error = baseMsg + 'type ' + type + ' is not recognized. Valid values: "lang" or "output"';
-    return ret;
-  }
-
-  if (ext.filter) {
-    if (typeof ext.filter !== 'function') {
+  for (var i = 0; i < extension.length; ++i) {
+    var baseMsg = errMsg + 'sub-extension ' + i + ': ',
+        ext = extension[i];
+    if (typeof ext !== 'object') {
       ret.valid = false;
-      ret.error = baseMsg + '"filter" must be a function, but ' + typeof ext.filter + ' given';
+      ret.error = baseMsg + 'must be an object, but ' + typeof ext + ' given';
       return ret;
     }
 
-  } else if (ext.regex) {
-    if (showdown.helper.isString(ext.regex)) {
-      ext.regex = new RegExp(ext.regex, 'g');
-    }
-    if (!ext.regex instanceof RegExp) {
+    if (!showdown.helper.isString(ext.type)) {
       ret.valid = false;
-      ret.error = baseMsg + '"regex" property must either be a string or a RegExp object, but ' +
-        typeof ext.regex + ' given';
-      return ret;
-    }
-    if (showdown.helper.isUndefined(ext.replace)) {
-      ret.valid = false;
-      ret.error = baseMsg + '"regex" extensions must implement a replace string or function';
+      ret.error = baseMsg + 'property "type" must be a string, but ' + typeof ext.type + ' given';
       return ret;
     }
 
-  } else {
-    ret.valid = false;
-    ret.error = baseMsg + 'extensions must define either a "regex" property or a "filter" method';
-    return ret;
-  }
+    var type = ext.type = ext.type.toLowerCase();
 
-  if (showdown.helper.isUndefined(ext.filter) && showdown.helper.isUndefined(ext.regex)) {
-    ret.valid = false;
-    ret.error = baseMsg + 'output extensions must define a filter property';
-    return ret;
-  }
+    // normalize extension type
+    if (type === 'language') {
+      type = ext.type = 'lang';
+    }
 
+    if (type === 'html') {
+      type = ext.type = 'output';
+    }
+
+    if (type !== 'lang' && type !== 'output') {
+      ret.valid = false;
+      ret.error = baseMsg + 'type ' + type + ' is not recognized. Valid values: "lang" or "output"';
+      return ret;
+    }
+
+    if (ext.filter) {
+      if (typeof ext.filter !== 'function') {
+        ret.valid = false;
+        ret.error = baseMsg + '"filter" must be a function, but ' + typeof ext.filter + ' given';
+        return ret;
+      }
+
+    } else if (ext.regex) {
+      if (showdown.helper.isString(ext.regex)) {
+        ext.regex = new RegExp(ext.regex, 'g');
+      }
+      if (!ext.regex instanceof RegExp) {
+        ret.valid = false;
+        ret.error = baseMsg + '"regex" property must either be a string or a RegExp object, but ' +
+          typeof ext.regex + ' given';
+        return ret;
+      }
+      if (showdown.helper.isUndefined(ext.replace)) {
+        ret.valid = false;
+        ret.error = baseMsg + '"regex" extensions must implement a replace string or function';
+        return ret;
+      }
+
+    } else {
+      ret.valid = false;
+      ret.error = baseMsg + 'extensions must define either a "regex" property or a "filter" method';
+      return ret;
+    }
+
+    if (showdown.helper.isUndefined(ext.filter) && showdown.helper.isUndefined(ext.regex)) {
+      ret.valid = false;
+      ret.error = baseMsg + 'output extensions must define a filter property';
+      return ret;
+    }
+  }
   return ret;
 }
 

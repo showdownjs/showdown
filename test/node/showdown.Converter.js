@@ -49,11 +49,11 @@ describe('showdown.Converter', function () {
       converter.getAllExtensions().language.should.contain(extObjMock);
     });
 
-    it('addExtension() should add a previous registered extension in showdown', function () {
+    it('useExtension() should use a previous registered extension in showdown', function () {
       showdown.extension('foo', extObjMock);
       var converter = new showdown.Converter();
 
-      converter.addExtension('foo');
+      converter.useExtension('foo');
       converter.getAllExtensions().language.should.contain(extObjMock);
       showdown.resetExtensions();
     });

@@ -1439,14 +1439,14 @@ showdown.subParser('headers', function (text, options, globals) {
   text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm, function (wholeMatch, m1) {
 
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
-        hID = (options.noHeaderId) ? '' : 'id="' + headerId(m1) + '"',
+        hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
         hashBlock = '<h1' + hID + '>' + spanGamut + '</h1>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
 
   text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm, function (matchFound, m1) {
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
-        hID = (options.noHeaderId) ? '' : 'id="' + headerId(m1) + '"',
+        hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
         hashBlock = '<h2' + hID + '>' + spanGamut + '</h2>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
@@ -1470,9 +1470,9 @@ showdown.subParser('headers', function (text, options, globals) {
    /gm, function() {...});
    */
 
-  text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm, function (wholeMatch, m1, m2) {
+  text = text.replace(/^(#{1,6})[ \t]*(.+?)[ \t]*#*\n+/gm, function (wholeMatch, m1, m2) {
     var span = showdown.subParser('spanGamut')(m2, options, globals),
-        hID = (options.noHeaderId) ? '' : 'id="' + headerId(m1) + '"',
+        hID = (options.noHeaderId) ? '' : ' id="' + headerId(m2) + '"',
         header = '<h' + m1.length + hID + '>' + span + '</h' + m1.length + '>';
 
     return showdown.subParser('hashBlock')(header, options, globals);
@@ -1543,14 +1543,11 @@ showdown.subParser('images', function (text, options, globals) {
     url = showdown.helper.escapeCharacters(url, '*_', false);
     var result = '<img src="' + url + '" alt="' + altText + '"';
 
-    // attacklab: Markdown.pl adds empty title attributes to images.
-    // Replicate this bug.
-
-    //if (title != "") {
-    title = title.replace(/"/g, '&quot;');
-    title = showdown.helper.escapeCharacters(title, '*_', false);
-    result += ' title="' + title + '"';
-    //}
+    if (title != "") {
+      title = title.replace(/"/g, '&quot;');
+      title = showdown.helper.escapeCharacters(title, '*_', false);
+      result += ' title="' + title + '"';
+    }
 
     result += ' />';
 

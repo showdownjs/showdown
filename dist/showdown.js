@@ -1,4 +1,4 @@
-;/*! showdown 07-06-2015 */
+;/*! showdown 08-06-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -10,7 +10,8 @@ var showdown = {},
     extensions = {},
     defaultOptions = {
       omitExtraWLInCodeBlocks: false,
-      prefixHeaderId:          false
+      prefixHeaderId:          false,
+      noHeaderId:              false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 
@@ -416,7 +417,8 @@ showdown.Converter = function (converterOptions) {
        */
       options = {
         omitExtraWLInCodeBlocks: false,
-        prefixHeaderId:          false
+        prefixHeaderId:          false,
+        noHeaderId:              false
       },
 
       /**
@@ -1435,14 +1437,17 @@ showdown.subParser('headers', function (text, options, globals) {
   //	--------
   //
   text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm, function (wholeMatch, m1) {
+
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
-        hashBlock = '<h1 id="' + headerId(m1) + '">' + spanGamut + '</h1>';
+        hID = (options.noHeaderId) ? '' : 'id="' + headerId(m1) + '"',
+        hashBlock = '<h1' + hID + '>' + spanGamut + '</h1>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
 
   text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm, function (matchFound, m1) {
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
-        hashBlock = '<h2 id="' + headerId(m1) + '">' + spanGamut + '</h2>';
+        hID = (options.noHeaderId) ? '' : 'id="' + headerId(m1) + '"',
+        hashBlock = '<h2' + hID + '>' + spanGamut + '</h2>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
 
@@ -1467,7 +1472,8 @@ showdown.subParser('headers', function (text, options, globals) {
 
   text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm, function (wholeMatch, m1, m2) {
     var span = showdown.subParser('spanGamut')(m2, options, globals),
-        header = '<h' + m1.length + ' id="' + headerId(m2) + '">' + span + '</h' + m1.length + '>';
+        hID = (options.noHeaderId) ? '' : 'id="' + headerId(m1) + '"',
+        header = '<h' + m1.length + hID + '>' + span + '</h' + m1.length + '>';
 
     return showdown.subParser('hashBlock')(header, options, globals);
   });

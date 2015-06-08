@@ -26,7 +26,7 @@
 showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
   'use strict';
 
-  var regex = /^[ ]{0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|(?=~0))/gm;
+  var regex = /^[ ]{0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=~0))/gm;
 
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '~0';
@@ -40,7 +40,7 @@ showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
       return m3 + m4;
 
     } else if (m4) {
-      globals.gTitles[m1] = m4.replace(/"/g, '&quot;');
+      globals.gTitles[m1] = m4.replace(/"|'/g, '&quot;');
     }
 
     // Completely remove the definition from the text

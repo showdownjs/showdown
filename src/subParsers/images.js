@@ -39,7 +39,7 @@ showdown.subParser('images', function (text, options, globals) {
     url = showdown.helper.escapeCharacters(url, '*_', false);
     var result = '<img src="' + url + '" alt="' + altText + '"';
 
-    if (title != "") {
+    if (title) {
       title = title.replace(/"/g, '&quot;');
       title = showdown.helper.escapeCharacters(title, '*_', false);
       result += ' title="' + title + '"';

@@ -1,4 +1,4 @@
-;/*! showdown 07-06-2015 */
+;/*! showdown 11-06-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -10,7 +10,8 @@ var showdown = {},
     extensions = {},
     defaultOptions = {
       omitExtraWLInCodeBlocks: false,
-      prefixHeaderId:          false
+      prefixHeaderId:          false,
+      noHeaderId:              false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 
@@ -416,7 +417,8 @@ showdown.Converter = function (converterOptions) {
        */
       options = {
         omitExtraWLInCodeBlocks: false,
-        prefixHeaderId:          false
+        prefixHeaderId:          false,
+        noHeaderId:              false
       },
 
       /**
@@ -1435,14 +1437,17 @@ showdown.subParser('headers', function (text, options, globals) {
   //	--------
   //
   text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm, function (wholeMatch, m1) {
+
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
-        hashBlock = '<h1 id="' + headerId(m1) + '">' + spanGamut + '</h1>';
+        hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
+        hashBlock = '<h1' + hID + '>' + spanGamut + '</h1>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
 
   text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm, function (matchFound, m1) {
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
-        hashBlock = '<h2 id="' + headerId(m1) + '">' + spanGamut + '</h2>';
+        hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
+        hashBlock = '<h2' + hID + '>' + spanGamut + '</h2>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
 
@@ -1465,9 +1470,10 @@ showdown.subParser('headers', function (text, options, globals) {
    /gm, function() {...});
    */
 
-  text = text.replace(/^(\#{1,6})[ \t]*(.+?)[ \t]*\#*\n+/gm, function (wholeMatch, m1, m2) {
+  text = text.replace(/^(#{1,6})[ \t]*(.+?)[ \t]*#*\n+/gm, function (wholeMatch, m1, m2) {
     var span = showdown.subParser('spanGamut')(m2, options, globals),
-        header = '<h' + m1.length + ' id="' + headerId(m2) + '">' + span + '</h' + m1.length + '>';
+        hID = (options.noHeaderId) ? '' : ' id="' + headerId(m2) + '"',
+        header = '<h' + m1.length + hID + '>' + span + '</h' + m1.length + '>';
 
     return showdown.subParser('hashBlock')(header, options, globals);
   });
@@ -1537,14 +1543,11 @@ showdown.subParser('images', function (text, options, globals) {
     url = showdown.helper.escapeCharacters(url, '*_', false);
     var result = '<img src="' + url + '" alt="' + altText + '"';
 
-    // attacklab: Markdown.pl adds empty title attributes to images.
-    // Replicate this bug.
-
-    //if (title != "") {
-    title = title.replace(/"/g, '&quot;');
-    title = showdown.helper.escapeCharacters(title, '*_', false);
-    result += ' title="' + title + '"';
-    //}
+    if (title) {
+      title = title.replace(/"/g, '&quot;');
+      title = showdown.helper.escapeCharacters(title, '*_', false);
+      result += ' title="' + title + '"';
+    }
 
     result += ' />';
 
@@ -1902,7 +1905,7 @@ showdown.subParser('stripBlankLines', function (text) {
 showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
   'use strict';
 
-  var regex = /^[ ]{0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["(](.+?)[")][ \t]*)?(?:\n+|(?=~0))/gm;
+  var regex = /^[ ]{0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=~0))/gm;
 
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '~0';
@@ -1916,7 +1919,7 @@ showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
       return m3 + m4;
 
     } else if (m4) {
-      globals.gTitles[m1] = m4.replace(/"/g, '&quot;');
+      globals.gTitles[m1] = m4.replace(/"|'/g, '&quot;');
     }
 
     // Completely remove the definition from the text

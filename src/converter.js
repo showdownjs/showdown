@@ -24,7 +24,8 @@ showdown.Converter = function (converterOptions) {
        */
       options = {
         omitExtraWLInCodeBlocks: false,
-        prefixHeaderId:          false
+        prefixHeaderId:          false,
+        noHeaderId:              false
       },
 
       /**

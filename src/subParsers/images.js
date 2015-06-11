@@ -39,14 +39,11 @@ showdown.subParser('images', function (text, options, globals) {
     url = showdown.helper.escapeCharacters(url, '*_', false);
     var result = '<img src="' + url + '" alt="' + altText + '"';
 
-    // attacklab: Markdown.pl adds empty title attributes to images.
-    // Replicate this bug.
-
-    //if (title != "") {
-    title = title.replace(/"/g, '&quot;');
-    title = showdown.helper.escapeCharacters(title, '*_', false);
-    result += ' title="' + title + '"';
-    //}
+    if (title) {
+      title = title.replace(/"/g, '&quot;');
+      title = showdown.helper.escapeCharacters(title, '*_', false);
+      result += ' title="' + title + '"';
+    }
 
     result += ' />';
 

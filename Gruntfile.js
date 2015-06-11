@@ -95,6 +95,15 @@ module.exports = function (grunt) {
           reporter: 'spec'
         }
       },
+      karlcow: {
+        src: 'test/node/testsuite.karlcow.js',
+        options: {
+          globals: ['should'],
+          timeout: 3000,
+          ignoreLeaks: false,
+          reporter: 'spec'
+        }
+      },
       browser: {
         src: 'test/browser/**/*.js',
         options: {

@@ -1,4 +1,4 @@
-;/*! showdown 11-06-2015 */
+;/*! showdown 13-06-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -1618,13 +1618,15 @@ showdown.subParser('italicsAndBold', function (text) {
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
 
+  var spl = '~1';
+
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
    * @param {string} listStr
-   * @returns {string|*}
+   * @returns {string}
    */
-  var processListItems = function (listStr) {
+  function processListItems (listStr) {
     // The $g_list_level global keeps track of when we're inside a list.
     // Each time we enter a list, we increment it; when we leave a list,
     // we decrement. If it's zero, we're not in a list anymore.
@@ -1664,35 +1666,79 @@ showdown.subParser('lists', function (text, options, globals) {
      (?= \n* (~0 | \2 ([*+-]|\d+[.]) [ \t]+))
      /gm, function(){...});
      */
-    listStr = listStr.replace(/(\n)?(^[ \t]*)([*+-]|\d+[.])[ \t]+([^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm,
-                              function (wholeMatch, m1, m2, m3, m4) {
-                                var item = showdown.subParser('outdent')(m4, options, globals);
-                                //m1 - LeadingLine
+    var rgx = /(\n)?(^[ \t]*)([*+-]|\d+[.])[ \t]+([^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm;
 
-                                if (m1 || (item.search(/\n{2,}/) > -1)) {
-                                  item = showdown.subParser('blockGamut')(item, options, globals);
-                                } else {
-                                  // Recursion for sub-lists:
-                                  item = showdown.subParser('lists')(item, options, globals);
-                                  item = item.replace(/\n$/, ''); // chomp(item)
-                                  item = showdown.subParser('spanGamut')(item, options, globals);
-                                }
+    listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4) {
+      var item = showdown.subParser('outdent')(m4, options, globals);
+      //m1 - LeadingLine
 
-                                return '<li>' + item + '</li>\n';
-                              });
+      if (m1 || (item.search(/\n{2,}/) > -1)) {
+        item = showdown.subParser('blockGamut')(item, options, globals);
+      } else {
+        // Recursion for sub-lists:
+        item = showdown.subParser('lists')(item, options, globals);
+        item = item.replace(/\n$/, ''); // chomp(item)
+        item = showdown.subParser('spanGamut')(item, options, globals);
+      }
+
+      // this is a "hack" to differentiate between ordered and unordered lists
+      // related to issue #142
+      var tp = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+      return spl + tp + '<li>' + item + '</li>\n';
+    });
 
     // attacklab: strip sentinel
     listStr = listStr.replace(/~0/g, '');
 
     globals.gListLevel--;
     return listStr;
-  };
+  }
+
+  /**
+   * Slit consecutive ol/ul lists (related to issue 142)
+   * @param {Array} results
+   * @param {string} listType
+   * @returns {string|*}
+   */
+  function splitConsecutiveLists (results, listType) {
+    var cthulhu = /(<p[^>]+?>|<p>|<\/p>)/img,
+        holder = [[]],
+        res = '',
+        y = 0;
+
+    // Initialize first sublist
+    holder[0].type = listType;
+
+    for (var i = 0; i < results.length; ++i) {
+      var txt = results[i].slice(2),
+          nListType = results[i].slice(0, 2);
+
+      if (listType != nListType) {
+        y++;
+        holder[y] = [];
+        holder[y].type = nListType;
+        listType = nListType;
+      }
+      holder[y].push(txt);
+    }
+    for (i = 0; i < holder.length; ++i) {
+      res += '<' + holder[i].type + '>\n';
+      for (var ii = 0; ii < holder[i].length; ++ii) {
+        if (holder[i].length > 1 && ii === holder[i].length - 1 && !cthulhu.test(holder[i][ii - 1])) {
+          //holder[i][ii] = holder[i][ii].replace(cthulhu, '');
+        }
+        res += holder[i][ii];
+      }
+      res += '</' + holder[i].type + '>\n';
+    }
+    return res;
+  }
 
   // attacklab: add sentinel to hack around khtml/safari bug:
   // http://bugs.webkit.org/show_bug.cgi?id=11231
   text += '~0';
 
-  // Re-usable pattern to match any entirel ul or ol list:
+  // Re-usable pattern to match any entire ul or ol list:
 
   /*
    var whole_list = /
@@ -1719,35 +1765,40 @@ showdown.subParser('lists', function (text, options, globals) {
 
   if (globals.gListLevel) {
     text = text.replace(wholeList, function (wholeMatch, m1, m2) {
-      var list = m1,
-          listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+      var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol',
+          result = processListItems(m1);
 
       // Turn double returns into triple returns, so that we can make a
       // paragraph for the last item in a list, if necessary:
-      list = list.replace(/\n{2,}/g, '\n\n\n');
-
-      var result = processListItems(list);
+      //list = list.replace(/\n{2,}/g, '\n\n\n');
+      //result = processListItems(list);
 
       // Trim any trailing whitespace, to put the closing `</$list_type>`
       // up on the preceding line, to get it past the current stupid
       // HTML block parser. This is a hack to work around the terrible
       // hack that is the HTML block parser.
       result = result.replace(/\s+$/, '');
-      result = '<' + listType + '>' + result + '</' + listType + '>\n';
+      var splRes = result.split(spl);
+      splRes.shift();
+      result = splitConsecutiveLists(splRes, listType);
       return result;
     });
   } else {
     wholeList = /(\n\n|^\n?)(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/g;
+    //wholeList = /(\n\n|^\n?)( {0,3}([*+-]|\d+\.)[ \t]+[\s\S]+?)(?=(~0)|(\n\n(?!\t| {2,}| {0,3}([*+-]|\d+\.)[ \t])))/g;
 
     text = text.replace(wholeList, function (wholeMatch, m1, m2, m3) {
 
       // Turn double returns into triple returns, so that we can make a
       // paragraph for the last item in a list, if necessary:
       var list = m2.replace(/\n{2,}/g, '\n\n\n'),
+      //var list = (m2.slice(-2) !== '~0') ? m2 + '\n' : m2, //add a newline after the list
           listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol',
-          result = processListItems(list);
+          result = processListItems(list),
+          splRes = result.split(spl);
 
-      return m1 + '<' + listType + '>\n' + result + '</' + listType + '>\n';
+      splRes.shift();
+      return m1 + splitConsecutiveLists(splRes, listType) + '\n';
     });
   }
 

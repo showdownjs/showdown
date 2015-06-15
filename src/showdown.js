@@ -52,16 +52,30 @@ showdown.getOption = function (key) {
 /**
  * Get the global options
  * @static
- * @returns {{omitExtraWLInCodeBlocks: boolean, prefixHeaderId: boolean}}
+ * @returns {{}}
  */
 showdown.getOptions = function () {
   'use strict';
   return globalOptions;
 };
 
+/**
+ * Reset global options to the default values
+ * @static
+ */
 showdown.resetOptions = function () {
   'use strict';
   globalOptions = JSON.parse(JSON.stringify(defaultOptions));
+};
+
+/**
+ * Get the default options
+ * @static
+ * @returns {{}}
+ */
+showdown.getDefaultOptions = function () {
+  'use strict';
+  return defaultOptions;
 };
 
 /**

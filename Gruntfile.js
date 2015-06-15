@@ -119,8 +119,8 @@ module.exports = function (grunt) {
 
   grunt.registerTask('concatenate', ['concat']);
   grunt.registerTask('lint', ['jshint', 'jscs']);
-  grunt.registerTask('test', ['lint', 'concat', 'simplemocha']);
-  grunt.registerTask('test-without-building', ['simplemocha']);
+  grunt.registerTask('test', ['lint', 'concat', 'simplemocha:node']);
+  grunt.registerTask('test-without-building', ['simplemocha:node']);
   grunt.registerTask('build', ['test', 'uglify']);
   grunt.registerTask('prep-release', ['build', 'changelog']);
 

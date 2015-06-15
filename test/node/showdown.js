@@ -14,6 +14,17 @@ describe('showdown.options', function () {
       expect(showdown.getOption('foo')).to.be.undefined();
     });
   });
+
+  describe('getDefaultOptions()', function () {
+    it('should get default options', function () {
+      var opts = {
+        omitExtraWLInCodeBlocks: false,
+        prefixHeaderId:          false,
+        noHeaderId:              false
+      };
+      expect(showdown.getDefaultOptions()).to.be.eql(opts);
+    });
+  });
 });
 
 describe('showdown.extension()', function () {

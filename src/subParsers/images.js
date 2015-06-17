@@ -45,12 +45,11 @@ showdown.subParser('images', function (text, options, globals) {
     var isPDF = url.indexOf('.pdf') === url.length - 4,
         result = '';
 
-    if (isPDF)
+    if (isPDF) {
       result = '<object data="' + url + '" type="application/pdf"';
-    else
+    } else {
       result = '<img src="' + url + '" alt="' + altText + '"';
-
-
+    }
 
     if (title) {
       title = title.replace(/"/g, '&quot;');
@@ -66,10 +65,11 @@ showdown.subParser('images', function (text, options, globals) {
       result += ' height="' + height + '"';
     }
 
-    if (isPDF)
+    if (isPDF) {
       result += '>' + altText + '</object>';
-    else
+    } else {
       result += ' />';
+    }
 
     return result;
   }

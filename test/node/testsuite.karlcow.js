@@ -6,6 +6,7 @@ var showdown = require('../../dist/showdown.js'),
 
 //MD-Testsuite (borrowed from karlcow/markdown-testsuite)
 describe('makeHtml() karlcow testsuite', function () {
+  'use strict';
   for (var i = 0; i < testsuite.length; ++i) {
     it(testsuite[i].name, assertion(testsuite[i], converter));
   }

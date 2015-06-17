@@ -1,4 +1,4 @@
-;/*! showdown 16-06-2015 */
+;/*! showdown 17-06-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -1703,7 +1703,7 @@ showdown.subParser('lists', function (text, options, globals) {
       var txt = results[i].slice(2),
           nListType = results[i].slice(0, 2);
 
-      if (listType != nListType) {
+      if (listType !== nListType) {
         y++;
         holder[y] = [];
         holder[y].type = nListType;

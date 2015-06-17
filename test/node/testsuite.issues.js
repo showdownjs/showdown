@@ -7,8 +7,8 @@ var showdown = require('../../dist/showdown.js'),
   assertion = bootstrap.assertion,
   testsuite = bootstrap.getTestSuite('test/issues/');
 
-//MD-Testsuite (borrowed from karlcow/markdown-testsuite)
 describe('makeHtml() issues testsuite', function () {
+  'use strict';
   for (var i = 0; i < testsuite.length; ++i) {
     it(testsuite[i].name, assertion(testsuite[i], converter));
   }

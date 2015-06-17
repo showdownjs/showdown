@@ -9,7 +9,8 @@ var showdown = {},
     defaultOptions = {
       omitExtraWLInCodeBlocks: false,
       prefixHeaderId:          false,
-      noHeaderId:              false
+      noHeaderId:              false,
+      parseImgDimensions:      false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 

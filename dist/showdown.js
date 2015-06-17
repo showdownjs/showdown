@@ -1,4 +1,4 @@
-;/*! showdown 15-06-2015 */
+;/*! showdown 16-06-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -11,7 +11,8 @@ var showdown = {},
     defaultOptions = {
       omitExtraWLInCodeBlocks: false,
       prefixHeaderId:          false,
-      noHeaderId:              false
+      noHeaderId:              false,
+      parseImgDimensions:      false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 
@@ -597,6 +598,7 @@ showdown.Converter = function (converterOptions) {
       gHtmlBlocks:     [],
       gUrls:           {},
       gTitles:         {},
+      gDimensions:     {},
       gListLevel:      0,
       hashLinkCounts:  {},
       langExtensions:  langExtensions,
@@ -1522,15 +1524,16 @@ showdown.subParser('headers', function (text, options, globals) {
 showdown.subParser('images', function (text, options, globals) {
   'use strict';
 
-  var writeImageTag = function (wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
+  var inlineRegExp    = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
+      referenceRegExp = /!\[(.*?)][ ]?(?:\n[ ]*)?\[(.*?)]()()()()()/g;
 
-    wholeMatch = m1;
-    var altText = m2,
-        linkId = m3.toLowerCase(),
-        url = m4,
-        title = m7,
-        gUrls = globals.gUrls,
-        gTitles = globals.gTitles;
+  function writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title) {
+
+    var gUrls   = globals.gUrls,
+        gTitles = globals.gTitles,
+        gDims   = globals.gDimensions;
+
+    linkId = linkId.toLowerCase();
 
     if (!title) {
       title = '';
@@ -1543,10 +1546,14 @@ showdown.subParser('images', function (text, options, globals) {
       }
       url = '#' + linkId;
 
-      if (typeof gUrls[linkId] !== 'undefined') {
+      if (!showdown.helper.isUndefined(gUrls[linkId])) {
         url = gUrls[linkId];
-        if (typeof gTitles[linkId] !== 'undefined') {
+        if (!showdown.helper.isUndefined(gTitles[linkId])) {
           title = gTitles[linkId];
+        }
+        if (!showdown.helper.isUndefined(gDims[linkId])) {
+          width = gDims[linkId].width;
+          height = gDims[linkId].height;
         }
       } else {
         return wholeMatch;
@@ -1563,55 +1570,24 @@ showdown.subParser('images', function (text, options, globals) {
       result += ' title="' + title + '"';
     }
 
+    if (width && height) {
+      width  = (width === '*') ? 'auto' : width;
+      height = (height === '*') ? 'auto' : height;
+
+      result += ' width="' + width + '"';
+      result += ' height="' + height + '"';
+    }
+
     result += ' />';
 
     return result;
-  };
+  }
 
   // First, handle reference-style labeled images: ![alt text][id]
-  /*
-   text = text.replace(/
-   (						// wrap whole match in $1
-   !\[
-   (.*?)				// alt text = $2
-   \]
+  text = text.replace(referenceRegExp, writeImageTag);
 
-   [ ]?				// one optional space
-   (?:\n[ ]*)?			// one optional newline followed by spaces
-
-   \[
-   (.*?)				// id = $3
-   \]
-   )()()()()				// pad rest of backreferences
-   /g,writeImageTag);
-   */
-  text = text.replace(/(!\[(.*?)\][ ]?(?:\n[ ]*)?\[(.*?)\])()()()()/g, writeImageTag);
-
-  // Next, handle inline images:  ![alt text](url "optional title")
-  // Don't forget: encode * and _
-  /*
-   text = text.replace(/
-   (						// wrap whole match in $1
-   !\[
-   (.*?)				// alt text = $2
-   \]
-   \s?					// One optional whitespace character
-   \(					// literal paren
-   [ \t]*
-   ()					// no id, so leave $3 empty
-   <?(\S+?)>?			// src url = $4
-   [ \t]*
-   (					// $5
-   (['"])			// quote char = $6
-   (.*?)			// title = $7
-   \6				// matching quote
-   [ \t]*
-   )?					// title is optional
-   \)
-   )
-   /g,writeImageTag);
-   */
-  text = text.replace(/(!\[(.*?)\]\s?\([ \t]*()<?(\S+?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g, writeImageTag);
+  // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
+  text = text.replace(inlineRegExp, writeImageTag);
 
   return text;
 });
@@ -1970,23 +1946,31 @@ showdown.subParser('stripBlankLines', function (text) {
 showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
   'use strict';
 
-  var regex = /^[ ]{0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=~0))/gm;
+  var regex = /^ {0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=~0))/gm;
 
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '~0';
 
-  text = text.replace(regex, function (wholeMatch, m1, m2, m3, m4) {
-    m1 = m1.toLowerCase();
-    globals.gUrls[m1] = showdown.subParser('encodeAmpsAndAngles')(m2);  // Link IDs are case-insensitive
-    if (m3) {
+  text = text.replace(regex, function (wholeMatch, linkId, url, width, height, blankLines, title) {
+    linkId = linkId.toLowerCase();
+    globals.gUrls[linkId] = showdown.subParser('encodeAmpsAndAngles')(url);  // Link IDs are case-insensitive
+
+    if (blankLines) {
       // Oops, found blank lines, so it's not a title.
       // Put back the parenthetical statement we stole.
-      return m3 + m4;
+      return blankLines + title;
 
-    } else if (m4) {
-      globals.gTitles[m1] = m4.replace(/"|'/g, '&quot;');
+    } else {
+      if (title) {
+        globals.gTitles[linkId] = title.replace(/"|'/g, '&quot;');
+      }
+      if (options.parseImgDimensions && width && height) {
+        globals.gDimensions[linkId] = {
+          width:  width,
+          height: height
+        };
+      }
     }
-
     // Completely remove the definition from the text
     return '';
   });

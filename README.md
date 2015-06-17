@@ -139,7 +139,7 @@ var thisConverterSpecificOptions = conveter.getOptions();
 
 ### Valid Options
 
- * **omitExtraWLInCodeBlocks**: (boolean) Omits the trailing newline in a code block. Ex:
+ * **omitExtraWLInCodeBlocks**: (boolean) [default false] Omits the trailing newline in a code block. Ex:
    
     This:
     ```html
@@ -151,8 +151,16 @@ var thisConverterSpecificOptions = conveter.getOptions();
     <code><pre>var foo = 'bar';</pre></code>
     ```
 
- * **prefixHeaderId**: (string/boolean) Adds a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
+ * **noHeaderId**: (boolean) [default false] Disables the automatic generation of header ids. Setting to true overrides **prefixHeaderId**
 
+ * **prefixHeaderId**: (string/boolean) [default false] Adds a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
+ 
+ * **parseImgDimensions**: (boolean) [default false] Enables support for setting image dimensions from within markdown syntax.
+   Example:
+   ```
+   ![my image](foo.jpg =100x80)
+   ```
+   
 
 ## Integration with AngularJS
 

@@ -20,7 +20,8 @@ describe('showdown.options', function () {
       var opts = {
         omitExtraWLInCodeBlocks: false,
         prefixHeaderId:          false,
-        noHeaderId:              false
+        noHeaderId:              false,
+        parseImgDimensions:      false
       };
       expect(showdown.getDefaultOptions()).to.be.eql(opts);
     });

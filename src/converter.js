@@ -190,6 +190,7 @@ showdown.Converter = function (converterOptions) {
       gHtmlBlocks:     [],
       gUrls:           {},
       gTitles:         {},
+      gDimensions:     {},
       gListLevel:      0,
       hashLinkCounts:  {},
       langExtensions:  langExtensions,

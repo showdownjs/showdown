@@ -856,6 +856,9 @@ Showdown.converter = function(converter_options) {
     alt_text = alt_text.replace(/"/g,"&quot;");
     url = escapeCharacters(url,"*_");
     var result = "<img src=\"" + url + "\" alt=\"" + alt_text + "\"";
+    if(url.indexOf(".pdf") === url.length - 4) {
+      return '<object data="' + url + '" type="application/pdf" width="100%" height="100%">' + alt_text + '</object>';
+    }
 
     // attacklab: Markdown.pl adds empty title attributes to images.
     // Replicate this bug.

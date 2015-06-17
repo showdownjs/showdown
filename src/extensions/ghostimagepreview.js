@@ -25,6 +25,9 @@ var Ghost = Ghost || {};
 
                         if (src && (src.match(uriRegex) || src.match(pathRegex))) {
                             result = '<img class="js-upload-target" src="' + src + '"/>';
+                            if(src.indexOf(".pdf") === src.length - 4) {
+                                return '<object data="'+src+'" type="application/pdf" width="100%" height="100%"></object>'
+                            }
                         }
 
                         output = '<section class="js-drop-zone image-uploader">' +

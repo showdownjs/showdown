@@ -139,7 +139,7 @@ var thisConverterSpecificOptions = conveter.getOptions();
 
 ### Valid Options
 
- * **omitExtraWLInCodeBlocks**: (boolean) [default false] Omits the trailing newline in a code block. Ex:
+ * **omitExtraWLInCodeBlocks**: (boolean) [default false] Omit the trailing newline in a code block. Ex:
    
     This:
     ```html
@@ -151,16 +151,18 @@ var thisConverterSpecificOptions = conveter.getOptions();
     <code><pre>var foo = 'bar';</pre></code>
     ```
 
- * **noHeaderId**: (boolean) [default false] Disables the automatic generation of header ids. Setting to true overrides **prefixHeaderId**
+ * **noHeaderId**: (boolean) [default false] Disable the automatic generation of header ids. Setting to true overrides **prefixHeaderId**
 
- * **prefixHeaderId**: (string/boolean) [default false] Adds a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
+ * **prefixHeaderId**: (string/boolean) [default false] Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
  
- * **parseImgDimensions**: (boolean) [default false] Enables support for setting image dimensions from within markdown syntax.
+ * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
    Example:
    ```
    ![my image](foo.jpg =100x80)
    ```
-   
+ 
+ * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that
+   `# foo` will be parsed as `<h3>foo</h3>`
 
 ## Integration with AngularJS
 

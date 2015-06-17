@@ -21,6 +21,7 @@ describe('showdown.options', function () {
         omitExtraWLInCodeBlocks: false,
         prefixHeaderId:          false,
         noHeaderId:              false,
+        headerLevelStart:        1,
         parseImgDimensions:      false
       };
       expect(showdown.getDefaultOptions()).to.be.eql(opts);

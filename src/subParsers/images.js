@@ -42,7 +42,14 @@ showdown.subParser('images', function (text, options, globals) {
 
     altText = altText.replace(/"/g, '&quot;');
     url = showdown.helper.escapeCharacters(url, '*_', false);
-    var result = '<img src="' + url + '" alt="' + altText + '"';
+    var isPDF = url.indexOf('.pdf') === url.length - 4;
+    var result = '';
+    if(isPDF){
+      result = '<object data="' + url + '" type="application/pdf"';
+    } else {
+      result = '<img src="' + url + '" alt="' + altText + '"';
+    }
+
 
     if (title) {
       title = title.replace(/"/g, '&quot;');
@@ -51,14 +58,18 @@ showdown.subParser('images', function (text, options, globals) {
     }
 
     if (width && height) {
-      width  = (width === '*') ? 'auto' : width;
+      width = (width === '*') ? 'auto' : width;
       height = (height === '*') ? 'auto' : height;
 
       result += ' width="' + width + '"';
       result += ' height="' + height + '"';
     }
 
-    result += ' />';
+    if(isPDF) {
+      result += '>' + altText + '</object>';
+    } else {
+      result += ' />';
+    }
 
     return result;
   }

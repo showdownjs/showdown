@@ -1,10 +1,35 @@
+<a name"1.1.0"></a>
+## 1.1.0 (2015-06-18)
+
+
+#### Bug Fixes
+
+* **converter.js:** add error if the passed constructor argument is not an object ([d86ed450](http://github.com/showdownjs/showdown/commit/d86ed450))
+* **output modifiers:** fix for output modifiers running twice ([dcbdc61e](http://github.com/showdownjs/showdown/commit/dcbdc61e))
+
+
+#### Features
+
+* **headerLevelStart:** add support for setting the header starting level ([b84ac67d](http://github.com/showdownjs/showdown/commit/b84ac67d), closes [#69](http://github.com/showdownjs/showdown/issues/69))
+* **image dimensions:** add support for setting image dimensions within markdown syntax ([af82c2b6](http://github.com/showdownjs/showdown/commit/af82c2b6), closes [#143](http://github.com/showdownjs/showdown/issues/143))
+* **noHeaderId:** add option to suppress automatic generation of ids in headers ([7ac893e9](http://github.com/showdownjs/showdown/commit/7ac893e9))
+* **showdown.getDefaultOptions:** add method to retrieve default global options keypairs ([2de53a7d](http://github.com/showdownjs/showdown/commit/2de53a7d))
+
+
+#### Breaking Changes
+
+* Deprecates `showdown.extensions` property. To migrate, extensions should use the new method `showdown.extension(<ext name>, <extension>)` to register.
+  For more information on the new extension loading mechanism, please check the wiki pages.
+  ([4ebd0caa](http://github.com/showdownjs/showdown/commit/4ebd0caa))
+
+
 <a name"1.0.2"></a>
 ### 1.0.2 (2015-05-28)
 
 #### Bug Fixes
 
- * **Gruntfile.js** add missing comma in footer. This bug prevented concatenating other js scripts and libraries
- with showdown([5315508](http://github.com/showdownjs/showdown/commit/5315508). Credits to Alexandre Courtiol.
+* **Gruntfile.js** add missing comma in footer. This bug prevented concatenating other js scripts and libraries
+  with showdown([5315508](http://github.com/showdownjs/showdown/commit/5315508). Credits to Alexandre Courtiol.
 
 
 <a name"1.0.1"></a>
@@ -43,7 +68,7 @@ This is a major code refactor with some big changes such as:
 #### Features
 
 * **registerExtension():** new extension loading mechanism. Now extensions can be registered using this function.
-The system, however, is not final and will probably be changed until the final version([0fd10cb] (http://github.com/showdownjs/showdown/commit/0fd10cb))
+  The system, however, is not final and will probably be changed until the final version([0fd10cb] (http://github.com/showdownjs/showdown/commit/0fd10cb))
 * **allowBlockIndents:** indented inline block elements can now be parsed as markdown ([f6326b84](http://github.com/showdownjs/showdown/commit/f6326b84))
 * **omitExtraWLInCodeBlocks:**  add option to omit extra newline at the end of codeblocks ([141e3f5](http://github.com/showdownjs/showdown/commit/141e3f5))
 * **prefixHeaderId:** add options to prefix header ids to prevent id clash ([141e3f5](http://github.com/showdownjs/showdown/commit/141e3f5))

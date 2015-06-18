@@ -137,6 +137,13 @@ var showdownGlobalOptions = showdown.getOptions();
 var thisConverterSpecificOptions = conveter.getOptions();
 ```
 
+### Retrieve the default options
+
+You can get showdown's default options with:
+```js
+var defaultOptions = showdown.getDefaultOptions();
+```
+
 ### Valid Options
 
  * **omitExtraWLInCodeBlocks**: (boolean) [default false] Omit the trailing newline in a code block. Ex:

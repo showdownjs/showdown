@@ -176,6 +176,10 @@ var defaultOptions = showdown.getDefaultOptions();
 ShowdownJS project also provides seamlessly integration with AngularJS via a "plugin".
 Please visit https://github.com/showdownjs/ngShowdown for more information.
 
+## Integration with TypeScript
+
+If you're using TypeScript you maybe want to use the types from [DefinitelyTyped](https://github.com/borisyankov/DefinitelyTyped/tree/master/showdown)
+
 ## XSS vulnerability
 
 Showdown doesn't sanitize the input. This is by design since markdown relies on it to allow certain features to be correctly parsed into HTML.

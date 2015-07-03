@@ -36,6 +36,7 @@ You can check the full changelog at https://github.com/showdownjs/showdown/blob/
 Showdown has been tested successfully with:
 
   * Firefox 1.5 and 2.0
+  * Chrome 12.0
   * Internet Explorer 6 and 7
   * Safari 2.0.4
   * Opera 8.54 and 9.10

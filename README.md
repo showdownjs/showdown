@@ -112,7 +112,7 @@ Local options can be set:
  * **through the setOption() method**
     ```js
     var converter = new showdown.Converter();
-    conveter.setOption('optionKey', 'value');
+    converter.setOption('optionKey', 'value');
     ```
 
 ### Getting an option

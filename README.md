@@ -27,10 +27,6 @@ You can also use github CDN directly in your html file(s).
 
     https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
 
-## Changelog
-
-You can check the full changelog at https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
-
 ## Browser Compatibility
 
 Showdown has been tested successfully with:
@@ -54,6 +50,13 @@ Showdown has been tested with node 0.8 and 0.10. However, it should work with pr
 ## Legacy version
 
 If you're looking for showdown v<1.0.0, you can find it in the [**legacy branch**](https://github.com/showdownjs/showdown/tree/legacy).
+
+## Changelog
+
+You can check the full changelog at https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
+
+## Extended documentation
+Check our [wiki pages](https://github.com/showdownjs/showdown/wiki) for examples and a more in-depth documentation.
 
 
 ## Quick Example
@@ -79,9 +82,7 @@ var converter = new showdown.Converter(),
 
 Both examples should output...
 
-```html
-<h1 id="hellomarkdown">hello, markdown!</h1>
-```
+    <h1 id="hellomarkdown">hello, markdown!</h1>
 
 ## Options
 

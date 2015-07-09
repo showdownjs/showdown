@@ -136,7 +136,7 @@ var myOption = converter.getOption('optionKey');
 var showdownGlobalOptions = showdown.getOptions();
 
 //Local
-var thisConverterSpecificOptions = conveter.getOptions();
+var thisConverterSpecificOptions = converter.getOptions();
 ```
 
 ### Retrieve the default options

@@ -27,15 +27,12 @@ You can also use github CDN directly in your html file(s).
 
     https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
 
-## Changelog
-
-You can check the full changelog at https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
-
 ## Browser Compatibility
 
 Showdown has been tested successfully with:
 
   * Firefox 1.5 and 2.0
+  * Chrome 12.0
   * Internet Explorer 6 and 7
   * Safari 2.0.4
   * Opera 8.54 and 9.10
@@ -53,6 +50,13 @@ Showdown has been tested with node 0.8 and 0.10. However, it should work with pr
 ## Legacy version
 
 If you're looking for showdown v<1.0.0, you can find it in the [**legacy branch**](https://github.com/showdownjs/showdown/tree/legacy).
+
+## Changelog
+
+You can check the full changelog at https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
+
+## Extended documentation
+Check our [wiki pages](https://github.com/showdownjs/showdown/wiki) for examples and a more in-depth documentation.
 
 
 ## Quick Example
@@ -78,9 +82,7 @@ var converter = new showdown.Converter(),
 
 Both examples should output...
 
-```html
-<h1 id="hellomarkdown">hello, markdown!</h1>
-```
+    <h1 id="hellomarkdown">hello, markdown!</h1>
 
 ## Options
 
@@ -110,7 +112,7 @@ Local options can be set:
  * **through the setOption() method**
     ```js
     var converter = new showdown.Converter();
-    conveter.setOption('optionKey', 'value');
+    converter.setOption('optionKey', 'value');
     ```
 
 ### Getting an option
@@ -134,7 +136,7 @@ var myOption = converter.getOption('optionKey');
 var showdownGlobalOptions = showdown.getOptions();
 
 //Local
-var thisConverterSpecificOptions = conveter.getOptions();
+var thisConverterSpecificOptions = converter.getOptions();
 ```
 
 ### Retrieve the default options
@@ -176,6 +178,10 @@ var defaultOptions = showdown.getDefaultOptions();
 ShowdownJS project also provides seamlessly integration with AngularJS via a "plugin".
 Please visit https://github.com/showdownjs/ngShowdown for more information.
 
+## Integration with TypeScript
+
+If you're using TypeScript you maybe want to use the types from [DefinitelyTyped](https://github.com/borisyankov/DefinitelyTyped/tree/master/showdown)
+
 ## XSS vulnerability
 
 Showdown doesn't sanitize the input. This is by design since markdown relies on it to allow certain features to be correctly parsed into HTML.
@@ -207,9 +213,9 @@ var showdown    = require('showdown'),
 
 ## Tests
 
-A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the development dependencies:
+A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the dependencies:
 
-    npm install --dev
+    npm install
 
 Once installed the tests can be run from the project root using:
 

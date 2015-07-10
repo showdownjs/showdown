@@ -209,9 +209,9 @@ var showdown    = require('showdown'),
 
 ## Tests
 
-A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the development dependencies:
+A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the dependencies:
 
-    npm install --dev
+    npm install
 
 Once installed the tests can be run from the project root using:
 

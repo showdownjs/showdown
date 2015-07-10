@@ -38,7 +38,7 @@
   "devDependencies": {
     "chai": "^1.10.0",
     "grunt": "^0.4.5",
-    "grunt-bump": "^0.3.1",
+    "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-concat": "^0.5.0",
     "grunt-contrib-jshint": "^0.10.0",
     "grunt-contrib-uglify": "^0.6.0",
@@ -46,10 +46,7 @@
     "grunt-jscs": "^1.2.0",
     "grunt-simple-mocha": "^0.4.0",
     "js-beautify": "^1.5.6",
-    "jscs": "^1.10.0",
     "load-grunt-tasks": "^3.2.0",
-    "mocha": "*",
-    "should": "^4.4.2",
     "sinon": "^1.14.1",
     "source-map-support": "^0.2.9"
   }

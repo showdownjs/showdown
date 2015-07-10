@@ -15,7 +15,7 @@ module.exports = function (grunt) {
         footer: '}).call(this);'
       },
       dist: {
-        src:  [
+        src: [
           'src/showdown.js',
           'src/helpers.js',
           'src/converter.js',
@@ -23,8 +23,17 @@ module.exports = function (grunt) {
           'src/loader.js'
         ],
         dest: 'dist/<%= pkg.name %>.js'
+      },
+      test: {
+        src: '<%= concat.dist.dest %>',
+        dest: '.build/<%= pkg.name %>.js',
+        options: {
+          sourceMap: false
+        }
       }
     },
+
+    clean: ['.build/'],
 
     uglify: {
       options: {
@@ -53,7 +62,7 @@ module.exports = function (grunt) {
       options: {
         config: '.jscs.json'
       },
-      files:  {
+      files: {
         src: [
           'Gruntfile.js',
           'src/**/*.js',
@@ -66,25 +75,6 @@ module.exports = function (grunt) {
       options: {
         repository: 'http://github.com/showdownjs/showdown',
         dest: 'CHANGELOG.md'
-      }
-    },
-
-    bump: {
-      options: {
-        files: ['package.json'],
-        updateConfigs: [],
-        commit: true,
-        commitMessage: 'Release version %VERSION%',
-        commitFiles: ['package.json'],
-        createTag: true,
-        tagName: '%VERSION%',
-        tagMessage: 'Version %VERSION%',
-        push: true,
-        pushTo: 'upstream',
-        gitDescribeOptions: '--tags --always --abbrev=1 --dirty=-d',
-        globalReplace: false,
-        prereleaseName: 'alpha',
-        regExp: false
       }
     },
 
@@ -105,12 +95,15 @@ module.exports = function (grunt) {
           timeout: 3000,
           ignoreLeaks: false,
           reporter: 'spec'
-        }
-      },
-      browser: {
-        src: 'test/browser/**/*.js',
-        options: {
-          reporter: 'spec'
+        },
+        issues: {
+          src: 'test/node/testsuite.issues.js',
+          options: {
+            globals: ['should'],
+            timeout: 3000,
+            ignoreLeaks: false,
+            reporter: 'spec'
+          }
         }
       }
     }
@@ -120,11 +113,10 @@ module.exports = function (grunt) {
 
   require('load-grunt-tasks')(grunt);
 
-  grunt.registerTask('concatenate', ['concat']);
+  grunt.registerTask('concatenate', ['concat:dist']);
   grunt.registerTask('lint', ['jshint', 'jscs']);
-  grunt.registerTask('test', ['lint', 'concat', 'simplemocha:node']);
-  grunt.registerTask('test-without-building', ['simplemocha:node']);
-  grunt.registerTask('build', ['test', 'uglify']);
+  grunt.registerTask('test', ['lint', 'concat:test', 'simplemocha:node', 'clean']);
+  grunt.registerTask('build', ['test', 'concatenate', 'uglify']);
   grunt.registerTask('prep-release', ['build', 'changelog']);
 
   // Default task(s).

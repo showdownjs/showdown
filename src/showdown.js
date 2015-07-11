@@ -11,7 +11,8 @@ var showdown = {},
       prefixHeaderId:          false,
       noHeaderId:              false,
       headerLevelStart:        1,
-      parseImgDimensions:      false
+      parseImgDimensions:      false,
+      simplifiedAutoLink:      false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 

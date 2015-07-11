@@ -1,4 +1,4 @@
-;/*! showdown 10-07-2015 */
+;/*! showdown 11-07-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -13,7 +13,8 @@ var showdown = {},
       prefixHeaderId:          false,
       noHeaderId:              false,
       headerLevelStart:        1,
-      parseImgDimensions:      false
+      parseImgDimensions:      false,
+      simplifiedAutoLink:      false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 
@@ -867,33 +868,32 @@ showdown.subParser('anchors', function (text, config, globals) {
 
 });
 
-showdown.subParser('autoLinks', function (text) {
+showdown.subParser('autoLinks', function (text, options) {
   'use strict';
 
-  text = text.replace(/<((https?|ftp|dict):[^'">\s]+)>/gi, '<a href=\"$1\">$1</a>');
+  //simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[-.+~:?#@!$&'()*,;=[\]\w]+)\b/gi,
 
+  var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)(?=\s|$)(?!["<>])/gi,
+      delimUrlRegex   = /<(((https?|ftp|dict):\/\/|www\.)[^'">\s]+)>/gi,
+      simpleMailRegex = /\b(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)\b/gi,
+      delimMailRegex  = /<(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
+
+  text = text.replace(delimUrlRegex, '<a href=\"$1\">$1</a>');
+  text = text.replace(delimMailRegex, replaceMail);
+  //simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[-.+~:?#@!$&'()*,;=[\]\w]+)\b/gi,
   // Email addresses: <address@domain.foo>
 
-  /*
-   text = text.replace(/
-   <
-   (?:mailto:)?
-   (
-   [-.\w]+
-   \@
-   [-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+
-   )
-   >
-   /gi);
-   */
-  var pattern = /<(?:mailto:)?([-.\w]+\@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
-  text = text.replace(pattern, function (wholeMatch, m1) {
+  if (options.simplifiedAutoLink) {
+    text = text.replace(simpleURLRegex, '<a href=\"$1\">$1</a>');
+    text = text.replace(simpleMailRegex, '<a href=\"$1\">$1</a>');
+  }
+
+  function replaceMail(wholeMatch, m1) {
     var unescapedStr = showdown.subParser('unescapeSpecialChars')(m1);
     return showdown.subParser('encodeEmailAddress')(unescapedStr);
-  });
+  }
 
   return text;
-
 });
 
 /**

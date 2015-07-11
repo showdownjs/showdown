@@ -95,15 +95,42 @@ module.exports = function (grunt) {
           timeout: 3000,
           ignoreLeaks: false,
           reporter: 'spec'
-        },
-        issues: {
-          src: 'test/node/testsuite.issues.js',
-          options: {
-            globals: ['should'],
-            timeout: 3000,
-            ignoreLeaks: false,
-            reporter: 'spec'
-          }
+        }
+      },
+      issues: {
+        src: 'test/node/testsuite.issues.js',
+        options: {
+          globals: ['should'],
+          timeout: 3000,
+          ignoreLeaks: false,
+          reporter: 'spec'
+        }
+      },
+      standard: {
+        src: 'test/node/testsuite.standard.js',
+        options: {
+          globals: ['should'],
+          timeout: 3000,
+          ignoreLeaks: false,
+          reporter: 'spec'
+        }
+      },
+      features: {
+        src: 'test/node/testsuite.features.js',
+        options: {
+          globals: ['should'],
+          timeout: 3000,
+          ignoreLeaks: false,
+          reporter: 'spec'
+        }
+      },
+      single: {
+        src: 'test/node/**/*.js',
+        options: {
+          globals: ['should'],
+          timeout: 3000,
+          ignoreLeaks: false,
+          reporter: 'spec'
         }
       }
     }
@@ -112,6 +139,21 @@ module.exports = function (grunt) {
   grunt.initConfig(config);
 
   require('load-grunt-tasks')(grunt);
+
+  grunt.registerTask('single-test', function (grep) {
+    'use strict';
+    grunt.config.merge({
+      simplemocha: {
+        single: {
+          options: {
+            grep: grep
+          }
+        }
+      }
+    });
+
+    grunt.task.run('simplemocha:node');
+  });
 
   grunt.registerTask('concatenate', ['concat:dist']);
   grunt.registerTask('lint', ['jshint', 'jscs']);

@@ -14,6 +14,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({parseImgDimensions: true});
     } else if (testsuite[i].name === '#69.header_level_start') {
       converter = new showdown.Converter({headerLevelStart: 3});
+    } else if (testsuite[i].name === '#164.1.simple_autolink') {
+      converter = new showdown.Converter({simplifiedAutoLink: true});
     } else {
       converter = new showdown.Converter();
     }

@@ -15,7 +15,8 @@ var showdown = {},
       simplifiedAutoLink:        false,
       literalMidWordUnderscores: false,
       strikethrough:             false,
-      tables:                    false
+      tables:                    false,
+      tablesHeaderId:            false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 

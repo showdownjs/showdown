@@ -28,8 +28,13 @@ describe('makeHtml() features testsuite', function () {
   }
 
   describe('table support', function () {
-    var converter = new showdown.Converter({tables: true});
+    var converter;
     for (var i = 0; i < tableSuite.length; ++i) {
+      if (tableSuite[i].name === 'basic_with_header_ids') {
+        converter = new showdown.Converter({tables: true, tableHeaderId: true});
+      } else {
+        converter = new showdown.Converter({tables: true});
+      }
       it(tableSuite[i].name, assertion(tableSuite[i], converter));
     }
   });

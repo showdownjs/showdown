@@ -33,7 +33,11 @@ Credits
       Bug fixing and late maintainer
     * [Hannah Wolfe](https://github.com/ErisDS)<br/>
       Bug fixes
-    * [Alexandre Courtiol](https://github.com/acourtiol)
+    * [Alexandre Courtiol](https://github.com/acourtiol)<br/>
+      Bug fixes and build optimization
+    * [Karthik Balakrishnan](https://github.com/torcellite)<br/>
+      Support for table alignment
+      
 
   - Original Project
     * [John Gruber](http://daringfireball.net/projects/markdown/)<br/>

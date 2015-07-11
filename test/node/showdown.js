@@ -28,7 +28,8 @@ describe('showdown.options', function () {
         strikethrough:             false,
         tables:                    false,
         tablesHeaderId:            false,
-        ghCodeBlocks:              true
+        ghCodeBlocks:              true,
+        tasklists:                 false
       };
       expect(showdown.getDefaultOptions()).to.be.eql(opts);
     });

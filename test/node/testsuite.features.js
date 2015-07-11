@@ -21,8 +21,10 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({literalMidWordUnderscores: true});
     } else if (testsuite[i].name === '#164.3.strikethrough') {
       converter = new showdown.Converter({strikethrough: true});
-    }  else if (testsuite[i].name === 'disable_gh_codeblocks') {
+    } else if (testsuite[i].name === 'disable_gh_codeblocks') {
       converter = new showdown.Converter({ghCodeBlocks: false});
+    } else if (testsuite[i].name === '#164.4.tasklists') {
+      converter = new showdown.Converter({tasklists: true});
     } else {
       converter = new showdown.Converter();
     }

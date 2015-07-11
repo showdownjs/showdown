@@ -19,7 +19,8 @@ var showdown = {},
       strikethrough:             false,
       tables:                    false,
       tablesHeaderId:            false,
-      ghCodeBlocks:              true  // true due to historical reasons
+      ghCodeBlocks:              true,  // true due to historical reasons
+      tasklists:                 false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 
@@ -1667,25 +1668,28 @@ showdown.subParser('lists', function (text, options, globals) {
     // attacklab: add sentinel to emulate \z
     listStr += '~0';
 
-    /*
-     list_str = list_str.replace(/
-     (\n)?							// leading line = $1
-     (^[ \t]*)						// leading whitespace = $2
-     ([*+-]|\d+[.]) [ \t]+			// list marker = $3
-     ([^\r]+?						// list item text   = $4
-     (\n{1,2}))
-     (?= \n* (~0 | \2 ([*+-]|\d+[.]) [ \t]+))
-     /gm, function(){...});
-     */
-    var rgx = /(\n)?(^[ \t]*)([*+-]|\d+[.])[ \t]+([^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm;
+    var rgx = /(\n)?(^[ \t]*)([*+-]|\d+[.])[ \t]+((\[(x| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm;
 
-    listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4) {
+    listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
+      checked = (checked && checked.trim() !== '');
+
       var item = showdown.subParser('outdent')(m4, options, globals);
-      //m1 - LeadingLine
 
+      //m1 - LeadingLine
       if (m1 || (item.search(/\n{2,}/) > -1)) {
         item = showdown.subParser('blockGamut')(item, options, globals);
       } else {
+        if (taskbtn && options.tasklists) {
+          item = item.replace(taskbtn, function () {
+            var otp = '<input type="checkbox" disabled style="margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;"';
+            if (checked) {
+              otp += ' checked';
+            }
+            otp += '>';
+            return otp;
+          });
+        }
+
         // Recursion for sub-lists:
         item = showdown.subParser('lists')(item, options, globals);
         item = item.replace(/\n$/, ''); // chomp(item)
@@ -1694,8 +1698,14 @@ showdown.subParser('lists', function (text, options, globals) {
 
       // this is a "hack" to differentiate between ordered and unordered lists
       // related to issue #142
-      var tp = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
-      return spl + tp + '<li>' + item + '</li>\n';
+      var tp = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol',
+        bulletStyle = '';
+
+      if (taskbtn) {
+        bulletStyle = ' style="list-style-type: none;"';
+      }
+
+      return spl + tp + '<li' + bulletStyle + '>' + item + '</li>\n';
     });
 
     // attacklab: strip sentinel
@@ -1712,6 +1722,8 @@ showdown.subParser('lists', function (text, options, globals) {
    * @returns {string|*}
    */
   function splitConsecutiveLists (results, listType) {
+    // parsing html with regex...
+    // This will surely fail if some extension decides to change paragraph markup directly
     var cthulhu = /(<p[^>]+?>|<p>|<\/p>)/img,
         holder = [[]],
         res = '',
@@ -1750,28 +1762,6 @@ showdown.subParser('lists', function (text, options, globals) {
   text += '~0';
 
   // Re-usable pattern to match any entire ul or ol list:
-
-  /*
-   var whole_list = /
-   (									// $1 = whole list
-   (								// $2
-   [ ]{0,3}					// attacklab: g_tab_width - 1
-   ([*+-]|\d+[.])				// $3 = first list item marker
-   [ \t]+
-   )
-   [^\r]+?
-   (								// $4
-   ~0							// sentinel for workaround; should be $
-   |
-   \n{2,}
-   (?=\S)
-   (?!							// Negative lookahead for another list item marker
-   [ \t]*
-   (?:[*+-]|\d+[.])[ \t]+
-   )
-   )
-   )/g
-   */
   var wholeList = /^(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
 
   if (globals.gListLevel) {

@@ -17,7 +17,8 @@ var showdown = {},
       strikethrough:             false,
       tables:                    false,
       tablesHeaderId:            false,
-      ghCodeBlocks:              true  // true due to historical reasons
+      ghCodeBlocks:              true,  // true due to historical reasons
+      tasklists:                 false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 

@@ -44,7 +44,6 @@ showdown.Converter = function (converterOptions) {
        * @type {string[]}
        */
       parserOrder = [
-        'tables',
         'githubCodeBlocks',
         'hashHTMLBlocks',
         'stripLinkDefinitions',

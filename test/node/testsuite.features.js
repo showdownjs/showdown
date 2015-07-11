@@ -16,6 +16,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({headerLevelStart: 3});
     } else if (testsuite[i].name === '#164.1.simple_autolink') {
       converter = new showdown.Converter({simplifiedAutoLink: true});
+    } else if (testsuite[i].name === '#164.2.disallow_underscore_emphasis_mid_word') {
+      converter = new showdown.Converter({literalMidWordUnderscores: true});
     } else {
       converter = new showdown.Converter();
     }

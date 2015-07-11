@@ -18,12 +18,13 @@ describe('showdown.options', function () {
   describe('getDefaultOptions()', function () {
     it('should get default options', function () {
       var opts = {
-        omitExtraWLInCodeBlocks: false,
-        prefixHeaderId:          false,
-        noHeaderId:              false,
-        headerLevelStart:        1,
-        parseImgDimensions:      false,
-        simplifiedAutoLink:      false
+        omitExtraWLInCodeBlocks:   false,
+        prefixHeaderId:            false,
+        noHeaderId:                false,
+        headerLevelStart:          1,
+        parseImgDimensions:        false,
+        simplifiedAutoLink:        false,
+        literalMidWordUnderscores: false
       };
       expect(showdown.getDefaultOptions()).to.be.eql(opts);
     });

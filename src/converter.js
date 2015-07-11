@@ -22,11 +22,7 @@ showdown.Converter = function (converterOptions) {
        * @private
        * @type {{}}
        */
-      options = {
-        omitExtraWLInCodeBlocks: false,
-        prefixHeaderId:          false,
-        noHeaderId:              false
-      },
+      options = {},
 
       /**
        * Language extensions used by this converter

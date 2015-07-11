@@ -1,8 +1,8 @@
 /**
  * Created by Estevao on 08-06-2015.
  */
-var showdown = require('../../dist/showdown.js'),
-    bootstrap = require('../bootstrap.js'),
+var bootstrap = require('../bootstrap.js'),
+    showdown = bootstrap.showdown,
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getTestSuite('test/features/'),
     tableSuite = bootstrap.getTestSuite('test/features/tables/');

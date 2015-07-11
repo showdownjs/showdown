@@ -4,7 +4,7 @@
 require('source-map-support').install();
 require('chai').should();
 require('sinon');
-var showdown = require('../../dist/showdown.js');
+var showdown = require('../bootstrap').showdown;
 
 describe('showdown.Converter', function () {
   'use strict';

@@ -1,6 +1,5 @@
-var showdown = require('../../dist/showdown.js'),
-    converter = new showdown.Converter(),
-    bootstrap = require('../bootstrap.js'),
+var bootstrap = require('../bootstrap.js'),
+    converter = new bootstrap.showdown.Converter(),
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getTestSuite('test/cases/');
 

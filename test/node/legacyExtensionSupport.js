@@ -3,7 +3,7 @@
  */
 require('source-map-support').install();
 var expect = require('chai').expect,
-    showdown = require('../../dist/showdown.js');
+    showdown = require('../bootstrap').showdown;
 
 describe('showdown legacy extension support', function () {
   'use strict';

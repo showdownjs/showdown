@@ -8,7 +8,7 @@ describe('showdown.Converter', function () {
   require('source-map-support').install();
   require('chai').should();
 
-  var showdown = require('../../dist/showdown.js');
+  var showdown = require('../bootstrap').showdown;
 
   describe('Converter.options extensions', function () {
     showdown.extensions.testext = function () {

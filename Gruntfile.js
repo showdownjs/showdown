@@ -29,7 +29,7 @@ module.exports = function (grunt) {
         dest: 'dist/<%= pkg.name %>.js'
       },
       test: {
-        src: '<%= concat.dist.dest %>',
+        src: '<%= concat.dist.src %>',
         dest: '.build/<%= pkg.name %>.js',
         options: {
           sourceMap: false
@@ -159,9 +159,8 @@ module.exports = function (grunt) {
     grunt.task.run('simplemocha:node');
   });
 
-  grunt.registerTask('concatenate', ['concat:dist']);
   grunt.registerTask('lint', ['jshint', 'jscs']);
-  grunt.registerTask('test', ['lint', 'concat:test', 'simplemocha:node', 'clean']);
+  grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:node', 'clean']);
   grunt.registerTask('build', ['test', 'concatenate', 'uglify']);
   grunt.registerTask('prep-release', ['build', 'changelog']);
 

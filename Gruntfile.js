@@ -4,6 +4,10 @@
 
 module.exports = function (grunt) {
 
+  if (grunt.option('q') || grunt.option('quiet')) {
+    require('quiet-grunt');
+  }
+
   // Project configuration.
   var config = {
     pkg: grunt.file.readJSON('package.json'),

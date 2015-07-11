@@ -47,6 +47,7 @@
     "grunt-simple-mocha": "^0.4.0",
     "js-beautify": "^1.5.6",
     "load-grunt-tasks": "^3.2.0",
+    "quiet-grunt": "^0.2.3",
     "sinon": "^1.14.1",
     "source-map-support": "^0.2.9"
   }

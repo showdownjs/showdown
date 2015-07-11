@@ -24,7 +24,8 @@ describe('showdown.options', function () {
         headerLevelStart:          1,
         parseImgDimensions:        false,
         simplifiedAutoLink:        false,
-        literalMidWordUnderscores: false
+        literalMidWordUnderscores: false,
+        strikethrough:             false
       };
       expect(showdown.getDefaultOptions()).to.be.eql(opts);
     });

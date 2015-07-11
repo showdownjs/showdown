@@ -13,7 +13,8 @@ var showdown = {},
       headerLevelStart:          1,
       parseImgDimensions:        false,
       simplifiedAutoLink:        false,
-      literalMidWordUnderscores: false
+      literalMidWordUnderscores: false,
+      strikethrough:             false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 

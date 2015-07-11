@@ -15,7 +15,8 @@ var showdown = {},
       headerLevelStart:          1,
       parseImgDimensions:        false,
       simplifiedAutoLink:        false,
-      literalMidWordUnderscores: false
+      literalMidWordUnderscores: false,
+      strikethrough:             false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 
@@ -1910,12 +1911,23 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   text = showdown.subParser('autoLinks')(text, options, globals);
   text = showdown.subParser('encodeAmpsAndAngles')(text, options, globals);
   text = showdown.subParser('italicsAndBold')(text, options, globals);
+  text = showdown.subParser('strikethrough')(text, options, globals);
 
   // Do hard breaks:
   text = text.replace(/  +\n/g, ' <br />\n');
 
   return text;
 
+});
+
+showdown.subParser('strikethrough', function (text, options) {
+  'use strict';
+
+  if (options.strikethrough) {
+    text = text.replace(/(?:~T){2}([^~]+)(?:~T){2}/g, '<del>$1</del>');
+  }
+
+  return text;
 });
 
 /**

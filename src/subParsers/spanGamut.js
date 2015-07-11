@@ -20,6 +20,7 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   text = showdown.subParser('autoLinks')(text, options, globals);
   text = showdown.subParser('encodeAmpsAndAngles')(text, options, globals);
   text = showdown.subParser('italicsAndBold')(text, options, globals);
+  text = showdown.subParser('strikethrough')(text, options, globals);
 
   // Do hard breaks:
   text = text.replace(/  +\n/g, ' <br />\n');

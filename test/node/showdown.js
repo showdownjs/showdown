@@ -27,7 +27,8 @@ describe('showdown.options', function () {
         literalMidWordUnderscores: false,
         strikethrough:             false,
         tables:                    false,
-        tablesHeaderId:            false
+        tablesHeaderId:            false,
+        ghCodeBlocks:              true
       };
       expect(showdown.getDefaultOptions()).to.be.eql(opts);
     });

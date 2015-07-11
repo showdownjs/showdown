@@ -18,7 +18,8 @@ var showdown = {},
       literalMidWordUnderscores: false,
       strikethrough:             false,
       tables:                    false,
-      tablesHeaderId:            false
+      tablesHeaderId:            false,
+      ghCodeBlocks:              true  // true due to historical reasons
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 
@@ -1253,6 +1254,11 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text) {
  */
 showdown.subParser('githubCodeBlocks', function (text, options, globals) {
   'use strict';
+
+  // early exit if option is not enabled
+  if (!options.ghCodeBlocks) {
+    return text;
+  }
 
   text += '~0';
 

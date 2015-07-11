@@ -16,7 +16,8 @@ var showdown = {},
       literalMidWordUnderscores: false,
       strikethrough:             false,
       tables:                    false,
-      tablesHeaderId:            false
+      tablesHeaderId:            false,
+      ghCodeBlocks:              true  // true due to historical reasons
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 

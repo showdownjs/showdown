@@ -11,6 +11,11 @@
 showdown.subParser('githubCodeBlocks', function (text, options, globals) {
   'use strict';
 
+  // early exit if option is not enabled
+  if (!options.ghCodeBlocks) {
+    return text;
+  }
+
   text += '~0';
 
   text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, m1, m2) {

@@ -156,7 +156,7 @@ module.exports = function (grunt) {
       }
     });
 
-    grunt.task.run('simplemocha:node');
+    grunt.task.run(['lint', 'concat:test', 'simplemocha:single', 'clean']);
   });
 
   grunt.registerTask('lint', ['jshint', 'jscs']);

@@ -25,7 +25,8 @@ describe('showdown.options', function () {
         parseImgDimensions:        false,
         simplifiedAutoLink:        false,
         literalMidWordUnderscores: false,
-        strikethrough:             false
+        strikethrough:             false,
+        tables:                    false
       };
       expect(showdown.getDefaultOptions()).to.be.eql(opts);
     });

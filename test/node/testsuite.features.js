@@ -4,7 +4,8 @@
 var showdown = require('../../dist/showdown.js'),
     bootstrap = require('../bootstrap.js'),
     assertion = bootstrap.assertion,
-    testsuite = bootstrap.getTestSuite('test/features/');
+    testsuite = bootstrap.getTestSuite('test/features/'),
+    tableSuite = bootstrap.getTestSuite('test/features/tables/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -25,4 +26,12 @@ describe('makeHtml() features testsuite', function () {
     }
     it(testsuite[i].name, assertion(testsuite[i], converter));
   }
+
+  describe('table support', function () {
+    var converter = new showdown.Converter({tables: true});
+    for (var i = 0; i < tableSuite.length; ++i) {
+      it(tableSuite[i].name, assertion(tableSuite[i], converter));
+    }
+  });
+
 });

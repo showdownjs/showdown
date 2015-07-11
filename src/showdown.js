@@ -14,7 +14,8 @@ var showdown = {},
       parseImgDimensions:        false,
       simplifiedAutoLink:        false,
       literalMidWordUnderscores: false,
-      strikethrough:             false
+      strikethrough:             false,
+      tables:                    false
     },
     globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
 

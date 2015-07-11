@@ -76,7 +76,7 @@ showdown.subParser('lists', function (text, options, globals) {
         bulletStyle = '';
 
       if (taskbtn) {
-        bulletStyle = ' style="list-style-type: none;"';
+        bulletStyle = ' class="task-list-item" style="list-style-type: none;"';
       }
 
       return spl + tp + '<li' + bulletStyle + '>' + item + '</li>\n';

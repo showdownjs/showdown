@@ -35,6 +35,9 @@
   "scripts": {
     "test": "grunt test"
   },
+  "bin": {
+    "showdown": "src/cli.js"
+  },
   "devDependencies": {
     "chai": "^1.10.0",
     "grunt": "^0.4.5",

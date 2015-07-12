@@ -20,7 +20,21 @@ var showdown = {},
       ghCodeBlocks:              true,  // true due to historical reasons
       tasklists:                 false
     },
-    globalOptions = JSON.parse(JSON.stringify(defaultOptions)); //clone default options out of laziness =P
+    globalOptions = JSON.parse(JSON.stringify(defaultOptions)),
+    flavor = {
+      github: {
+        omitExtraWLInCodeBlocks:   true,
+        prefixHeaderId:            'user-content-',
+        simplifiedAutoLink:        true,
+        literalMidWordUnderscores: true,
+        strikethrough:             true,
+        tables:                    true,
+        tablesHeaderId:            true,
+        ghCodeBlocks:              true,
+        tasklists:                 true
+      },
+      vanilla: JSON.parse(JSON.stringify(defaultOptions))
+    };
 
 /**
  * helper namespace
@@ -75,6 +89,22 @@ showdown.getOptions = function () {
 showdown.resetOptions = function () {
   'use strict';
   globalOptions = JSON.parse(JSON.stringify(defaultOptions));
+};
+
+/**
+ * Set the flavor showdown should use as default
+ * @param {string} name
+ */
+showdown.setFlavor = function (name) {
+  'use strict';
+  if (flavor.hasOwnProperty(name)) {
+    var preset = flavor[name];
+    for (var option in preset) {
+      if (preset.hasOwnProperty(option)) {
+        globalOptions[option] = preset[option];
+      }
+    }
+  }
 };
 
 /**

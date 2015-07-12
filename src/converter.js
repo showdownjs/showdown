@@ -286,6 +286,21 @@ showdown.Converter = function (converterOptions) {
   };
 
   /**
+   * Set the flavor THIS converter should use
+   * @param {string} name
+   */
+  this.setFlavor = function (name) {
+    if (flavor.hasOwnProperty(name)) {
+      var preset = flavor[name];
+      for (var option in preset) {
+        if (preset.hasOwnProperty(option)) {
+          options[option] = preset[option];
+        }
+      }
+    }
+  };
+
+  /**
    * Remove an extension from THIS converter.
    * Note: This is a costly operation. It's better to initialize a new converter
    * and specify the extensions you wish to use

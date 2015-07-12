@@ -27,6 +27,34 @@ describe('showdown.Converter', function () {
     });
   });
 
+  describe('setFlavor() github', function () {
+    var converter = new showdown.Converter(),
+        ghOpts = {
+          omitExtraWLInCodeBlocks:   true,
+          prefixHeaderId:            'user-content-',
+          simplifiedAutoLink:        true,
+          literalMidWordUnderscores: true,
+          strikethrough:             true,
+          tables:                    true,
+          tablesHeaderId:            true,
+          ghCodeBlocks:              true,
+          tasklists:                 true
+        };
+
+    converter.setFlavor('github');
+
+    for (var opt in ghOpts) {
+      if (ghOpts.hasOwnProperty(opt)) {
+        check(opt, ghOpts[opt]);
+      }
+    }
+    function check(key, val) {
+      it('should set ' + opt + ' to ' + val, function () {
+        converter.getOption(key).should.equal(val);
+      });
+    }
+  });
+
   describe('extension methods', function () {
     var extObjMock = {
           type: 'lang',

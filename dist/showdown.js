@@ -1,4 +1,4 @@
-;/*! showdown 12-07-2015 */
+;/*! showdown 13-07-2015 */
 (function(){
 /**
  * Created by Tivie on 06-01-2015.
@@ -1497,7 +1497,8 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 showdown.subParser('headers', function (text, options, globals) {
   'use strict';
 
-  var prefixHeader = options.prefixHeaderId;
+  var prefixHeader = options.prefixHeaderId,
+    headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart);
 
   // Set text-style headers:
   //	Header 1
@@ -1509,16 +1510,16 @@ showdown.subParser('headers', function (text, options, globals) {
   text = text.replace(/^(.+)[ \t]*\n=+[ \t]*\n+/gm, function (wholeMatch, m1) {
 
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
-        hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
-        hLevel = parseInt(options.headerLevelStart),
-        hashBlock = '<h' + hLevel + hID + '>' + spanGamut + '</h' + hLevel + '>';
+      hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
+      hLevel = headerLevelStart,
+      hashBlock = '<h' + hLevel + hID + '>' + spanGamut + '</h' + hLevel + '>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
 
   text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm, function (matchFound, m1) {
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
-        hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
-        hLevel = parseInt(options.headerLevelStart) + 1,
+      hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
+      hLevel = headerLevelStart + 1,
       hashBlock = '<h' + hLevel + hID + '>' + spanGamut + '</h' + hLevel + '>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
@@ -1544,9 +1545,9 @@ showdown.subParser('headers', function (text, options, globals) {
 
   text = text.replace(/^(#{1,6})[ \t]*(.+?)[ \t]*#*\n+/gm, function (wholeMatch, m1, m2) {
     var span = showdown.subParser('spanGamut')(m2, options, globals),
-        hID = (options.noHeaderId) ? '' : ' id="' + headerId(m2) + '"',
-        hLevel = parseInt(options.headerLevelStart) - 1 + m1.length,
-        header = '<h' + hLevel + hID + '>' + span + '</h' + hLevel + '>';
+      hID = (options.noHeaderId) ? '' : ' id="' + headerId(m2) + '"',
+      hLevel = headerLevelStart - 1 + m1.length,
+      header = '<h' + hLevel + hID + '>' + span + '</h' + hLevel + '>';
 
     return showdown.subParser('hashBlock')(header, options, globals);
   });

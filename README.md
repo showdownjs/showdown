@@ -1,4 +1,4 @@
-![Showdown](https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png)
+![Showdown][sd-logo]
 
 [![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown) [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown) [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown) [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -11,7 +11,7 @@ Showdown is a Javascript Markdown to HTML converter, based on the original works
 
 ### Download tarball
 
-You can download the latest release tarball directly from https://github.com/showdownjs/showdown/releases
+You can download the latest release tarball directly from [releases][releases]
 
 ### Bower
 
@@ -23,9 +23,16 @@ You can download the latest release tarball directly from https://github.com/sho
 
 ### CDN
 
-You can also use github CDN directly in your html file(s).
+You can also use one of several CDNs available: 
 
-    https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
+* github CDN
+
+        https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
+
+* cdnjs
+
+        https://cdnjs.cloudflare.com/ajax/libs/showdown/<version tag>/showdown.min.js
+
 
 ## Browser Compatibility
 
@@ -49,14 +56,14 @@ Showdown has been tested with node 0.8 and 0.10. However, it should work with pr
 
 ## Legacy version
 
-If you're looking for showdown v<1.0.0, you can find it in the [**legacy branch**](https://github.com/showdownjs/showdown/tree/legacy).
+If you're looking for showdown v<1.0.0, you can find it in the [**legacy branch**][legacy-branch].
 
 ## Changelog
 
-You can check the full changelog at https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
+You can check the full [changelog][changelog]
 
 ## Extended documentation
-Check our [wiki pages](https://github.com/showdownjs/showdown/wiki) for examples and a more in-depth documentation.
+Check our [wiki pages][wiki] for examples and a more in-depth documentation.
 
 
 ## Quick Example
@@ -173,6 +180,48 @@ var defaultOptions = showdown.getDefaultOptions();
  * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that
    `# foo` will be parsed as `<h3>foo</h3>`
 
+ * **simplifiedAutoLink**: (boolean) [default false] Turning this on will enable GFM autolink style. This means `some text www.google.com`
+   will be parsed as `<p>some text <a href="www.google.com">www.google.com</a>`
+   
+ * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting underscores
+   in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores. Example:
+   
+   ```md
+   some text with__underscores__in middle
+   ```
+   will be parsed as
+   ```html
+   <p>some text with__underscores__in middle</p>
+   ```
+   
+ * **strikethrough**: (boolean) [default false] Enable support for strikethrough syntax.
+   `~~strikethrough~~` as `<del>strikethrough</del>`
+   
+ * **tables**: (boolean) [default false] Enable support for tables syntax. Example:
+    
+   ```md
+   | *foo* | **bar** | ~~baz~~ |
+   |:------|:-------:|--------:|
+   | 100   | [a][1]  | ![b][2] |
+   ```
+   
+   See the wiki for more info
+
+ * **tablesHeaderId**: (boolean) [default false] If enabled adds an id property to table headers tags.
+
+ * **ghCodeBlocks**: (boolean) [default true] Enable support for GFM code block style.
+
+ * **tasklists**:(boolean) [default false] Enable support for GFM takslists. Example:
+ 
+   ```md
+    - [x] This task is done
+    - [ ] This is still pending
+   ```
+
+## CLI Tool
+
+Showdown also comes bundled with a Command Line Interface tool. You can check the [CLI wiki page][cli-wiki] for more info
+
 ## Integration with AngularJS
 
 ShowdownJS project also provides seamlessly integration with AngularJS via a "plugin".
@@ -180,19 +229,19 @@ Please visit https://github.com/showdownjs/ngShowdown for more information.
 
 ## Integration with TypeScript
 
-If you're using TypeScript you maybe want to use the types from [DefinitelyTyped](https://github.com/borisyankov/DefinitelyTyped/tree/master/showdown)
+If you're using TypeScript you maybe want to use the types from [DefinitelyTyped][definitely-typed]
 
 ## XSS vulnerability
 
 Showdown doesn't sanitize the input. This is by design since markdown relies on it to allow certain features to be correctly parsed into HTML.
 This, however, means XSS injection is quite possible.
 
-Please refer to the wiki article [Markdown's XSS Vulnerability (and how to mitigate it)](https://github.com/showdownjs/showdown/wiki/Markdown's-XSS-Vulnerability-(and-how-to-mitigate-it))
+Please refer to the wiki article [Markdown's XSS Vulnerability (and how to mitigate it)][xss-wiki]
 for more information.
 
 ## Extensions
 
-Showdown allows additional functionality to be loaded via extensions. (you can find a list of known showdown extensions [here](https://github.com/showdownjs/showdown/wiki/extensions))
+Showdown allows additional functionality to be loaded via extensions. (you can find a list of known showdown extensions [here][ext-wiki])
 
 ### Client-side Extension Usage
 
@@ -244,13 +293,13 @@ PRs are awesome. However, before you submit your pull request consider the follo
 
  - Documentation (i.e: README.md) changes can be made directly against master.
  - Run the full test suite before submitting and make sure all tests pass (obviously =P).
- - Try to follow our [**coding style rules**](https://github.com/showdownjs/code-style/blob/master/README.md).
+ - Try to follow our [**coding style rules**][coding-rules].
    Breaking them prevents the PR to pass the tests.
  - Refrain from fixing multiple issues in the same pull request. It's preferable to open multiple small PRs instead of one
    hard to review big one.
  - If the PR introduces a new feature or fixes an issue, please add the appropriate test case.
  - We use commit notes to generate the changelog. It's extremely helpful if your commit messages adhere to the
- [**AngularJS Git Commit Guidelines**](https://github.com/showdownjs/code-style/blob/master/README.md#commit-message-convention).
+ [**AngularJS Git Commit Guidelines**][ng-commit-guide].
  - If we suggest changes then:
    - Make the required updates.
    - Re-run the Angular test suite to ensure tests are still passing.
@@ -275,3 +324,17 @@ Full credit list at https://github.com/showdownjs/showdown/blob/master/CREDITS.m
 
 Showdown is powered by:<br/>
 [![webstorm](https://www.jetbrains.com/webstorm/documentation/docs/logo_webstorm.png)](https://www.jetbrains.com/webstorm/)
+
+
+
+[sd-logo]: https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png
+[legacy-branch]: https://github.com/showdownjs/showdown/tree/legacy
+[releases]: https://github.com/showdownjs/showdown/releases
+[changelog]: https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
+[wiki]: https://github.com/showdownjs/showdown/wiki
+[cli-wiki]: https://github.com/showdownjs/showdown/wiki/CLI-tool
+[definitely-typed]: https://github.com/borisyankov/DefinitelyTyped/tree/master/showdown
+[xss-wiki]: https://github.com/showdownjs/showdown/wiki/Markdown's-XSS-Vulnerability-(and-how-to-mitigate-it)
+[ext-wiki]: https://github.com/showdownjs/showdown/wiki/extensions
+[coding-rules]: https://github.com/showdownjs/code-style/blob/master/README.md
+[ng-commit-guide]: https://github.com/showdownjs/code-style/blob/master/README.md#commit-message-convention

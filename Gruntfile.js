@@ -20,6 +20,7 @@ module.exports = function (grunt) {
       },
       dist: {
         src: [
+          'src/options.js',
           'src/showdown.js',
           'src/helpers.js',
           'src/converter.js',

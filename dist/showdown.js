@@ -1,5 +1,86 @@
-;/*! showdown 12-07-2015 */
+;/*! showdown 13-07-2015 */
 (function(){
+/**
+ * Created by Tivie on 13-07-2015.
+ */
+
+function getDefaultOpts(simple) {
+  'use strict';
+
+  var defaultOptions = {
+    omitExtraWLInCodeBlocks: {
+      default: false,
+      describe: 'Omit the default extra whiteline added to code blocks',
+      type: 'boolean'
+    },
+    noHeaderId: {
+      default: false,
+      describe: 'Turn on/off generated header id',
+      type: 'boolean'
+    },
+    prefixHeaderId: {
+      default: false,
+      describe: 'Specify a prefix to generated header ids',
+      type: 'string'
+    },
+    headerLevelStart: {
+      default: false,
+      describe: 'The header blocks level start',
+      type: 'integer'
+    },
+    parseImgDimensions: {
+      default: false,
+      describe: 'Turn on/off image dimension parsing',
+      type: 'boolean'
+    },
+    simplifiedAutoLink: {
+      default: false,
+      describe: 'Turn on/off GFM autolink style',
+      type: 'boolean'
+    },
+    literalMidWordUnderscores: {
+      default: false,
+      describe: 'Parse midword underscores as literal underscores',
+      type: 'boolean'
+    },
+    strikethrough: {
+      default: false,
+      describe: 'Turn on/off strikethrough support',
+      type: 'boolean'
+    },
+    tables: {
+      default: false,
+      describe: 'Turn on/off tables support',
+      type: 'boolean'
+    },
+    tablesHeaderId: {
+      default: false,
+      describe: 'Add an id to table headers',
+      type: 'boolean'
+    },
+    ghCodeBlocks: {
+      default: true,
+      describe: 'Turn on/off GFM fenced code blocks support',
+      type: 'boolean'
+    },
+    tasklists: {
+      default: false,
+      describe: 'Turn on/off GFM tasklist support',
+      type: 'boolean'
+    }
+  };
+  if (simple === false) {
+    return JSON.parse(JSON.stringify(defaultOptions));
+  }
+  var ret = {};
+  for (var opt in defaultOptions) {
+    if (defaultOptions.hasOwnProperty(opt)) {
+      ret[opt] = defaultOptions[opt].default;
+    }
+  }
+  return ret;
+}
+
 /**
  * Created by Tivie on 06-01-2015.
  */
@@ -8,21 +89,7 @@
 var showdown = {},
     parsers = {},
     extensions = {},
-    defaultOptions = {
-      omitExtraWLInCodeBlocks:   false,
-      prefixHeaderId:            false,
-      noHeaderId:                false,
-      headerLevelStart:          1,
-      parseImgDimensions:        false,
-      simplifiedAutoLink:        false,
-      literalMidWordUnderscores: false,
-      strikethrough:             false,
-      tables:                    false,
-      tablesHeaderId:            false,
-      ghCodeBlocks:              true,  // true due to historical reasons
-      tasklists:                 false
-    },
-    globalOptions = JSON.parse(JSON.stringify(defaultOptions)),
+    globalOptions = getDefaultOpts(true),
     flavor = {
       github: {
         omitExtraWLInCodeBlocks:   true,
@@ -35,7 +102,7 @@ var showdown = {},
         ghCodeBlocks:              true,
         tasklists:                 true
       },
-      vanilla: JSON.parse(JSON.stringify(defaultOptions))
+      vanilla: getDefaultOpts(true)
     };
 
 /**
@@ -90,7 +157,7 @@ showdown.getOptions = function () {
  */
 showdown.resetOptions = function () {
   'use strict';
-  globalOptions = JSON.parse(JSON.stringify(defaultOptions));
+  globalOptions = getDefaultOpts(true);
 };
 
 /**
@@ -112,11 +179,12 @@ showdown.setFlavor = function (name) {
 /**
  * Get the default options
  * @static
+ * @param {boolean} [simple=true]
  * @returns {{}}
  */
-showdown.getDefaultOptions = function () {
+showdown.getDefaultOptions = function (simple) {
   'use strict';
-  return defaultOptions;
+  return getDefaultOpts(simple);
 };
 
 /**
@@ -235,7 +303,7 @@ function validate(extension, name) {
   }
 
   for (var i = 0; i < extension.length; ++i) {
-    var baseMsg = errMsg + 'sub-extension ' + i + ': ',
+    var baseMsg = errMsg + ' sub-extension ' + i + ': ',
         ext = extension[i];
     if (typeof ext !== 'object') {
       ret.valid = false;
@@ -532,13 +600,16 @@ showdown.Converter = function (converterOptions) {
   /**
    * Parse extension
    * @param {*} ext
+   * @param {string} [name='']
    * @private
    */
-  function _parseExtension(ext) {
+  function _parseExtension(ext, name) {
 
+    name = name || null;
     // If it's a string, the extension was previously loaded
     if (showdown.helper.isString(ext)) {
       ext = showdown.helper.stdExtName(ext);
+      name = ext;
 
       // LEGACY_SUPPORT CODE
       if (showdown.extensions[ext]) {
@@ -564,8 +635,9 @@ showdown.Converter = function (converterOptions) {
       ext = [ext];
     }
 
-    if (!showdown.validateExtension(ext)) {
-      return;
+    var validExt = validate(ext, name);
+    if (!validExt.valid) {
+      throw Error(validExt.error);
     }
 
     for (var i = 0; i < ext.length; ++i) {
@@ -718,9 +790,11 @@ showdown.Converter = function (converterOptions) {
   /**
    * Add extension to THIS converter
    * @param {{}} extension
+   * @param {string} [name=null]
    */
-  this.addExtension = function (extension) {
-    _parseExtension(extension);
+  this.addExtension = function (extension, name) {
+    name = name || null;
+    _parseExtension(extension, name);
   };
 
   /**
@@ -1497,7 +1571,8 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 showdown.subParser('headers', function (text, options, globals) {
   'use strict';
 
-  var prefixHeader = options.prefixHeaderId;
+  var prefixHeader = options.prefixHeaderId,
+      headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart);
 
   // Set text-style headers:
   //	Header 1
@@ -1510,7 +1585,7 @@ showdown.subParser('headers', function (text, options, globals) {
 
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
         hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
-        hLevel = parseInt(options.headerLevelStart),
+        hLevel = headerLevelStart,
         hashBlock = '<h' + hLevel + hID + '>' + spanGamut + '</h' + hLevel + '>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
@@ -1518,7 +1593,7 @@ showdown.subParser('headers', function (text, options, globals) {
   text = text.replace(/^(.+)[ \t]*\n-+[ \t]*\n+/gm, function (matchFound, m1) {
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
         hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
-        hLevel = parseInt(options.headerLevelStart) + 1,
+        hLevel = headerLevelStart + 1,
       hashBlock = '<h' + hLevel + hID + '>' + spanGamut + '</h' + hLevel + '>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
@@ -1545,7 +1620,7 @@ showdown.subParser('headers', function (text, options, globals) {
   text = text.replace(/^(#{1,6})[ \t]*(.+?)[ \t]*#*\n+/gm, function (wholeMatch, m1, m2) {
     var span = showdown.subParser('spanGamut')(m2, options, globals),
         hID = (options.noHeaderId) ? '' : ' id="' + headerId(m2) + '"',
-        hLevel = parseInt(options.headerLevelStart) - 1 + m1.length,
+        hLevel = headerLevelStart - 1 + m1.length,
         header = '<h' + hLevel + hID + '>' + span + '</h' + hLevel + '>';
 
     return showdown.subParser('hashBlock')(header, options, globals);

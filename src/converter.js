@@ -86,13 +86,16 @@ showdown.Converter = function (converterOptions) {
   /**
    * Parse extension
    * @param {*} ext
+   * @param {string} [name='']
    * @private
    */
-  function _parseExtension(ext) {
+  function _parseExtension(ext, name) {
 
+    name = name || null;
     // If it's a string, the extension was previously loaded
     if (showdown.helper.isString(ext)) {
       ext = showdown.helper.stdExtName(ext);
+      name = ext;
 
       // LEGACY_SUPPORT CODE
       if (showdown.extensions[ext]) {
@@ -118,8 +121,9 @@ showdown.Converter = function (converterOptions) {
       ext = [ext];
     }
 
-    if (!showdown.validateExtension(ext)) {
-      return;
+    var validExt = validate(ext, name);
+    if (!validExt.valid) {
+      throw Error(validExt.error);
     }
 
     for (var i = 0; i < ext.length; ++i) {
@@ -272,9 +276,11 @@ showdown.Converter = function (converterOptions) {
   /**
    * Add extension to THIS converter
    * @param {{}} extension
+   * @param {string} [name=null]
    */
-  this.addExtension = function (extension) {
-    _parseExtension(extension);
+  this.addExtension = function (extension, name) {
+    name = name || null;
+    _parseExtension(extension, name);
   };
 
   /**

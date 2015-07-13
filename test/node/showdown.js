@@ -17,6 +17,8 @@ describe('showdown.options', function () {
 
   describe('getDefaultOptions()', function () {
     it('should get default options', function () {
+      var opts = require('../optionswp').getDefaultOpts(true);
+      /*
       var opts = {
         omitExtraWLInCodeBlocks:   false,
         prefixHeaderId:            false,
@@ -31,6 +33,7 @@ describe('showdown.options', function () {
         ghCodeBlocks:              true,
         tasklists:                 false
       };
+      */
       expect(showdown.getDefaultOptions()).to.be.eql(opts);
     });
   });

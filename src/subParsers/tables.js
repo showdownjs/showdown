@@ -15,7 +15,7 @@ showdown.subParser('tables', function (text, options, globals) {
       if (options.tableHeaderId) {
         id = ' id="' + header.replace(/ /g, '_').toLowerCase() + '"';
       }
-      if (style.trim() === '') {
+      if (!style || style.trim() === '') {
         style = '';
       } else {
         style = ' style="' + style + '"';
@@ -25,7 +25,7 @@ showdown.subParser('tables', function (text, options, globals) {
 
     tables.td = function (cell, style) {
       var subText = showdown.subParser('spanGamut')(cell.trim(), options, globals);
-      if (style.trim() === '') {
+      if (!style || style.trim() === '') {
         style = '';
       } else {
         style = ' style="' + style + '"';

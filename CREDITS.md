@@ -37,10 +37,12 @@ Credits
       Bug fixes and build optimization
     * [Karthik Balakrishnan](https://github.com/torcellite)<br/>
       Support for table alignment
+    * [rheber](https://github.com/rheber)<br/>
+      Cli
       
 
   - Original Project
     * [John Gruber](http://daringfireball.net/projects/markdown/)<br/>
       Author of Markdown
-    * [John Fraser](http://attacklab.net/)
+    * [John Fraser](http://attacklab.net/)<br/>
       Author of Showdown

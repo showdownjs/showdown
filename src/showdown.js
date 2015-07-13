@@ -6,21 +6,7 @@
 var showdown = {},
     parsers = {},
     extensions = {},
-    defaultOptions = {
-      omitExtraWLInCodeBlocks:   false,
-      prefixHeaderId:            false,
-      noHeaderId:                false,
-      headerLevelStart:          1,
-      parseImgDimensions:        false,
-      simplifiedAutoLink:        false,
-      literalMidWordUnderscores: false,
-      strikethrough:             false,
-      tables:                    false,
-      tablesHeaderId:            false,
-      ghCodeBlocks:              true,  // true due to historical reasons
-      tasklists:                 false
-    },
-    globalOptions = JSON.parse(JSON.stringify(defaultOptions)),
+    globalOptions = getDefaultOpts(true),
     flavor = {
       github: {
         omitExtraWLInCodeBlocks:   true,
@@ -33,7 +19,7 @@ var showdown = {},
         ghCodeBlocks:              true,
         tasklists:                 true
       },
-      vanilla: JSON.parse(JSON.stringify(defaultOptions))
+      vanilla: getDefaultOpts(true)
     };
 
 /**
@@ -88,7 +74,7 @@ showdown.getOptions = function () {
  */
 showdown.resetOptions = function () {
   'use strict';
-  globalOptions = JSON.parse(JSON.stringify(defaultOptions));
+  globalOptions = getDefaultOpts(true);
 };
 
 /**
@@ -110,11 +96,12 @@ showdown.setFlavor = function (name) {
 /**
  * Get the default options
  * @static
+ * @param {boolean} [simple=true]
  * @returns {{}}
  */
-showdown.getDefaultOptions = function () {
+showdown.getDefaultOptions = function (simple) {
   'use strict';
-  return defaultOptions;
+  return getDefaultOpts(simple);
 };
 
 /**
@@ -233,7 +220,7 @@ function validate(extension, name) {
   }
 
   for (var i = 0; i < extension.length; ++i) {
-    var baseMsg = errMsg + 'sub-extension ' + i + ': ',
+    var baseMsg = errMsg + ' sub-extension ' + i + ': ',
         ext = extension[i];
     if (typeof ext !== 'object') {
       ret.valid = false;

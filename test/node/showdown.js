@@ -17,20 +17,7 @@ describe('showdown.options', function () {
 
   describe('getDefaultOptions()', function () {
     it('should get default options', function () {
-      var opts = {
-        omitExtraWLInCodeBlocks:   false,
-        prefixHeaderId:            false,
-        noHeaderId:                false,
-        headerLevelStart:          1,
-        parseImgDimensions:        false,
-        simplifiedAutoLink:        false,
-        literalMidWordUnderscores: false,
-        strikethrough:             false,
-        tables:                    false,
-        tablesHeaderId:            false,
-        ghCodeBlocks:              true,
-        tasklists:                 false
-      };
+      var opts = require('../optionswp').getDefaultOpts(true);
       expect(showdown.getDefaultOptions()).to.be.eql(opts);
     });
   });

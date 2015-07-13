@@ -35,6 +35,9 @@
   "scripts": {
     "test": "grunt test"
   },
+  "bin": {
+    "showdown": "bin/showdown.js"
+  },
   "devDependencies": {
     "chai": "^1.10.0",
     "grunt": "^0.4.5",
@@ -50,5 +53,8 @@
     "quiet-grunt": "^0.2.3",
     "sinon": "^1.14.1",
     "source-map-support": "^0.2.9"
+  },
+  "dependencies": {
+    "yargs": "^3.15.0"
   }
 }

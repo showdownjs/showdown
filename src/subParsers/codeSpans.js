@@ -53,7 +53,8 @@ showdown.subParser('codeSpans', function (text) {
       c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
       c = showdown.subParser('encodeCode')(c);
       return m1 + '<code>' + c + '</code>';
-  });
+    }
+  );
 
   return text;
 });

@@ -1730,8 +1730,8 @@ showdown.subParser('italicsAndBold', function (text, options) {
   if (options.literalMidWordUnderscores) {
     //underscores
     // Since we are consuming a \s character, we need to add it
-    text = text.replace(/(\s)__(?=\S)([^]+?)__(?=\s)/g, '$1<strong>$2</strong>');
-    text = text.replace(/(\s)_(?=\S)([^]+?)_(?=\s)/g, '$1<em>$2</em>');
+    text = text.replace(/(^|\s)__(?=\S)([^]+?)__(?=\s|$)/gm, '$1<strong>$2</strong>');
+    text = text.replace(/(^|\s)_(?=\S)([^]+?)_(?=\s|$)/gm, '$1<em>$2</em>');
     //asterisks
     text = text.replace(/\*\*(?=\S)([^]+?)\*\*/g, '<strong>$1</strong>');
     text = text.replace(/\*(?=\S)([^]+?)\*/g, '<em>$1</em>');

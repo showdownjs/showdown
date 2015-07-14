@@ -1174,6 +1174,14 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
 showdown.subParser('codeSpans', function (text) {
   'use strict';
 
+  //special case -> literal html code tag
+  text = text.replace(/(<code[^><]*?>)([^]*?)<\/code>/g, function (wholeMatch, tag, c) {
+    c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
+    c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
+    c = showdown.subParser('encodeCode')(c);
+    return tag + c + '</code>';
+  });
+
   /*
    text = text.replace(/
    (^|[^\\])					// Character before opening ` can't be a backslash
@@ -1186,17 +1194,17 @@ showdown.subParser('codeSpans', function (text) {
    (?!`)
    /gm, function(){...});
    */
-
-  text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm, function (wholeMatch, m1, m2, m3) {
-    var c = m3;
-    c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
-    c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
-    c = showdown.subParser('encodeCode')(c);
-    return m1 + '<code>' + c + '</code>';
-  });
+  text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
+    function (wholeMatch, m1, m2, m3) {
+      var c = m3;
+      c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
+      c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
+      c = showdown.subParser('encodeCode')(c);
+      return m1 + '<code>' + c + '</code>';
+    }
+  );
 
   return text;
-
 });
 
 /**
@@ -1689,6 +1697,7 @@ showdown.subParser('images', function (text, options, globals) {
     }
 
     altText = altText.replace(/"/g, '&quot;');
+    altText = showdown.helper.escapeCharacters(altText, '*_', false);
     url = showdown.helper.escapeCharacters(url, '*_', false);
     var result = '<img src="' + url + '" alt="' + altText + '"';
 
@@ -1726,8 +1735,8 @@ showdown.subParser('italicsAndBold', function (text, options) {
   if (options.literalMidWordUnderscores) {
     //underscores
     // Since we are consuming a \s character, we need to add it
-    text = text.replace(/(^|\s)__(?=\S)([^]+?)__(?=\s|$)/gm, '$1<strong>$2</strong>');
-    text = text.replace(/(^|\s)_(?=\S)([^]+?)_(?=\s|$)/gm, '$1<em>$2</em>');
+    text = text.replace(/(^|\s|>|\b)__(?=\S)([^]+?)__(?=\b|<|\s|$)/gm, '$1<strong>$2</strong>');
+    text = text.replace(/(^|\s|>|\b)_(?=\S)([^]+?)_(?=\b|<|\s|$)/gm, '$1<em>$2</em>');
     //asterisks
     text = text.replace(/\*\*(?=\S)([^]+?)\*\*/g, '<strong>$1</strong>');
     text = text.replace(/\*(?=\S)([^]+?)\*/g, '<em>$1</em>');

@@ -82,8 +82,8 @@
     testCase.actual = beautify(testCase.actual, beauOptions);
 
     // Normalize line returns
-    testCase.expected = testCase.expected.replace(/(\r\n)|\n|\r/g, os.EOL);
-    testCase.actual = testCase.actual.replace(/(\r\n)|\n|\r/g, os.EOL);
+    testCase.expected = testCase.expected.replace(/(\r\n)|\n|\r/g, '\n');
+    testCase.actual = testCase.actual.replace(/(\r\n)|\n|\r/g, '\n');
 
     return testCase;
   }

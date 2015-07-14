@@ -65,6 +65,11 @@ function getDefaultOpts(simple) {
       default: false,
       describe: 'Turn on/off GFM tasklist support',
       type: 'boolean'
+    },
+    smoothLivePreview: {
+      default: false,
+      describe: 'Prevents weird effects in live previews due to incomplete input',
+      type: 'boolean'
     }
   };
   if (simple === false) {

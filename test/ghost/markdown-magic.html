@@ -13,26 +13,28 @@
     [^2]: Dogs are usually not red
 </code></pre>
 
-<p>The quick brown fox<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup> jumped over the lazy dog<sup id="fnref:2"><a href="#fn:2" rel="footnote">2</a></sup>.</p>
+<p>The quick brown fox[^1] jumped over the lazy dog[^2].</p>
 
 <h3 id="syntaxhighlighting">Syntax Highlighting</h3>
 
-<pre><code>https://ghost.orglanguage-javascript
+<pre><code>```language-javascript
+    [...]
+    ```
 </code></pre>
 
-<p>// # Notifications API
-    // RESTful API for creating notifications
-    var Promise            = require('bluebird'), <br />
-    _                  = require('lodash'),
-    canThis            = require('../permissions').canThis,
-    errors             = require('../errors'),
-    utils              = require('./utils'),</p>
+<p>Combined with <a href="http://prismjs.com/">Prism.js</a> in the Ghost theme:</p>
 
-<pre><code>// Holds the persistent notifications
-    notificationsStore = [],
-    // Holds the last used id
-    notificationCounter = 0,
-    notifications;
+<pre><code class="language-javascript language-language-javascript">// # Notifications API
+// RESTful API for creating notifications
+var Promise            = require('bluebird'),
+_                  = require('lodash'),
+canThis            = require('../permissions').canThis,
+errors             = require('../errors'),
+utils              = require('./utils'),
+
+// Holds the persistent notifications
+notificationsStore = [],
+// Holds the last used id
+notificationCounter = 0,
+notifications;
 </code></pre>
-
-<p>```</p>

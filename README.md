@@ -221,6 +221,7 @@ var defaultOptions = showdown.getDefaultOptions();
     - [x] This task is done
     - [ ] This is still pending
    ```
+ * **smoothLivePreview**: (boolean) [default false] Prevents weird effects in live previews due to incomplete input
 
 ## CLI Tool
 

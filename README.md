@@ -182,13 +182,29 @@ var defaultOptions = showdown.getDefaultOptions();
    ```
  
  * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that
-   `# foo` will be parsed as `<h3>foo</h3>`
 
- * **simplifiedAutoLink**: (boolean) [default false] Turning this on will enable GFM autolink style. This means `some text www.google.com`
-   will be parsed as `<p>some text <a href="www.google.com">www.google.com</a>`
+    ```md
+    # foo
+    ```
+    will be parsed as 
+    
+    ```html
+    <h3>foo</h3>
+    ```
+
+ * **simplifiedAutoLink**: (boolean) [default false] Turning this on will enable GFM autolink style. This means that 
+
+   ```md
+   some text www.google.com
+   ```
+   will be parsed as 
+   ````
+   <p>some text <a href="www.google.com">www.google.com</a>
+   ```
    
- * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting underscores
-   in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores. Example:
+ * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting underscores in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores. 
+
+   Example:
    
    ```md
    some text with__underscores__in middle

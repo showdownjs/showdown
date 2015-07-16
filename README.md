@@ -176,9 +176,11 @@ var defaultOptions = showdown.getDefaultOptions();
  * **prefixHeaderId**: (string/boolean) [default false] Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
  
  * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
-   Example:
+   Examples:
    ```
-   ![my image](foo.jpg =100x80)
+   ![foo](foo.jpg =100x80)     simple, assumes units are in px
+   ![bar](bar.jpg =100x*)      sets the height to "auto"
+   ![baz](baz.jpg =80%x5em*)  Image with width of 80% and height of 5em
    ```
  
  * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that

@@ -222,9 +222,10 @@ var defaultOptions = showdown.getDefaultOptions();
  * **tables**: (boolean) [default false] Enable support for tables syntax. Example:
     
    ```md
-   | *foo* | **bar** | ~~baz~~ |
+   | h1    |    h2   |      h3 |
    |:------|:-------:|--------:|
    | 100   | [a][1]  | ![b][2] |
+   | *foo* | **bar** | ~~baz~~ |
    ```
    
    See the wiki for more info

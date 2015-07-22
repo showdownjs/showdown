@@ -15,6 +15,7 @@ showdown.subParser('tables', function (text, options, globals) {
       if (options.tableHeaderId) {
         id = ' id="' + header.replace(/ /g, '_').toLowerCase() + '"';
       }
+      header = showdown.subParser('spanGamut')(header, options, globals);
       if (!style || style.trim() === '') {
         style = '';
       } else {

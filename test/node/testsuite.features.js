@@ -36,6 +36,8 @@ describe('makeHtml() features testsuite', function () {
     for (var i = 0; i < tableSuite.length; ++i) {
       if (tableSuite[i].name === 'basic_with_header_ids') {
         converter = new showdown.Converter({tables: true, tableHeaderId: true});
+      } else if (tableSuite[i].name === '#179.parse_md_in_table_ths') {
+        converter = new showdown.Converter({tables: true, strikethrough: true});
       } else {
         converter = new showdown.Converter({tables: true});
       }

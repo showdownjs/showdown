@@ -1,4 +1,4 @@
-;/*! showdown 14-07-2015 */
+;/*! showdown 22-07-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -2145,6 +2145,7 @@ showdown.subParser('tables', function (text, options, globals) {
       if (options.tableHeaderId) {
         id = ' id="' + header.replace(/ /g, '_').toLowerCase() + '"';
       }
+      header = showdown.subParser('spanGamut')(header, options, globals);
       if (!style || style.trim() === '') {
         style = '';
       } else {

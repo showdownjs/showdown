@@ -25,6 +25,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({ghCodeBlocks: false});
     } else if (testsuite[i].name === '#164.4.tasklists') {
       converter = new showdown.Converter({tasklists: true});
+    } else if (testsuite[i].name === 'autolink_and_disallow_underscores') {
+      converter = new showdown.Converter({literalMidWordUnderscores: true, simplifiedAutoLink: true});
     } else {
       converter = new showdown.Converter();
     }

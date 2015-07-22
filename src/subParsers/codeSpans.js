@@ -26,6 +26,14 @@
 showdown.subParser('codeSpans', function (text) {
   'use strict';
 
+  //special case -> literal html code tag
+  text = text.replace(/(<code[^><]*?>)([^]*?)<\/code>/g, function (wholeMatch, tag, c) {
+    c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
+    c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
+    c = showdown.subParser('encodeCode')(c);
+    return tag + c + '</code>';
+  });
+
   /*
    text = text.replace(/
    (^|[^\\])					// Character before opening ` can't be a backslash
@@ -38,15 +46,15 @@ showdown.subParser('codeSpans', function (text) {
    (?!`)
    /gm, function(){...});
    */
-
-  text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm, function (wholeMatch, m1, m2, m3) {
-    var c = m3;
-    c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
-    c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
-    c = showdown.subParser('encodeCode')(c);
-    return m1 + '<code>' + c + '</code>';
-  });
+  text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
+    function (wholeMatch, m1, m2, m3) {
+      var c = m3;
+      c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
+      c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
+      c = showdown.subParser('encodeCode')(c);
+      return m1 + '<code>' + c + '</code>';
+    }
+  );
 
   return text;
-
 });

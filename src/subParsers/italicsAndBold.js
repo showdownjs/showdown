@@ -4,8 +4,8 @@ showdown.subParser('italicsAndBold', function (text, options) {
   if (options.literalMidWordUnderscores) {
     //underscores
     // Since we are consuming a \s character, we need to add it
-    text = text.replace(/(^|\s)__(?=\S)([^]+?)__(?=\s|$)/gm, '$1<strong>$2</strong>');
-    text = text.replace(/(^|\s)_(?=\S)([^]+?)_(?=\s|$)/gm, '$1<em>$2</em>');
+    text = text.replace(/(^|\s|>|\b)__(?=\S)([^]+?)__(?=\b|<|\s|$)/gm, '$1<strong>$2</strong>');
+    text = text.replace(/(^|\s|>|\b)_(?=\S)([^]+?)_(?=\b|<|\s|$)/gm, '$1<em>$2</em>');
     //asterisks
     text = text.replace(/\*\*(?=\S)([^]+?)\*\*/g, '<strong>$1</strong>');
     text = text.replace(/\*(?=\S)([^]+?)\*/g, '<em>$1</em>');

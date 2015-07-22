@@ -117,7 +117,7 @@ Local options can be set:
 
  * **through the constructor**
     ```js
-    var converter = new showdown.Converter({optionKey: 'value');
+    var converter = new showdown.Converter({optionKey: 'value'});
     ```
 
  * **through the setOption() method**
@@ -176,19 +176,37 @@ var defaultOptions = showdown.getDefaultOptions();
  * **prefixHeaderId**: (string/boolean) [default false] Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
  
  * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
-   Example:
+   Examples:
    ```
-   ![my image](foo.jpg =100x80)
+   ![foo](foo.jpg =100x80)     simple, assumes units are in px
+   ![bar](bar.jpg =100x*)      sets the height to "auto"
+   ![baz](baz.jpg =80%x5em)  Image with width of 80% and height of 5em
    ```
  
  * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that
-   `# foo` will be parsed as `<h3>foo</h3>`
 
- * **simplifiedAutoLink**: (boolean) [default false] Turning this on will enable GFM autolink style. This means `some text www.google.com`
-   will be parsed as `<p>some text <a href="www.google.com">www.google.com</a>`
+    ```md
+    # foo
+    ```
+    will be parsed as 
+    
+    ```html
+    <h3>foo</h3>
+    ```
+
+ * **simplifiedAutoLink**: (boolean) [default false] Turning this on will enable GFM autolink style. This means that 
+
+   ```md
+   some text www.google.com
+   ```
+   will be parsed as 
+   ````
+   <p>some text <a href="www.google.com">www.google.com</a>
+   ```
    
- * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting underscores
-   in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores. Example:
+ * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting underscores in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores. 
+
+   Example:
    
    ```md
    some text with__underscores__in middle
@@ -204,9 +222,10 @@ var defaultOptions = showdown.getDefaultOptions();
  * **tables**: (boolean) [default false] Enable support for tables syntax. Example:
     
    ```md
-   | *foo* | **bar** | ~~baz~~ |
+   | h1    |    h2   |      h3 |
    |:------|:-------:|--------:|
    | 100   | [a][1]  | ![b][2] |
+   | *foo* | **bar** | ~~baz~~ |
    ```
    
    See the wiki for more info
@@ -221,6 +240,7 @@ var defaultOptions = showdown.getDefaultOptions();
     - [x] This task is done
     - [ ] This is still pending
    ```
+ * **smoothLivePreview**: (boolean) [default false] Prevents weird effects in live previews due to incomplete input
 
 ## CLI Tool
 

@@ -1,4 +1,4 @@
-;/*! showdown 22-07-2015 */
+;/*! showdown 01-08-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1395,14 +1395,8 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
 
   text += '~0';
 
-  text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, m1, m2) {
-    var language = m1,
-        codeblock = m2,
-        end = '\n';
-
-    if (options.omitExtraWLInCodeBlocks) {
-      end = '';
-    }
+  text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, language, codeblock) {
+    var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
 
     codeblock = showdown.subParser('encodeCode')(codeblock);
     codeblock = showdown.subParser('detab')(codeblock);
@@ -1755,15 +1749,13 @@ showdown.subParser('italicsAndBold', function (text, options) {
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
 
-  var spl = '~1';
-
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
    * @param {string} listStr
    * @returns {string}
    */
-  function processListItems (listStr) {
+  function processListItems (listStr, trimTrailing) {
     // The $g_list_level global keeps track of when we're inside a list.
     // Each time we enter a list, we increment it; when we leave a list,
     // we decrement. If it's zero, we're not in a list anymore.
@@ -1784,7 +1776,6 @@ showdown.subParser('lists', function (text, options, globals) {
     // without resorting to mind-reading. Perhaps the solution is to
     // change the syntax rules such that sub-lists must start with a
     // starting cardinal number; e.g. "1." or "a.".
-
     globals.gListLevel++;
 
     // trim trailing blank lines:
@@ -1793,93 +1784,96 @@ showdown.subParser('lists', function (text, options, globals) {
     // attacklab: add sentinel to emulate \z
     listStr += '~0';
 
-    var rgx = /(\n)?(^[ \t]*)([*+-]|\d+[.])[ \t]+((\[(x| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm;
+    var rgx = /(\n)?(^[ \t]*)([*+-]|\d+[.])[ \t]+((\[(x| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm,
+        isParagraphed = (/\n[ \t]*\n(?!~0)/.test(listStr));
 
     listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
       checked = (checked && checked.trim() !== '');
+      var item = showdown.subParser('outdent')(m4, options, globals),
+          bulletStyle = '';
 
-      var item = showdown.subParser('outdent')(m4, options, globals);
-
-      //m1 - LeadingLine
+      // Support for github tasklists
+      if (taskbtn && options.tasklists) {
+        bulletStyle = ' class="task-list-item" style="list-style-type: none;"';
+        item = item.replace(/^[ \t]*\[(x| )?]/m, function () {
+          var otp = '<input type="checkbox" disabled style="margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;"';
+          if (checked) {
+            otp += ' checked';
+          }
+          otp += '>';
+          return otp;
+        });
+      }
+      // m1 - Leading line or
+      // Has a double return (multi paragraph) or
+      // Has sublist
       if (m1 || (item.search(/\n{2,}/) > -1)) {
+        item = showdown.subParser('githubCodeBlocks')(item, options, globals);
         item = showdown.subParser('blockGamut')(item, options, globals);
       } else {
-        if (taskbtn && options.tasklists) {
-          item = item.replace(taskbtn, function () {
-            var otp = '<input type="checkbox" disabled style="margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;"';
-            if (checked) {
-              otp += ' checked';
-            }
-            otp += '>';
-            return otp;
-          });
-        }
-
         // Recursion for sub-lists:
         item = showdown.subParser('lists')(item, options, globals);
         item = item.replace(/\n$/, ''); // chomp(item)
-        item = showdown.subParser('spanGamut')(item, options, globals);
+        if (isParagraphed) {
+          item = showdown.subParser('paragraphs')(item, options, globals);
+        } else {
+          item = showdown.subParser('spanGamut')(item, options, globals);
+        }
       }
-
-      // this is a "hack" to differentiate between ordered and unordered lists
-      // related to issue #142
-      var tp = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol',
-        bulletStyle = '';
-
-      if (taskbtn) {
-        bulletStyle = ' class="task-list-item" style="list-style-type: none;"';
-      }
-
-      return spl + tp + '<li' + bulletStyle + '>' + item + '</li>\n';
+      item =  '\n<li' + bulletStyle + '>' + item + '</li>\n';
+      return item;
     });
 
     // attacklab: strip sentinel
     listStr = listStr.replace(/~0/g, '');
 
     globals.gListLevel--;
+
+    if (trimTrailing) {
+      listStr = listStr.replace(/\s+$/, '');
+    }
+
     return listStr;
   }
 
   /**
-   * Slit consecutive ol/ul lists (related to issue 142)
-   * @param {Array} results
+   * Check and parse consecutive lists (better fix for issue #142)
+   * @param {string} list
    * @param {string} listType
-   * @returns {string|*}
+   * @returns {string}
    */
-  function splitConsecutiveLists (results, listType) {
-    // parsing html with regex...
-    // This will surely fail if some extension decides to change paragraph markup directly
-    var cthulhu = /(<p[^>]+?>|<p>|<\/p>)/img,
-        holder = [[]],
-        res = '',
-        y = 0;
+  function parseConsecutiveLists(list, listType, trimTrailing) {
+    // check if we caught 2 or more consecutive lists by mistake
+    // we use the counterRgx, meaning if listType is UL we look for UL and vice versa
+    var counterRxg = (listType === 'ul') ? /^ {0,2}\d+\.[ \t]/gm : /^ {0,2}[*+-][ \t]/gm,
+      subLists = [],
+      result = '';
 
-    // Initialize first sublist
-    holder[0].type = listType;
+    if (list.search(counterRxg) !== -1) {
+      (function parseCL(txt) {
+        var pos = txt.search(counterRxg);
+        if (pos !== -1) {
+          // slice
+          result += '\n\n<' + listType + '>' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n\n';
 
-    for (var i = 0; i < results.length; ++i) {
-      var txt = results[i].slice(2),
-          nListType = results[i].slice(0, 2);
+          // invert counterType and listType
+          listType = (listType === 'ul') ? 'ol' : 'ul';
+          counterRxg = (listType === 'ul') ? /^ {0,2}\d+\.[ \t]/gm : /^ {0,2}[*+-][ \t]/gm;
 
-      if (listType !== nListType) {
-        y++;
-        holder[y] = [];
-        holder[y].type = nListType;
-        listType = nListType;
-      }
-      holder[y].push(txt);
-    }
-    for (i = 0; i < holder.length; ++i) {
-      res += '<' + holder[i].type + '>\n';
-      for (var ii = 0; ii < holder[i].length; ++ii) {
-        if (holder[i].length > 1 && ii === holder[i].length - 1 && !cthulhu.test(holder[i][ii - 1])) {
-          //holder[i][ii] = holder[i][ii].replace(cthulhu, '');
+          //recurse
+          parseCL(txt.slice(pos));
+        } else {
+          result += '\n\n<' + listType + '>' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n\n';
         }
-        res += holder[i][ii];
+      })(list);
+      for (var i = 0; i < subLists.length; ++i) {
+
       }
-      res += '</' + holder[i].type + '>\n';
+    } else {
+      result = '\n\n<' + listType + '>' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n\n';
     }
-    return res;
+
+    return result;
   }
 
   // attacklab: add sentinel to hack around khtml/safari bug:
@@ -1890,41 +1884,17 @@ showdown.subParser('lists', function (text, options, globals) {
   var wholeList = /^(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
 
   if (globals.gListLevel) {
-    text = text.replace(wholeList, function (wholeMatch, m1, m2) {
-      var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol',
-          result = processListItems(m1);
-
-      // Turn double returns into triple returns, so that we can make a
-      // paragraph for the last item in a list, if necessary:
-      //list = list.replace(/\n{2,}/g, '\n\n\n');
-      //result = processListItems(list);
-
-      // Trim any trailing whitespace, to put the closing `</$list_type>`
-      // up on the preceding line, to get it past the current stupid
-      // HTML block parser. This is a hack to work around the terrible
-      // hack that is the HTML block parser.
-      result = result.replace(/\s+$/, '');
-      var splRes = result.split(spl);
-      splRes.shift();
-      result = splitConsecutiveLists(splRes, listType);
-      return result;
+    text = text.replace(wholeList, function (wholeMatch, list, m2) {
+      var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+      return parseConsecutiveLists(list, listType, true);
     });
   } else {
-    wholeList = /(\n\n|^\n?)(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/g;
+    wholeList = /(\n\n|^\n?)(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
     //wholeList = /(\n\n|^\n?)( {0,3}([*+-]|\d+\.)[ \t]+[\s\S]+?)(?=(~0)|(\n\n(?!\t| {2,}| {0,3}([*+-]|\d+\.)[ \t])))/g;
+    text = text.replace(wholeList, function (wholeMatch, m1, list, m3) {
 
-    text = text.replace(wholeList, function (wholeMatch, m1, m2, m3) {
-
-      // Turn double returns into triple returns, so that we can make a
-      // paragraph for the last item in a list, if necessary:
-      var list = m2.replace(/\n{2,}/g, '\n\n\n'),
-      //var list = (m2.slice(-2) !== '~0') ? m2 + '\n' : m2, //add a newline after the list
-          listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol',
-          result = processListItems(list),
-          splRes = result.split(spl);
-
-      splRes.shift();
-      return m1 + splitConsecutiveLists(splRes, listType) + '\n';
+      var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+      return parseConsecutiveLists(list, listType);
     });
   }
 

@@ -45,7 +45,7 @@ foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo
 1. foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo
 2. foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo
 
-> foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo
+> blockquote foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo
 
 * foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo
 * foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo

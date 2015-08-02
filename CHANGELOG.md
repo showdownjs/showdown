@@ -1,3 +1,12 @@
+<a name"1.2.2"></a>
+### 1.2.2 (2015-08-02)
+
+
+#### Bug Fixes
+
+* **lists:** fix github code blocks not being parsed inside lists ([7720c88b](http://github.com/showdownjs/showdown/commit/7720c88b), closes [#142](http://github.com/showdownjs/showdown/issues/142), [#183](http://github.com/showdownjs/showdown/issues/183), [#184](http://github.com/showdownjs/showdown/issues/184))
+
+
 <a name"1.2.1"></a>
 ### 1.2.1 (2015-07-22)
 

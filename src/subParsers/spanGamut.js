@@ -5,6 +5,7 @@
 showdown.subParser('spanGamut', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('spanGamut.before', text, options);
   text = showdown.subParser('codeSpans')(text, options, globals);
   text = showdown.subParser('escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('encodeBackslashEscapes')(text, options, globals);
@@ -25,6 +26,6 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   // Do hard breaks:
   text = text.replace(/  +\n/g, ' <br />\n');
 
+  text = globals.converter._dispatch('spanGamut.after', text, options);
   return text;
-
 });

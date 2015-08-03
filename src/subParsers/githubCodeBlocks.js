@@ -16,6 +16,8 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
     return text;
   }
 
+  text = globals.converter._dispatch('githubCodeBlocks.before', text, options);
+
   text += '~0';
 
   text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, language, codeblock) {
@@ -34,6 +36,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
-  return text;
+  text = globals.converter._dispatch('githubCodeBlocks.after', text, options);
 
+  return text;
 });

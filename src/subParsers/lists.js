@@ -4,6 +4,7 @@
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('lists.before', text, options);
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
@@ -156,5 +157,6 @@ showdown.subParser('lists', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
+  text = globals.converter._dispatch('lists.after', text, options);
   return text;
 });

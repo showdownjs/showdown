@@ -46,6 +46,18 @@ describe('showdown.extension()', function () {
       showdown.extension('foo').should.eql([extObjMock]);
       showdown.resetExtensions();
     });
+
+    it('a listener extension', function () {
+      showdown.extension('foo', {
+        type: 'listener',
+        listeners: {
+          foo: function (name, txt) {
+            return txt;
+          }
+        }
+      });
+      showdown.resetExtensions();
+    });
   });
 
   describe('should refuse to register', function () {
@@ -62,7 +74,7 @@ describe('showdown.extension()', function () {
           type: 'foo'
         });
       };
-      expect(fn).to.throw(/type .+? is not recognized\. Valid values: "lang" or "output"/);
+      expect(fn).to.throw(/type .+? is not recognized\. Valid values: "lang\/language", "output\/html" or "listener"/);
     });
 
     it('an extension without regex or filter', function () {
@@ -72,6 +84,15 @@ describe('showdown.extension()', function () {
         });
       };
       expect(fn).to.throw(/extensions must define either a "regex" property or a "filter" method/);
+    });
+
+    it('a listener extension without a listeners property', function () {
+      var fn = function () {
+        showdown.extension('foo', {
+          type: 'listener'
+        });
+      };
+      expect(fn).to.throw(/Extensions of type "listener" must have a property called "listeners"/);
     });
   });
 });

@@ -4,6 +4,7 @@
 showdown.subParser('codeBlocks', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('codeBlocks.before', text, options);
   /*
    text = text.replace(text,
    /(?:\n\n|^)
@@ -44,5 +45,6 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
+  text = globals.converter._dispatch('codeBlocks.after', text, options);
   return text;
 });

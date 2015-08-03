@@ -5,6 +5,8 @@
 showdown.subParser('blockGamut', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('blockGamut.before', text, options);
+
   text = showdown.subParser('headers')(text, options, globals);
 
   // Do Horizontal Rules:
@@ -25,6 +27,7 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
   text = showdown.subParser('paragraphs')(text, options, globals);
 
-  return text;
+  text = globals.converter._dispatch('blockGamut.after', text, options);
 
+  return text;
 });

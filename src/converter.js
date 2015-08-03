@@ -38,18 +38,8 @@ showdown.Converter = function (converterOptions) {
        */
       outputModifiers = [],
 
-      /**
-       * The parser Order
-       * @private
-       * @type {string[]}
-       */
-      parserOrder = [
-        'githubCodeBlocks',
-        'hashHTMLBlocks',
-        'stripLinkDefinitions',
-        'blockGamut',
-        'unescapeSpecialChars'
-      ];
+      listeners = {
+      };
 
   _constructor();
 
@@ -128,6 +118,7 @@ showdown.Converter = function (converterOptions) {
 
     for (var i = 0; i < ext.length; ++i) {
       switch (ext[i].type) {
+
         case 'lang':
           langExtensions.push(ext[i]);
           break;
@@ -135,12 +126,16 @@ showdown.Converter = function (converterOptions) {
         case 'output':
           outputModifiers.push(ext[i]);
           break;
-
-        default:
-          // should never reach here
-          throw Error('Extension loader error: Type unrecognized!!!');
+      }
+      if (ext[i].hasOwnProperty(listeners)) {
+        for (var ln in ext[i].listeners) {
+          if (ext[i].listeners.hasOwnProperty(ln)) {
+            listen(ln, ext[i].listeners[ln]);
+          }
+        }
       }
     }
+
   }
 
   /**
@@ -174,6 +169,57 @@ showdown.Converter = function (converterOptions) {
       }
     }
   }
+
+  /**
+   * Listen to an event
+   * @param {string} name
+   * @param {function} callback
+   */
+  function listen(name, callback) {
+    if (!showdown.helper.isString(name)) {
+      throw Error('Invalid argument in converter.listen() method: name must be a string, but ' + typeof name + ' given');
+    }
+
+    if (typeof callback !== 'function') {
+      throw Error('Invalid argument in converter.listen() method: callback must be a function, but ' + typeof callback + ' given');
+    }
+
+    if (!listeners.hasOwnProperty(name)) {
+      listeners[name] = [];
+    }
+    listeners[name].push(callback);
+  }
+
+  /**
+   * Dispatch an event
+   * @private
+   * @param {string} evtName Event name
+   * @param {string} text Text
+   * @param {{}} options Converter Options
+   * @returns {string}
+   */
+  this._dispatch = function dispatch (evtName, text, options) {
+    if (listeners.hasOwnProperty(evtName)) {
+      for (var ei = 0; ei < listeners[evtName].length; ++ei) {
+        var nText = listeners[evtName][ei](evtName, text, this, options);
+        if (nText && typeof nText !== 'undefined') {
+          text = nText;
+        }
+      }
+    }
+    return text;
+  };
+
+  /**
+   * Listen to an event
+   * @param {string} name
+   * @param {function} callback
+   * @returns {showdown.Converter}
+   */
+  this.listen = function (name, callback) {
+    listen(name, callback);
+    return this;
+  };
 
   /**
    * Converts a markdown string into HTML
@@ -227,11 +273,12 @@ showdown.Converter = function (converterOptions) {
       text = showdown.subParser('runExtension')(ext, text, options, globals);
     });
 
-    // Run all registered parsers
-    for (var i = 0; i < parserOrder.length; ++i) {
-      var name = parserOrder[i];
-      text = parsers[name](text, options, globals);
-    }
+    // run the sub parsers
+    text = showdown.subParser('githubCodeBlocks')(text, options, globals);
+    text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
+    text = showdown.subParser('stripLinkDefinitions')(text, options, globals);
+    text = showdown.subParser('blockGamut')(text, options, globals);
+    text = showdown.subParser('unescapeSpecialChars')(text, options, globals);
 
     // attacklab: Restore dollar signs
     text = text.replace(/~D/g, '$$');

@@ -154,9 +154,11 @@ showdown.subParser('tables', function (text, options, globals) {
   };
 
   if (options.tables) {
+    text = globals.converter._dispatch('tables.before', text, options);
     var tableParser = table();
-    return tableParser.parse(text);
-  } else {
-    return text;
+    text = tableParser.parse(text);
+    text = globals.converter._dispatch('tables.after', text, options);
   }
+
+  return text;
 });

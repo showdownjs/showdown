@@ -1,8 +1,10 @@
 /**
  * Turn Markdown link shortcuts into XHTML <a> tags.
  */
-showdown.subParser('anchors', function (text, config, globals) {
+showdown.subParser('anchors', function (text, options, globals) {
   'use strict';
+
+  text = globals.converter._dispatch('anchors.before', text, options);
 
   var writeAnchorTag = function (wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
     if (showdown.helper.isUndefined(m7)) {
@@ -73,7 +75,7 @@ showdown.subParser('anchors', function (text, config, globals) {
    )()()()()					// pad remaining backreferences
    /g,_DoAnchors_callback);
    */
-  text = text.replace(/(\[((?:\[[^\]]*\]|[^\[\]])*)\][ ]?(?:\n[ ]*)?\[(.*?)\])()()()()/g, writeAnchorTag);
+  text = text.replace(/(\[((?:\[[^\]]*]|[^\[\]])*)][ ]?(?:\n[ ]*)?\[(.*?)])()()()()/g, writeAnchorTag);
 
   //
   // Next, inline-style links: [link text](url "optional title")
@@ -106,7 +108,7 @@ showdown.subParser('anchors', function (text, config, globals) {
    )
    /g,writeAnchorTag);
    */
-  text = text.replace(/(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()<?(.*?(?:\(.*?\).*?)?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,
+  text = text.replace(/(\[((?:\[[^\]]*]|[^\[\]])*)]\([ \t]*()<?(.*?(?:\(.*?\).*?)?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,
                       writeAnchorTag);
 
   //
@@ -124,8 +126,8 @@ showdown.subParser('anchors', function (text, config, globals) {
    )()()()()()      // pad rest of backreferences
    /g, writeAnchorTag);
    */
-  text = text.replace(/(\[([^\[\]]+)\])()()()()()/g, writeAnchorTag);
+  text = text.replace(/(\[([^\[\]]+)])()()()()()/g, writeAnchorTag);
 
+  text = globals.converter._dispatch('anchors.after', text, options);
   return text;
-
 });

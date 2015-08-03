@@ -1,4 +1,4 @@
-;/*! showdown 02-08-2015 */
+;/*! showdown 03-08-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -333,10 +333,42 @@ function validate(extension, name) {
       type = ext.type = 'output';
     }
 
-    if (type !== 'lang' && type !== 'output') {
+    if (type !== 'lang' && type !== 'output' && type !== 'listener') {
       ret.valid = false;
-      ret.error = baseMsg + 'type ' + type + ' is not recognized. Valid values: "lang" or "output"';
+      ret.error = baseMsg + 'type ' + type + ' is not recognized. Valid values: "lang/language", "output/html" or "listener"';
       return ret;
+    }
+
+    if (type === 'listener') {
+      if (showdown.helper.isUndefined(ext.listeners)) {
+        ret.valid = false;
+        ret.error = baseMsg + '. Extensions of type "listener" must have a property called "listeners"';
+        return ret;
+      }
+    } else {
+      if (showdown.helper.isUndefined(ext.filter) && showdown.helper.isUndefined(ext.regex)) {
+        ret.valid = false;
+        ret.error = baseMsg + type + ' extensions must define either a "regex" property or a "filter" method';
+        return ret;
+      }
+    }
+
+    if (ext.listeners) {
+      if (typeof ext.listeners !== 'object') {
+        ret.valid = false;
+        ret.error = baseMsg + '"listeners" property must be an object but ' + typeof ext.listeners + ' given';
+        return ret;
+      }
+      for (var ln in ext.listeners) {
+        if (ext.listeners.hasOwnProperty(ln)) {
+          if (typeof ext.listeners[ln] !== 'function') {
+            ret.valid = false;
+            ret.error = baseMsg + '"listeners" property must be an hash of [event name]: [callback]. listeners.' + ln +
+              ' must be a function but ' + typeof ext.listeners[ln] + ' given';
+            return ret;
+          }
+        }
+      }
     }
 
     if (ext.filter) {
@@ -345,15 +377,13 @@ function validate(extension, name) {
         ret.error = baseMsg + '"filter" must be a function, but ' + typeof ext.filter + ' given';
         return ret;
       }
-
     } else if (ext.regex) {
       if (showdown.helper.isString(ext.regex)) {
         ext.regex = new RegExp(ext.regex, 'g');
       }
       if (!ext.regex instanceof RegExp) {
         ret.valid = false;
-        ret.error = baseMsg + '"regex" property must either be a string or a RegExp object, but ' +
-          typeof ext.regex + ' given';
+        ret.error = baseMsg + '"regex" property must either be a string or a RegExp object, but ' + typeof ext.regex + ' given';
         return ret;
       }
       if (showdown.helper.isUndefined(ext.replace)) {
@@ -361,17 +391,6 @@ function validate(extension, name) {
         ret.error = baseMsg + '"regex" extensions must implement a replace string or function';
         return ret;
       }
-
-    } else {
-      ret.valid = false;
-      ret.error = baseMsg + 'extensions must define either a "regex" property or a "filter" method';
-      return ret;
-    }
-
-    if (showdown.helper.isUndefined(ext.filter) && showdown.helper.isUndefined(ext.regex)) {
-      ret.valid = false;
-      ret.error = baseMsg + 'output extensions must define a filter property';
-      return ret;
     }
   }
   return ret;
@@ -557,18 +576,8 @@ showdown.Converter = function (converterOptions) {
        */
       outputModifiers = [],
 
-      /**
-       * The parser Order
-       * @private
-       * @type {string[]}
-       */
-      parserOrder = [
-        'githubCodeBlocks',
-        'hashHTMLBlocks',
-        'stripLinkDefinitions',
-        'blockGamut',
-        'unescapeSpecialChars'
-      ];
+      listeners = {
+      };
 
   _constructor();
 
@@ -647,6 +656,7 @@ showdown.Converter = function (converterOptions) {
 
     for (var i = 0; i < ext.length; ++i) {
       switch (ext[i].type) {
+
         case 'lang':
           langExtensions.push(ext[i]);
           break;
@@ -654,12 +664,16 @@ showdown.Converter = function (converterOptions) {
         case 'output':
           outputModifiers.push(ext[i]);
           break;
-
-        default:
-          // should never reach here
-          throw Error('Extension loader error: Type unrecognized!!!');
+      }
+      if (ext[i].hasOwnProperty(listeners)) {
+        for (var ln in ext[i].listeners) {
+          if (ext[i].listeners.hasOwnProperty(ln)) {
+            listen(ln, ext[i].listeners[ln]);
+          }
+        }
       }
     }
+
   }
 
   /**
@@ -693,6 +707,57 @@ showdown.Converter = function (converterOptions) {
       }
     }
   }
+
+  /**
+   * Listen to an event
+   * @param {string} name
+   * @param {function} callback
+   */
+  function listen(name, callback) {
+    if (!showdown.helper.isString(name)) {
+      throw Error('Invalid argument in converter.listen() method: name must be a string, but ' + typeof name + ' given');
+    }
+
+    if (typeof callback !== 'function') {
+      throw Error('Invalid argument in converter.listen() method: callback must be a function, but ' + typeof callback + ' given');
+    }
+
+    if (!listeners.hasOwnProperty(name)) {
+      listeners[name] = [];
+    }
+    listeners[name].push(callback);
+  }
+
+  /**
+   * Dispatch an event
+   * @private
+   * @param {string} evtName Event name
+   * @param {string} text Text
+   * @param {{}} options Converter Options
+   * @returns {string}
+   */
+  this._dispatch = function dispatch (evtName, text, options) {
+    if (listeners.hasOwnProperty(evtName)) {
+      for (var ei = 0; ei < listeners[evtName].length; ++ei) {
+        var nText = listeners[evtName][ei](evtName, text, this, options);
+        if (nText && typeof nText !== 'undefined') {
+          text = nText;
+        }
+      }
+    }
+    return text;
+  };
+
+  /**
+   * Listen to an event
+   * @param {string} name
+   * @param {function} callback
+   * @returns {showdown.Converter}
+   */
+  this.listen = function (name, callback) {
+    listen(name, callback);
+    return this;
+  };
 
   /**
    * Converts a markdown string into HTML
@@ -746,11 +811,12 @@ showdown.Converter = function (converterOptions) {
       text = showdown.subParser('runExtension')(ext, text, options, globals);
     });
 
-    // Run all registered parsers
-    for (var i = 0; i < parserOrder.length; ++i) {
-      var name = parserOrder[i];
-      text = parsers[name](text, options, globals);
-    }
+    // run the sub parsers
+    text = showdown.subParser('githubCodeBlocks')(text, options, globals);
+    text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
+    text = showdown.subParser('stripLinkDefinitions')(text, options, globals);
+    text = showdown.subParser('blockGamut')(text, options, globals);
+    text = showdown.subParser('unescapeSpecialChars')(text, options, globals);
 
     // attacklab: Restore dollar signs
     text = text.replace(/~D/g, '$$');
@@ -865,8 +931,10 @@ showdown.Converter = function (converterOptions) {
 /**
  * Turn Markdown link shortcuts into XHTML <a> tags.
  */
-showdown.subParser('anchors', function (text, config, globals) {
+showdown.subParser('anchors', function (text, options, globals) {
   'use strict';
+
+  text = globals.converter._dispatch('anchors.before', text, options);
 
   var writeAnchorTag = function (wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
     if (showdown.helper.isUndefined(m7)) {
@@ -937,7 +1005,7 @@ showdown.subParser('anchors', function (text, config, globals) {
    )()()()()					// pad remaining backreferences
    /g,_DoAnchors_callback);
    */
-  text = text.replace(/(\[((?:\[[^\]]*\]|[^\[\]])*)\][ ]?(?:\n[ ]*)?\[(.*?)\])()()()()/g, writeAnchorTag);
+  text = text.replace(/(\[((?:\[[^\]]*]|[^\[\]])*)][ ]?(?:\n[ ]*)?\[(.*?)])()()()()/g, writeAnchorTag);
 
   //
   // Next, inline-style links: [link text](url "optional title")
@@ -970,7 +1038,7 @@ showdown.subParser('anchors', function (text, config, globals) {
    )
    /g,writeAnchorTag);
    */
-  text = text.replace(/(\[((?:\[[^\]]*\]|[^\[\]])*)\]\([ \t]*()<?(.*?(?:\(.*?\).*?)?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,
+  text = text.replace(/(\[((?:\[[^\]]*]|[^\[\]])*)]\([ \t]*()<?(.*?(?:\(.*?\).*?)?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,
                       writeAnchorTag);
 
   //
@@ -988,16 +1056,16 @@ showdown.subParser('anchors', function (text, config, globals) {
    )()()()()()      // pad rest of backreferences
    /g, writeAnchorTag);
    */
-  text = text.replace(/(\[([^\[\]]+)\])()()()()()/g, writeAnchorTag);
+  text = text.replace(/(\[([^\[\]]+)])()()()()()/g, writeAnchorTag);
 
+  text = globals.converter._dispatch('anchors.after', text, options);
   return text;
-
 });
 
-showdown.subParser('autoLinks', function (text, options) {
+showdown.subParser('autoLinks', function (text, options, globals) {
   'use strict';
 
-  //simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[-.+~:?#@!$&'()*,;=[\]\w]+)\b/gi,
+  text = globals.converter._dispatch('autoLinks.before', text, options);
 
   var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)(?=\s|$)(?!["<>])/gi,
       delimUrlRegex   = /<(((https?|ftp|dict):\/\/|www\.)[^'">\s]+)>/gi,
@@ -1019,6 +1087,8 @@ showdown.subParser('autoLinks', function (text, options) {
     return showdown.subParser('encodeEmailAddress')(unescapedStr);
   }
 
+  text = globals.converter._dispatch('autoLinks.after', text, options);
+
   return text;
 });
 
@@ -1028,6 +1098,8 @@ showdown.subParser('autoLinks', function (text, options) {
  */
 showdown.subParser('blockGamut', function (text, options, globals) {
   'use strict';
+
+  text = globals.converter._dispatch('blockGamut.before', text, options);
 
   text = showdown.subParser('headers')(text, options, globals);
 
@@ -1049,13 +1121,15 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
   text = showdown.subParser('paragraphs')(text, options, globals);
 
-  return text;
+  text = globals.converter._dispatch('blockGamut.after', text, options);
 
+  return text;
 });
 
 showdown.subParser('blockQuotes', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('blockQuotes.before', text, options);
   /*
    text = text.replace(/
    (								// Wrap whole match in $1
@@ -1094,6 +1168,8 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
 
     return showdown.subParser('hashBlock')('<blockquote>\n' + bq + '\n</blockquote>', options, globals);
   });
+
+  text = globals.converter._dispatch('blockQuotes.after', text, options);
   return text;
 });
 
@@ -1103,6 +1179,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
 showdown.subParser('codeBlocks', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('codeBlocks.before', text, options);
   /*
    text = text.replace(text,
    /(?:\n\n|^)
@@ -1143,6 +1220,7 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
+  text = globals.converter._dispatch('codeBlocks.after', text, options);
   return text;
 });
 
@@ -1171,9 +1249,10 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
  *
  *         ... type <code>`bar`</code> ...
  */
-showdown.subParser('codeSpans', function (text) {
+showdown.subParser('codeSpans', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('codeSpans.before', text, options);
   //special case -> literal html code tag
   text = text.replace(/(<code[^><]*?>)([^]*?)<\/code>/g, function (wholeMatch, tag, c) {
     c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
@@ -1204,6 +1283,7 @@ showdown.subParser('codeSpans', function (text) {
     }
   );
 
+  text = globals.converter._dispatch('codeSpans.after', text, options);
   return text;
 });
 
@@ -1393,6 +1473,8 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
     return text;
   }
 
+  text = globals.converter._dispatch('githubCodeBlocks.before', text, options);
+
   text += '~0';
 
   text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, language, codeblock) {
@@ -1411,8 +1493,9 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
-  return text;
+  text = globals.converter._dispatch('githubCodeBlocks.after', text, options);
 
+  return text;
 });
 
 showdown.subParser('hashBlock', function (text, options, globals) {
@@ -1578,6 +1661,8 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 showdown.subParser('headers', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('headers.before', text, options);
+
   var prefixHeader = options.prefixHeaderId,
       headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
 
@@ -1645,6 +1730,7 @@ showdown.subParser('headers', function (text, options, globals) {
     return title;
   }
 
+  text = globals.converter._dispatch('headers.after', text, options);
   return text;
 });
 
@@ -1653,6 +1739,8 @@ showdown.subParser('headers', function (text, options, globals) {
  */
 showdown.subParser('images', function (text, options, globals) {
   'use strict';
+
+  text = globals.converter._dispatch('images.before', text, options);
 
   var inlineRegExp    = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
       referenceRegExp = /!\[(.*?)][ ]?(?:\n[ ]*)?\[(.*?)]()()()()()/g;
@@ -1720,11 +1808,14 @@ showdown.subParser('images', function (text, options, globals) {
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
   text = text.replace(inlineRegExp, writeImageTag);
 
+  text = globals.converter._dispatch('images.after', text, options);
   return text;
 });
 
-showdown.subParser('italicsAndBold', function (text, options) {
+showdown.subParser('italicsAndBold', function (text, options, globals) {
   'use strict';
+
+  text = globals.converter._dispatch('italicsAndBold.before', text, options);
 
   if (options.literalMidWordUnderscores) {
     //underscores
@@ -1740,6 +1831,8 @@ showdown.subParser('italicsAndBold', function (text, options) {
     text = text.replace(/(\*\*|__)(?=\S)([^\r]*?\S[*_]*)\1/g, '<strong>$2</strong>');
     text = text.replace(/(\*|_)(?=\S)([^\r]*?\S)\1/g, '<em>$2</em>');
   }
+
+  text = globals.converter._dispatch('italicsAndBold.after', text, options);
   return text;
 });
 
@@ -1749,6 +1842,7 @@ showdown.subParser('italicsAndBold', function (text, options) {
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('lists.before', text, options);
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
@@ -1901,6 +1995,7 @@ showdown.subParser('lists', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
+  text = globals.converter._dispatch('lists.after', text, options);
   return text;
 });
 
@@ -1926,6 +2021,7 @@ showdown.subParser('outdent', function (text) {
 showdown.subParser('paragraphs', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('paragraphs.before', text, options);
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
@@ -1959,6 +2055,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
     }
   }
 
+  text = globals.converter._dispatch('paragraphs.after', text, options);
   return grafsOut.join('\n\n');
 });
 
@@ -1990,6 +2087,7 @@ showdown.subParser('runExtension', function (ext, text, options, globals) {
 showdown.subParser('spanGamut', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('spanGamut.before', text, options);
   text = showdown.subParser('codeSpans')(text, options, globals);
   text = showdown.subParser('escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('encodeBackslashEscapes')(text, options, globals);
@@ -2010,15 +2108,17 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   // Do hard breaks:
   text = text.replace(/  +\n/g, ' <br />\n');
 
+  text = globals.converter._dispatch('spanGamut.after', text, options);
   return text;
-
 });
 
-showdown.subParser('strikethrough', function (text, options) {
+showdown.subParser('strikethrough', function (text, options, globals) {
   'use strict';
 
   if (options.strikethrough) {
+    text = globals.converter._dispatch('strikethrough.before', text, options);
     text = text.replace(/(?:~T){2}([^~]+)(?:~T){2}/g, '<del>$1</del>');
+    text = globals.converter._dispatch('strikethrough.after', text, options);
   }
 
   return text;
@@ -2254,11 +2354,13 @@ showdown.subParser('tables', function (text, options, globals) {
   };
 
   if (options.tables) {
+    text = globals.converter._dispatch('tables.before', text, options);
     var tableParser = table();
-    return tableParser.parse(text);
-  } else {
-    return text;
+    text = tableParser.parse(text);
+    text = globals.converter._dispatch('tables.after', text, options);
   }
+
+  return text;
 });
 
 /**

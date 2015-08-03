@@ -4,6 +4,7 @@
 showdown.subParser('paragraphs', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('paragraphs.before', text, options);
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
@@ -37,5 +38,6 @@ showdown.subParser('paragraphs', function (text, options, globals) {
     }
   }
 
+  text = globals.converter._dispatch('paragraphs.after', text, options);
   return grafsOut.join('\n\n');
 });

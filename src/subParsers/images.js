@@ -4,6 +4,8 @@
 showdown.subParser('images', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('images.before', text, options);
+
   var inlineRegExp    = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
       referenceRegExp = /!\[(.*?)][ ]?(?:\n[ ]*)?\[(.*?)]()()()()()/g;
 
@@ -70,5 +72,6 @@ showdown.subParser('images', function (text, options, globals) {
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
   text = text.replace(inlineRegExp, writeImageTag);
 
+  text = globals.converter._dispatch('images.after', text, options);
   return text;
 });

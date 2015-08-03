@@ -1,5 +1,7 @@
-showdown.subParser('italicsAndBold', function (text, options) {
+showdown.subParser('italicsAndBold', function (text, options, globals) {
   'use strict';
+
+  text = globals.converter._dispatch('italicsAndBold.before', text, options);
 
   if (options.literalMidWordUnderscores) {
     //underscores
@@ -15,5 +17,7 @@ showdown.subParser('italicsAndBold', function (text, options) {
     text = text.replace(/(\*\*|__)(?=\S)([^\r]*?\S[*_]*)\1/g, '<strong>$2</strong>');
     text = text.replace(/(\*|_)(?=\S)([^\r]*?\S)\1/g, '<em>$2</em>');
   }
+
+  text = globals.converter._dispatch('italicsAndBold.after', text, options);
   return text;
 });

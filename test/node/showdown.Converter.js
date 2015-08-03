@@ -27,8 +27,13 @@ describe('showdown.Converter', function () {
     });
   });
 
-  describe('setFlavor() github', function () {
-    var converter = new showdown.Converter(),
+  describe('setFlavor method', function () {
+
+    /**
+     * Test setFlavor('github')
+     */
+    describe('github', function () {
+      var converter = new showdown.Converter(),
         ghOpts = {
           omitExtraWLInCodeBlocks:   true,
           prefixHeaderId:            'user-content-',
@@ -41,18 +46,19 @@ describe('showdown.Converter', function () {
           tasklists:                 true
         };
 
-    converter.setFlavor('github');
+      converter.setFlavor('github');
 
-    for (var opt in ghOpts) {
-      if (ghOpts.hasOwnProperty(opt)) {
-        check(opt, ghOpts[opt]);
+      for (var opt in ghOpts) {
+        if (ghOpts.hasOwnProperty(opt)) {
+          check(opt, ghOpts[opt]);
+        }
       }
-    }
-    function check(key, val) {
-      it('should set ' + opt + ' to ' + val, function () {
-        converter.getOption(key).should.equal(val);
-      });
-    }
+      function check(key, val) {
+        it('should set ' + opt + ' to ' + val, function () {
+          converter.getOption(key).should.equal(val);
+        });
+      }
+    });
   });
 
   describe('extension methods', function () {
@@ -85,5 +91,42 @@ describe('showdown.Converter', function () {
       converter.getAllExtensions().language.should.contain(extObjMock);
       showdown.resetExtensions();
     });
+  });
+
+  describe('events', function () {
+    var events = [
+          'anchors',
+          'autoLinks',
+          'blockGamut',
+          'blockQuotes',
+          'codeBlocks',
+          'codeSpans',
+          'githubCodeBlocks',
+          'headers',
+          'images',
+          'italicsAndBold',
+          'lists',
+          'paragraph',
+          'spanGamut'
+          //'strikeThrough',
+          //'tables'
+        ];
+
+    for (var i = 0; i < events.length; ++i) {
+      runListener(events[i] + '.before');
+      runListener(events[i] + '.after');
+    }
+
+    function runListener (name) {
+      it('should listen to ' + name, function () {
+        var converter = new showdown.Converter();
+        converter.listen(name, function (evtName, text, options) {
+          evtName.should.equal(name);
+          text.should.match(/^[\s\S]*foo[\s\S]*$/);
+          return text;
+        })
+          .makeHtml('foo');
+      });
+    }
   });
 });

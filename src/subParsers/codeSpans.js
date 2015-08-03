@@ -23,9 +23,10 @@
  *
  *         ... type <code>`bar`</code> ...
  */
-showdown.subParser('codeSpans', function (text) {
+showdown.subParser('codeSpans', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('codeSpans.before', text, options);
   //special case -> literal html code tag
   text = text.replace(/(<code[^><]*?>)([^]*?)<\/code>/g, function (wholeMatch, tag, c) {
     c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
@@ -56,5 +57,6 @@ showdown.subParser('codeSpans', function (text) {
     }
   );
 
+  text = globals.converter._dispatch('codeSpans.after', text, options);
   return text;
 });

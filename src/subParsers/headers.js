@@ -1,6 +1,8 @@
 showdown.subParser('headers', function (text, options, globals) {
   'use strict';
 
+  text = globals.converter._dispatch('headers.before', text, options);
+
   var prefixHeader = options.prefixHeaderId,
       headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
 
@@ -68,5 +70,6 @@ showdown.subParser('headers', function (text, options, globals) {
     return title;
   }
 
+  text = globals.converter._dispatch('headers.after', text, options);
   return text;
 });

@@ -120,7 +120,7 @@ describe('showdown.Converter', function () {
     function runListener (name) {
       it('should listen to ' + name, function () {
         var converter = new showdown.Converter();
-        converter.listen(name, function (evtName, text, options) {
+        converter.listen(name, function (evtName, text) {
           evtName.should.equal(name);
           text.should.match(/^[\s\S]*foo[\s\S]*$/);
           return text;

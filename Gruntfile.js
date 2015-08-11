@@ -87,6 +87,20 @@ module.exports = function (grunt) {
       }
     },
 
+    conventionalGithubReleaser: {
+      release: {
+        options: {
+          auth: {
+            type: 'oauth',
+            token: process.env.GH_TOEKN
+          },
+          changelogOpts: {
+            preset: 'angular'
+          }
+        },
+      }
+    },
+
     simplemocha: {
       node: {
         src: 'test/node/**/*.js',

@@ -1,4 +1,4 @@
-;/*! showdown 02-08-2015 */
+;/*! showdown 11-08-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1011,7 +1011,7 @@ showdown.subParser('autoLinks', function (text, options) {
 
   if (options.simplifiedAutoLink) {
     text = text.replace(simpleURLRegex, '<a href=\"$1\">$1</a>');
-    text = text.replace(simpleMailRegex, '<a href=\"$1\">$1</a>');
+    text = text.replace(simpleMailRegex, replaceMail);
   }
 
   function replaceMail(wholeMatch, m1) {

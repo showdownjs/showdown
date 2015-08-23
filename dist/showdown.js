@@ -1,4 +1,4 @@
-;/*! showdown 11-08-2015 */
+;/*! showdown 23-08-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1029,6 +1029,9 @@ showdown.subParser('autoLinks', function (text, options) {
 showdown.subParser('blockGamut', function (text, options, globals) {
   'use strict';
 
+  // we parse blockquotes first so that we can have headings and hrs
+  // inside blockquotes
+  text = showdown.subParser('blockQuotes')(text, options, globals);
   text = showdown.subParser('headers')(text, options, globals);
 
   // Do Horizontal Rules:
@@ -1040,7 +1043,6 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = showdown.subParser('tables')(text, options, globals);
   text = showdown.subParser('lists')(text, options, globals);
   text = showdown.subParser('codeBlocks')(text, options, globals);
-  text = showdown.subParser('blockQuotes')(text, options, globals);
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,
@@ -1069,7 +1071,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
    /gm, function(){...});
    */
 
-  text = text.replace(/((^[ \t]*>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
+  text = text.replace(/((^[ \t]{0,3}>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
     var bq = m1;
 
     // attacklab: hack around Konqueror 3.5.4 bug:

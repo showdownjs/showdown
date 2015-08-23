@@ -1748,6 +1748,7 @@ showdown.subParser('lists', function (text, options, globals) {
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
    * @param {string} listStr
+   * @param {boolean} trimTrailing
    * @returns {string}
    */
   function processListItems (listStr, trimTrailing) {
@@ -1835,6 +1836,7 @@ showdown.subParser('lists', function (text, options, globals) {
    * Check and parse consecutive lists (better fix for issue #142)
    * @param {string} list
    * @param {string} listType
+   * @param {boolean} trimTrailing
    * @returns {string}
    */
   function parseConsecutiveLists(list, listType, trimTrailing) {

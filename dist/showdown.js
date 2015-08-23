@@ -1,4 +1,4 @@
-;/*! showdown 11-08-2015 */
+;/*! showdown 23-08-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -525,12 +525,7 @@ if (showdown.helper.isUndefined(console)) {
  * Showdown Converter class
  * @class
  * @param {object} [converterOptions]
- * @returns {
- *  {makeHtml: Function},
- *  {setOption: Function},
- *  {getOption: Function},
- *  {getOptions: Function}
- * }
+ * @returns {Converter}
  */
 showdown.Converter = function (converterOptions) {
   'use strict';

@@ -142,7 +142,7 @@ showdown.subParser('tables', function (text, options, globals) {
             tbl.push('</tbody>');
             tbl.push('</table>');
             // we are done with this table and we move along
-            out.push(tbl.join('\n'));
+            out.push(showdown.subParser('hashBlock')(tbl.join('\n'), options, globals));
             continue;
           }
         }

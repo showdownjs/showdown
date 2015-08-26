@@ -1,0 +1,5 @@
+Gruntfile.js
+dist/**/*.js
+build/**/*.js
+src/options.js
+bin/*

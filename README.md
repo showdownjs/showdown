@@ -1,89 +1,51 @@
-# Showdown [![build status](https://secure.travis-ci.org/coreyti/showdown.png)](http://travis-ci.org/coreyti/showdown)
+![Showdown][sd-logo]
 
-A JavaScript port of Markdown
+[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown) [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown) [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown) [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-## Note
+------
 
-  > **Please note** that I, [Corey](https://github.com/coreyti), am not the author
-  > of Showdown. Rather, I found it some time back at <http://attacklab.net/showdown/>
-  > (website removed, see: <http://wayback.archive.org/web/*/http://attacklab.net/showdown>)
-  > and wanted to see it available on GitHub.
-  >
-  > All credit and praise for authoring this library should go to John Fraser.
-  >
-  > Oh, and John Gruber of course.
-  >
-  > That said, Showdown *is* evolving. See below for a list of contributors and an
-  > overview of their contributions to the project.
-  >
-  > Apologies for any confusion or perceived misinformation.
-  >
-  > Cheers,<br/>
-  > Corey
+Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber. Showdown can be used client side (in the browser) or server side (with NodeJs).
+
+## Live DEMO
+
+Check a live Demo here http://showdownjs.github.io/demo/
 
 
-## Original Attributions
+## Who uses Showdown (or a fork)
 
-Showdown Copyright (c) 2007 John Fraser.
-<http://www.attacklab.net/>
+ - [GoogleCloudPlatform](https://github.com/GoogleCloudPlatform)
+ - [Ghost](https://ghost.org/)
+ - [Meteor](https://www.meteor.com/)
+ - [Stackexchange](http://stackexchange.com/) - forked as [PageDown](https://code.google.com/p/pagedown/)
+ - [docular](https://github.com/Vertafore/docular)
+ - [and some others...](https://www.npmjs.com/browse/depended/showdown)
 
-Original Markdown Copyright (c) 2004-2005 John Gruber
-<http://daringfireball.net/projects/markdown/>
 
-Redistributable under a BSD-style open source license.
-See license.txt for more information.
+## Installation
 
-## Quick Example
+### Download tarball
 
-```js
-var Showdown = require('showdown');
-var converter = new Showdown.converter();
+You can download the latest release tarball directly from [releases][releases]
 
-converter.makeHtml('#hello markdown!');
+### Bower
 
-// <h1 id="hellomarkdown">hello, markdown</h1>
-```
+    bower install showdown
 
-## What's it for?
+### npm (server-side)
 
-Developers can use Showdown to:
+    npm install showdown
 
-  * Add in-browser preview to existing Markdown apps
+### CDN
 
-    Showdown's output is (almost always) identical to
-    markdown.pl's, so the server can reproduce exactly
-    the output that the user saw.  (See below for
-    exceptions.)
+You can also use one of several CDNs available: 
 
-  * Add Markdown input to programs that don't support it
+* github CDN
 
-    Any app that accepts HTML input can now be made to speak
-    Markdown by modifying the input pages's HTML.  If your
-    application lets users edit documents again later,
-    then they won't have access to the original Markdown
-    text.  But this should be good enough for many
-    uses -- and you can do it with just a two-line
-    `onsubmit` function!
+        https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
 
-  * Add Markdown input to closed-source web apps
+* cdnjs
 
-    You can write bookmarklets or userscripts to extend
-    any standard textarea on the web so that it accepts
-    Markdown instead of HTML.  With a little more hacking,
-    the same can probably be done with  many rich edit
-    controls.
-
-  * Build new web apps from scratch
-
-    A Showdown front-end can send back text in Markdown,
-    HTML or both, so you can trade bandwidth for server
-    load to reduce your cost of operation.  If your app
-    requires JavaScript, you won't need to do any
-    Markdown processing on the server at all.  (For most
-    uses, you'll still need to sanitize the HTML before
-    showing it to other users -- but you'd need to do
-    that anyway if you're allowing raw HTML in your
-    Markdown.)
+        https://cdnjs.cloudflare.com/ajax/libs/showdown/<version tag>/showdown.min.js
 
 
 ## Browser Compatibility
@@ -91,6 +53,7 @@ Developers can use Showdown to:
 Showdown has been tested successfully with:
 
   * Firefox 1.5 and 2.0
+  * Chrome 12.0
   * Internet Explorer 6 and 7
   * Safari 2.0.4
   * Opera 8.54 and 9.10
@@ -100,120 +63,242 @@ Showdown has been tested successfully with:
 In theory, Showdown will work in any browser that supports ECMA 262 3rd Edition (JavaScript 1.5).  The converter itself might even work in things that aren't web browsers, like Acrobat.  No promises.
 
 
+## Node compatibility
+
+Showdown has been tested with node 0.8 and 0.10. However, it should work with previous versions, such as node 0.6.
+
+
+## Legacy version
+
+If you're looking for showdown v<1.0.0, you can find it in the [**legacy branch**][legacy-branch].
+
+## Changelog
+
+You can check the full [changelog][changelog]
+
+## Extended documentation
+Check our [wiki pages][wiki] for examples and a more in-depth documentation.
+
+
+## Quick Example
+
+### Node
+
+```js
+var showdown  = require('showdown'),
+    converter = new showdown.Converter(),
+    text      = '#hello, markdown!',
+    html      = converter.makeHtml(text);
+```
+
+### Browser
+
+```js
+var converter = new showdown.Converter(),
+    text      = '#hello, markdown!',
+    html      = converter.makeHtml(text);
+```
+
+### Output 
+
+Both examples should output...
+
+    <h1 id="hellomarkdown">hello, markdown!</h1>
+
+## Options
+
+You can change some of showdown's default behavior through options. 
+
+### Setting options
+
+Options can be set:
+
+#### Globally
+
+Setting a "global" option affects all instances of showdown
+
+```js
+showdown.setOption('optionKey', 'value');
+```
+
+#### Locally
+Setting a "local" option only affects the specified Converter object. 
+Local options can be set:
+
+ * **through the constructor**
+    ```js
+    var converter = new showdown.Converter({optionKey: 'value'});
+    ```
+
+ * **through the setOption() method**
+    ```js
+    var converter = new showdown.Converter();
+    converter.setOption('optionKey', 'value');
+    ```
+
+### Getting an option
+
+Showdown provides 2 methods (both local and global) to retrieve previous set options.
+
+#### getOption()
+
+```js
+// Global
+var myOption = showdown.getOption('optionKey');
+
+//Local
+var myOption = converter.getOption('optionKey');
+```
+
+#### getOptions()
+
+```js
+// Global
+var showdownGlobalOptions = showdown.getOptions();
+
+//Local
+var thisConverterSpecificOptions = converter.getOptions();
+```
+
+### Retrieve the default options
+
+You can get showdown's default options with:
+```js
+var defaultOptions = showdown.getDefaultOptions();
+```
+
+### Valid Options
+
+ * **omitExtraWLInCodeBlocks**: (boolean) [default false] Omit the trailing newline in a code block. Ex:
+   
+    This:
+    ```html
+    <code><pre>var foo = 'bar';
+    </pre></code>
+    ```
+    Becomes this:
+    ```html
+    <code><pre>var foo = 'bar';</pre></code>
+    ```
+
+ * **noHeaderId**: (boolean) [default false] Disable the automatic generation of header ids. Setting to true overrides **prefixHeaderId**
+
+ * **prefixHeaderId**: (string/boolean) [default false] Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
+ 
+ * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
+   Examples:
+   ```
+   ![foo](foo.jpg =100x80)     simple, assumes units are in px
+   ![bar](bar.jpg =100x*)      sets the height to "auto"
+   ![baz](baz.jpg =80%x5em)  Image with width of 80% and height of 5em
+   ```
+ 
+ * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that
+
+    ```md
+    # foo
+    ```
+    will be parsed as 
+    
+    ```html
+    <h3>foo</h3>
+    ```
+
+ * **simplifiedAutoLink**: (boolean) [default false] Turning this on will enable GFM autolink style. This means that 
+
+   ```md
+   some text www.google.com
+   ```
+   will be parsed as 
+   ````
+   <p>some text <a href="www.google.com">www.google.com</a>
+   ```
+   
+ * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting underscores in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores. 
+
+   Example:
+   
+   ```md
+   some text with__underscores__in middle
+   ```
+   will be parsed as
+   ```html
+   <p>some text with__underscores__in middle</p>
+   ```
+   
+ * **strikethrough**: (boolean) [default false] Enable support for strikethrough syntax.
+   `~~strikethrough~~` as `<del>strikethrough</del>`
+   
+ * **tables**: (boolean) [default false] Enable support for tables syntax. Example:
+    
+   ```md
+   | h1    |    h2   |      h3 |
+   |:------|:-------:|--------:|
+   | 100   | [a][1]  | ![b][2] |
+   | *foo* | **bar** | ~~baz~~ |
+   ```
+   
+   See the wiki for more info
+
+ * **tablesHeaderId**: (boolean) [default false] If enabled adds an id property to table headers tags.
+
+ * **ghCodeBlocks**: (boolean) [default true] Enable support for GFM code block style.
+
+ * **tasklists**:(boolean) [default false] Enable support for GFM takslists. Example:
+ 
+   ```md
+    - [x] This task is done
+    - [ ] This is still pending
+   ```
+ * **smoothLivePreview**: (boolean) [default false] Prevents weird effects in live previews due to incomplete input
+
+## CLI Tool
+
+Showdown also comes bundled with a Command Line Interface tool. You can check the [CLI wiki page][cli-wiki] for more info
+
+## Integration with AngularJS
+
+ShowdownJS project also provides seamlessly integration with AngularJS via a "plugin".
+Please visit https://github.com/showdownjs/ngShowdown for more information.
+
+## Integration with TypeScript
+
+If you're using TypeScript you maybe want to use the types from [DefinitelyTyped][definitely-typed]
+
+## XSS vulnerability
+
+Showdown doesn't sanitize the input. This is by design since markdown relies on it to allow certain features to be correctly parsed into HTML.
+This, however, means XSS injection is quite possible.
+
+Please refer to the wiki article [Markdown's XSS Vulnerability (and how to mitigate it)][xss-wiki]
+for more information.
+
 ## Extensions
 
-Showdown allows additional functionality to be loaded via extensions.
+Showdown allows additional functionality to be loaded via extensions. (you can find a list of known showdown extensions [here][ext-wiki])
 
 ### Client-side Extension Usage
 
 ```js
-<script src="src/showdown.js" />
-<script src="src/extensions/twitter.js" />
+<script src="showdown.js" />
+<script src="twitter-extension.js" />
 
-var converter = new Showdown.converter({ extensions: 'twitter' });
+var converter = new showdown.Converter({ extensions: 'twitter' });
 ```
 
 ### Server-side Extension Usage
 
 ```js
-// Using a bundled extension
-var Showdown = require('showdown');
-var converter = new Showdown.converter({ extensions: ['twitter'] });
-
-// Using a custom extension
-var mine = require('./custom-extensions/mine');
-var converter = new Showdown.converter({ extensions: ['twitter', mine] });
+var showdown    = require('showdown'),
+    myExtension = require('myExtension'),
+    converter = new showdown.Converter({ extensions: ['myExtension'] });
 ```
-
-
-## Known Differences in Output
-
-In most cases, Showdown's output is identical to that of Perl Markdown v1.0.2b7.  What follows is a list of all known deviations.  Please file an issue if you find more.
-
-  * This release uses the HTML parser from Markdown 1.0.2b2,
-    which means it fails `Inline HTML (Advanced).text` from
-    the Markdown test suite:
-
-        <div>
-        <div>
-        unindented == broken
-        </div>
-        </div>
-
-  * Showdown doesn't support the markdown="1" attribute:
-
-        <div markdown="1">
-             Markdown does *not* work in here.
-        </div>
-
-    This is half laziness on my part and half stubbornness.
-    Markdown is smart enough to process the contents of span-
-    level tags without screwing things up; shouldn't it be
-    able to do the same inside block elements?  Let's find a
-    way to make markdown="1" the default.
-
-
-  * You can only nest square brackets in link titles to a
-    depth of two levels:
-
-        [[fine]](http://www.attacklab.net/)
-        [[[broken]]](http://www.attacklab.net/)
-
-    If you need more, you can escape them with backslashes.
-
-
-  * When sublists have paragraphs, Showdown produces equivalent
-    HTML with a slightly different arrangement of newlines:
-
-        + item
-
-             - subitem
-
-               The HTML has a superfluous newline before this
-               paragraph.
-
-             - subitem
-
-               The HTML here is unchanged.
-
-             - subitem
-
-               The HTML is missing a newline after this
-               list subitem.
-
-
-
-  * Markdown.pl creates empty title attributes for
-    inline-style images:
-
-        Here's an empty title on an inline-style
-        ![image](http://w3.org/Icons/valid-xhtml10).
-
-    I tried to replicate this to clean up my diffs during
-    testing, but I went too far: now Showdown also makes
-    empty titles for reference-style images:
-
-        Showdown  makes an empty title for
-        reference-style ![images][] too.
-
-        [images]: http://w3.org/Icons/valid-xhtml10
-
-
-  * With crazy input, Markdown will mistakenly put
-    `<strong>` or `<em>` tags in URLs:
-
-        <a href="<*Markdown adds em tags in here*>">
-           improbable URL
-        </a>
-
-    Showdown won't.  But still, don't do that.
-
 
 ## Tests
 
-A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the development dependencies:
+A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the dependencies:
 
-    npm install --dev
+    npm install
 
 Once installed the tests can be run from the project root using:
 
@@ -221,107 +306,69 @@ Once installed the tests can be run from the project root using:
 
 New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.  Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
 
+## Contributing
 
-## Creating Markdown Extensions
+If you wish to contribute please read the following quick guide.
 
-A showdown extension is simply a function which returns an array of extensions.  Each single extension can be one of two types:
+### Want a Feature?
+You can request a new feature by submitting an issue. If you would like to implement a new feature feel free to issue a
+Pull Request.
 
-  * Language Extension -- Language extensions are ones that that add new markdown syntax to showdown.  For example, say you wanted `^^youtube http://www.youtube.com/watch?v=oHg5SJYRHA0` to automatically render as an embedded YouTube video, that would be a language extension.
-  * Output Modifiers -- After showdown has run, and generated HTML, an output modifier would change that HTML.  For example, say you wanted to change `<div class="header">` to be `<header>`, that would be an output modifier.
 
-Each extension can provide two combinations of interfaces for showdown.
+### Pull requests (PRs)
+PRs are awesome. However, before you submit your pull request consider the following guidelines:
 
-### Regex/Replace
+ - Search GitHub for an open or closed Pull Request that relates to your submission. You don't want to duplicate effort.
+ - When issuing PRs that change code, make your changes in a new git branch based on master:
 
-Regex/replace style extensions are very similar to javascripts `string.replace` function.  Two properties are given, `regex` and `replace`.  `regex` is a string and `replace` can be either a string or a function.  If `replace` is a string, it can use the `$1` syntax for group substitution, exactly as if it were making use of `string.replace` (internally it does this actually);  The value of `regex` is assumed to be a global replacement.
+   ```bash
+   git checkout -b my-fix-branch master
+   ```
 
-**Example:**
+ - Documentation (i.e: README.md) changes can be made directly against master.
+ - Run the full test suite before submitting and make sure all tests pass (obviously =P).
+ - Try to follow our [**coding style rules**][coding-rules].
+   Breaking them prevents the PR to pass the tests.
+ - Refrain from fixing multiple issues in the same pull request. It's preferable to open multiple small PRs instead of one
+   hard to review big one.
+ - If the PR introduces a new feature or fixes an issue, please add the appropriate test case.
+ - We use commit notes to generate the changelog. It's extremely helpful if your commit messages adhere to the
+ [**AngularJS Git Commit Guidelines**][ng-commit-guide].
+ - If we suggest changes then:
+   - Make the required updates.
+   - Re-run the Angular test suite to ensure tests are still passing.
+   - Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
 
-```js
-var demo = function(converter) {
-  return [
-    // Replace escaped @ symbols
-    { type: 'lang', regex: '\\@', replace: '@' }
-  ];
-}
-```
+   ```bash
+   git rebase master -i
+   git push origin my-fix-branch -f
+   ```
+ - After your pull request is merged, you can safely delete your branch.
 
-### Filter
+If you have time to contribute to this project, we feel obliged that you get credit for it.
+These rules enable us to review your PR faster and will give you appropriate credit in your GitHub profile.
+We thank you in advance for your contribution!
 
-Alternately, if you'd just like to do everything yourself, you can specify a filter which is a callback with a single input parameter, text (the current source text within the showdown engine).
-
-**Example:**
-
-```js
-var demo = function(converter) {
-  return [
-    // Replace escaped @ symbols
-    { type: 'lang', function(text) {
-      return text.replace(/\\@/g, '@');
-    }}
-  ];
-}
-```
-
-### Implementation Concerns
-
-One bit which should be taken into account is maintaining both client-side and server-side compatibility.  This can be achieved with a few lines of boilerplate code.  First, to prevent polluting the global scope for client-side code, the extension definition should be wrapped in a self-executing function.
-
-```js
-(function(){
-  // Your extension here
-}());
-```
-
-Second, client-side extensions should add a property onto `Showdown.extensions` which matches the name of the file.  As an example, a file named `demo.js` should then add `Showdown.extensions.demo`.  Server-side extensions can simply export themselves.
-
-```js
-(function(){
-  var demo = function(converter) {
-    // ... extension code here ...
-  };
-
-  // Client-side export
-  if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) { window.Showdown.extensions.demo = demo; }
-  // Server-side export
-  if (typeof module !== 'undefined') module.exports = demo;
-}());
-```
-
-### Testing Extensions
-
-The showdown test runner is setup to automatically test cases for extensions.  To add test cases for an extension, create a new folder under `./test/extensions` which matches the name of the `.js` file in `./src/extensions`.  Place any test cases into the filder using the md/html format and they will automatically be run when tests are run.
-
+### Joining the team
+We're looking for members to help maintaining Showdown.
+Please see [this issue](https://github.com/showdownjs/showdown/issues/114) to express interest or comment on this note.
 
 ## Credits
+Full credit list at https://github.com/showdownjs/showdown/blob/master/CREDITS.md
 
-  * Origins
-    * [John Fraser](http://attacklab.net/):<br/>
-      Author of Showdown
-    * [John Gruber](http://daringfireball.net/projects/markdown/):<br/>
-      Author of Markdown
-  * Maintenance/Contributions (roughly chronologically)
-    * [Corey Innis](http://github.com/coreyti):<br/>
-      GitHub project maintainer
-    * [Remy Sharp](https://github.com/remy/):<br/>
-      CommonJS-compatibility and more
-    * [Konstantin Käfer](https://github.com/kkaefer/):<br/>
-      CommonJS packaging
-    * [Roger Braun](https://github.com/rogerbraun):<br/>
-      Github-style code blocks
-    * [Dominic Tarr](https://github.com/dominictarr):<br/>
-      Documentation
-    * [Cat Chen](https://github.com/CatChen):<br/>
-      Export fix
-    * [Titus Stone](https://github.com/tstone):<br/>
-      Mocha tests, extension mechanism, and bug fixes
-    * [Rob Sutherland](https://github.com/roberocity):<br/>
-      The idea that lead to extensions
-    * [Pavel Lang](https://github.com/langpavel):<br/>
-      Code cleanup
-    * [Ben Combee](https://github.com/unwiredben):<br/>
-      Regex optimization
-    * [Adam Backstrom](https://github.com/abackstrom):<br/>
-      WebKit bugfix
-    * [Pascal Deschênes](https://github.com/pdeschen):<br/>
-      Grunt support, extension fixes + additions, packaging improvements, documentation
+Showdown is powered by:<br/>
+[![webstorm](https://www.jetbrains.com/webstorm/documentation/docs/logo_webstorm.png)](https://www.jetbrains.com/webstorm/)
+
+
+
+[sd-logo]: https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png
+[legacy-branch]: https://github.com/showdownjs/showdown/tree/legacy
+[releases]: https://github.com/showdownjs/showdown/releases
+[changelog]: https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
+[wiki]: https://github.com/showdownjs/showdown/wiki
+[cli-wiki]: https://github.com/showdownjs/showdown/wiki/CLI-tool
+[definitely-typed]: https://github.com/borisyankov/DefinitelyTyped/tree/master/showdown
+[xss-wiki]: https://github.com/showdownjs/showdown/wiki/Markdown's-XSS-Vulnerability-(and-how-to-mitigate-it)
+[ext-wiki]: https://github.com/showdownjs/showdown/wiki/extensions
+[coding-rules]: https://github.com/showdownjs/code-style/blob/master/README.md
+[ng-commit-guide]: https://github.com/showdownjs/code-style/blob/master/README.md#commit-message-convention

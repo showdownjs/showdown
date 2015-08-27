@@ -6,12 +6,7 @@
  * Showdown Converter class
  * @class
  * @param {object} [converterOptions]
- * @returns {
- *  {makeHtml: Function},
- *  {setOption: Function},
- *  {getOption: Function},
- *  {getOptions: Function}
- * }
+ * @returns {Converter}
  */
 showdown.Converter = function (converterOptions) {
   'use strict';

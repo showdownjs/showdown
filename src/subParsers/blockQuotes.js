@@ -14,7 +14,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
    /gm, function(){...});
    */
 
-  text = text.replace(/((^[ \t]*>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
+  text = text.replace(/((^[ \t]{0,3}>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
     var bq = m1;
 
     // attacklab: hack around Konqueror 3.5.4 bug:
@@ -25,6 +25,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
     bq = bq.replace(/~0/g, '');
 
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
+    bq = showdown.subParser('githubCodeBlocks')(bq, options, globals);
     bq = showdown.subParser('blockGamut')(bq, options, globals); // recurse
 
     bq = bq.replace(/(^|\n)/g, '$1  ');

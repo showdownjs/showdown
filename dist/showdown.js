@@ -1,4 +1,4 @@
-;/*! showdown 23-08-2015 */
+;/*! showdown 27-08-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -525,12 +525,7 @@ if (showdown.helper.isUndefined(console)) {
  * Showdown Converter class
  * @class
  * @param {object} [converterOptions]
- * @returns {
- *  {makeHtml: Function},
- *  {setOption: Function},
- *  {getOption: Function},
- *  {getOptions: Function}
- * }
+ * @returns {Converter}
  */
 showdown.Converter = function (converterOptions) {
   'use strict';
@@ -1029,6 +1024,9 @@ showdown.subParser('autoLinks', function (text, options) {
 showdown.subParser('blockGamut', function (text, options, globals) {
   'use strict';
 
+  // we parse blockquotes first so that we can have headings and hrs
+  // inside blockquotes
+  text = showdown.subParser('blockQuotes')(text, options, globals);
   text = showdown.subParser('headers')(text, options, globals);
 
   // Do Horizontal Rules:
@@ -1037,10 +1035,9 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = text.replace(/^[ ]{0,2}([ ]?\-[ ]?){3,}[ \t]*$/gm, key);
   text = text.replace(/^[ ]{0,2}([ ]?_[ ]?){3,}[ \t]*$/gm, key);
 
-  text = showdown.subParser('tables')(text, options, globals);
   text = showdown.subParser('lists')(text, options, globals);
   text = showdown.subParser('codeBlocks')(text, options, globals);
-  text = showdown.subParser('blockQuotes')(text, options, globals);
+  text = showdown.subParser('tables')(text, options, globals);
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,
@@ -1069,7 +1066,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
    /gm, function(){...});
    */
 
-  text = text.replace(/((^[ \t]*>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
+  text = text.replace(/((^[ \t]{0,3}>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
     var bq = m1;
 
     // attacklab: hack around Konqueror 3.5.4 bug:
@@ -1080,6 +1077,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
     bq = bq.replace(/~0/g, '');
 
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
+    bq = showdown.subParser('githubCodeBlocks')(bq, options, globals);
     bq = showdown.subParser('blockGamut')(bq, options, globals); // recurse
 
     bq = bq.replace(/(^|\n)/g, '$1  ');
@@ -1753,6 +1751,7 @@ showdown.subParser('lists', function (text, options, globals) {
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
    * @param {string} listStr
+   * @param {boolean} trimTrailing
    * @returns {string}
    */
   function processListItems (listStr, trimTrailing) {
@@ -1840,6 +1839,7 @@ showdown.subParser('lists', function (text, options, globals) {
    * Check and parse consecutive lists (better fix for issue #142)
    * @param {string} list
    * @param {string} listType
+   * @param {boolean} trimTrailing
    * @returns {string}
    */
   function parseConsecutiveLists(list, listType, trimTrailing) {

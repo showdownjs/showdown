@@ -5,6 +5,9 @@
 showdown.subParser('blockGamut', function (text, options, globals) {
   'use strict';
 
+  // we parse blockquotes first so that we can have headings and hrs
+  // inside blockquotes
+  text = showdown.subParser('blockQuotes')(text, options, globals);
   text = showdown.subParser('headers')(text, options, globals);
 
   // Do Horizontal Rules:
@@ -13,10 +16,9 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = text.replace(/^[ ]{0,2}([ ]?\-[ ]?){3,}[ \t]*$/gm, key);
   text = text.replace(/^[ ]{0,2}([ ]?_[ ]?){3,}[ \t]*$/gm, key);
 
-  text = showdown.subParser('tables')(text, options, globals);
   text = showdown.subParser('lists')(text, options, globals);
   text = showdown.subParser('codeBlocks')(text, options, globals);
-  text = showdown.subParser('blockQuotes')(text, options, globals);
+  text = showdown.subParser('tables')(text, options, globals);
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,

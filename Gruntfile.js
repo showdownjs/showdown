@@ -76,10 +76,28 @@ module.exports = function (grunt) {
       }
     },
 
-    changelog: {
+    conventionalChangelog: {
       options: {
-        repository: 'http://github.com/showdownjs/showdown',
-        dest: 'CHANGELOG.md'
+        changelogOpts: {
+          preset: 'angular'
+        }
+      },
+      release: {
+        src: 'CHANGELOG.md'
+      }
+    },
+
+    conventionalGithubReleaser: {
+      release: {
+        options: {
+          auth: {
+            type: 'oauth',
+            token: process.env.GH_TOEKN
+          },
+          changelogOpts: {
+            preset: 'angular'
+          }
+        },
       }
     },
 
@@ -163,7 +181,7 @@ module.exports = function (grunt) {
   grunt.registerTask('lint', ['jshint', 'jscs']);
   grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:node', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'uglify']);
-  grunt.registerTask('prep-release', ['build', 'changelog']);
+  grunt.registerTask('prep-release', ['build', 'conventionalChangelog']);
 
   // Default task(s).
   grunt.registerTask('default', ['test']);

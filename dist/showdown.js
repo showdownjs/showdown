@@ -1,4 +1,4 @@
-;/*! showdown 25-08-2015 */
+;/*! showdown 27-08-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1035,9 +1035,9 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = text.replace(/^[ ]{0,2}([ ]?\-[ ]?){3,}[ \t]*$/gm, key);
   text = text.replace(/^[ ]{0,2}([ ]?_[ ]?){3,}[ \t]*$/gm, key);
 
-  text = showdown.subParser('tables')(text, options, globals);
   text = showdown.subParser('lists')(text, options, globals);
   text = showdown.subParser('codeBlocks')(text, options, globals);
+  text = showdown.subParser('tables')(text, options, globals);
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,

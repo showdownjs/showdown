@@ -2292,4 +2292,4 @@ if (typeof module !== 'undefined' && module.exports) {
   root.showdown = showdown;
 }
 }).call(this);
-//# sourceMappingURL=showdown.js.map
+

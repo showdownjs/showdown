@@ -1,4 +1,4 @@
-;/*! showdown 27-08-2015 */
+;/*! showdown 07-10-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -996,7 +996,7 @@ showdown.subParser('autoLinks', function (text, options) {
 
   var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)(?=\s|$)(?!["<>])/gi,
       delimUrlRegex   = /<(((https?|ftp|dict):\/\/|www\.)[^'">\s]+)>/gi,
-      simpleMailRegex = /\b(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)\b/gi,
+      simpleMailRegex = /(?:^|[ \n\t])([A-Za-z0-9!#$%&'*+-/=?^_`\{|}~\.]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(?:$|[ \n\t])/gi,
       delimMailRegex  = /<(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
 
   text = text.replace(delimUrlRegex, '<a href=\"$1\">$1</a>');

@@ -1,4 +1,4 @@
-;/*! showdown 07-10-2015 */
+;/*! showdown 14-10-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -2292,4 +2292,5 @@ if (typeof module !== 'undefined' && module.exports) {
   root.showdown = showdown;
 }
 }).call(this);
+
 //# sourceMappingURL=showdown.js.map

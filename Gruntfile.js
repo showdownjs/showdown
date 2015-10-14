@@ -16,7 +16,7 @@ module.exports = function (grunt) {
       options: {
         sourceMap: true,
         banner: ';/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n(function(){\n',
-        footer: '}).call(this);'
+        footer: '}).call(this);\n'
       },
       dist: {
         src: [
@@ -48,6 +48,15 @@ module.exports = function (grunt) {
       dist: {
         files: {
           'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
+        }
+      }
+    },
+
+    endline: {
+      dist: {
+        files: {
+          'dist/<%= pkg.name %>.js': 'dist/<%= pkg.name %>.js',
+          'dist/<%= pkg.name %>.min.js': 'dist/<%= pkg.name %>.min.js'
         }
       }
     },
@@ -97,7 +106,7 @@ module.exports = function (grunt) {
           changelogOpts: {
             preset: 'angular'
           }
-        },
+        }
       }
     },
 
@@ -180,7 +189,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('lint', ['jshint', 'jscs']);
   grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:node', 'clean']);
-  grunt.registerTask('build', ['test', 'concat:dist', 'uglify']);
+  grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);
   grunt.registerTask('prep-release', ['build', 'conventionalChangelog']);
 
   // Default task(s).

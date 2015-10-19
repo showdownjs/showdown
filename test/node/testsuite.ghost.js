@@ -17,6 +17,6 @@ var bootstrap = require('../bootstrap.js'),
 describe('makeHtml() ghost testsuite', function () {
   'use strict';
   for (var i = 0; i < testsuite.length; ++i) {
-    it(testsuite[i].name, assertion(testsuite[i], converter));
+    it(testsuite[i].name.replace(/-/g, ' '), assertion(testsuite[i], converter));
   }
 });

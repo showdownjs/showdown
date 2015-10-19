@@ -27,6 +27,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({tasklists: true});
     } else if (testsuite[i].name === 'autolink-and-disallow-underscores') {
       converter = new showdown.Converter({literalMidWordUnderscores: true, simplifiedAutoLink: true});
+    } else if (testsuite[i].name === '#198.literalMidWordUnderscores-changes-behavior-of-asterisk') {
+      converter = new showdown.Converter({literalMidWordUnderscores: true});
     } else {
       converter = new showdown.Converter();
     }

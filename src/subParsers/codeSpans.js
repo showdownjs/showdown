@@ -26,13 +26,16 @@
 showdown.subParser('codeSpans', function (text) {
   'use strict';
 
+  /*
   //special case -> literal html code tag
+  // Introduced in commit 5f043ca46d20eb88240c753ae7f7c7429f4ee27
+  // Commented out due to issue #196
   text = text.replace(/(<code[^><]*?>)([^]*?)<\/code>/g, function (wholeMatch, tag, c) {
     c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
     c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
     c = showdown.subParser('encodeCode')(c);
     return tag + c + '</code>';
-  });
+  });*/
 
   /*
    text = text.replace(/

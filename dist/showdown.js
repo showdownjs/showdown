@@ -1,4 +1,4 @@
-;/*! showdown 14-10-2015 */
+;/*! showdown 19-10-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -502,6 +502,68 @@ showdown.helper.escapeCharacters = function escapeCharacters(text, charsToEscape
 };
 
 /**
+ * matchRecursiveRegExp
+ *
+ * (c) 2007 Steven Levithan <stevenlevithan.com>
+ * MIT License
+ *
+ * Accepts a string to search, a left and right format delimiter
+ * as regex patterns, and optional regex flags. Returns an array
+ * of matches, allowing nested instances of left/right delimiters.
+ * Use the "g" flag to return all matches, otherwise only the
+ * first is returned. Be careful to ensure that the left and
+ * right format delimiters produce mutually exclusive matches.
+ * Backreferences are not supported within the right delimiter
+ * due to how it is internally combined with the left delimiter.
+ * When matching strings whose format delimiters are unbalanced
+ * to the left or right, the output is intentionally as a
+ * conventional regex library with recursion support would
+ * produce, e.g. "<<x>" and "<x>>" both produce ["x"] when using
+ * "<" and ">" as the delimiters (both strings contain a single,
+ * balanced instance of "<x>").
+ *
+ * examples:
+ * matchRecursiveRegExp("test", "\\(", "\\)")
+ * returns: []
+ * matchRecursiveRegExp("<t<<e>><s>>t<>", "<", ">", "g")
+ * returns: ["t<<e>><s>", ""]
+ * matchRecursiveRegExp("<div id=\"x\">test</div>", "<div\\b[^>]*>", "</div>", "gi")
+ * returns: ["test"]
+ */
+showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
+  'use strict';
+  var	f = flags || '',
+    g = f.indexOf('g') > -1,
+    x = new RegExp(left + '|' + right, f),
+    l = new RegExp(left, f.replace(/g/g, '')),
+    a = [],
+    t, s, m, start, end;
+
+  do {
+    t = 0;
+    while ((m = x.exec(str))) {
+      if (l.test(m[0])) {
+        if (!(t++)) {
+          start = m[0];
+          s = x.lastIndex;
+        }
+      } else if (t) {
+        if (!--t) {
+          end = m[0];
+          var match = str.slice(s, m.index);
+          a.push([start + match + end, match]);
+          if (!g) {
+            return a;
+          }
+        }
+      }
+    }
+  } while (t && (x.lastIndex = s));
+
+  return a;
+};
+
+/**
  * POLYFILLS
  */
 if (showdown.helper.isUndefined(console)) {
@@ -513,6 +575,10 @@ if (showdown.helper.isUndefined(console)) {
     log: function (msg) {
       'use strict';
       alert(msg);
+    },
+    error: function (msg) {
+      'use strict';
+      throw msg;
     }
   };
 }
@@ -560,8 +626,10 @@ showdown.Converter = function (converterOptions) {
       parserOrder = [
         'githubCodeBlocks',
         'hashHTMLBlocks',
+        'hashHTMLSpans',
         'stripLinkDefinitions',
         'blockGamut',
+        'unhashHTMLSpans',
         'unescapeSpecialChars'
       ];
 
@@ -702,6 +770,7 @@ showdown.Converter = function (converterOptions) {
 
     var globals = {
       gHtmlBlocks:     [],
+      gHtmlSpans:      [],
       gUrls:           {},
       gTitles:         {},
       gDimensions:     {},
@@ -1172,13 +1241,16 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
 showdown.subParser('codeSpans', function (text) {
   'use strict';
 
+  /*
   //special case -> literal html code tag
+  // Introduced in commit 5f043ca46d20eb88240c753ae7f7c7429f4ee27
+  // Commented out due to issue #196
   text = text.replace(/(<code[^><]*?>)([^]*?)<\/code>/g, function (wholeMatch, tag, c) {
     c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
     c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
     c = showdown.subParser('encodeCode')(c);
     return tag + c + '</code>';
-  });
+  });*/
 
   /*
    text = text.replace(/
@@ -1571,6 +1643,33 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
   text = text.replace(/\n\n/g, '\n');
   return text;
 
+});
+
+/**
+ * Hash span elements that should not be parsed as markdown
+ */
+showdown.subParser('hashHTMLSpans', function (text, config, globals) {
+  'use strict';
+
+  var matches = showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');
+
+  for (var i = 0; i < matches.length; ++i) {
+    text = text.replace(matches[i][0], '~L' + (globals.gHtmlSpans.push(matches[i][0]) - 1) + 'L');
+  }
+  return text;
+});
+
+/**
+ * Unhash HTML spans
+ */
+showdown.subParser('unhashHTMLSpans', function (text, config, globals) {
+  'use strict';
+
+  for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
+    text = text.replace('~L' + i + 'L', globals.gHtmlSpans[i]);
+  }
+
+  return text;
 });
 
 showdown.subParser('headers', function (text, options, globals) {

@@ -41,8 +41,10 @@ showdown.Converter = function (converterOptions) {
       parserOrder = [
         'githubCodeBlocks',
         'hashHTMLBlocks',
+        'hashHTMLSpans',
         'stripLinkDefinitions',
         'blockGamut',
+        'unhashHTMLSpans',
         'unescapeSpecialChars'
       ];
 
@@ -183,6 +185,7 @@ showdown.Converter = function (converterOptions) {
 
     var globals = {
       gHtmlBlocks:     [],
+      gHtmlSpans:      [],
       gUrls:           {},
       gTitles:         {},
       gDimensions:     {},

@@ -16,7 +16,7 @@ module.exports = function (grunt) {
       options: {
         sourceMap: true,
         banner: ';/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n(function(){\n',
-        footer: '}).call(this);'
+        footer: '}).call(this);\n'
       },
       dist: {
         src: [
@@ -52,6 +52,15 @@ module.exports = function (grunt) {
       }
     },
 
+    endline: {
+      dist: {
+        files: {
+          'dist/<%= pkg.name %>.js': 'dist/<%= pkg.name %>.js',
+          'dist/<%= pkg.name %>.min.js': 'dist/<%= pkg.name %>.min.js'
+        }
+      }
+    },
+
     jshint: {
       options: {
         jshintrc: '.jshintrc'
@@ -76,10 +85,28 @@ module.exports = function (grunt) {
       }
     },
 
-    changelog: {
+    conventionalChangelog: {
       options: {
-        repository: 'http://github.com/showdownjs/showdown',
-        dest: 'CHANGELOG.md'
+        changelogOpts: {
+          preset: 'angular'
+        }
+      },
+      release: {
+        src: 'CHANGELOG.md'
+      }
+    },
+
+    conventionalGithubReleaser: {
+      release: {
+        options: {
+          auth: {
+            type: 'oauth',
+            token: process.env.GH_TOEKN
+          },
+          changelogOpts: {
+            preset: 'angular'
+          }
+        }
       }
     },
 
@@ -162,8 +189,8 @@ module.exports = function (grunt) {
 
   grunt.registerTask('lint', ['jshint', 'jscs']);
   grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:node', 'clean']);
-  grunt.registerTask('build', ['test', 'concat:dist', 'uglify']);
-  grunt.registerTask('prep-release', ['build', 'changelog']);
+  grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);
+  grunt.registerTask('prep-release', ['build', 'conventionalChangelog']);
 
   // Default task(s).
   grunt.registerTask('default', ['test']);

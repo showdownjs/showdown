@@ -107,6 +107,68 @@ showdown.helper.escapeCharacters = function escapeCharacters(text, charsToEscape
 };
 
 /**
+ * matchRecursiveRegExp
+ *
+ * (c) 2007 Steven Levithan <stevenlevithan.com>
+ * MIT License
+ *
+ * Accepts a string to search, a left and right format delimiter
+ * as regex patterns, and optional regex flags. Returns an array
+ * of matches, allowing nested instances of left/right delimiters.
+ * Use the "g" flag to return all matches, otherwise only the
+ * first is returned. Be careful to ensure that the left and
+ * right format delimiters produce mutually exclusive matches.
+ * Backreferences are not supported within the right delimiter
+ * due to how it is internally combined with the left delimiter.
+ * When matching strings whose format delimiters are unbalanced
+ * to the left or right, the output is intentionally as a
+ * conventional regex library with recursion support would
+ * produce, e.g. "<<x>" and "<x>>" both produce ["x"] when using
+ * "<" and ">" as the delimiters (both strings contain a single,
+ * balanced instance of "<x>").
+ *
+ * examples:
+ * matchRecursiveRegExp("test", "\\(", "\\)")
+ * returns: []
+ * matchRecursiveRegExp("<t<<e>><s>>t<>", "<", ">", "g")
+ * returns: ["t<<e>><s>", ""]
+ * matchRecursiveRegExp("<div id=\"x\">test</div>", "<div\\b[^>]*>", "</div>", "gi")
+ * returns: ["test"]
+ */
+showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
+  'use strict';
+  var	f = flags || '',
+    g = f.indexOf('g') > -1,
+    x = new RegExp(left + '|' + right, f),
+    l = new RegExp(left, f.replace(/g/g, '')),
+    a = [],
+    t, s, m, start, end;
+
+  do {
+    t = 0;
+    while ((m = x.exec(str))) {
+      if (l.test(m[0])) {
+        if (!(t++)) {
+          start = m[0];
+          s = x.lastIndex;
+        }
+      } else if (t) {
+        if (!--t) {
+          end = m[0];
+          var match = str.slice(s, m.index);
+          a.push([start + match + end, match]);
+          if (!g) {
+            return a;
+          }
+        }
+      }
+    }
+  } while (t && (x.lastIndex = s));
+
+  return a;
+};
+
+/**
  * POLYFILLS
  */
 if (showdown.helper.isUndefined(console)) {
@@ -118,6 +180,10 @@ if (showdown.helper.isUndefined(console)) {
     log: function (msg) {
       'use strict';
       alert(msg);
+    },
+    error: function (msg) {
+      'use strict';
+      throw msg;
     }
   };
 }

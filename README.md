@@ -11,6 +11,16 @@ Showdown is a Javascript Markdown to HTML converter, based on the original works
 Check a live Demo here http://showdownjs.github.io/demo/
 
 
+## Who uses Showdown (or a fork)
+
+ - [GoogleCloudPlatform](https://github.com/GoogleCloudPlatform)
+ - [Ghost](https://ghost.org/)
+ - [Meteor](https://www.meteor.com/)
+ - [Stackexchange](http://stackexchange.com/) - forked as [PageDown](https://code.google.com/p/pagedown/)
+ - [docular](https://github.com/Vertafore/docular)
+ - [and some others...](https://www.npmjs.com/browse/depended/showdown)
+
+
 ## Installation
 
 ### Download tarball

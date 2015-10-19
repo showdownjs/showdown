@@ -11,39 +11,41 @@ describe('makeHtml() features testsuite', function () {
   'use strict';
   for (var i = 0; i < testsuite.length; ++i) {
     var converter;
-    if (testsuite[i].name === '#143.support_image_dimensions') {
+    if (testsuite[i].name === '#143.support-image-dimensions') {
       converter = new showdown.Converter({parseImgDimensions: true});
-    } else if (testsuite[i].name === '#69.header_level_start') {
+    } else if (testsuite[i].name === '#69.header-level-start') {
       converter = new showdown.Converter({headerLevelStart: 3});
-    } else if (testsuite[i].name === '#164.1.simple_autolink') {
+    } else if (testsuite[i].name === '#164.1.simple-autolink' || testsuite[i].name === '#204.certain-links-with-at-and-dot-break-url') {
       converter = new showdown.Converter({simplifiedAutoLink: true});
-    } else if (testsuite[i].name === '#164.2.disallow_underscore_emphasis_mid_word') {
+    } else if (testsuite[i].name === '#164.2.disallow-underscore-emphasis-mid-word') {
       converter = new showdown.Converter({literalMidWordUnderscores: true});
     } else if (testsuite[i].name === '#164.3.strikethrough') {
       converter = new showdown.Converter({strikethrough: true});
-    } else if (testsuite[i].name === 'disable_gh_codeblocks') {
+    } else if (testsuite[i].name === 'disable-gh-codeblocks') {
       converter = new showdown.Converter({ghCodeBlocks: false});
     } else if (testsuite[i].name === '#164.4.tasklists') {
       converter = new showdown.Converter({tasklists: true});
-    } else if (testsuite[i].name === 'autolink_and_disallow_underscores') {
+    } else if (testsuite[i].name === 'autolink-and-disallow-underscores') {
       converter = new showdown.Converter({literalMidWordUnderscores: true, simplifiedAutoLink: true});
+    } else if (testsuite[i].name === '#198.literalMidWordUnderscores-changes-behavior-of-asterisk') {
+      converter = new showdown.Converter({literalMidWordUnderscores: true});
     } else {
       converter = new showdown.Converter();
     }
-    it(testsuite[i].name, assertion(testsuite[i], converter));
+    it(testsuite[i].name.replace(/-/g, ' '), assertion(testsuite[i], converter));
   }
 
   describe('table support', function () {
     var converter;
     for (var i = 0; i < tableSuite.length; ++i) {
-      if (tableSuite[i].name === 'basic_with_header_ids') {
+      if (tableSuite[i].name === 'basic-with-header-ids') {
         converter = new showdown.Converter({tables: true, tableHeaderId: true});
-      } else if (tableSuite[i].name === '#179.parse_md_in_table_ths') {
+      } else if (tableSuite[i].name === '#179.parse-md-in-table-ths') {
         converter = new showdown.Converter({tables: true, strikethrough: true});
       } else {
         converter = new showdown.Converter({tables: true});
       }
-      it(tableSuite[i].name, assertion(tableSuite[i], converter));
+      it(tableSuite[i].name.replace(/-/g, ' '), assertion(tableSuite[i], converter));
     }
   });
 

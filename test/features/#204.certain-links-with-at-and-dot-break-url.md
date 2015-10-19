@@ -1,0 +1,7 @@
+http://website.com/img@x2.jpg
+
+http://website.com/img-x2.jpg
+
+http://website.com/img@x2
+
+http://website.com/img@.jpg

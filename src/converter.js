@@ -6,12 +6,7 @@
  * Showdown Converter class
  * @class
  * @param {object} [converterOptions]
- * @returns {
- *  {makeHtml: Function},
- *  {setOption: Function},
- *  {getOption: Function},
- *  {getOptions: Function}
- * }
+ * @returns {Converter}
  */
 showdown.Converter = function (converterOptions) {
   'use strict';
@@ -38,8 +33,12 @@ showdown.Converter = function (converterOptions) {
        */
       outputModifiers = [],
 
-      listeners = {
-      };
+      /**
+       * Event listeners
+       * @private
+       * @type {{}}
+       */
+      listeners = {};
 
   _constructor();
 
@@ -234,6 +233,7 @@ showdown.Converter = function (converterOptions) {
 
     var globals = {
       gHtmlBlocks:     [],
+      gHtmlSpans:      [],
       gUrls:           {},
       gTitles:         {},
       gDimensions:     {},
@@ -276,8 +276,10 @@ showdown.Converter = function (converterOptions) {
     // run the sub parsers
     text = showdown.subParser('githubCodeBlocks')(text, options, globals);
     text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
+    text = showdown.subParser('hashHTMLSpans')(text, options, globals);
     text = showdown.subParser('stripLinkDefinitions')(text, options, globals);
     text = showdown.subParser('blockGamut')(text, options, globals);
+    text = showdown.subParser('unhashHTMLSpans')(text, options, globals);
     text = showdown.subParser('unescapeSpecialChars')(text, options, globals);
 
     // attacklab: Restore dollar signs

@@ -27,13 +27,6 @@ showdown.subParser('codeSpans', function (text, options, globals) {
   'use strict';
 
   text = globals.converter._dispatch('codeSpans.before', text, options);
-  //special case -> literal html code tag
-  text = text.replace(/(<code[^><]*?>)([^]*?)<\/code>/g, function (wholeMatch, tag, c) {
-    c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
-    c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
-    c = showdown.subParser('encodeCode')(c);
-    return tag + c + '</code>';
-  });
 
   /*
    text = text.replace(/

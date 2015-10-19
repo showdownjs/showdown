@@ -1,4 +1,4 @@
-;/*! showdown 03-08-2015 */
+;/*! showdown 19-10-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -521,6 +521,68 @@ showdown.helper.escapeCharacters = function escapeCharacters(text, charsToEscape
 };
 
 /**
+ * matchRecursiveRegExp
+ *
+ * (c) 2007 Steven Levithan <stevenlevithan.com>
+ * MIT License
+ *
+ * Accepts a string to search, a left and right format delimiter
+ * as regex patterns, and optional regex flags. Returns an array
+ * of matches, allowing nested instances of left/right delimiters.
+ * Use the "g" flag to return all matches, otherwise only the
+ * first is returned. Be careful to ensure that the left and
+ * right format delimiters produce mutually exclusive matches.
+ * Backreferences are not supported within the right delimiter
+ * due to how it is internally combined with the left delimiter.
+ * When matching strings whose format delimiters are unbalanced
+ * to the left or right, the output is intentionally as a
+ * conventional regex library with recursion support would
+ * produce, e.g. "<<x>" and "<x>>" both produce ["x"] when using
+ * "<" and ">" as the delimiters (both strings contain a single,
+ * balanced instance of "<x>").
+ *
+ * examples:
+ * matchRecursiveRegExp("test", "\\(", "\\)")
+ * returns: []
+ * matchRecursiveRegExp("<t<<e>><s>>t<>", "<", ">", "g")
+ * returns: ["t<<e>><s>", ""]
+ * matchRecursiveRegExp("<div id=\"x\">test</div>", "<div\\b[^>]*>", "</div>", "gi")
+ * returns: ["test"]
+ */
+showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
+  'use strict';
+  var	f = flags || '',
+    g = f.indexOf('g') > -1,
+    x = new RegExp(left + '|' + right, f),
+    l = new RegExp(left, f.replace(/g/g, '')),
+    a = [],
+    t, s, m, start, end;
+
+  do {
+    t = 0;
+    while ((m = x.exec(str))) {
+      if (l.test(m[0])) {
+        if (!(t++)) {
+          start = m[0];
+          s = x.lastIndex;
+        }
+      } else if (t) {
+        if (!--t) {
+          end = m[0];
+          var match = str.slice(s, m.index);
+          a.push([start + match + end, match]);
+          if (!g) {
+            return a;
+          }
+        }
+      }
+    }
+  } while (t && (x.lastIndex = s));
+
+  return a;
+};
+
+/**
  * POLYFILLS
  */
 if (showdown.helper.isUndefined(console)) {
@@ -532,6 +594,10 @@ if (showdown.helper.isUndefined(console)) {
     log: function (msg) {
       'use strict';
       alert(msg);
+    },
+    error: function (msg) {
+      'use strict';
+      throw msg;
     }
   };
 }
@@ -544,12 +610,7 @@ if (showdown.helper.isUndefined(console)) {
  * Showdown Converter class
  * @class
  * @param {object} [converterOptions]
- * @returns {
- *  {makeHtml: Function},
- *  {setOption: Function},
- *  {getOption: Function},
- *  {getOptions: Function}
- * }
+ * @returns {Converter}
  */
 showdown.Converter = function (converterOptions) {
   'use strict';
@@ -576,8 +637,12 @@ showdown.Converter = function (converterOptions) {
        */
       outputModifiers = [],
 
-      listeners = {
-      };
+      /**
+       * Event listeners
+       * @private
+       * @type {{}}
+       */
+      listeners = {};
 
   _constructor();
 
@@ -772,6 +837,7 @@ showdown.Converter = function (converterOptions) {
 
     var globals = {
       gHtmlBlocks:     [],
+      gHtmlSpans:      [],
       gUrls:           {},
       gTitles:         {},
       gDimensions:     {},
@@ -814,8 +880,10 @@ showdown.Converter = function (converterOptions) {
     // run the sub parsers
     text = showdown.subParser('githubCodeBlocks')(text, options, globals);
     text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
+    text = showdown.subParser('hashHTMLSpans')(text, options, globals);
     text = showdown.subParser('stripLinkDefinitions')(text, options, globals);
     text = showdown.subParser('blockGamut')(text, options, globals);
+    text = showdown.subParser('unhashHTMLSpans')(text, options, globals);
     text = showdown.subParser('unescapeSpecialChars')(text, options, globals);
 
     // attacklab: Restore dollar signs
@@ -1069,7 +1137,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
 
   var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)(?=\s|$)(?!["<>])/gi,
       delimUrlRegex   = /<(((https?|ftp|dict):\/\/|www\.)[^'">\s]+)>/gi,
-      simpleMailRegex = /\b(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)\b/gi,
+      simpleMailRegex = /(?:^|[ \n\t])([A-Za-z0-9!#$%&'*+-/=?^_`\{|}~\.]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(?:$|[ \n\t])/gi,
       delimMailRegex  = /<(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
 
   text = text.replace(delimUrlRegex, '<a href=\"$1\">$1</a>');
@@ -1079,7 +1147,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
 
   if (options.simplifiedAutoLink) {
     text = text.replace(simpleURLRegex, '<a href=\"$1\">$1</a>');
-    text = text.replace(simpleMailRegex, '<a href=\"$1\">$1</a>');
+    text = text.replace(simpleMailRegex, replaceMail);
   }
 
   function replaceMail(wholeMatch, m1) {
@@ -1101,6 +1169,9 @@ showdown.subParser('blockGamut', function (text, options, globals) {
 
   text = globals.converter._dispatch('blockGamut.before', text, options);
 
+  // we parse blockquotes first so that we can have headings and hrs
+  // inside blockquotes
+  text = showdown.subParser('blockQuotes')(text, options, globals);
   text = showdown.subParser('headers')(text, options, globals);
 
   // Do Horizontal Rules:
@@ -1109,10 +1180,9 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = text.replace(/^[ ]{0,2}([ ]?\-[ ]?){3,}[ \t]*$/gm, key);
   text = text.replace(/^[ ]{0,2}([ ]?_[ ]?){3,}[ \t]*$/gm, key);
 
-  text = showdown.subParser('tables')(text, options, globals);
   text = showdown.subParser('lists')(text, options, globals);
   text = showdown.subParser('codeBlocks')(text, options, globals);
-  text = showdown.subParser('blockQuotes')(text, options, globals);
+  text = showdown.subParser('tables')(text, options, globals);
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,
@@ -1143,7 +1213,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
    /gm, function(){...});
    */
 
-  text = text.replace(/((^[ \t]*>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
+  text = text.replace(/((^[ \t]{0,3}>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
     var bq = m1;
 
     // attacklab: hack around Konqueror 3.5.4 bug:
@@ -1154,6 +1224,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
     bq = bq.replace(/~0/g, '');
 
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
+    bq = showdown.subParser('githubCodeBlocks')(bq, options, globals);
     bq = showdown.subParser('blockGamut')(bq, options, globals); // recurse
 
     bq = bq.replace(/(^|\n)/g, '$1  ');
@@ -1253,13 +1324,6 @@ showdown.subParser('codeSpans', function (text, options, globals) {
   'use strict';
 
   text = globals.converter._dispatch('codeSpans.before', text, options);
-  //special case -> literal html code tag
-  text = text.replace(/(<code[^><]*?>)([^]*?)<\/code>/g, function (wholeMatch, tag, c) {
-    c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
-    c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
-    c = showdown.subParser('encodeCode')(c);
-    return tag + c + '</code>';
-  });
 
   /*
    text = text.replace(/
@@ -1658,6 +1722,33 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 
 });
 
+/**
+ * Hash span elements that should not be parsed as markdown
+ */
+showdown.subParser('hashHTMLSpans', function (text, config, globals) {
+  'use strict';
+
+  var matches = showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');
+
+  for (var i = 0; i < matches.length; ++i) {
+    text = text.replace(matches[i][0], '~L' + (globals.gHtmlSpans.push(matches[i][0]) - 1) + 'L');
+  }
+  return text;
+});
+
+/**
+ * Unhash HTML spans
+ */
+showdown.subParser('unhashHTMLSpans', function (text, config, globals) {
+  'use strict';
+
+  for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
+    text = text.replace('~L' + i + 'L', globals.gHtmlSpans[i]);
+  }
+
+  return text;
+});
+
 showdown.subParser('headers', function (text, options, globals) {
   'use strict';
 
@@ -1823,8 +1914,8 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
     text = text.replace(/(^|\s|>|\b)__(?=\S)([^]+?)__(?=\b|<|\s|$)/gm, '$1<strong>$2</strong>');
     text = text.replace(/(^|\s|>|\b)_(?=\S)([^]+?)_(?=\b|<|\s|$)/gm, '$1<em>$2</em>');
     //asterisks
-    text = text.replace(/\*\*(?=\S)([^]+?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/\*(?=\S)([^]+?)\*/g, '<em>$1</em>');
+    text = text.replace(/(\*\*)(?=\S)([^\r]*?\S[*]*)\1/g, '<strong>$2</strong>');
+    text = text.replace(/(\*)(?=\S)([^\r]*?\S)\1/g, '<em>$2</em>');
 
   } else {
     // <strong> must go first:
@@ -1847,6 +1938,7 @@ showdown.subParser('lists', function (text, options, globals) {
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
    * @param {string} listStr
+   * @param {boolean} trimTrailing
    * @returns {string}
    */
   function processListItems (listStr, trimTrailing) {
@@ -1934,6 +2026,7 @@ showdown.subParser('lists', function (text, options, globals) {
    * Check and parse consecutive lists (better fix for issue #142)
    * @param {string} list
    * @param {string} listType
+   * @param {boolean} trimTrailing
    * @returns {string}
    */
   function parseConsecutiveLists(list, listType, trimTrailing) {
@@ -2394,4 +2487,5 @@ if (typeof module !== 'undefined' && module.exports) {
   root.showdown = showdown;
 }
 }).call(this);
+
 //# sourceMappingURL=showdown.js.map

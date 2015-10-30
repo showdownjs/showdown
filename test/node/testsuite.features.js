@@ -19,7 +19,7 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({simplifiedAutoLink: true});
     } else if (testsuite[i].name === '#164.2.disallow-underscore-emphasis-mid-word') {
       converter = new showdown.Converter({literalMidWordUnderscores: true});
-    } else if (testsuite[i].name === '#164.3.strikethrough') {
+    } else if (testsuite[i].name === '#164.3.strikethrough' || testsuite[i].name === '#214.escaped-markdown-chars-break-strikethrough') {
       converter = new showdown.Converter({strikethrough: true});
     } else if (testsuite[i].name === 'disable-gh-codeblocks') {
       converter = new showdown.Converter({ghCodeBlocks: false});

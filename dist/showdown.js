@@ -1,4 +1,4 @@
-;/*! showdown 30-10-2015 */
+;/*! showdown 22-12-2015 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -2477,7 +2477,7 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // AMD Loader
 } else if (typeof define === 'function' && define.amd) {
-  define('showdown', function () {
+  define(function () {
     'use strict';
     return showdown;
   });

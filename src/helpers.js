@@ -18,6 +18,18 @@ showdown.helper.isString = function isString(a) {
 };
 
 /**
+ * Check if var is a function
+ * @static
+ * @param {string} a
+ * @returns {boolean}
+ */
+showdown.helper.isFunction = function isFunction(a) {
+  'use strict';
+  var getType = {};
+  return a && getType.toString.call(a) === '[object Function]';
+};
+
+/**
  * ForEach helper function
  * @static
  * @param {*} obj
@@ -106,6 +118,38 @@ showdown.helper.escapeCharacters = function escapeCharacters(text, charsToEscape
   return text;
 };
 
+var rgxFindMatchPos = function (str, left, right, flags) {
+  'use strict';
+  var f = flags || '',
+    g = f.indexOf('g') > -1,
+    x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
+    l = new RegExp(left, f.replace(/g/g, '')),
+    pos = [],
+    t, s, m, start, end;
+
+  do {
+    t = 0;
+    while ((m = x.exec(str))) {
+      if (l.test(m[0])) {
+        if (!(t++)) {
+          s = x.lastIndex;
+          start = s - m[0].length;
+        }
+      } else if (t) {
+        if (!--t) {
+          end = m.index + m[0].length;
+          pos.push({start: start, end: end});
+          if (!g) {
+            return pos;
+          }
+        }
+      }
+    }
+  } while (t && (x.lastIndex = s));
+
+  return pos;
+};
+
 /**
  * matchRecursiveRegExp
  *
@@ -139,7 +183,7 @@ showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
   'use strict';
   var	f = flags || '',
     g = f.indexOf('g') > -1,
-    x = new RegExp(left + '|' + right, f),
+    x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
     l = new RegExp(left, f.replace(/g/g, '')),
     a = [],
     t, s, m, start, end;
@@ -166,6 +210,48 @@ showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
   } while (t && (x.lastIndex = s));
 
   return a;
+};
+
+/**
+ *
+ * @param {string} str
+ * @param {string|function} replacement
+ * @param {string} left
+ * @param {string} right
+ * @param {string} flags
+ * @returns {string}
+ */
+showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right, flags) {
+  'use strict';
+
+  if (!showdown.helper.isFunction(replacement)) {
+    var repStr = replacement;
+    replacement = function () {
+      return repStr;
+    };
+  }
+
+  var matchPos = rgxFindMatchPos(str, left, right, flags),
+      finalStr = str,
+      lng = matchPos.length;
+
+  if (lng > 0) {
+    var bits = [];
+    if (matchPos[0].start !== 0) {
+      bits.push(str.slice(0, matchPos[0].start));
+    }
+    for (var i = 0; i < lng; ++i) {
+      bits.push(replacement(str.slice(matchPos[i].start, matchPos[i].end)));
+      if (i < lng - 1) {
+        bits.push(str.slice(matchPos[i].end, matchPos[i + 1].start));
+      }
+    }
+    if (matchPos[lng - 1].end < str.length) {
+      bits.push(str.slice(matchPos[lng - 1].end));
+    }
+    finalStr = bits.join('');
+  }
+  return finalStr;
 };
 
 /**

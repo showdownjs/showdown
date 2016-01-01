@@ -63,6 +63,7 @@ Another [example][wiki] of a link
 <p><code>foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo</code></p>
 
 <!-- These two cases still have bad <ems> because showdown handles them incorrectly -->
+
 <code>foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo</code>
 
 ![foo_bar_baz foo_bar_baz_bar_foo _foo_bar baz_bar_ baz_foo](http://myurl.com/foo_bar_baz_bar_foo)

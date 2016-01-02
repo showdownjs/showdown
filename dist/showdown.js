@@ -601,35 +601,19 @@ var rgxFindMatchPos = function (str, left, right, flags) {
  */
 showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
   'use strict';
-  var	f = flags || '',
-    g = f.indexOf('g') > -1,
-    x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
-    l = new RegExp(left, f.replace(/g/g, '')),
-    a = [],
-    t, s, m, start, end;
 
-  do {
-    t = 0;
-    while ((m = x.exec(str))) {
-      if (l.test(m[0])) {
-        if (!(t++)) {
-          start = m[0];
-          s = x.lastIndex;
-        }
-      } else if (t) {
-        if (!--t) {
-          end = m[0];
-          var match = str.slice(s, m.index);
-          a.push([start + match + end, match, start, end]);
-          if (!g) {
-            return a;
-          }
-        }
-      }
-    }
-  } while (t && (x.lastIndex = s));
+  var matchPos = rgxFindMatchPos (str, left, right, flags),
+    results = [];
 
-  return a;
+  for (var i = 0; i < matchPos.length; ++i) {
+    results.push([
+      str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
+      str.slice(matchPos[i].match.start, matchPos[i].match.end),
+      str.slice(matchPos[i].left.start, matchPos[i].left.end),
+      str.slice(matchPos[i].right.start, matchPos[i].right.end)
+    ]);
+  }
+  return results;
 };
 
 /**

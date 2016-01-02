@@ -37,8 +37,14 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
       'video',
       'p'
     ],
-    repFunc = function (match) {
-      return '\n\n~K' + (globals.gHtmlBlocks.push(match) - 1) + 'K\n\n';
+    repFunc = function (wholeMatch, match, left, right) {
+      var txt = wholeMatch;
+      // check if this html element is marked as markdown
+      // if so, it's contents should be parsed as markdown
+      if (left.search(/\bmarkdown\b/) !== -1) {
+        txt = left + globals.converter.makeHtml(match) + right;
+      }
+      return '\n\n~K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
     };
 
   for (var i = 0; i < blockTags.length; ++i) {

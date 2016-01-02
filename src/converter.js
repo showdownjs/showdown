@@ -233,6 +233,7 @@ showdown.Converter = function (converterOptions) {
 
     var globals = {
       gHtmlBlocks:     [],
+      gHtmlMdBlocks:   [],
       gHtmlSpans:      [],
       gUrls:           {},
       gTitles:         {},

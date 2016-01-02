@@ -138,7 +138,13 @@ var rgxFindMatchPos = function (str, left, right, flags) {
       } else if (t) {
         if (!--t) {
           end = m.index + m[0].length;
-          pos.push({start: start, end: end});
+          var obj = {
+            left: {start: start, end: s},
+            match: {start: s, end: m.index},
+            right: {start: m.index, end: end},
+            wholeMatch: {start: start, end: end}
+          };
+          pos.push(obj);
           if (!g) {
             return pos;
           }
@@ -200,7 +206,7 @@ showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
         if (!--t) {
           end = m[0];
           var match = str.slice(s, m.index);
-          a.push([start + match + end, match]);
+          a.push([start + match + end, match, start, end]);
           if (!g) {
             return a;
           }
@@ -237,17 +243,24 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
 
   if (lng > 0) {
     var bits = [];
-    if (matchPos[0].start !== 0) {
-      bits.push(str.slice(0, matchPos[0].start));
+    if (matchPos[0].wholeMatch.start !== 0) {
+      bits.push(str.slice(0, matchPos[0].wholeMatch.start));
     }
     for (var i = 0; i < lng; ++i) {
-      bits.push(replacement(str.slice(matchPos[i].start, matchPos[i].end)));
+      bits.push(
+        replacement(
+          str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
+          str.slice(matchPos[i].match.start, matchPos[i].match.end),
+          str.slice(matchPos[i].left.start, matchPos[i].left.end),
+          str.slice(matchPos[i].right.start, matchPos[i].right.end)
+        )
+      );
       if (i < lng - 1) {
-        bits.push(str.slice(matchPos[i].end, matchPos[i + 1].start));
+        bits.push(str.slice(matchPos[i].wholeMatch.end, matchPos[i + 1].wholeMatch.start));
       }
     }
-    if (matchPos[lng - 1].end < str.length) {
-      bits.push(str.slice(matchPos[lng - 1].end));
+    if (matchPos[lng - 1].wholeMatch.end < str.length) {
+      bits.push(str.slice(matchPos[lng - 1].wholeMatch.end));
     }
     finalStr = bits.join('');
   }

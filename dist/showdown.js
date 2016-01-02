@@ -1,4 +1,4 @@
-;/*! showdown 01-01-2016 */
+;/*! showdown 02-01-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -552,7 +552,13 @@ var rgxFindMatchPos = function (str, left, right, flags) {
       } else if (t) {
         if (!--t) {
           end = m.index + m[0].length;
-          pos.push({start: start, end: end});
+          var obj = {
+            left: {start: start, end: s},
+            match: {start: s, end: m.index},
+            right: {start: m.index, end: end},
+            wholeMatch: {start: start, end: end}
+          };
+          pos.push(obj);
           if (!g) {
             return pos;
           }
@@ -614,7 +620,7 @@ showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
         if (!--t) {
           end = m[0];
           var match = str.slice(s, m.index);
-          a.push([start + match + end, match]);
+          a.push([start + match + end, match, start, end]);
           if (!g) {
             return a;
           }
@@ -651,17 +657,24 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
 
   if (lng > 0) {
     var bits = [];
-    if (matchPos[0].start !== 0) {
-      bits.push(str.slice(0, matchPos[0].start));
+    if (matchPos[0].wholeMatch.start !== 0) {
+      bits.push(str.slice(0, matchPos[0].wholeMatch.start));
     }
     for (var i = 0; i < lng; ++i) {
-      bits.push(replacement(str.slice(matchPos[i].start, matchPos[i].end)));
+      bits.push(
+        replacement(
+          str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
+          str.slice(matchPos[i].match.start, matchPos[i].match.end),
+          str.slice(matchPos[i].left.start, matchPos[i].left.end),
+          str.slice(matchPos[i].right.start, matchPos[i].right.end)
+        )
+      );
       if (i < lng - 1) {
-        bits.push(str.slice(matchPos[i].end, matchPos[i + 1].start));
+        bits.push(str.slice(matchPos[i].wholeMatch.end, matchPos[i + 1].wholeMatch.start));
       }
     }
-    if (matchPos[lng - 1].end < str.length) {
-      bits.push(str.slice(matchPos[lng - 1].end));
+    if (matchPos[lng - 1].wholeMatch.end < str.length) {
+      bits.push(str.slice(matchPos[lng - 1].wholeMatch.end));
     }
     finalStr = bits.join('');
   }
@@ -923,6 +936,7 @@ showdown.Converter = function (converterOptions) {
 
     var globals = {
       gHtmlBlocks:     [],
+      gHtmlMdBlocks:   [],
       gHtmlSpans:      [],
       gUrls:           {},
       gTitles:         {},
@@ -1713,8 +1727,14 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
       'video',
       'p'
     ],
-    repFunc = function (match) {
-      return '\n\n~K' + (globals.gHtmlBlocks.push(match) - 1) + 'K\n\n';
+    repFunc = function (wholeMatch, match, left, right) {
+      var txt = wholeMatch;
+      // check if this html element is marked as markdown
+      // if so, it's contents should be parsed as markdown
+      if (left.search(/\bmarkdown\b/) !== -1) {
+        txt = left + globals.converter.makeHtml(match) + right;
+      }
+      return '\n\n~K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
     };
 
   for (var i = 0; i < blockTags.length; ++i) {
@@ -2154,9 +2174,10 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   /** Unhashify HTML blocks */
   end = grafsOut.length;
   for (i = 0; i < end; i++) {
+    var blockText = '';
     // if this is a marker for an html block...
     while (grafsOut[i].search(/~K(\d+)K/) >= 0) {
-      var blockText = globals.gHtmlBlocks[RegExp.$1];
+      blockText = globals.gHtmlBlocks[RegExp.$1];
       blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
       grafsOut[i] = grafsOut[i].replace(/~K\d+K/, blockText);
     }

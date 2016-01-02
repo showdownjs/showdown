@@ -30,9 +30,10 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   /** Unhashify HTML blocks */
   end = grafsOut.length;
   for (i = 0; i < end; i++) {
+    var blockText = '';
     // if this is a marker for an html block...
     while (grafsOut[i].search(/~K(\d+)K/) >= 0) {
-      var blockText = globals.gHtmlBlocks[RegExp.$1];
+      blockText = globals.gHtmlBlocks[RegExp.$1];
       blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
       grafsOut[i] = grafsOut[i].replace(/~K\d+K/, blockText);
     }

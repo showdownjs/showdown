@@ -31,7 +31,6 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   for (i = 0; i < end; i++) {
     var blockText = '',
         grafsOutIt = grafsOut[i],
-        child = false,
         codeFlag = false;
     // if this is a marker for an html block...
     while (grafsOutIt.search(/~(K|G)(\d+)\1/) >= 0) {
@@ -42,7 +41,12 @@ showdown.subParser('paragraphs', function (text, options, globals) {
         blockText = globals.gHtmlBlocks[num];
       } else {
         // we need to check if ghBlock is a false positive
-        blockText = (codeFlag) ? globals.ghCodeBlocks[num].text : globals.ghCodeBlocks[num].codeblock;
+        if (codeFlag) {
+          // use encoded version of all text
+          blockText = showdown.subParser('encodeCode')(globals.ghCodeBlocks[num].text);
+        } else {
+          blockText = globals.ghCodeBlocks[num].codeblock;
+        }
       }
       blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
 
@@ -51,7 +55,6 @@ showdown.subParser('paragraphs', function (text, options, globals) {
       if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOutIt)) {
         codeFlag = true;
       }
-      child = true;
     }
     grafsOut[i] = grafsOutIt;
   }

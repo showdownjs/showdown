@@ -963,6 +963,7 @@ showdown.Converter = function (converterOptions) {
     });
 
     // run the sub parsers
+    text = showdown.subParser('hashPreCodeTags')(text, options, globals);
     text = showdown.subParser('githubCodeBlocks')(text, options, globals);
     text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
     text = showdown.subParser('hashHTMLSpans')(text, options, globals);
@@ -1772,6 +1773,22 @@ showdown.subParser('unhashHTMLSpans', function (text, config, globals) {
   return text;
 });
 
+/**
+ * Hash span elements that should not be parsed as markdown
+ */
+showdown.subParser('hashPreCodeTags', function (text, config, globals) {
+  'use strict';
+
+  var repFunc = function (wholeMatch, match, left, right) {
+    // encode html entities
+    var codeblock = left + showdown.subParser('encodeCode')(match) + right;
+    return '\n\n~G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
+  };
+
+  text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^(?: |\\t){0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^(?: |\\t){0,3}</code>\\s*</pre>', 'gim');
+  return text;
+});
+
 showdown.subParser('headers', function (text, options, globals) {
   'use strict';
 
@@ -2164,7 +2181,6 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   for (i = 0; i < end; i++) {
     var blockText = '',
         grafsOutIt = grafsOut[i],
-        child = false,
         codeFlag = false;
     // if this is a marker for an html block...
     while (grafsOutIt.search(/~(K|G)(\d+)\1/) >= 0) {
@@ -2175,7 +2191,12 @@ showdown.subParser('paragraphs', function (text, options, globals) {
         blockText = globals.gHtmlBlocks[num];
       } else {
         // we need to check if ghBlock is a false positive
-        blockText = (codeFlag) ? globals.ghCodeBlocks[num].text : globals.ghCodeBlocks[num].codeblock;
+        if (codeFlag) {
+          // use encoded version of all text
+          blockText = showdown.subParser('encodeCode')(globals.ghCodeBlocks[num].text);
+        } else {
+          blockText = globals.ghCodeBlocks[num].codeblock;
+        }
       }
       blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
 
@@ -2184,7 +2205,6 @@ showdown.subParser('paragraphs', function (text, options, globals) {
       if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOutIt)) {
         codeFlag = true;
       }
-      child = true;
     }
     grafsOut[i] = grafsOutIt;
   }

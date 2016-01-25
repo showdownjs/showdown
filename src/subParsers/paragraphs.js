@@ -15,11 +15,10 @@ showdown.subParser('paragraphs', function (text, options, globals) {
 
   for (var i = 0; i < end; i++) {
     var str = grafs[i];
-
     // if this is an HTML marker, copy it
-    if (str.search(/~K(\d+)K/g) >= 0) {
+    if (str.search(/~(K|G)(\d+)\1/g) >= 0) {
       grafsOut.push(str);
-    } else if (str.search(/\S/) >= 0) {
+    } else {
       str = showdown.subParser('spanGamut')(str, options, globals);
       str = str.replace(/^([ \t]*)/g, '<p>');
       str += '</p>';
@@ -29,16 +28,37 @@ showdown.subParser('paragraphs', function (text, options, globals) {
 
   /** Unhashify HTML blocks */
   end = grafsOut.length;
+  console.log(text);
   for (i = 0; i < end; i++) {
-    var blockText = '';
+    var blockText = '',
+        grafsOutIt = grafsOut[i],
+        child = false,
+        codeFlag = false;
     // if this is a marker for an html block...
-    while (grafsOut[i].search(/~K(\d+)K/) >= 0) {
-      blockText = globals.gHtmlBlocks[RegExp.$1];
-      blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
-      grafsOut[i] = grafsOut[i].replace(/~K\d+K/, blockText);
-    }
-  }
+    while (grafsOutIt.search(/~(K|G)(\d+)\1/) >= 0) {
+      var delim = RegExp.$1,
+          num   = RegExp.$2;
 
-  text = globals.converter._dispatch('paragraphs.after', text, options);
-  return grafsOut.join('\n\n');
+      if (delim === 'K') {
+        blockText = globals.gHtmlBlocks[num];
+      } else {
+        // we need to check if ghBlock is a false positive
+        blockText = (codeFlag) ? globals.ghCodeBlocks[num].text : globals.ghCodeBlocks[num].codeblock;
+      }
+      blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
+
+      grafsOutIt = grafsOutIt.replace(/(\n\n)?~(K|G)\d+\2(\n\n)?/, blockText);
+      // Check if grafsOutIt is a pre->code
+      if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOutIt)) {
+        codeFlag = true;
+      }
+      child = true;
+    }
+    grafsOut[i] = grafsOutIt;
+  }
+  text = grafsOut.join('\n\n');
+  // Strip leading and trailing lines:
+  text = text.replace(/^\n+/g, '');
+  text = text.replace(/\n+$/g, '');
+  return globals.converter._dispatch('paragraphs.after', text, options);
 });

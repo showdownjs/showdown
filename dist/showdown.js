@@ -1,4 +1,4 @@
-;/*! showdown 02-01-2016 */
+;/*! showdown 25-01-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -929,7 +929,8 @@ showdown.Converter = function (converterOptions) {
       hashLinkCounts:  {},
       langExtensions:  langExtensions,
       outputModifiers: outputModifiers,
-      converter:       this
+      converter:       this,
+      ghCodeBlocks:    []
     };
 
     // attacklab: Replace ~ with ~T
@@ -1628,6 +1629,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
   text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, language, codeblock) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
 
+    // First parse the github code block
     codeblock = showdown.subParser('encodeCode')(codeblock);
     codeblock = showdown.subParser('detab')(codeblock);
     codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
@@ -1635,15 +1637,18 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
 
     codeblock = '<pre><code' + (language ? ' class="' + language + ' language-' + language + '"' : '') + '>' + codeblock + end + '</code></pre>';
 
-    return showdown.subParser('hashBlock')(codeblock, options, globals);
+    codeblock = showdown.subParser('hashBlock')(codeblock, options, globals);
+
+    // Since GHCodeblocks can be false positives, we need to
+    // store the primitive text and the parsed text in a global var,
+    // and then return a token
+    return '\n\n~G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
   });
 
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
-  text = globals.converter._dispatch('githubCodeBlocks.after', text, options);
-
-  return text;
+  return globals.converter._dispatch('githubCodeBlocks.after', text, options);
 });
 
 showdown.subParser('hashBlock', function (text, options, globals) {
@@ -2143,11 +2148,10 @@ showdown.subParser('paragraphs', function (text, options, globals) {
 
   for (var i = 0; i < end; i++) {
     var str = grafs[i];
-
     // if this is an HTML marker, copy it
-    if (str.search(/~K(\d+)K/g) >= 0) {
+    if (str.search(/~(K|G)(\d+)\1/g) >= 0) {
       grafsOut.push(str);
-    } else if (str.search(/\S/) >= 0) {
+    } else {
       str = showdown.subParser('spanGamut')(str, options, globals);
       str = str.replace(/^([ \t]*)/g, '<p>');
       str += '</p>';
@@ -2157,18 +2161,39 @@ showdown.subParser('paragraphs', function (text, options, globals) {
 
   /** Unhashify HTML blocks */
   end = grafsOut.length;
+  console.log(text);
   for (i = 0; i < end; i++) {
-    var blockText = '';
+    var blockText = '',
+        grafsOutIt = grafsOut[i],
+        child = false,
+        codeFlag = false;
     // if this is a marker for an html block...
-    while (grafsOut[i].search(/~K(\d+)K/) >= 0) {
-      blockText = globals.gHtmlBlocks[RegExp.$1];
-      blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
-      grafsOut[i] = grafsOut[i].replace(/~K\d+K/, blockText);
-    }
-  }
+    while (grafsOutIt.search(/~(K|G)(\d+)\1/) >= 0) {
+      var delim = RegExp.$1,
+          num   = RegExp.$2;
 
-  text = globals.converter._dispatch('paragraphs.after', text, options);
-  return grafsOut.join('\n\n');
+      if (delim === 'K') {
+        blockText = globals.gHtmlBlocks[num];
+      } else {
+        // we need to check if ghBlock is a false positive
+        blockText = (codeFlag) ? globals.ghCodeBlocks[num].text : globals.ghCodeBlocks[num].codeblock;
+      }
+      blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
+
+      grafsOutIt = grafsOutIt.replace(/(\n\n)?~(K|G)\d+\2(\n\n)?/, blockText);
+      // Check if grafsOutIt is a pre->code
+      if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOutIt)) {
+        codeFlag = true;
+      }
+      child = true;
+    }
+    grafsOut[i] = grafsOutIt;
+  }
+  text = grafsOut.join('\n\n');
+  // Strip leading and trailing lines:
+  text = text.replace(/^\n+/g, '');
+  text = text.replace(/\n+$/g, '');
+  return globals.converter._dispatch('paragraphs.after', text, options);
 });
 
 /**

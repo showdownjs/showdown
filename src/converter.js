@@ -242,7 +242,8 @@ showdown.Converter = function (converterOptions) {
       hashLinkCounts:  {},
       langExtensions:  langExtensions,
       outputModifiers: outputModifiers,
-      converter:       this
+      converter:       this,
+      ghCodeBlocks:    []
     };
 
     // attacklab: Replace ~ with ~T

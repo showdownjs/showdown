@@ -2161,7 +2161,6 @@ showdown.subParser('paragraphs', function (text, options, globals) {
 
   /** Unhashify HTML blocks */
   end = grafsOut.length;
-  console.log(text);
   for (i = 0; i < end; i++) {
     var blockText = '',
         grafsOutIt = grafsOut[i],

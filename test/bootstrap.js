@@ -8,16 +8,16 @@
 
   require('source-map-support').install();
   require('chai').should();
-  var fs = require('fs'),
-    os = require('os'),
-  /*jshint -W106 */
+  var fs = require('fs');
+  /*
+   os = require('os'),
     beautify = require('js-beautify').html_beautify,
     beauOptions = {
       eol: os.EOL,
       indent_size: 2,
       preserve_newlines: false
     };
-  /*jshint +W106 */
+  */
 
   function getTestSuite(dir) {
     return fs.readdirSync(dir)
@@ -78,8 +78,8 @@
     testCase.actual = testCase.actual.trim();
 
     //Beautify
-    testCase.expected = beautify(testCase.expected, beauOptions);
-    testCase.actual = beautify(testCase.actual, beauOptions);
+    //testCase.expected = beautify(testCase.expected, beauOptions);
+    //testCase.actual = beautify(testCase.actual, beauOptions);
 
     // Normalize line returns
     testCase.expected = testCase.expected.replace(/(\r\n)|\n|\r/g, '\n');

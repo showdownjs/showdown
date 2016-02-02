@@ -27,12 +27,12 @@ showdown.subParser('tables', function (text, options, globals) {
     }
     header = showdown.subParser('spanGamut')(header, options, globals);
 
-    return '<th' + id + style + '>' + header + '</th>';
+    return '<th' + id + style + '>' + header + '</th>\n';
   }
 
   function parseCells(cell, style) {
     var subText = showdown.subParser('spanGamut')(cell, options, globals);
-    return '<td' + style + '>' + subText + '</td>';
+    return '<td' + style + '>' + subText + '</td>\n';
   }
 
   function buildTable(headers, cells) {
@@ -45,13 +45,13 @@ showdown.subParser('tables', function (text, options, globals) {
     tb += '</tr>\n</thead>\n<tbody>\n';
 
     for (i = 0; i < cells.length; ++i) {
-      tb += '<tr>';
+      tb += '<tr>\n';
       for (var ii = 0; ii < tblLgn; ++ii) {
         tb += cells[i][ii];
       }
-      tb += '</tr>';
+      tb += '</tr>\n';
     }
-    tb += '</tbody></table>';
+    tb += '</tbody>\n</table>\n';
     return tb;
   }
 

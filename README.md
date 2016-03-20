@@ -267,8 +267,7 @@ If you're using TypeScript you maybe want to use the types from [DefinitelyTyped
 
 ## Integration with SystemJS/JSPM
 
-Integration with SystemJS via the "system-md" plugin.
-Please visit [https://github.com/guybedford/system-md](https://github.com/guybedford/system-md) for more information.
+Integration with SystemJS can be obtained via the third party ["system-md" plugin](https://github.com/guybedford/system-md).
 
 ## XSS vulnerability
 

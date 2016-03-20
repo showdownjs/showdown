@@ -4,7 +4,7 @@
 showdown.subParser('anchors', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('anchors.before', text, options);
+  text = globals.converter._dispatch('anchors.before', text, options, globals);
 
   var writeAnchorTag = function (wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
     if (showdown.helper.isUndefined(m7)) {
@@ -128,6 +128,6 @@ showdown.subParser('anchors', function (text, options, globals) {
    */
   text = text.replace(/(\[([^\[\]]+)])()()()()()/g, writeAnchorTag);
 
-  text = globals.converter._dispatch('anchors.after', text, options);
+  text = globals.converter._dispatch('anchors.after', text, options, globals);
   return text;
 });

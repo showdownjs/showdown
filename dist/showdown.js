@@ -1,4 +1,4 @@
-;/*! showdown 02-02-2016 */
+;/*! showdown 20-03-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -882,12 +882,13 @@ showdown.Converter = function (converterOptions) {
    * @param {string} evtName Event name
    * @param {string} text Text
    * @param {{}} options Converter Options
+   * @param {{}} globals
    * @returns {string}
    */
-  this._dispatch = function dispatch (evtName, text, options) {
+  this._dispatch = function dispatch (evtName, text, options, globals) {
     if (listeners.hasOwnProperty(evtName)) {
       for (var ei = 0; ei < listeners[evtName].length; ++ei) {
-        var nText = listeners[evtName][ei](evtName, text, this, options);
+        var nText = listeners[evtName][ei](evtName, text, this, options, globals);
         if (nText && typeof nText !== 'undefined') {
           text = nText;
         }
@@ -1088,7 +1089,7 @@ showdown.Converter = function (converterOptions) {
 showdown.subParser('anchors', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('anchors.before', text, options);
+  text = globals.converter._dispatch('anchors.before', text, options, globals);
 
   var writeAnchorTag = function (wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
     if (showdown.helper.isUndefined(m7)) {
@@ -1212,14 +1213,14 @@ showdown.subParser('anchors', function (text, options, globals) {
    */
   text = text.replace(/(\[([^\[\]]+)])()()()()()/g, writeAnchorTag);
 
-  text = globals.converter._dispatch('anchors.after', text, options);
+  text = globals.converter._dispatch('anchors.after', text, options, globals);
   return text;
 });
 
 showdown.subParser('autoLinks', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('autoLinks.before', text, options);
+  text = globals.converter._dispatch('autoLinks.before', text, options, globals);
 
   var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)(?=\s|$)(?!["<>])/gi,
       delimUrlRegex   = /<(((https?|ftp|dict):\/\/|www\.)[^'">\s]+)>/gi,
@@ -1241,7 +1242,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
     return showdown.subParser('encodeEmailAddress')(unescapedStr);
   }
 
-  text = globals.converter._dispatch('autoLinks.after', text, options);
+  text = globals.converter._dispatch('autoLinks.after', text, options, globals);
 
   return text;
 });
@@ -1253,7 +1254,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
 showdown.subParser('blockGamut', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('blockGamut.before', text, options);
+  text = globals.converter._dispatch('blockGamut.before', text, options, globals);
 
   // we parse blockquotes first so that we can have headings and hrs
   // inside blockquotes
@@ -1277,7 +1278,7 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
   text = showdown.subParser('paragraphs')(text, options, globals);
 
-  text = globals.converter._dispatch('blockGamut.after', text, options);
+  text = globals.converter._dispatch('blockGamut.after', text, options, globals);
 
   return text;
 });
@@ -1285,7 +1286,7 @@ showdown.subParser('blockGamut', function (text, options, globals) {
 showdown.subParser('blockQuotes', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('blockQuotes.before', text, options);
+  text = globals.converter._dispatch('blockQuotes.before', text, options, globals);
   /*
    text = text.replace(/
    (								// Wrap whole match in $1
@@ -1326,7 +1327,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
     return showdown.subParser('hashBlock')('<blockquote>\n' + bq + '\n</blockquote>', options, globals);
   });
 
-  text = globals.converter._dispatch('blockQuotes.after', text, options);
+  text = globals.converter._dispatch('blockQuotes.after', text, options, globals);
   return text;
 });
 
@@ -1336,7 +1337,7 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
 showdown.subParser('codeBlocks', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('codeBlocks.before', text, options);
+  text = globals.converter._dispatch('codeBlocks.before', text, options, globals);
   /*
    text = text.replace(text,
    /(?:\n\n|^)
@@ -1377,7 +1378,7 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
-  text = globals.converter._dispatch('codeBlocks.after', text, options);
+  text = globals.converter._dispatch('codeBlocks.after', text, options, globals);
   return text;
 });
 
@@ -1409,7 +1410,7 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
 showdown.subParser('codeSpans', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('codeSpans.before', text, options);
+  text = globals.converter._dispatch('codeSpans.before', text, options, globals);
 
   /*
    text = text.replace(/
@@ -1433,7 +1434,7 @@ showdown.subParser('codeSpans', function (text, options, globals) {
     }
   );
 
-  text = globals.converter._dispatch('codeSpans.after', text, options);
+  text = globals.converter._dispatch('codeSpans.after', text, options, globals);
   return text;
 });
 
@@ -1623,7 +1624,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('githubCodeBlocks.before', text, options);
+  text = globals.converter._dispatch('githubCodeBlocks.before', text, options, globals);
 
   text += '~0';
 
@@ -1649,7 +1650,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
-  return globals.converter._dispatch('githubCodeBlocks.after', text, options);
+  return globals.converter._dispatch('githubCodeBlocks.after', text, options, globals);
 });
 
 showdown.subParser('hashBlock', function (text, options, globals) {
@@ -1792,7 +1793,7 @@ showdown.subParser('hashPreCodeTags', function (text, config, globals) {
 showdown.subParser('headers', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('headers.before', text, options);
+  text = globals.converter._dispatch('headers.before', text, options, globals);
 
   var prefixHeader = options.prefixHeaderId,
       headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
@@ -1861,7 +1862,7 @@ showdown.subParser('headers', function (text, options, globals) {
     return title;
   }
 
-  text = globals.converter._dispatch('headers.after', text, options);
+  text = globals.converter._dispatch('headers.after', text, options, globals);
   return text;
 });
 
@@ -1871,7 +1872,7 @@ showdown.subParser('headers', function (text, options, globals) {
 showdown.subParser('images', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('images.before', text, options);
+  text = globals.converter._dispatch('images.before', text, options, globals);
 
   var inlineRegExp    = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
       referenceRegExp = /!\[(.*?)][ ]?(?:\n[ ]*)?\[(.*?)]()()()()()/g;
@@ -1939,14 +1940,14 @@ showdown.subParser('images', function (text, options, globals) {
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
   text = text.replace(inlineRegExp, writeImageTag);
 
-  text = globals.converter._dispatch('images.after', text, options);
+  text = globals.converter._dispatch('images.after', text, options, globals);
   return text;
 });
 
 showdown.subParser('italicsAndBold', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('italicsAndBold.before', text, options);
+  text = globals.converter._dispatch('italicsAndBold.before', text, options, globals);
 
   if (options.literalMidWordUnderscores) {
     //underscores
@@ -1963,7 +1964,7 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
     text = text.replace(/(\*|_)(?=\S)([^\r]*?\S)\1/g, '<em>$2</em>');
   }
 
-  text = globals.converter._dispatch('italicsAndBold.after', text, options);
+  text = globals.converter._dispatch('italicsAndBold.after', text, options, globals);
   return text;
 });
 
@@ -1973,7 +1974,7 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('lists.before', text, options);
+  text = globals.converter._dispatch('lists.before', text, options, globals);
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
@@ -2128,7 +2129,7 @@ showdown.subParser('lists', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
-  text = globals.converter._dispatch('lists.after', text, options);
+  text = globals.converter._dispatch('lists.after', text, options, globals);
   return text;
 });
 
@@ -2154,7 +2155,7 @@ showdown.subParser('outdent', function (text) {
 showdown.subParser('paragraphs', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('paragraphs.before', text, options);
+  text = globals.converter._dispatch('paragraphs.before', text, options, globals);
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
@@ -2212,7 +2213,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
-  return globals.converter._dispatch('paragraphs.after', text, options);
+  return globals.converter._dispatch('paragraphs.after', text, options, globals);
 });
 
 /**
@@ -2243,7 +2244,7 @@ showdown.subParser('runExtension', function (ext, text, options, globals) {
 showdown.subParser('spanGamut', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('spanGamut.before', text, options);
+  text = globals.converter._dispatch('spanGamut.before', text, options, globals);
   text = showdown.subParser('codeSpans')(text, options, globals);
   text = showdown.subParser('escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('encodeBackslashEscapes')(text, options, globals);
@@ -2264,7 +2265,7 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   // Do hard breaks:
   text = text.replace(/  +\n/g, ' <br />\n');
 
-  text = globals.converter._dispatch('spanGamut.after', text, options);
+  text = globals.converter._dispatch('spanGamut.after', text, options, globals);
   return text;
 });
 
@@ -2272,9 +2273,9 @@ showdown.subParser('strikethrough', function (text, options, globals) {
   'use strict';
 
   if (options.strikethrough) {
-    text = globals.converter._dispatch('strikethrough.before', text, options);
+    text = globals.converter._dispatch('strikethrough.before', text, options, globals);
     text = text.replace(/(?:~T){2}([\s\S]+?)(?:~T){2}/g, '<del>$1</del>');
-    text = globals.converter._dispatch('strikethrough.after', text, options);
+    text = globals.converter._dispatch('strikethrough.after', text, options, globals);
   }
 
   return text;
@@ -2411,7 +2412,7 @@ showdown.subParser('tables', function (text, options, globals) {
     return tb;
   }
 
-  text = globals.converter._dispatch('tables.before', text, options);
+  text = globals.converter._dispatch('tables.before', text, options, globals);
 
   text = text.replace(tableRgx, function (rawTable) {
 
@@ -2479,7 +2480,7 @@ showdown.subParser('tables', function (text, options, globals) {
     return buildTable(headers, cells);
   });
 
-  text = globals.converter._dispatch('tables.after', text, options);
+  text = globals.converter._dispatch('tables.after', text, options, globals);
 
   return text;
 });

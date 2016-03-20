@@ -1,7 +1,7 @@
 showdown.subParser('blockQuotes', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('blockQuotes.before', text, options);
+  text = globals.converter._dispatch('blockQuotes.before', text, options, globals);
   /*
    text = text.replace(/
    (								// Wrap whole match in $1
@@ -42,6 +42,6 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
     return showdown.subParser('hashBlock')('<blockquote>\n' + bq + '\n</blockquote>', options, globals);
   });
 
-  text = globals.converter._dispatch('blockQuotes.after', text, options);
+  text = globals.converter._dispatch('blockQuotes.after', text, options, globals);
   return text;
 });

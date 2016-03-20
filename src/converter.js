@@ -195,12 +195,13 @@ showdown.Converter = function (converterOptions) {
    * @param {string} evtName Event name
    * @param {string} text Text
    * @param {{}} options Converter Options
+   * @param {{}} globals
    * @returns {string}
    */
-  this._dispatch = function dispatch (evtName, text, options) {
+  this._dispatch = function dispatch (evtName, text, options, globals) {
     if (listeners.hasOwnProperty(evtName)) {
       for (var ei = 0; ei < listeners[evtName].length; ++ei) {
-        var nText = listeners[evtName][ei](evtName, text, this, options);
+        var nText = listeners[evtName][ei](evtName, text, this, options, globals);
         if (nText && typeof nText !== 'undefined') {
           text = nText;
         }

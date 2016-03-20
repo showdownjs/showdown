@@ -55,7 +55,7 @@ showdown.subParser('tables', function (text, options, globals) {
     return tb;
   }
 
-  text = globals.converter._dispatch('tables.before', text, options);
+  text = globals.converter._dispatch('tables.before', text, options, globals);
 
   text = text.replace(tableRgx, function (rawTable) {
 
@@ -123,7 +123,7 @@ showdown.subParser('tables', function (text, options, globals) {
     return buildTable(headers, cells);
   });
 
-  text = globals.converter._dispatch('tables.after', text, options);
+  text = globals.converter._dispatch('tables.after', text, options, globals);
 
   return text;
 });

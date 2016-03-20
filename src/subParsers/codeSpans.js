@@ -26,7 +26,7 @@
 showdown.subParser('codeSpans', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('codeSpans.before', text, options);
+  text = globals.converter._dispatch('codeSpans.before', text, options, globals);
 
   /*
    text = text.replace(/
@@ -50,6 +50,6 @@ showdown.subParser('codeSpans', function (text, options, globals) {
     }
   );
 
-  text = globals.converter._dispatch('codeSpans.after', text, options);
+  text = globals.converter._dispatch('codeSpans.after', text, options, globals);
   return text;
 });

@@ -16,7 +16,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('githubCodeBlocks.before', text, options);
+  text = globals.converter._dispatch('githubCodeBlocks.before', text, options, globals);
 
   text += '~0';
 
@@ -42,5 +42,5 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
   // attacklab: strip sentinel
   text = text.replace(/~0/, '');
 
-  return globals.converter._dispatch('githubCodeBlocks.after', text, options);
+  return globals.converter._dispatch('githubCodeBlocks.after', text, options, globals);
 });

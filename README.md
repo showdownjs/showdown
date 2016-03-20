@@ -265,6 +265,11 @@ Please visit https://github.com/showdownjs/ngShowdown for more information.
 
 If you're using TypeScript you maybe want to use the types from [DefinitelyTyped][definitely-typed]
 
+## Integration with SystemJS/JSPM
+
+Integration with SystemJS via the "system-md" plugin.
+Please visit [https://github.com/guybedford/system-md](https://github.com/guybedford/system-md) for more information.
+
 ## XSS vulnerability
 
 Showdown doesn't sanitize the input. This is by design since markdown relies on it to allow certain features to be correctly parsed into HTML.

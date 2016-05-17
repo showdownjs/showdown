@@ -5,14 +5,14 @@ showdown.subParser('tables', function (text, options, globals) {
     return text;
   }
 
-  var tableRgx = /^[ \t]{0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){3,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){3,}[^]+?(?:\n\n|~0)/gm;
+  var tableRgx = /^[ \t]{0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[^]+?(?:\n\n|~0)/gm;
 
   function parseStyles(sLine) {
-    if (/^:[ \t]*---*$/.test(sLine)) {
+    if (/^:[ \t]*--*$/.test(sLine)) {
       return ' style="text-align:left;"';
-    } else if (/^---*[ \t]*:[ \t]*$/.test(sLine)) {
+    } else if (/^--*[ \t]*:[ \t]*$/.test(sLine)) {
       return ' style="text-align:right;"';
-    } else if (/^:[ \t]*---*[ \t]*:$/.test(sLine)) {
+    } else if (/^:[ \t]*--*[ \t]*:$/.test(sLine)) {
       return ' style="text-align:center;"';
     } else {
       return '';

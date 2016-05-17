@@ -1,3 +1,13 @@
+<a name="1.4.1"></a>
+## [1.4.1](https://github.com/showdownjs/showdown/compare/1.4.0...v1.4.1) (2016-05-17)
+
+
+### Bug Fixes
+
+* **tables:** fix table heading separators requiring 3 dashes instead of 2 ([ddaacfc](https://github.com/showdownjs/showdown/commit/ddaacfc)), closes [#256](https://github.com/showdownjs/showdown/issues/256)
+
+
+
 <a name="1.4.0"></a>
 # [1.4.0](https://github.com/showdownjs/showdown/compare/1.3.0...v1.4.0) (2016-05-13)
 

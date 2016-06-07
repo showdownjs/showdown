@@ -29,6 +29,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({literalMidWordUnderscores: true, simplifiedAutoLink: true});
     } else if (testsuite[i].name === '#198.literalMidWordUnderscores-changes-behavior-of-asterisk') {
       converter = new showdown.Converter({literalMidWordUnderscores: true});
+    } else if (testsuite[i].name === '#259.es6-template-strings-indentation-issues') {
+      converter = new showdown.Converter({smartIndentationFix: true});
     } else {
       converter = new showdown.Converter();
     }

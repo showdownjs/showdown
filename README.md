@@ -251,6 +251,8 @@ var defaultOptions = showdown.getDefaultOptions();
     - [ ] This is still pending
    ```
  * **smoothLivePreview**: (boolean) [default false] Prevents weird effects in live previews due to incomplete input
+ 
+ * **smartIndentationFix**: (boolean) [default false] Tries to smartly fix indentation problems related to es6 template strings in the midst of indented code.
 
 ## CLI Tool
 

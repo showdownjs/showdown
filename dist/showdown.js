@@ -1,4 +1,4 @@
-;/*! showdown 13-05-2016 */
+;/*! showdown 07-06-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -71,6 +71,11 @@ function getDefaultOpts(simple) {
     smoothLivePreview: {
       default: false,
       describe: 'Prevents weird effects in live previews due to incomplete input',
+      type: 'boolean'
+    },
+    smartIndentationFix: {
+      default: false,
+      description: 'Tries to smartly fix identation in es6 strings',
       type: 'boolean'
     }
   };
@@ -876,6 +881,12 @@ showdown.Converter = function (converterOptions) {
     listeners[name].push(callback);
   }
 
+  function rTrimInputText(text) {
+    var rsp = text.match(/^\s*/)[0].length,
+        rgx = new RegExp('^\\s{0,' + rsp + '}', 'gm');
+    return text.replace(rgx, '');
+  }
+
   /**
    * Dispatch an event
    * @private
@@ -948,6 +959,10 @@ showdown.Converter = function (converterOptions) {
     // Standardize line endings
     text = text.replace(/\r\n/g, '\n'); // DOS to Unix
     text = text.replace(/\r/g, '\n'); // Mac to Unix
+
+    if (options.smartIndentationFix) {
+      text = rTrimInputText(text);
+    }
 
     // Make sure text begins and ends with a couple of newlines:
     text = '\n\n' + text + '\n\n';

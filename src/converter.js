@@ -189,6 +189,12 @@ showdown.Converter = function (converterOptions) {
     listeners[name].push(callback);
   }
 
+  function rTrimInputText(text) {
+    var rsp = text.match(/^\s*/)[0].length,
+        rgx = new RegExp('^\\s{0,' + rsp + '}', 'gm');
+    return text.replace(rgx, '');
+  }
+
   /**
    * Dispatch an event
    * @private
@@ -261,6 +267,10 @@ showdown.Converter = function (converterOptions) {
     // Standardize line endings
     text = text.replace(/\r\n/g, '\n'); // DOS to Unix
     text = text.replace(/\r/g, '\n'); // Mac to Unix
+
+    if (options.smartIndentationFix) {
+      text = rTrimInputText(text);
+    }
 
     // Make sure text begins and ends with a couple of newlines:
     text = '\n\n' + text + '\n\n';

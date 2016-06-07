@@ -70,6 +70,11 @@ function getDefaultOpts(simple) {
       default: false,
       describe: 'Prevents weird effects in live previews due to incomplete input',
       type: 'boolean'
+    },
+    smartIndentationFix: {
+      default: false,
+      description: 'Tries to smartly fix identation in es6 strings',
+      type: 'boolean'
     }
   };
   if (simple === false) {

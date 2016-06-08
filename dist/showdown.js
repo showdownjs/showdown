@@ -1,4 +1,4 @@
-;/*! showdown 17-05-2016 */
+;/*! showdown 08-06-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1424,6 +1424,10 @@ showdown.subParser('codeSpans', function (text, options, globals) {
    (?!`)
    /gm, function(){...});
    */
+
+  if (typeof(text) === 'undefined') {
+    text = '';
+  }
   text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
     function (wholeMatch, m1, m2, m3) {
       var c = m3;
@@ -1875,7 +1879,7 @@ showdown.subParser('images', function (text, options, globals) {
   text = globals.converter._dispatch('images.before', text, options, globals);
 
   var inlineRegExp    = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
-      referenceRegExp = /!\[(.*?)][ ]?(?:\n[ ]*)?\[(.*?)]()()()()()/g;
+      referenceRegExp = /!\[([^\]]*?)] ?(?:\n *)?\[(.*?)]()()()()()/g;
 
   function writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title) {
 

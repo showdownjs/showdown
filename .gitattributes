@@ -19,5 +19,6 @@ license.txt text
 # Force LF on js files
 *.js text eol=lf
 
-# Force binary mode on bin dir
+# Force binary mode on bin dir and dist fir
 bin/* binary
+dist/* binary

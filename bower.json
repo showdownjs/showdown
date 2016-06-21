@@ -17,7 +17,6 @@
       ".travis.yml",
       "Gruntfile.js",
       "package.json",
-      "src/*",
       "test/*"
     ],
     "repository": {

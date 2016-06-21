@@ -40,6 +40,10 @@ showdown.subParser('codeSpans', function (text, options, globals) {
    (?!`)
    /gm, function(){...});
    */
+
+  if (typeof(text) === 'undefined') {
+    text = '';
+  }
   text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
     function (wholeMatch, m1, m2, m3) {
       var c = m3;

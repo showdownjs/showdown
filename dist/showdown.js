@@ -1,4 +1,4 @@
-;/*! showdown 07-06-2016 */
+;/*! showdown 21-06-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1439,6 +1439,10 @@ showdown.subParser('codeSpans', function (text, options, globals) {
    (?!`)
    /gm, function(){...});
    */
+
+  if (typeof(text) === 'undefined') {
+    text = '';
+  }
   text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
     function (wholeMatch, m1, m2, m3) {
       var c = m3;
@@ -1890,7 +1894,7 @@ showdown.subParser('images', function (text, options, globals) {
   text = globals.converter._dispatch('images.before', text, options, globals);
 
   var inlineRegExp    = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
-      referenceRegExp = /!\[(.*?)][ ]?(?:\n[ ]*)?\[(.*?)]()()()()()/g;
+      referenceRegExp = /!\[([^\]]*?)] ?(?:\n *)?\[(.*?)]()()()()()/g;
 
   function writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title) {
 
@@ -2377,14 +2381,14 @@ showdown.subParser('tables', function (text, options, globals) {
     return text;
   }
 
-  var tableRgx = /^[ \t]{0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){3,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){3,}[^]+?(?:\n\n|~0)/gm;
+  var tableRgx = /^[ \t]{0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[^]+?(?:\n\n|~0)/gm;
 
   function parseStyles(sLine) {
-    if (/^:[ \t]*---*$/.test(sLine)) {
+    if (/^:[ \t]*--*$/.test(sLine)) {
       return ' style="text-align:left;"';
-    } else if (/^---*[ \t]*:[ \t]*$/.test(sLine)) {
+    } else if (/^--*[ \t]*:[ \t]*$/.test(sLine)) {
       return ' style="text-align:right;"';
-    } else if (/^:[ \t]*---*[ \t]*:$/.test(sLine)) {
+    } else if (/^:[ \t]*--*[ \t]*:$/.test(sLine)) {
       return ' style="text-align:center;"';
     } else {
       return '';

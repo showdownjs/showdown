@@ -1,3 +1,18 @@
+<a name="1.4.2"></a>
+## [1.4.2](https://github.com/showdownjs/showdown/compare/1.4.1...v1.4.2) (2016-06-21)
+
+
+### Bug Fixes
+
+* **image-parser:** fix ref style imgs after inline style imgs not parsing correctly ([73206b0](https://github.com/showdownjs/showdown/commit/73206b0)), closes [#261](https://github.com/showdownjs/showdown/issues/261)
+* **tables:** add check for undefined on text due to failing to parse tables ([73206b0](https://github.com/showdownjs/showdown/commit/6e30a48)), author [stewartmckee](https://github.com/stewartmckee), closes [#257](https://github.com/showdownjs/showdown/pull/247)
+
+### Features
+
+* **smart-indent-fix:** fix for es6 indentation problems ([261f127](https://github.com/showdownjs/showdown/commit/261f127)), closes [#259](https://github.com/showdownjs/showdown/issues/259)
+
+
+
 <a name="1.4.1"></a>
 ## [1.4.1](https://github.com/showdownjs/showdown/compare/1.4.0...v1.4.1) (2016-05-17)
 

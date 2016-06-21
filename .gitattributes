@@ -1,3 +1,4 @@
+# Exports for git archive
 /test export-ignore
 .editorconfig export-ignore
 .gitattributes export-ignore
@@ -8,3 +9,15 @@
 .travis.yml export-ignore
 bower.json
 Gruntfile.js export-ignore
+
+# Line endings control
+CHANGELOG.md text
+CONTRIBUTING.md text
+CREDITS.md text
+license.txt text
+
+# Force LF on js files
+*.js text eol=lf
+
+# Force binary mode on bin dir
+bin/* binary

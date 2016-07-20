@@ -1,4 +1,4 @@
-;/*! showdown 21-06-2016 */
+;/*! showdown 20-07-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1756,7 +1756,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
     showdown.subParser('hashElement')(text, options, globals));
 
   // Special case for standalone HTML comments:
-  text = text.replace(/(<!(--[^\r]*?--\s*)+>[ \t]*(?=\n{2,}))/g,
+  text = text.replace(/(<!--[\s\S]*?-->)/g,
     showdown.subParser('hashElement')(text, options, globals));
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)

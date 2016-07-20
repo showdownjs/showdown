@@ -56,7 +56,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
     showdown.subParser('hashElement')(text, options, globals));
 
   // Special case for standalone HTML comments:
-  text = text.replace(/(<!(--[^\r]*?--\s*)+>[ \t]*(?=\n{2,}))/g,
+  text = text.replace(/(<!--[\s\S]*?-->)/g,
     showdown.subParser('hashElement')(text, options, globals));
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)

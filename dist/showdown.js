@@ -9,72 +9,72 @@ function getDefaultOpts(simple) {
 
   var defaultOptions = {
     omitExtraWLInCodeBlocks: {
-      default: false,
+      defaultValue: false,
       describe: 'Omit the default extra whiteline added to code blocks',
       type: 'boolean'
     },
     noHeaderId: {
-      default: false,
+      defaultValue: false,
       describe: 'Turn on/off generated header id',
       type: 'boolean'
     },
     prefixHeaderId: {
-      default: false,
+      defaultValue: false,
       describe: 'Specify a prefix to generated header ids',
       type: 'string'
     },
     headerLevelStart: {
-      default: false,
+      defaultValue: false,
       describe: 'The header blocks level start',
       type: 'integer'
     },
     parseImgDimensions: {
-      default: false,
+      defaultValue: false,
       describe: 'Turn on/off image dimension parsing',
       type: 'boolean'
     },
     simplifiedAutoLink: {
-      default: false,
+      defaultValue: false,
       describe: 'Turn on/off GFM autolink style',
       type: 'boolean'
     },
     literalMidWordUnderscores: {
-      default: false,
+      defaultValue: false,
       describe: 'Parse midword underscores as literal underscores',
       type: 'boolean'
     },
     strikethrough: {
-      default: false,
+      defaultValue: false,
       describe: 'Turn on/off strikethrough support',
       type: 'boolean'
     },
     tables: {
-      default: false,
+      defaultValue: false,
       describe: 'Turn on/off tables support',
       type: 'boolean'
     },
     tablesHeaderId: {
-      default: false,
+      defaultValue: false,
       describe: 'Add an id to table headers',
       type: 'boolean'
     },
     ghCodeBlocks: {
-      default: true,
+      defaultValue: true,
       describe: 'Turn on/off GFM fenced code blocks support',
       type: 'boolean'
     },
     tasklists: {
-      default: false,
+      defaultValue: false,
       describe: 'Turn on/off GFM tasklist support',
       type: 'boolean'
     },
     smoothLivePreview: {
-      default: false,
+      defaultValue: false,
       describe: 'Prevents weird effects in live previews due to incomplete input',
       type: 'boolean'
     },
     smartIndentationFix: {
-      default: false,
+      defaultValue: false,
       description: 'Tries to smartly fix identation in es6 strings',
       type: 'boolean'
     }
@@ -85,7 +85,7 @@ function getDefaultOpts(simple) {
   var ret = {};
   for (var opt in defaultOptions) {
     if (defaultOptions.hasOwnProperty(opt)) {
-      ret[opt] = defaultOptions[opt].default;
+      ret[opt] = defaultOptions[opt].defaultValue;
     }
   }
   return ret;

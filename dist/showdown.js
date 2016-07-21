@@ -1,4 +1,4 @@
-;/*! showdown 27-06-2016 */
+;/*! showdown 21-07-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -673,7 +673,7 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
 /**
  * POLYFILLS
  */
-if (showdown.helper.isUndefined(console)) {
+if (typeof(console) == "undefined") {
   console = {
     warn: function (msg) {
       'use strict';

@@ -254,7 +254,7 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
 /**
  * POLYFILLS
  */
-if (typeof(console) == "undefined") {
+if (typeof(console) === "undefined") {
   console = {
     warn: function (msg) {
       'use strict';

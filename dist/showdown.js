@@ -1,4 +1,4 @@
-;/*! showdown 20-07-2016 */
+;/*! showdown 19-08-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1242,14 +1242,22 @@ showdown.subParser('autoLinks', function (text, options, globals) {
       simpleMailRegex = /(?:^|[ \n\t])([A-Za-z0-9!#$%&'*+-/=?^_`\{|}~\.]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(?:$|[ \n\t])/gi,
       delimMailRegex  = /<(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
 
-  text = text.replace(delimUrlRegex, '<a href=\"$1\">$1</a>');
+  text = text.replace(delimUrlRegex, replaceLink);
   text = text.replace(delimMailRegex, replaceMail);
-  //simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[-.+~:?#@!$&'()*,;=[\]\w]+)\b/gi,
+  // simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[-.+~:?#@!$&'()*,;=[\]\w]+)\b/gi,
   // Email addresses: <address@domain.foo>
 
   if (options.simplifiedAutoLink) {
-    text = text.replace(simpleURLRegex, '<a href=\"$1\">$1</a>');
+    text = text.replace(simpleURLRegex, replaceLink);
     text = text.replace(simpleMailRegex, replaceMail);
+  }
+
+  function replaceLink(wm, link) {
+    var lnkTxt = link;
+    if (/^www\./i.test(link)) {
+      link = link.replace(/^www\./i, 'http://www.');
+    }
+    return '<a href="' + link + '">' + lnkTxt + '</a>';
   }
 
   function replaceMail(wholeMatch, m1) {

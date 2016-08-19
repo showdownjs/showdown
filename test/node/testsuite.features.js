@@ -31,6 +31,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({literalMidWordUnderscores: true});
     } else if (testsuite[i].name === '#259.es6-template-strings-indentation-issues') {
       converter = new showdown.Converter({smartIndentationFix: true});
+    } else if (testsuite[i].name === '#284.simplifiedAutoLink-does-not-match-GFM-style') {
+      converter = new showdown.Converter({simplifiedAutoLink: true});
     } else {
       converter = new showdown.Converter();
     }

@@ -1,3 +1,16 @@
+<a name="1.4.3"></a>
+## [1.4.3](https://github.com/showdownjs/showdown/compare/1.4.2...v1.4.3) (2016-08-19)
+
+
+### Bug Fixes
+
+* **bower:** fix sourceMappingURL errors in bower by including source ([9b5a233](https://github.com/showdownjs/showdown/commit/9b5a233)), closes [#200](https://github.com/showdownjs/showdown/issues/200)
+* **comments:** Fix html comment parser ([238726c](https://github.com/showdownjs/showdown/commit/238726c)), closes [#276](https://github.com/showdownjs/showdown/issues/276)
+* **ie8 compatibility:** Improve ie8 compatibility ([984942e](https://github.com/showdownjs/showdown/commit/984942e)), closes [#275](https://github.com/showdownjs/showdown/issues/275) [#271](https://github.com/showdownjs/showdown/issues/271)
+* **simplifiedAutoLink:** fix simplified autolink to match GFM behavior ([0cc55b0](https://github.com/showdownjs/showdown/commit/0cc55b0)), closes [#284](https://github.com/showdownjs/showdown/issues/284) [#285](https://github.com/showdownjs/showdown/issues/285)
+
+
+
 <a name="1.4.2"></a>
 ## [1.4.2](https://github.com/showdownjs/showdown/compare/1.4.1...v1.4.2) (2016-06-21)
 

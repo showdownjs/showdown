@@ -134,12 +134,12 @@ showdown.subParser('lists', function (text, options, globals) {
     return result;
   }
 
-  // attacklab: add sentinel to hack around khtml/safari bug:
+  // add sentinel to hack around khtml/safari bug:
   // http://bugs.webkit.org/show_bug.cgi?id=11231
   text += '~0';
 
   // Re-usable pattern to match any entire ul or ol list:
-  var wholeList = /^(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
+  var wholeList = /^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
 
   if (globals.gListLevel) {
     text = text.replace(wholeList, function (wholeMatch, list, m2) {
@@ -147,8 +147,7 @@ showdown.subParser('lists', function (text, options, globals) {
       return parseConsecutiveLists(list, listType, true);
     });
   } else {
-    wholeList = /(\n\n|^\n?)(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
-    //wholeList = /(\n\n|^\n?)( {0,3}([*+-]|\d+\.)[ \t]+[\s\S]+?)(?=(~0)|(\n\n(?!\t| {2,}| {0,3}([*+-]|\d+\.)[ \t])))/g;
+    wholeList = /(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
     text = text.replace(wholeList, function (wholeMatch, m1, list, m3) {
 
       var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
@@ -156,7 +155,7 @@ showdown.subParser('lists', function (text, options, globals) {
     });
   }
 
-  // attacklab: strip sentinel
+  // strip sentinel
   text = text.replace(/~0/, '');
 
   text = globals.converter._dispatch('lists.after', text, options, globals);

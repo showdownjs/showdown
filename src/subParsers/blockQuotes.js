@@ -2,20 +2,8 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
   'use strict';
 
   text = globals.converter._dispatch('blockQuotes.before', text, options, globals);
-  /*
-   text = text.replace(/
-   (								// Wrap whole match in $1
-   (
-   ^[ \t]*>[ \t]?			// '>' at the start of a line
-   .+\n					// rest of the first line
-   (.+\n)*					// subsequent consecutive lines
-   \n*						// blanks
-   )+
-   )
-   /gm, function(){...});
-   */
 
-  text = text.replace(/((^[ \t]{0,3}>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
+  text = text.replace(/((^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
     var bq = m1;
 
     // attacklab: hack around Konqueror 3.5.4 bug:

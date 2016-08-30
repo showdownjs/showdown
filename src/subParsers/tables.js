@@ -5,7 +5,7 @@ showdown.subParser('tables', function (text, options, globals) {
     return text;
   }
 
-  var tableRgx = /^[ \t]{0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|~0)/gm;
+  var tableRgx = /^ {0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|~0)/gm;
 
   function parseStyles(sLine) {
     if (/^:[ \t]*--*$/.test(sLine)) {
@@ -63,8 +63,8 @@ showdown.subParser('tables', function (text, options, globals) {
 
     // strip wrong first and last column if wrapped tables are used
     for (i = 0; i < tableLines.length; ++i) {
-      if (/^[ \t]{0,3}\|/.test(tableLines[i])) {
-        tableLines[i] = tableLines[i].replace(/^[ \t]{0,3}\|/, '');
+      if (/^ {0,3}\|/.test(tableLines[i])) {
+        tableLines[i] = tableLines[i].replace(/^ {0,3}\|/, '');
       }
       if (/\|[ \t]*$/.test(tableLines[i])) {
         tableLines[i] = tableLines[i].replace(/\|[ \t]*$/, '');

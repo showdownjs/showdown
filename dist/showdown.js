@@ -1153,79 +1153,15 @@ showdown.subParser('anchors', function (text, options, globals) {
   };
 
   // First, handle reference-style links: [link text] [id]
-  /*
-   text = text.replace(/
-   (							// wrap whole match in $1
-   \[
-   (
-   (?:
-   \[[^\]]*\]		// allow brackets nested one level
-   |
-   [^\[]			// or anything else
-   )*
-   )
-   \]
-
-   [ ]?					// one optional space
-   (?:\n[ ]*)?				// one optional newline followed by spaces
-
-   \[
-   (.*?)					// id = $3
-   \]
-   )()()()()					// pad remaining backreferences
-   /g,_DoAnchors_callback);
-   */
   text = text.replace(/(\[((?:\[[^\]]*]|[^\[\]])*)][ ]?(?:\n[ ]*)?\[(.*?)])()()()()/g, writeAnchorTag);
 
-  //
   // Next, inline-style links: [link text](url "optional title")
-  //
-
-  /*
-   text = text.replace(/
-   (						// wrap whole match in $1
-   \[
-   (
-   (?:
-   \[[^\]]*\]	// allow brackets nested one level
-   |
-   [^\[\]]			// or anything else
-   )
-   )
-   \]
-   \(						// literal paren
-   [ \t]*
-   ()						// no id, so leave $3 empty
-   <?(.*?)>?				// href = $4
-   [ \t]*
-   (						// $5
-   (['"])				// quote char = $6
-   (.*?)				// Title = $7
-   \6					// matching quote
-   [ \t]*				// ignore any spaces/tabs between closing quote and )
-   )?						// title is optional
-   \)
-   )
-   /g,writeAnchorTag);
-   */
   text = text.replace(/(\[((?:\[[^\]]*]|[^\[\]])*)]\([ \t]*()<?(.*?(?:\(.*?\).*?)?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,
                       writeAnchorTag);
 
-  //
   // Last, handle reference-style shortcuts: [link text]
   // These must come last in case you've also got [link test][1]
   // or [link test](/foo)
-  //
-
-  /*
-   text = text.replace(/
-   (                // wrap whole match in $1
-   \[
-   ([^\[\]]+)       // link text = $2; can't contain '[' or ']'
-   \]
-   )()()()()()      // pad rest of backreferences
-   /g, writeAnchorTag);
-   */
   text = text.replace(/(\[([^\[\]]+)])()()()()()/g, writeAnchorTag);
 
   text = globals.converter._dispatch('anchors.after', text, options, globals);
@@ -1239,7 +1175,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
 
   var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)(?=\s|$)(?!["<>])/gi,
       delimUrlRegex   = /<(((https?|ftp|dict):\/\/|www\.)[^'">\s]+)>/gi,
-      simpleMailRegex = /(?:^|[ \n\t])([A-Za-z0-9!#$%&'*+-/=?^_`\{|}~\.]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(?:$|[ \n\t])/gi,
+      simpleMailRegex = /(?:^|\s)([A-Za-z0-9!#$%&'*+-/=?^_`\{|}~\.]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(?:$|\s)/gi,
       delimMailRegex  = /<(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
 
   text = text.replace(delimUrlRegex, replaceLink);
@@ -1310,20 +1246,8 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
   'use strict';
 
   text = globals.converter._dispatch('blockQuotes.before', text, options, globals);
-  /*
-   text = text.replace(/
-   (								// Wrap whole match in $1
-   (
-   ^[ \t]*>[ \t]?			// '>' at the start of a line
-   .+\n					// rest of the first line
-   (.+\n)*					// subsequent consecutive lines
-   \n*						// blanks
-   )+
-   )
-   /gm, function(){...});
-   */
 
-  text = text.replace(/((^[ \t]{0,3}>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
+  text = text.replace(/((^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
     var bq = m1;
 
     // attacklab: hack around Konqueror 3.5.4 bug:
@@ -1361,20 +1285,8 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
   'use strict';
 
   text = globals.converter._dispatch('codeBlocks.before', text, options, globals);
-  /*
-   text = text.replace(text,
-   /(?:\n\n|^)
-   (								// $1 = the code block -- one or more lines, starting with a space/tab
-   (?:
-   (?:[ ]{4}|\t)			// Lines must start with a tab or a tab-width of spaces - attacklab: g_tab_width
-   .*\n+
-   )+
-   )
-   (\n*[ ]{0,3}[^ \t\n]|(?=~0))	// attacklab: g_tab_width
-   /g,function(){...});
-   */
 
-  // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
+  // sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '~0';
 
   var pattern = /(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g;
@@ -1398,7 +1310,7 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
     return showdown.subParser('hashBlock')(codeblock, options, globals) + nextChar;
   });
 
-  // attacklab: strip sentinel
+  // strip sentinel
   text = text.replace(/~0/, '');
 
   text = globals.converter._dispatch('codeBlocks.after', text, options, globals);
@@ -1756,7 +1668,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
     };
 
   for (var i = 0; i < blockTags.length; ++i) {
-    text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^(?: |\\t){0,3}<' + blockTags[i] + '\\b[^>]*>', '</' + blockTags[i] + '>', 'gim');
+    text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<' + blockTags[i] + '\\b[^>]*>', '</' + blockTags[i] + '>', 'gim');
   }
 
   // HR SPECIAL CASE
@@ -1766,10 +1678,10 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
   // Special case for standalone HTML comments
   text = showdown.helper.replaceRecursiveRegExp(text, function (txt) {
     return '\n\n~K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
-  }, '^(?: |\\t){0,3}<!--', '-->', 'gm');
+  }, '^ {0,3}<!--', '-->', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)
-  text = text.replace(/(?:\n\n)([ ]{0,3}(?:<([?%])[^\r]*?\2>)[ \t]*(?=\n{2,}))/g,
+  text = text.replace(/(?:\n\n)( {0,3}(?:<([?%])[^\r]*?\2>)[ \t]*(?=\n{2,}))/g,
     showdown.subParser('hashElement')(text, options, globals));
 
   return text;
@@ -1814,7 +1726,7 @@ showdown.subParser('hashPreCodeTags', function (text, config, globals) {
     return '\n\n~G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
   };
 
-  text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^(?: |\\t){0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^(?: |\\t){0,3}</code>\\s*</pre>', 'gim');
+  text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^ {0,3}</code>\\s*</pre>', 'gim');
   return text;
 });
 
@@ -2132,12 +2044,12 @@ showdown.subParser('lists', function (text, options, globals) {
     return result;
   }
 
-  // attacklab: add sentinel to hack around khtml/safari bug:
+  // add sentinel to hack around khtml/safari bug:
   // http://bugs.webkit.org/show_bug.cgi?id=11231
   text += '~0';
 
   // Re-usable pattern to match any entire ul or ol list:
-  var wholeList = /^(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
+  var wholeList = /^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
 
   if (globals.gListLevel) {
     text = text.replace(wholeList, function (wholeMatch, list, m2) {
@@ -2145,8 +2057,7 @@ showdown.subParser('lists', function (text, options, globals) {
       return parseConsecutiveLists(list, listType, true);
     });
   } else {
-    wholeList = /(\n\n|^\n?)(([ ]{0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
-    //wholeList = /(\n\n|^\n?)( {0,3}([*+-]|\d+\.)[ \t]+[\s\S]+?)(?=(~0)|(\n\n(?!\t| {2,}| {0,3}([*+-]|\d+\.)[ \t])))/g;
+    wholeList = /(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
     text = text.replace(wholeList, function (wholeMatch, m1, list, m3) {
 
       var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
@@ -2154,7 +2065,7 @@ showdown.subParser('lists', function (text, options, globals) {
     });
   }
 
-  // attacklab: strip sentinel
+  // strip sentinel
   text = text.replace(/~0/, '');
 
   text = globals.converter._dispatch('lists.after', text, options, globals);
@@ -2324,26 +2235,6 @@ showdown.subParser('stripBlankLines', function (text) {
  * Strips link definitions from text, stores the URLs and titles in
  * hash references.
  * Link defs are in the form: ^[id]: url "optional title"
- *
- * ^[ ]{0,3}\[(.+)\]: // id = $1  attacklab: g_tab_width - 1
- * [ \t]*
- * \n?                  // maybe *one* newline
- * [ \t]*
- * <?(\S+?)>?          // url = $2
- * [ \t]*
- * \n?                // maybe one newline
- * [ \t]*
- * (?:
- * (\n*)              // any lines skipped = $3 attacklab: lookbehind removed
- * ["(]
- * (.+?)              // title = $4
- * [")]
- * [ \t]*
- * )?                 // title is optional
- * (?:\n+|$)
- * /gm,
- * function(){...});
- *
  */
 showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
   'use strict';
@@ -2390,7 +2281,7 @@ showdown.subParser('tables', function (text, options, globals) {
     return text;
   }
 
-  var tableRgx = /^[ \t]{0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|~0)/gm;
+  var tableRgx = /^ {0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|~0)/gm;
 
   function parseStyles(sLine) {
     if (/^:[ \t]*--*$/.test(sLine)) {
@@ -2448,8 +2339,8 @@ showdown.subParser('tables', function (text, options, globals) {
 
     // strip wrong first and last column if wrapped tables are used
     for (i = 0; i < tableLines.length; ++i) {
-      if (/^[ \t]{0,3}\|/.test(tableLines[i])) {
-        tableLines[i] = tableLines[i].replace(/^[ \t]{0,3}\|/, '');
+      if (/^ {0,3}\|/.test(tableLines[i])) {
+        tableLines[i] = tableLines[i].replace(/^ {0,3}\|/, '');
       }
       if (/\|[ \t]*$/.test(tableLines[i])) {
         tableLines[i] = tableLines[i].replace(/\|[ \t]*$/, '');

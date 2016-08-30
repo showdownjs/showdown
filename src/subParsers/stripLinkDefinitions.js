@@ -2,26 +2,6 @@
  * Strips link definitions from text, stores the URLs and titles in
  * hash references.
  * Link defs are in the form: ^[id]: url "optional title"
- *
- * ^[ ]{0,3}\[(.+)\]: // id = $1  attacklab: g_tab_width - 1
- * [ \t]*
- * \n?                  // maybe *one* newline
- * [ \t]*
- * <?(\S+?)>?          // url = $2
- * [ \t]*
- * \n?                // maybe one newline
- * [ \t]*
- * (?:
- * (\n*)              // any lines skipped = $3 attacklab: lookbehind removed
- * ["(]
- * (.+?)              // title = $4
- * [")]
- * [ \t]*
- * )?                 // title is optional
- * (?:\n+|$)
- * /gm,
- * function(){...});
- *
  */
 showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
   'use strict';

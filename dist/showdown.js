@@ -1,4 +1,4 @@
-;/*! showdown 19-08-2016 */
+;/*! showdown 30-08-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1760,12 +1760,13 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
   }
 
   // HR SPECIAL CASE
-  text = text.replace(/(\n[ ]{0,3}(<(hr)\b([^<>])*?\/?>)[ \t]*(?=\n{2,}))/g,
+  text = text.replace(/(\n {0,3}(<(hr)\b([^<>])*?\/?>)[ \t]*(?=\n{2,}))/g,
     showdown.subParser('hashElement')(text, options, globals));
 
-  // Special case for standalone HTML comments:
-  text = text.replace(/(<!--[\s\S]*?-->)/g,
-    showdown.subParser('hashElement')(text, options, globals));
+  // Special case for standalone HTML comments
+  text = showdown.helper.replaceRecursiveRegExp(text, function (txt) {
+    return '\n\n~K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
+  }, '^(?: |\\t){0,3}<!--', '-->', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)
   text = text.replace(/(?:\n\n)([ ]{0,3}(?:<([?%])[^\r]*?\2>)[ \t]*(?=\n{2,}))/g,

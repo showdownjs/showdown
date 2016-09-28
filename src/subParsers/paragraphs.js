@@ -58,7 +58,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
     }
     grafsOut[i] = grafsOutIt;
   }
-  text = grafsOut.join('\n\n');
+  text = grafsOut.join('\n');
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');

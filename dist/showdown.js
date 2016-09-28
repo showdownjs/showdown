@@ -2022,7 +2022,7 @@ showdown.subParser('lists', function (text, options, globals) {
         var pos = txt.search(counterRxg);
         if (pos !== -1) {
           // slice
-          result += '\n\n<' + listType + '>' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n\n';
+          result += '\n<' + listType + '>' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
 
           // invert counterType and listType
           listType = (listType === 'ul') ? 'ol' : 'ul';
@@ -2031,14 +2031,14 @@ showdown.subParser('lists', function (text, options, globals) {
           //recurse
           parseCL(txt.slice(pos));
         } else {
-          result += '\n\n<' + listType + '>' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n\n';
+          result += '\n<' + listType + '>' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
         }
       })(list);
       for (var i = 0; i < subLists.length; ++i) {
 
       }
     } else {
-      result = '\n\n<' + listType + '>' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n\n';
+      result = '\n<' + listType + '>' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
     }
 
     return result;
@@ -2148,7 +2148,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
     }
     grafsOut[i] = grafsOutIt;
   }
-  text = grafsOut.join('\n\n');
+  text = grafsOut.join('\n');
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');

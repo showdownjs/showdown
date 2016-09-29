@@ -77,7 +77,7 @@ showdown.subParser('lists', function (text, options, globals) {
           item = showdown.subParser('spanGamut')(item, options, globals);
         }
       }
-      item =  '\n<li' + bulletStyle + '>' + item + '</li>\n';
+      item =  '<li' + bulletStyle + '>' + item + '</li>\n';
       return item;
     });
 
@@ -112,7 +112,7 @@ showdown.subParser('lists', function (text, options, globals) {
         var pos = txt.search(counterRxg);
         if (pos !== -1) {
           // slice
-          result += '\n<' + listType + '>' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
+          result += '\n<' + listType + '>\n' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
 
           // invert counterType and listType
           listType = (listType === 'ul') ? 'ol' : 'ul';
@@ -121,14 +121,14 @@ showdown.subParser('lists', function (text, options, globals) {
           //recurse
           parseCL(txt.slice(pos));
         } else {
-          result += '\n<' + listType + '>' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
+          result += '\n<' + listType + '>\n' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
         }
       })(list);
       for (var i = 0; i < subLists.length; ++i) {
 
       }
     } else {
-      result = '\n<' + listType + '>' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
+      result = '\n<' + listType + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
     }
 
     return result;

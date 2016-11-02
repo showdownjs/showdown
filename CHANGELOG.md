@@ -1,3 +1,16 @@
+<a name="1.4.4"></a>
+## [1.4.4](https://github.com/showdownjs/showdown/compare/1.4.3...v1.4.4) (2016-11-02)
+
+
+### Bug Fixes
+
+* make some regexes a bit faster and make tab char equivalent to 4 spaces ([b7e7560](https://github.com/showdownjs/showdown/commit/b7e7560))
+* **double linebreaks:** fix double linebreaks in html output ([f97e072](https://github.com/showdownjs/showdown/commit/f97e072)), closes [#291](https://github.com/showdownjs/showdown/issues/291)
+* **lists linebreaks:** fix lists linebreaks in html output ([2b813cd](https://github.com/showdownjs/showdown/commit/2b813cd)), closes [#291](https://github.com/showdownjs/showdown/issues/291)
+* **parser:** fix issue with comments inside nested code blocks ([799abea](https://github.com/showdownjs/showdown/commit/799abea)), closes [#288](https://github.com/showdownjs/showdown/issues/288)
+
+
+
 <a name="1.4.3"></a>
 ## [1.4.3](https://github.com/showdownjs/showdown/compare/1.4.2...v1.4.3) (2016-08-19)
 

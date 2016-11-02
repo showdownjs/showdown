@@ -35,6 +35,12 @@ You can download the latest release tarball directly from [releases][releases]
 
     npm install showdown
 
+### NuGet package
+
+    PM> Install-Package showdownjs
+
+The NuGet Packages can be [found here](https://www.nuget.org/packages/showdownjs/).
+
 ### CDN
 
 You can also use one of several CDNs available: 

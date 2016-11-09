@@ -1,4 +1,4 @@
-;/*! showdown 02-11-2016 */
+;/*! showdown 09-11-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -2012,9 +2012,8 @@ showdown.subParser('lists', function (text, options, globals) {
    */
   function parseConsecutiveLists(list, listType, trimTrailing) {
     // check if we caught 2 or more consecutive lists by mistake
-    // we use the counterRgx, meaning if listType is UL we look for UL and vice versa
-    var counterRxg = (listType === 'ul') ? /^ {0,2}\d+\.[ \t]/gm : /^ {0,2}[*+-][ \t]/gm,
-      subLists = [],
+    // we use the counterRgx, meaning if listType is UL we look for OL and vice versa
+    var counterRxg = (listType === 'ul') ? /^\d+\.[ \t]/gm : /^[*+-][ \t]/gm,
       result = '';
 
     if (list.search(counterRxg) !== -1) {
@@ -2034,9 +2033,6 @@ showdown.subParser('lists', function (text, options, globals) {
           result += '\n<' + listType + '>\n' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
         }
       })(list);
-      for (var i = 0; i < subLists.length; ++i) {
-
-      }
     } else {
       result = '\n<' + listType + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
     }
@@ -2061,7 +2057,7 @@ showdown.subParser('lists', function (text, options, globals) {
     text = text.replace(wholeList, function (wholeMatch, m1, list, m3) {
 
       var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
-      return parseConsecutiveLists(list, listType);
+      return parseConsecutiveLists(list, listType, false);
     });
   }
 

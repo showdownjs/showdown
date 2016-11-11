@@ -73,7 +73,7 @@ function getDefaultOpts(simple) {
     },
     smartIndentationFix: {
       defaultValue: false,
-      description: 'Tries to smartly fix identation in es6 strings',
+      description: 'Tries to smartly fix indentation in es6 strings',
       type: 'boolean'
     }
   };

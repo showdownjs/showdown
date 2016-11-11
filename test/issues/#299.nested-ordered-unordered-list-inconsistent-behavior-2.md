@@ -1,0 +1,42 @@
+ * one
+ 1. two
+
+foo
+
+  * one
+  1. two
+
+foo
+
+   * one
+   1. two
+
+foo
+
+   * one
+     1. two
+
+foo
+
+ * one
+ * two
+
+foo
+
+  * one
+  * two
+
+foo
+
+   * one
+   * two
+
+foo
+
+   * one
+* two
+
+foo
+
+   * one
+    * two

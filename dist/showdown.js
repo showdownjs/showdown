@@ -1,4 +1,4 @@
-;/*! showdown 09-11-2016 */
+;/*! showdown 11-11-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1951,11 +1951,12 @@ showdown.subParser('lists', function (text, options, globals) {
     // attacklab: add sentinel to emulate \z
     listStr += '~0';
 
-    var rgx = /(\n)?(^[ \t]*)([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm,
+    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
         isParagraphed = (/\n[ \t]*\n(?!~0)/.test(listStr));
 
     listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
       checked = (checked && checked.trim() !== '');
+
       var item = showdown.subParser('outdent')(m4, options, globals),
           bulletStyle = '';
 
@@ -1971,6 +1972,7 @@ showdown.subParser('lists', function (text, options, globals) {
           return otp;
         });
       }
+
       // m1 - Leading line or
       // Has a double return (multi paragraph) or
       // Has sublist
@@ -2013,8 +2015,10 @@ showdown.subParser('lists', function (text, options, globals) {
   function parseConsecutiveLists(list, listType, trimTrailing) {
     // check if we caught 2 or more consecutive lists by mistake
     // we use the counterRgx, meaning if listType is UL we look for OL and vice versa
-    var counterRxg = (listType === 'ul') ? /^\d+\.[ \t]/gm : /^[*+-][ \t]/gm,
-      result = '';
+    var olRgx = /^ {0,3}\d+\.[ \t]/gm,
+        ulRgx = /^ {0,3}[*+-][ \t]/gm,
+        counterRxg = (listType === 'ul') ? olRgx : ulRgx,
+        result = '';
 
     if (list.search(counterRxg) !== -1) {
       (function parseCL(txt) {
@@ -2025,7 +2029,7 @@ showdown.subParser('lists', function (text, options, globals) {
 
           // invert counterType and listType
           listType = (listType === 'ul') ? 'ol' : 'ul';
-          counterRxg = (listType === 'ul') ? /^ {0,2}\d+\.[ \t]/gm : /^ {0,2}[*+-][ \t]/gm;
+          counterRxg = (listType === 'ul') ? olRgx : ulRgx;
 
           //recurse
           parseCL(txt.slice(pos));
@@ -2044,21 +2048,20 @@ showdown.subParser('lists', function (text, options, globals) {
   // http://bugs.webkit.org/show_bug.cgi?id=11231
   text += '~0';
 
-  // Re-usable pattern to match any entire ul or ol list:
-  var wholeList = /^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
-
   if (globals.gListLevel) {
-    text = text.replace(wholeList, function (wholeMatch, list, m2) {
-      var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
-      return parseConsecutiveLists(list, listType, true);
-    });
+    text = text.replace(/^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
+      function (wholeMatch, list, m2) {
+        var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+        return parseConsecutiveLists(list, listType, true);
+      }
+    );
   } else {
-    wholeList = /(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
-    text = text.replace(wholeList, function (wholeMatch, m1, list, m3) {
-
-      var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
-      return parseConsecutiveLists(list, listType, false);
-    });
+    text = text.replace(/(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
+      function (wholeMatch, m1, list, m3) {
+        var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+        return parseConsecutiveLists(list, listType, false);
+      }
+    );
   }
 
   // strip sentinel

@@ -1,3 +1,59 @@
+<a name="1.5.0"></a>
+# [1.5.0](https://github.com/showdownjs/showdown/compare/1.4.4...v1.5.0) (2016-11-11)
+
+
+### Bug Fixes
+
+* **lists:** enforce 4 space indentation in sublists ([d51be6e](https://github.com/showdownjs/showdown/commit/d51be6e))
+* **lists:** fix sublists inconsistent behavior ([9cfe8b1](https://github.com/showdownjs/showdown/commit/9cfe8b1)), closes [#299](https://github.com/showdownjs/showdown/issues/299)
+
+### Features
+
+* **disableForced4SpacesIndentedSublists:** option that disables the requirement of indenting nested sublists by 4 spaces. The option is disabled by default ([0be39bc](https://github.com/showdownjs/showdown/commit/0be39bc))
+
+
+### BREAKING CHANGES
+
+* syntax for sublists is now more restrictive. Before, sublists SHOULD be
+indented by 4 spaces, but indenting at least 2 spaces would work. 
+Now, sublists MUST be indented 4 spaces or they won't work.
+
+With this input:
+```md
+* one
+  * two
+    * three
+```
+
+Before (ouput):
+```html
+<ul>
+  <li>one
+    <ul>
+      <li>two
+        <ul><li>three</li></ul>
+      <li>
+    </ul>
+  </li>
+<ul>
+```
+
+After (output):
+```html
+<ul>
+  <li>one</li>
+  <li>two
+    <ul><li>three</li></ul>
+  </li>
+</ul>
+```
+
+To migrate either fix source md files or activate the option `disableForced4SpacesIndentedSublists`:
+```md
+showdown.setOption('disableForced4SpacesIndentedSublists', true);
+```
+
+
 <a name="1.4.4"></a>
 ## [1.4.4](https://github.com/showdownjs/showdown/compare/1.4.3...v1.4.4) (2016-11-02)
 

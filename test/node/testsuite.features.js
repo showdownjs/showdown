@@ -33,6 +33,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({smartIndentationFix: true});
     } else if (testsuite[i].name === '#284.simplifiedAutoLink-does-not-match-GFM-style') {
       converter = new showdown.Converter({simplifiedAutoLink: true});
+    } else if (testsuite[i].name === 'disableForced4SpacesIndentedSublists') {
+      converter = new showdown.Converter({disableForced4SpacesIndentedSublists: true});
     } else {
       converter = new showdown.Converter();
     }

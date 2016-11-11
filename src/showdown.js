@@ -9,15 +9,16 @@ var showdown = {},
     globalOptions = getDefaultOpts(true),
     flavor = {
       github: {
-        omitExtraWLInCodeBlocks:   true,
-        prefixHeaderId:            'user-content-',
-        simplifiedAutoLink:        true,
-        literalMidWordUnderscores: true,
-        strikethrough:             true,
-        tables:                    true,
-        tablesHeaderId:            true,
-        ghCodeBlocks:              true,
-        tasklists:                 true
+        omitExtraWLInCodeBlocks:              true,
+        prefixHeaderId:                       'user-content-',
+        simplifiedAutoLink:                   true,
+        literalMidWordUnderscores:            true,
+        strikethrough:                        true,
+        tables:                               true,
+        tablesHeaderId:                       true,
+        ghCodeBlocks:                         true,
+        tasklists:                            true,
+        disableForced4SpacesIndentedSublists: true
       },
       vanilla: getDefaultOpts(true)
     };

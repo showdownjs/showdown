@@ -260,6 +260,9 @@ var defaultOptions = showdown.getDefaultOptions();
  
  * **smartIndentationFix**: (boolean) [default false] Tries to smartly fix indentation problems related to es6 template strings in the midst of indented code.
 
+ * **disableForced4SpacesIndentedSublists**: (boolean) [default false] Disables the requirement of indenting sublists by 4 spaces for them to be nested, 
+ effectively reverting to the old behavior where 2 or 3 spaces were enough. (since v1.5.0)
+ 
 ## CLI Tool
 
 Showdown also comes bundled with a Command Line Interface tool. You can check the [CLI wiki page][cli-wiki] for more info
@@ -347,14 +350,14 @@ PRs are awesome. However, before you submit your pull request consider the follo
  - We use commit notes to generate the changelog. It's extremely helpful if your commit messages adhere to the
  [**AngularJS Git Commit Guidelines**][ng-commit-guide].
  - If we suggest changes then:
-   - Make the required updates.
-   - Re-run the Angular test suite to ensure tests are still passing.
-   - Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
+     - Make the required updates.
+     - Re-run the Angular test suite to ensure tests are still passing.
+     - Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
 
-   ```bash
-   git rebase master -i
-   git push origin my-fix-branch -f
-   ```
+     ```bash
+     git rebase master -i
+     git push origin my-fix-branch -f
+     ```
  - After your pull request is merged, you can safely delete your branch.
 
 If you have time to contribute to this project, we feel obliged that you get credit for it.

@@ -77,6 +77,11 @@ function getDefaultOpts(simple) {
       defaultValue: false,
       description: 'Tries to smartly fix indentation in es6 strings',
       type: 'boolean'
+    },
+    disableForced4SpacesIndentedSublists: {
+      defaultValue: false,
+      description: 'Disables the requirement of indenting nested sublists by 4 spaces',
+      type: 'boolean'
     }
   };
   if (simple === false) {
@@ -102,15 +107,16 @@ var showdown = {},
     globalOptions = getDefaultOpts(true),
     flavor = {
       github: {
-        omitExtraWLInCodeBlocks:   true,
-        prefixHeaderId:            'user-content-',
-        simplifiedAutoLink:        true,
-        literalMidWordUnderscores: true,
-        strikethrough:             true,
-        tables:                    true,
-        tablesHeaderId:            true,
-        ghCodeBlocks:              true,
-        tasklists:                 true
+        omitExtraWLInCodeBlocks:              true,
+        prefixHeaderId:                       'user-content-',
+        simplifiedAutoLink:                   true,
+        literalMidWordUnderscores:            true,
+        strikethrough:                        true,
+        tables:                               true,
+        tablesHeaderId:                       true,
+        ghCodeBlocks:                         true,
+        tasklists:                            true,
+        disableForced4SpacesIndentedSublists: true
       },
       vanilla: getDefaultOpts(true)
     };
@@ -1954,6 +1960,13 @@ showdown.subParser('lists', function (text, options, globals) {
     var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
         isParagraphed = (/\n[ \t]*\n(?!~0)/.test(listStr));
 
+    // Since version 1.5, nesting sublists requires 4 spaces (or 1 tab) indentation,
+    // which is a syntax breaking change
+    // activating this option reverts to old behavior
+    if (options.disableForced4SpacesIndentedSublists) {
+      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm;
+    }
+
     listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
       checked = (checked && checked.trim() !== '');
 
@@ -2015,8 +2028,8 @@ showdown.subParser('lists', function (text, options, globals) {
   function parseConsecutiveLists(list, listType, trimTrailing) {
     // check if we caught 2 or more consecutive lists by mistake
     // we use the counterRgx, meaning if listType is UL we look for OL and vice versa
-    var olRgx = /^ {0,3}\d+\.[ \t]/gm,
-        ulRgx = /^ {0,3}[*+-][ \t]/gm,
+    var olRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?\d+\.[ \t]/gm : /^ {0,3}\d+\.[ \t]/gm,
+        ulRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?[*+-][ \t]/gm : /^ {0,3}[*+-][ \t]/gm,
         counterRxg = (listType === 'ul') ? olRgx : ulRgx,
         result = '';
 

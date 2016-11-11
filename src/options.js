@@ -75,6 +75,11 @@ function getDefaultOpts(simple) {
       defaultValue: false,
       description: 'Tries to smartly fix indentation in es6 strings',
       type: 'boolean'
+    },
+    disableForced4SpacesIndentedSublists: {
+      defaultValue: false,
+      description: 'Disables the requirement of indenting nested sublists by 4 spaces',
+      type: 'boolean'
     }
   };
   if (simple === false) {

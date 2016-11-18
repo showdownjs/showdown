@@ -1,7 +1,6 @@
-var root = this;
-
-var _window = typeof window !== 'undefined' ? window : null;
-var isElectron = _window && _window.process && _window.process.type === "renderer";
+var root = this,
+  _window = typeof window !== 'undefined' ? window : null,
+  isElectron = _window && _window.process && _window.process.type === 'renderer';
 // CommonJS/nodeJS Loader
 if (typeof module !== 'undefined' && module.exports && !isElectron) {
   module.exports = showdown;

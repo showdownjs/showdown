@@ -291,6 +291,7 @@ for more information.
 ## Extensions
 
 Showdown allows additional functionality to be loaded via extensions. (you can find a list of known showdown extensions [here][ext-wiki])
+You can also find a boilerplate, to create your own extensions in [this repository][boilerplate-repo]
 
 ### Client-side Extension Usage
 
@@ -387,3 +388,4 @@ Showdown is powered by:<br/>
 [ext-wiki]: https://github.com/showdownjs/showdown/wiki/extensions
 [coding-rules]: https://github.com/showdownjs/code-style/blob/master/README.md
 [ng-commit-guide]: https://github.com/showdownjs/code-style/blob/master/README.md#commit-message-convention
+[boilerplate-repo]: https://github.com/showdownjs/extension-boilerplate

@@ -298,7 +298,7 @@ Showdown allows additional functionality to be loaded via extensions. (you can f
 <script src="showdown.js" />
 <script src="twitter-extension.js" />
 
-var converter = new showdown.Converter({ extensions: 'twitter' });
+var converter = new showdown.Converter({ extensions: ['twitter'] });
 ```
 
 ### Server-side Extension Usage

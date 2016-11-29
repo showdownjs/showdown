@@ -151,25 +151,25 @@ showdown.setOption('disableForced4SpacesIndentedSublists', true);
 
 
 <a name"1.2.2"></a>
-### [1.2.2](https://github.com/showdownjs/showdown/compare/1.2.1...1.2.2) (2015-08-02)
+# [1.2.2](https://github.com/showdownjs/showdown/compare/1.2.1...1.2.2) (2015-08-02)
 
 
-#### Bug Fixes
+### Bug Fixes
 
 * **lists:** fix github code blocks not being parsed inside lists ([7720c88b](http://github.com/showdownjs/showdown/commit/7720c88b), closes [#142](http://github.com/showdownjs/showdown/issues/142), [#183](http://github.com/showdownjs/showdown/issues/183), [#184](http://github.com/showdownjs/showdown/issues/184))
 
 
 <a name"1.2.1"></a>
-### [1.2.1](https://github.com/showdownjs/showdown/compare/1.2.0...1.2.1) (2015-07-22)
+# [1.2.1](https://github.com/showdownjs/showdown/compare/1.2.0...1.2.1) (2015-07-22)
 
 
-#### Features
+### Features
 
 * **smoothLivePreview:** fix weird effects due to parsing incomplete input ([62ba3733](http://github.com/showdownjs/showdown/commit/62ba3733))
 * **subParsers/githubCodeBlock:** add extra language class to conform to html5 spec ([b7f5e32](http://github.com/showdownjs/showdown/commit/b7f5e32))
 
 
-#### Bug Fixes
+### Bug Fixes
 
 * **tables:** 
 
@@ -199,18 +199,18 @@ showdown.setOption('disableForced4SpacesIndentedSublists', true);
 
 
 <a name"1.2.0"></a>
-## [1.2.0](https://github.com/showdownjs/showdown/compare/1.1.0...1.2.0) (2015-07-13)
+# [1.2.0](https://github.com/showdownjs/showdown/compare/1.1.0...1.2.0) (2015-07-13)
 
 This release moves some of the most popular extensions (such as table-extension and github-extension) to core.
 Also introduces a simple cli tool that you can use to quickly convert markdown files into html. 
 
 
-#### Bug Fixes
+### Bug Fixes
 
 * **headerLevelStart:** fix for NaN error when specifying a non number as headerLevelStart param ([be72b487](http://github.com/showdownjs/showdown/commit/be72b487))
 
 
-#### Features
+### Features
 
 * **CLI:** simple cli tool (ALPHA) ([f6a33e40](http://github.com/showdownjs/showdown/commit/f6a33e40))
 * **flavours:** add markdown presets/flavors ([7e55bceb](http://github.com/showdownjs/showdown/commit/7e55bceb), closes [#164](http://github.com/showdownjs/showdown/issues/164))
@@ -223,16 +223,16 @@ Also introduces a simple cli tool that you can use to quickly convert markdown f
 
 
 <a name"1.1.0"></a>
-## [1.1.0](https://github.com/showdownjs/showdown/compare/1.0.2...1.1.0) (2015-06-18)
+# [1.1.0](https://github.com/showdownjs/showdown/compare/1.0.2...1.1.0) (2015-06-18)
 
 
-#### Bug Fixes
+### Bug Fixes
 
 * **converter.js:** add error if the passed constructor argument is not an object ([d86ed450](http://github.com/showdownjs/showdown/commit/d86ed450))
 * **output modifiers:** fix for output modifiers running twice ([dcbdc61e](http://github.com/showdownjs/showdown/commit/dcbdc61e))
 
 
-#### Features
+### Features
 
 * **headerLevelStart:** add support for setting the header starting level ([b84ac67d](http://github.com/showdownjs/showdown/commit/b84ac67d), closes [#69](http://github.com/showdownjs/showdown/issues/69))
 * **image dimensions:** add support for setting image dimensions within markdown syntax ([af82c2b6](http://github.com/showdownjs/showdown/commit/af82c2b6), closes [#143](http://github.com/showdownjs/showdown/issues/143))
@@ -240,7 +240,7 @@ Also introduces a simple cli tool that you can use to quickly convert markdown f
 * **showdown.getDefaultOptions:** add method to retrieve default global options keypairs ([2de53a7d](http://github.com/showdownjs/showdown/commit/2de53a7d))
 
 
-#### Breaking Changes
+### Breaking Changes
 
 * Deprecates `showdown.extensions` property. To migrate, extensions should use the new method `showdown.extension(<ext name>, <extension>)` to register.
   For more information on the new extension loading mechanism, please check the wiki pages.
@@ -248,34 +248,34 @@ Also introduces a simple cli tool that you can use to quickly convert markdown f
 
 
 <a name"1.0.2"></a>
-### [1.0.2](https://github.com/showdownjs/showdown/compare/1.0.1...1.0.2) (2015-05-28)
+# [1.0.2](https://github.com/showdownjs/showdown/compare/1.0.1...1.0.2) (2015-05-28)
 
-#### Bug Fixes
+### Bug Fixes
 
 * **Gruntfile.js** add missing comma in footer. This bug prevented concatenating other js scripts and libraries
   with showdown([5315508](http://github.com/showdownjs/showdown/commit/5315508). Credits to Alexandre Courtiol.
 
 
 <a name"1.0.1"></a>
-### [1.0.1](https://github.com/showdownjs/showdown/compare/1.0.0...1.0.1) (2015-05-27)
+# [1.0.1](https://github.com/showdownjs/showdown/compare/1.0.0...1.0.1) (2015-05-27)
 
 
-#### Bug Fixes
+### Bug Fixes
 
 * **bower.json:** update bower.json main attribute to point to dist directory ([bc3a092f](http://github.com/showdownjs/showdown/commit/bc3a092f))
 
 
 <a name"1.0.0"></a>
-## [1.0.0](https://github.com/showdownjs/showdown/compare/0.3.4...1.0.0) (2015-05-27)
+# [1.0.0](https://github.com/showdownjs/showdown/compare/0.3.4...1.0.0) (2015-05-27)
 
-#### Release Information
+### Release Information
 This is a major code refactor with some big changes such as:
   - showdown.js file was split in several files, called sub-parsers. This should improve code maintainability.
   - angular integration was removed from core and move to its own repository, similar to what was done with extensions
   - A new extension registering system is on the "cooks" that should reduce errors when using extensions. The old mechanism
   is kept so old extensions should be compatible.
 
-#### Bug Fixes
+### Bug Fixes
 
 * **extensions:** support for old extension loading mechanism ([95ed7c68](http://github.com/showdownjs/showdown/commit/95ed7c68))
 * **helpers:** fix wrong function call 'escapeCharacters' due to old strayed code ([18ba4e75](http://github.com/showdownjs/showdown/commit/18ba4e75))
@@ -289,7 +289,7 @@ This is a major code refactor with some big changes such as:
 * **options.omitExtraWLInCodeBlocks:** fix for options.omitExtraWLInCodeBlocks only applying in gitHub flavoured code b ([e6f40e19](http://github.com/showdownjs/showdown/commit/e6f40e19))
 * **showdown:** fix for options merging into globalOptions ([ddd6011d](http://github.com/showdownjs/showdown/commit/ddd6011d), closes [#153](http://github.com/showdownjs/showdown/issues/153))
 
-#### Features
+### Features
 
 * **registerExtension():** new extension loading mechanism. Now extensions can be registered using this function.
   The system, however, is not final and will probably be changed until the final version([0fd10cb] (http://github.com/showdownjs/showdown/commit/0fd10cb))
@@ -298,7 +298,7 @@ This is a major code refactor with some big changes such as:
 * **prefixHeaderId:** add options to prefix header ids to prevent id clash ([141e3f5](http://github.com/showdownjs/showdown/commit/141e3f5))
 * **Converter.options:** add getOption(), setOption() and getOptions() to Converter object ([db6f79b0](http://github.com/showdownjs/showdown/commit/db6f79b0))
 
-#### Breaking Changes
+### Breaking Changes
 * **NAMESPACE:** showdown's namespace changed.
 
    To migrate your code you should update all references to `Showdown` with `showdown`.

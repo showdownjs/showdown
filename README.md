@@ -262,7 +262,27 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **disableForced4SpacesIndentedSublists**: (boolean) [default false] Disables the requirement of indenting sublists by 4 spaces for them to be nested, 
  effectively reverting to the old behavior where 2 or 3 spaces were enough. (since v1.5.0)
- 
+
+## Flavors
+
+You can also use flavors or presets to set the correct options automatically, so that showdown behaves like popular markdown flavors.
+
+Currently, there are two flavors available:
+
+ * github - GFM (GitHub Flavored Markdown)
+ * vanilla - original markdown flavor
+
+### Global
+```javascript
+showdown.setFlavor('github');
+```
+
+### Instance
+```javascript
+converter.setFlavor('github');
+```
+
+
 ## CLI Tool
 
 Showdown also comes bundled with a Command Line Interface tool. You can check the [CLI wiki page][cli-wiki] for more info

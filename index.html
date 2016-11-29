@@ -1,87 +1,102 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en-us">
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="description" content="Showdown : A JavaScript markdown converter. Extensible. Truthful.">
-
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>Showdown</title>
+    <meta charset="UTF-8">
+    <title>Showdown by showdownjs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
-
   <body>
+    <section class="page-header">
+      <h1 class="project-name">Showdown</h1>
+      <h2 class="project-tagline">An extensible Markdown to HTML converter written in Javascript</h2>
+      <a href="https://github.com/showdownjs/showdown" class="btn">View on GitHub</a>
+      <a href="https://github.com/showdownjs/showdown/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/showdownjs/showdown/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/showdownjs/showdown">View on GitHub</a>
+    <section class="main-content">
+      <p><img src="https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png" alt="Showdown"></p>
 
-          <h1 id="project_title">Showdown</h1>
-          <h2 id="project_tagline">A JavaScript markdown converter. Extensible. Truthful.</h2>
+<p>Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber. Showdown can be used client side (in the browser) or server side (with NodeJs). Check a live <a href="http://showdownjs.github.io/demo/">demo here</a></p>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/showdownjs/showdown/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/showdownjs/showdown/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <p><strong>Showdown</strong> is a markdown parser and html converter with an attempt to stay <a href="https://github.com/showdownjs/showdown/wiki/divergences">as close as possible</a> to the <a href="http://web.archive.org/web/20110111145019/http://attacklab.net/showdown/">original</a>, while providing extensibility through a simple yet efficient <a href="https://github.com/showdownjs/showdown/wiki/extensions">plugin</a> facility. Tables, GitHub flavoured, and what not.</p>
-
-<h2>
-<a id="get-it" class="anchor" href="#get-it" aria-hidden="true"><span class="octicon octicon-link"></span></a>Get It</h2>
-
-<pre><code>npm install showdown
-# or
-bower install showdown
-</code></pre>
-
-<h2>
-<a id="use-it" class="anchor" href="#use-it" aria-hidden="true"><span class="octicon octicon-link"></span></a>Use It</h2>
-
-<pre><code>var Showdown = require('showdown');
-var converter = new showdown.Converter();
-
-converter.makeHtml('#hello markdown!');
-
-// &lt;h1 id="hellomarkdown"&gt;hello markdown!&lt;/h1&gt;
-</code></pre>
-
-<h2>
-<a id="need-help" class="anchor" href="#need-help" aria-hidden="true"><span class="octicon octicon-link"></span></a>Need Help?</h2>
+<h1>
+<a id="who-uses-showdown" class="anchor" href="#who-uses-showdown" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Who uses Showdown</h1>
 
 <ul>
-<li><a href="https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md">Change Log</a></li>
-<li><a href="https://github.com/showdownjs/showdown/wiki">Wiki</a></li>
-<li><a href="https://groups.google.com/forum/#!forum/showdownjs">Google Group</a></li>
-<li><a href="https://github.com/showdownjs/showdown/issues">Issues</a></li>
-<li><a href="http://stackoverflow.com/questions/tagged/showdown">stackoverflow</a></li>
+<li><a href="https://github.com/GoogleCloudPlatform">GoogleCloudPlatform</a></li>
+<li><a href="https://ghost.org/">Ghost</a></li>
+<li><a href="https://www.meteor.com/">Meteor</a></li>
+<li>
+<a href="http://stackexchange.com/">Stackexchange</a> - forked as <a href="https://code.google.com/p/pagedown/">PageDown</a>
+</li>
+<li><a href="https://github.com/Vertafore/docular">docular</a></li>
+<li><a href="https://www.npmjs.com/browse/depended/showdown">and some others...</a></li>
 </ul>
 
-<h2>
-<a id="credits" class="anchor" href="#credits" aria-hidden="true"><span class="octicon octicon-link"></span></a>Credits</h2>
+<h1>
+<a id="get-it" class="anchor" href="#get-it" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get it...</h1>
 
 <ul>
-<li><a href="http://web.archive.org/web/20110111145019/http://attacklab.net/showdown/">Showdown Copyright (c) 2007 John Fraser</a></li>
-<li><a href="http://daringfireball.net/projects/markdown/">Original Markdown Copyright (c) 2004-2005 John Gruber</a></li>
-</ul>
-      </section>
-    </div>
+<li>
+<strong>Download tarball:</strong> download the latest release tarball directly from <a href="https://github.com/showdownjs/showdown/releases">releases</a>
+</li>
+<li>
+<strong>CDN:</strong>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Showdown maintained by <a href="https://github.com/showdownjs">showdownjs</a></p>
-        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+<ul>
+<li>rawgit: <code>https://cdn.rawgit.com/showdownjs/showdown/&lt;version tag&gt;/dist/showdown.min.js</code>
+</li>
+<li>cdnjs: <code>https://cdnjs.cloudflare.com/ajax/libs/showdown/&lt;version tag&gt;/showdown.min.js</code>
+</li>
+</ul>
+</li>
+<li>
+<strong>Bower:</strong> <code>bower install showdown</code>
+</li>
+<li>
+<strong>npm:</strong> <code>npm install showdown</code>
+</li>
+<li>
+<strong>NuGet:</strong> <code>PM&gt; Install-Package showdownjs</code> - <a href="https://www.nuget.org/packages/showdownjs/">NuGet package here</a>
+</li>
+</ul>
+
+<h1>
+<a id="use-it" class="anchor" href="#use-it" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Use it...</h1>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c">//node</span>
+<span class="pl-k">var</span> showdown <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>showdown<span class="pl-pds">'</span></span>);
+<span class="pl-k">var</span> converter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">showdown.Converter</span>();
+<span class="pl-k">var</span> htmlOutput <span class="pl-k">=</span> <span class="pl-smi">converter</span>.<span class="pl-en">makeHtml</span>(<span class="pl-s"><span class="pl-pds">'</span>*Hello* __World__<span class="pl-pds">'</span></span>);</pre></div>
+
+<p>Check our <a href="https://github.com/showdownjs/showdown/wiki">wiki pages</a> for a more in-depth documentation, such as <a href="https://github.com/showdownjs/showdown/wiki/Showdown's-Markdown-syntax">syntax support</a>, <a href="https://github.com/showdownjs/showdown/wiki/Tutorial:-Markdown-editor-using-Showdown">examples</a>, <a href="https://github.com/showdownjs/showdown/wiki/extensions">extensions</a>, etc...</p>
+
+<hr>
+
+<h1>
+<a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md">Changelog</a>
+</h1>
+
+<h1>
+<a id="credits" class="anchor" href="#credits" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Credits</h1>
+
+<p>Full credit list at <a href="https://github.com/showdownjs/showdown/blob/master/CREDITS.md">https://github.com/showdownjs/showdown/blob/master/CREDITS.md</a></p>
+
+<p>Showdown is powered by:<br>
+<a href="https://www.jetbrains.com/webstorm/"><img src="https://www.jetbrains.com/webstorm/documentation/docs/logo_webstorm.png" alt="webstorm"></a></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/showdownjs/showdown">Showdown</a> is maintained by <a href="https://github.com/showdownjs">showdownjs</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
       </footer>
-    </div>
 
-    
+    </section>
 
+  
   </body>
 </html>

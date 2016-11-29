@@ -234,7 +234,16 @@ a {
   font-weight: bold; }
 
 .site-footer-credits {
+  display: block;
   color: #819198; }
+
+.site-powered-by {
+  display: block;
+}
+
+.site-powered-by img {
+  height: 1rem;
+}
 
 @media screen and (min-width: 64em) {
   .site-footer {

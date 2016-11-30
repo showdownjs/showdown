@@ -18,7 +18,8 @@ var showdown = {},
         tablesHeaderId:                       true,
         ghCodeBlocks:                         true,
         tasklists:                            true,
-        disableForced4SpacesIndentedSublists: true
+        disableForced4SpacesIndentedSublists: true,
+        simpleLineBreaks:                     true
       },
       vanilla: getDefaultOpts(true)
     };

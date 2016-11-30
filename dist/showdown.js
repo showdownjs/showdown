@@ -1,4 +1,4 @@
-;/*! showdown 25-11-2016 */
+;/*! showdown 30-11-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -82,6 +82,11 @@ function getDefaultOpts(simple) {
       defaultValue: false,
       description: 'Disables the requirement of indenting nested sublists by 4 spaces',
       type: 'boolean'
+    },
+    simpleLineBreaks: {
+      defaultValue: false,
+      description: 'Parses simple line breaks as <br> (GFM Style)',
+      type: 'boolean'
     }
   };
   if (simple === false) {
@@ -116,7 +121,8 @@ var showdown = {},
         tablesHeaderId:                       true,
         ghCodeBlocks:                         true,
         tasklists:                            true,
-        disableForced4SpacesIndentedSublists: true
+        disableForced4SpacesIndentedSublists: true,
+        simpleLineBreaks:                     true
       },
       vanilla: getDefaultOpts(true)
     };
@@ -2213,8 +2219,14 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   text = showdown.subParser('italicsAndBold')(text, options, globals);
   text = showdown.subParser('strikethrough')(text, options, globals);
 
-  // Do hard breaks:
-  text = text.replace(/  +\n/g, ' <br />\n');
+  // Do hard breaks
+
+  // GFM style hard breaks
+  if (options.simpleLineBreaks) {
+    text = text.replace(/\n/g, '<br />\n');
+  } else {
+    text = text.replace(/  +\n/g, '<br />\n');
+  }
 
   text = globals.converter._dispatch('spanGamut.after', text, options, globals);
   return text;

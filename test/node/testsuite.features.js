@@ -35,6 +35,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({simplifiedAutoLink: true});
     } else if (testsuite[i].name === 'disableForced4SpacesIndentedSublists') {
       converter = new showdown.Converter({disableForced4SpacesIndentedSublists: true});
+    } else if (testsuite[i].name === '#206.treat-single-line-breaks-as-br') {
+      converter = new showdown.Converter({simpleLineBreaks: true});
     } else {
       converter = new showdown.Converter();
     }

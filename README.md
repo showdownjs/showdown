@@ -262,6 +262,20 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **disableForced4SpacesIndentedSublists**: (boolean) [default false] Disables the requirement of indenting sublists by 4 spaces for them to be nested, 
  effectively reverting to the old behavior where 2 or 3 spaces were enough. (since v1.5.0)
+ 
+ * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as <br> like GitHub does, without needing 2 spaces at the end of the line (since v1.5.1)
+ 
+   ```md
+   a line
+   wrapped in two
+   ```
+    
+   turns into:
+    
+   ```html
+   <p>a line<br>
+   wrapped in two</p>
+   ```
 
 ## Flavors
 

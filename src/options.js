@@ -80,6 +80,11 @@ function getDefaultOpts(simple) {
       defaultValue: false,
       description: 'Disables the requirement of indenting nested sublists by 4 spaces',
       type: 'boolean'
+    },
+    simpleLineBreaks: {
+      defaultValue: false,
+      description: 'Parses simple line breaks as <br> (GFM Style)',
+      type: 'boolean'
     }
   };
   if (simple === false) {

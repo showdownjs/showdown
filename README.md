@@ -210,7 +210,7 @@ var defaultOptions = showdown.getDefaultOptions();
     <h3>foo</h3>
     ```
 
- * **simplifiedAutoLink**: (boolean) [default false] Turning this on will enable GFM autolink style. This means that 
+ * **simplifiedAutoLink**: (boolean) [default false] Turning this option on will enable automatic linking to urls. This means that 
 
    ```md
    some text www.google.com
@@ -218,6 +218,17 @@ var defaultOptions = showdown.getDefaultOptions();
    will be parsed as 
    ````
    <p>some text <a href="www.google.com">www.google.com</a>
+   ```
+ 
+ * **excludeTrailingPunctuationFromURLs**: (boolean) [default false] This option excludes trailing punctuation from autolinking urls.
+   Punctuation excluded: `. !  ? ( )`. Only applies if **simplifiedAutoLink** option is set to `true`.
+   
+   ```md
+   check this link www.google.com!
+   ```
+   will be parsed as
+   ```html
+   <p>check this link <a href="www.google.com">www.google.com</a>!</p>
    ```
    
  * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting underscores in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores. 

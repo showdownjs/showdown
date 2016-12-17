@@ -20,7 +20,8 @@ var showdown = {},
         ghCodeBlocks:                         true,
         tasklists:                            true,
         disableForced4SpacesIndentedSublists: true,
-        simpleLineBreaks:                     true
+        simpleLineBreaks:                     true,
+        requireSpaceBeforeHeadingText:        true
       },
       vanilla: getDefaultOpts(true)
     };

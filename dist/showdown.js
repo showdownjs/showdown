@@ -92,6 +92,11 @@ function getDefaultOpts(simple) {
       defaultValue: false,
       description: 'Parses simple line breaks as <br> (GFM Style)',
       type: 'boolean'
+    },
+    requireSpaceBeforeHeadingText: {
+      defaultValue: false,
+      description: 'Makes adding a space between `#` and the header text mandatory (GFM Style)',
+      type: 'boolean'
     }
   };
   if (simple === false) {
@@ -128,7 +133,8 @@ var showdown = {},
         ghCodeBlocks:                         true,
         tasklists:                            true,
         disableForced4SpacesIndentedSublists: true,
-        simpleLineBreaks:                     true
+        simpleLineBreaks:                     true,
+        requireSpaceBeforeHeadingText:        true
       },
       vanilla: getDefaultOpts(true)
     };
@@ -1802,7 +1808,9 @@ showdown.subParser('headers', function (text, options, globals) {
   //  ...
   //  ###### Header 6
   //
-  text = text.replace(/^(#{1,6})[ \t]*(.+?)[ \t]*#*\n+/gm, function (wholeMatch, m1, m2) {
+  var atxStyle = (options.requireSpaceBeforeHeadingText) ? /^(#{1,6})[ \t]+(.+?)[ \t]*#*\n+/gm : /^(#{1,6})[ \t]*(.+?)[ \t]*#*\n+/gm;
+
+  text = text.replace(atxStyle, function (wholeMatch, m1, m2) {
     var span = showdown.subParser('spanGamut')(m2, options, globals),
         hID = (options.noHeaderId) ? '' : ' id="' + headerId(m2) + '"',
         hLevel = headerLevelStart - 1 + m1.length,

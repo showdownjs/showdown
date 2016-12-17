@@ -90,6 +90,11 @@ function getDefaultOpts(simple) {
       defaultValue: false,
       description: 'Parses simple line breaks as <br> (GFM Style)',
       type: 'boolean'
+    },
+    requireSpaceBeforeHeadingText: {
+      defaultValue: false,
+      description: 'Makes adding a space between `#` and the header text mandatory (GFM Style)',
+      type: 'boolean'
     }
   };
   if (simple === false) {

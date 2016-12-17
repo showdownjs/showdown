@@ -288,6 +288,8 @@ var defaultOptions = showdown.getDefaultOptions();
    wrapped in two</p>
    ```
 
+ * **requireSpaceBeforeHeadingText**: (boolean) [default false] Makes adding a space between `#` and the header text mandatory (since v1.5.3)
+ 
 ## Flavors
 
 You can also use flavors or presets to set the correct options automatically, so that showdown behaves like popular markdown flavors.

@@ -39,6 +39,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({simpleLineBreaks: true});
     } else if (testsuite[i].name === 'excludeTrailingPunctuationFromURLs-option') {
       converter = new showdown.Converter({simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true});
+    } else if (testsuite[i].name === 'requireSpaceBeforeHeadingText') {
+      converter = new showdown.Converter({requireSpaceBeforeHeadingText: true});
     } else {
       converter = new showdown.Converter();
     }

@@ -1,4 +1,4 @@
-;/*! showdown 01-12-2016 */
+;/*! showdown 17-12-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1249,9 +1249,9 @@ showdown.subParser('blockGamut', function (text, options, globals) {
 
   // Do Horizontal Rules:
   var key = showdown.subParser('hashBlock')('<hr />', options, globals);
-  text = text.replace(/^[ ]{0,2}([ ]?\*[ ]?){3,}[ \t]*$/gm, key);
-  text = text.replace(/^[ ]{0,2}([ ]?\-[ ]?){3,}[ \t]*$/gm, key);
-  text = text.replace(/^[ ]{0,2}([ ]?_[ ]?){3,}[ \t]*$/gm, key);
+  text = text.replace(/^ {0,2}( ?\* ?){3,}[ \t]*$/gm, key);
+  text = text.replace(/^ {0,2}( ?- ?){3,}[ \t]*$/gm, key);
+  text = text.replace(/^ {0,2}( ?_ ?){3,}[ \t]*$/gm, key);
 
   text = showdown.subParser('lists')(text, options, globals);
   text = showdown.subParser('codeBlocks')(text, options, globals);

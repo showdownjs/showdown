@@ -2007,6 +2007,18 @@ showdown.subParser('lists', function (text, options, globals) {
         });
       }
 
+      // ISSUE #312
+      // This input: - - - a
+      // causes trouble to the parser, since it interprets it as:
+      // <ul><li><li><li>a</li></li></li></ul>
+      // instead of:
+      // <ul><li>- - a</li></ul>
+      // So, to prevent it, we will put a marker (~A)in the beginning of the line
+      // Kind of hackish/monkey patching, but seems more effective than overcomplicating the list parser
+      item = item.replace(/^([-*+]|\d\.)[ \t]+[\s\n]*/g, function (wm2) {
+        return '~A' + wm2;
+      });
+
       // m1 - Leading line or
       // Has a double return (multi paragraph) or
       // Has sublist
@@ -2023,6 +2035,11 @@ showdown.subParser('lists', function (text, options, globals) {
           item = showdown.subParser('spanGamut')(item, options, globals);
         }
       }
+
+      // now we need to remove the marker (~A)
+      item = item.replace('~A', '');
+
+      // we can finally wrap the line in list item tags
       item =  '<li' + bulletStyle + '>' + item + '</li>\n';
       return item;
     });

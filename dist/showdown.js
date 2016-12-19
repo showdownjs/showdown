@@ -1,4 +1,4 @@
-;/*! showdown 17-12-2016 */
+;/*! showdown 19-12-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1252,9 +1252,9 @@ showdown.subParser('blockGamut', function (text, options, globals) {
 
   // Do Horizontal Rules:
   var key = showdown.subParser('hashBlock')('<hr />', options, globals);
-  text = text.replace(/^ {0,2}( ?\* ?){3,}[ \t]*$/gm, key);
-  text = text.replace(/^ {0,2}( ?- ?){3,}[ \t]*$/gm, key);
-  text = text.replace(/^ {0,2}( ?_ ?){3,}[ \t]*$/gm, key);
+  text = text.replace(/^( ?-){3,}[ \t]*$/gm, key);
+  text = text.replace(/^( ?\*){3,}[ \t]*$$/gm, key);
+  text = text.replace(/^( ?_){3,}[ \t]*$$/gm, key);
 
   text = showdown.subParser('lists')(text, options, globals);
   text = showdown.subParser('codeBlocks')(text, options, globals);
@@ -1943,7 +1943,6 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
  */
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
-
   text = globals.converter._dispatch('lists.before', text, options, globals);
   /**
    * Process the contents of a single ordered or unordered list, splitting it
@@ -2018,7 +2017,7 @@ showdown.subParser('lists', function (text, options, globals) {
       // <ul><li>- - a</li></ul>
       // So, to prevent it, we will put a marker (~A)in the beginning of the line
       // Kind of hackish/monkey patching, but seems more effective than overcomplicating the list parser
-      item = item.replace(/^([-*+]|\d\.)[ \t]+[\s\n]*/g, function (wm2) {
+      item = item.replace(/^([-*+]|\d\.)[ \t]+[\S\n ]*/g, function (wm2) {
         return '~A' + wm2;
       });
 
@@ -2041,7 +2040,6 @@ showdown.subParser('lists', function (text, options, globals) {
 
       // now we need to remove the marker (~A)
       item = item.replace('~A', '');
-
       // we can finally wrap the line in list item tags
       item =  '<li' + bulletStyle + '>' + item + '</li>\n';
       return item;
@@ -2120,7 +2118,6 @@ showdown.subParser('lists', function (text, options, globals) {
 
   // strip sentinel
   text = text.replace(/~0/, '');
-
   text = globals.converter._dispatch('lists.after', text, options, globals);
   return text;
 });

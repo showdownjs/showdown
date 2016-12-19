@@ -1,3 +1,17 @@
+<a name="1.5.3"></a>
+## [1.5.3](https://github.com/showdownjs/showdown/compare/1.5.2...v1.5.3) (2016-12-19)
+
+
+### Bug Fixes
+
+* parser slowness with certain inputs ([da8fb53](https://github.com/showdownjs/showdown/commit/da8fb53)), closes [#315](https://github.com/showdownjs/showdown/issues/315)
+
+### Features
+
+* **requireSpaceBeforeHeadingText:** option to make space between `#` and header text mandatory ([5d19877](https://github.com/showdownjs/showdown/commit/5d19877)), closes [#277](https://github.com/showdownjs/showdown/issues/277)
+
+
+
 <a name="1.5.2"></a>
 ## [1.5.2](https://github.com/showdownjs/showdown/compare/1.5.1...1.5.2) (2016-12-17)
 

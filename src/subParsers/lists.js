@@ -3,7 +3,6 @@
  */
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
-
   text = globals.converter._dispatch('lists.before', text, options, globals);
   /**
    * Process the contents of a single ordered or unordered list, splitting it
@@ -78,7 +77,7 @@ showdown.subParser('lists', function (text, options, globals) {
       // <ul><li>- - a</li></ul>
       // So, to prevent it, we will put a marker (~A)in the beginning of the line
       // Kind of hackish/monkey patching, but seems more effective than overcomplicating the list parser
-      item = item.replace(/^([-*+]|\d\.)[ \t]+[\s\n]*/g, function (wm2) {
+      item = item.replace(/^([-*+]|\d\.)[ \t]+[\S\n ]*/g, function (wm2) {
         return '~A' + wm2;
       });
 
@@ -101,7 +100,6 @@ showdown.subParser('lists', function (text, options, globals) {
 
       // now we need to remove the marker (~A)
       item = item.replace('~A', '');
-
       // we can finally wrap the line in list item tags
       item =  '<li' + bulletStyle + '>' + item + '</li>\n';
       return item;
@@ -180,7 +178,6 @@ showdown.subParser('lists', function (text, options, globals) {
 
   // strip sentinel
   text = text.replace(/~0/, '');
-
   text = globals.converter._dispatch('lists.after', text, options, globals);
   return text;
 });

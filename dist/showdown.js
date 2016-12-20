@@ -1732,7 +1732,7 @@ showdown.subParser('hashHTMLSpans', function (text, config, globals) {
   var matches = showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');
 
   for (var i = 0; i < matches.length; ++i) {
-    text = text.replace(matches[i][0], '~L' + (globals.gHtmlSpans.push(matches[i][0]) - 1) + 'L');
+    text = text.replace(matches[i][0], '~C' + (globals.gHtmlSpans.push(matches[i][0]) - 1) + 'C');
   }
   return text;
 });
@@ -1744,7 +1744,7 @@ showdown.subParser('unhashHTMLSpans', function (text, config, globals) {
   'use strict';
 
   for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
-    text = text.replace('~L' + i + 'L', globals.gHtmlSpans[i]);
+    text = text.replace('~C' + i + 'C', globals.gHtmlSpans[i]);
   }
 
   return text;
@@ -1952,6 +1952,7 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
   text = globals.converter._dispatch('lists.before', text, options, globals);
+
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
@@ -2039,6 +2040,8 @@ showdown.subParser('lists', function (text, options, globals) {
         // Recursion for sub-lists:
         item = showdown.subParser('lists')(item, options, globals);
         item = item.replace(/\n$/, ''); // chomp(item)
+        item = showdown.subParser('hashHTMLBlocks')(item, options, globals);
+        item = item.replace(/\n\n+/g, '\n\n');
         if (isParagraphed) {
           item = showdown.subParser('paragraphs')(item, options, globals);
         } else {
@@ -2050,6 +2053,7 @@ showdown.subParser('lists', function (text, options, globals) {
       item = item.replace('~A', '');
       // we can finally wrap the line in list item tags
       item =  '<li' + bulletStyle + '>' + item + '</li>\n';
+
       return item;
     });
 
@@ -2260,12 +2264,12 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   text = showdown.subParser('strikethrough')(text, options, globals);
 
   // Do hard breaks
-
-  // GFM style hard breaks
   if (options.simpleLineBreaks) {
-    text = text.replace(/\n/g, '<br />\n');
+    // GFM style hard breaks
+    text = text.replace(/\b\n\b/g, '<br />\n');
   } else {
-    text = text.replace(/  +\n/g, '<br />\n');
+    // Vanilla hard breaks
+    text = text.replace(/\b  +\n\b/g, '<br />\n');
   }
 
   text = globals.converter._dispatch('spanGamut.after', text, options, globals);

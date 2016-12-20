@@ -4,6 +4,7 @@
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
   text = globals.converter._dispatch('lists.before', text, options, globals);
+
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
@@ -91,6 +92,8 @@ showdown.subParser('lists', function (text, options, globals) {
         // Recursion for sub-lists:
         item = showdown.subParser('lists')(item, options, globals);
         item = item.replace(/\n$/, ''); // chomp(item)
+        item = showdown.subParser('hashHTMLBlocks')(item, options, globals);
+        item = item.replace(/\n\n+/g, '\n\n');
         if (isParagraphed) {
           item = showdown.subParser('paragraphs')(item, options, globals);
         } else {
@@ -102,6 +105,7 @@ showdown.subParser('lists', function (text, options, globals) {
       item = item.replace('~A', '');
       // we can finally wrap the line in list item tags
       item =  '<li' + bulletStyle + '>' + item + '</li>\n';
+
       return item;
     });
 

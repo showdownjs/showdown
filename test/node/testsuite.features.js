@@ -37,6 +37,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({disableForced4SpacesIndentedSublists: true});
     } else if (testsuite[i].name === '#206.treat-single-line-breaks-as-br') {
       converter = new showdown.Converter({simpleLineBreaks: true});
+    } else if (testsuite[i].name === '#316.new-simpleLineBreaks-option-breaks-lists') {
+      converter = new showdown.Converter({simpleLineBreaks: true});
     } else if (testsuite[i].name === 'excludeTrailingPunctuationFromURLs-option') {
       converter = new showdown.Converter({simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true});
     } else if (testsuite[i].name === 'requireSpaceBeforeHeadingText') {

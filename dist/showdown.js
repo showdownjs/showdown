@@ -1258,9 +1258,9 @@ showdown.subParser('blockGamut', function (text, options, globals) {
 
   // Do Horizontal Rules:
   var key = showdown.subParser('hashBlock')('<hr />', options, globals);
-  text = text.replace(/^( ?-){3,}[ \t]*$/gm, key);
-  text = text.replace(/^( ?\*){3,}[ \t]*$/gm, key);
-  text = text.replace(/^( ?_){3,}[ \t]*$/gm, key);
+  text = text.replace(/^ {0,2}( ?-){3,}[ \t]*$/gm, key);
+  text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, key);
+  text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, key);
 
   text = showdown.subParser('lists')(text, options, globals);
   text = showdown.subParser('codeBlocks')(text, options, globals);

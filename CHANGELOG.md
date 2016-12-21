@@ -1,3 +1,14 @@
+<a name="1.5.4"></a>
+## [1.5.4](https://github.com/showdownjs/showdown/compare/1.5.3...1.5.4) (2016-12-21)
+
+
+### Bug Fixes
+
+* **horizontal rule:** revert backwards incompatibility change ([113f5f6](https://github.com/showdownjs/showdown/commit/113f5f6)), closes [#317](https://github.com/showdownjs/showdown/issues/317)
+* **simpleLineBreaks:** fix simpleLineBreak option breaking lists html ([ed4c33f](https://github.com/showdownjs/showdown/commit/ed4c33f)), closes [#316](https://github.com/showdownjs/showdown/issues/316)
+
+
+
 <a name="1.5.3"></a>
 ## [1.5.3](https://github.com/showdownjs/showdown/compare/1.5.2...1.5.3) (2016-12-19)
 

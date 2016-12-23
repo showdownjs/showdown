@@ -188,8 +188,16 @@ module.exports = function (grunt) {
     grunt.task.run(['lint', 'concat:test', 'simplemocha:single', 'clean']);
   });
 
+  grunt.registerTask('performancejs', function () {
+    'use strict';
+    var perf = require('./test/node/performance.js');
+    perf.runTests();
+    perf.generateLogs();
+  });
+
   grunt.registerTask('lint', ['jshint', 'jscs']);
   grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:node', 'clean']);
+  grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);
   grunt.registerTask('prep-release', ['build', 'conventionalChangelog']);
 

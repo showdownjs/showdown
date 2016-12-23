@@ -1,0 +1,1 @@
+{"1.5.4":[{"suiteName":"Basic","cycles":100,"tests":[{"name":"Simple \"Hello World\"","time":0.30990324000000025,"maxTime":5.549075,"minTime":0.14916800000000308},{"name":"readme.md","time":8.072704459999997,"maxTime":17.975579000000003,"minTime":7.220064999999977}]}]}

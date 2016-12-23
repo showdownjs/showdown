@@ -23,7 +23,8 @@ var showdown = {},
         simpleLineBreaks:                     true,
         requireSpaceBeforeHeadingText:        true
       },
-      vanilla: getDefaultOpts(true)
+      vanilla: getDefaultOpts(true),
+      allOn: allOptionsOn()
     };
 
 /**

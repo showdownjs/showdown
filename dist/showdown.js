@@ -1,4 +1,4 @@
-;/*! showdown 21-12-2016 */
+;/*! showdown 23-12-2016 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -111,6 +111,18 @@ function getDefaultOpts(simple) {
   return ret;
 }
 
+function allOptionsOn() {
+  'use strict';
+  var options = getDefaultOpts(true),
+      ret = {};
+  for (var opt in options) {
+    if (options.hasOwnProperty(opt)) {
+      ret[opt] = true;
+    }
+  }
+  return ret;
+}
+
 /**
  * Created by Tivie on 06-01-2015.
  */
@@ -136,7 +148,8 @@ var showdown = {},
         simpleLineBreaks:                     true,
         requireSpaceBeforeHeadingText:        true
       },
-      vanilla: getDefaultOpts(true)
+      vanilla: getDefaultOpts(true),
+      allOn: allOptionsOn()
     };
 
 /**

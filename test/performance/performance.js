@@ -27,9 +27,10 @@ performance.setGithubLink = function (url) {
   performance.githubLink = url;
 };
 
-performance.generateLog = function (filename, MDFilename) {
+performance.generateLog = function (filename, MDFilename, asTable) {
   filename = filename || performance.logFile;
   MDFilename = MDFilename || performance.MDFile;
+  asTable = !!asTable;
 
   fs.closeSync(fs.openSync(filename, 'a'));
 
@@ -95,11 +96,12 @@ performance.generateLog = function (filename, MDFilename) {
 
   fs.writeFileSync(filename, JSON.stringify(finalJsonObj));
 
-  generateMD(MDFilename, finalJsonObj);
+  generateMD(MDFilename, finalJsonObj, asTable);
 };
 
-function generateMD(filename, obj) {
+function generateMD(filename, obj, asTable) {
   fs.closeSync(fs.openSync(filename, 'w'));
+  asTable = !!asTable;
 
   // generate MD
   var otp = '# Performance Tests for ' + performance.libraryName + '\n\n\n';
@@ -111,11 +113,19 @@ function generateMD(filename, obj) {
       for (var i = 0; i < testSuite.length; ++i) {
         otp += '### Test Suite: ' + testSuite[i].suiteName + ' (' + testSuite[i].cycles + ' cycles)\n';
         var tests = testSuite[i].tests;
+        if (asTable) {
+          otp += '| test | avgTime | max | min |\n';
+          otp += '|:-----|--------:|----:|----:|\n';
+        }
         for (var ii = 0; ii < tests.length; ++ii) {
           var time = parseFloat(tests[ii].time).toFixed(3),
               maxTime = parseFloat(tests[ii].maxTime).toFixed(3),
               minTime = parseFloat(tests[ii].minTime).toFixed(3);
-          otp += ' - **' + tests[ii].name + ':** took ' + time + 'ms (*max: ' + maxTime + 'ms; min: ' + minTime + 'ms*)\n';
+          if (asTable) {
+            otp += '|' + tests[ii].name + '|' + time + '|' + maxTime + '|' + minTime + '|\n';
+          } else {
+            otp += ' - **' + tests[ii].name + ':** took ' + time + 'ms (*max: ' + maxTime + 'ms; min: ' + minTime + 'ms*)\n';
+          }
         }
         otp += '\n';
       }

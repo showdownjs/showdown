@@ -25,7 +25,7 @@ function getDefaultOpts(simple) {
     },
     ghCompatibleHeaderId: {
       defaultValue: false,
-      describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, &~$!@#*()=:/,;?+%\\\'. chars are removed)',
+      describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, a bunch of non alphanumeric chars are removed)',
       type: 'string'
     },
     headerLevelStart: {
@@ -1850,7 +1850,8 @@ showdown.subParser('headers', function (text, options, globals) {
         .replace(/~T/g, '')
         .replace(/~D/g, '')
         //replace rest of the chars (&~$ are repeated as they might have been escaped)
-        .replace(/[&~$!@#*()=:/,;?+'.%\\]/g, '')
+        // borrowed from github's redcarpet (some they should produce similar results)
+        .replace(/[&+$,\/:;=?@"#{}|^~\[\]`\\*)(%.!'<>]/g, '')
         .toLowerCase();
     } else {
       escapedId = m.replace(/[^\w]/g, '').toLowerCase();

@@ -21,6 +21,11 @@ function getDefaultOpts(simple) {
       describe: 'Specify a prefix to generated header ids',
       type: 'string'
     },
+    ghCompatibleHeaderId: {
+      defaultValue: false,
+      describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, &~$!@#*()=:/,;?+\'. chars are removed)',
+      type: 'string'
+    },
     headerLevelStart: {
       defaultValue: false,
       describe: 'The header blocks level start',

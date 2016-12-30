@@ -5,6 +5,7 @@ showdown.subParser('headers', function (text, options, globals) {
 
   var prefixHeader = options.prefixHeaderId,
       headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
+      ghHeaderId = options.ghCompatibleHeaderId,
 
   // Set text-style headers:
   //	Header 1
@@ -52,7 +53,21 @@ showdown.subParser('headers', function (text, options, globals) {
   });
 
   function headerId(m) {
-    var title, escapedId = m.replace(/[^\w]/g, '').toLowerCase();
+    var title, escapedId;
+
+    if (ghHeaderId) {
+      escapedId = m
+        .replace(/ /g, '-')
+        //replace previously escaped chars (&, ~ and $)
+        .replace(/&amp;/g, '')
+        .replace(/~T/g, '')
+        .replace(/~D/g, '')
+        //replace rest of the chars (&~$ are repeated as they might have been escaped)
+        .replace(/[&~$!@#*()=:/,;?+'.\\]/g, '')
+        .toLowerCase();
+    } else {
+      escapedId = m.replace(/[^\w]/g, '').toLowerCase();
+    }
 
     if (globals.hashLinkCounts[escapedId]) {
       title = escapedId + '-' + (globals.hashLinkCounts[escapedId]++);

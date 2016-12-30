@@ -6,42 +6,42 @@
 ### Test Suite: Basic (100 cycles)
 | test | avgTime | max | min |
 |:-----|--------:|----:|----:|
-|Simple "Hello World"|0.315|5.716|0.163|
-|readme.md|8.352|18.017|7.207|
+|Simple "Hello World"|0.644|13.067|0.178|
+|readme.md|8.181|26.315|7.019|
 
 ### Test Suite: subParsers (1000 cycles)
 | test | avgTime | max | min |
 |:-----|--------:|----:|----:|
-|hashHTMLBlocks|0.673|1.144|0.622|
-|anchors|0.178|0.528|0.157|
-|autoLinks|0.014|0.193|0.013|
-|blockGamut|7.327|16.050|6.464|
-|blockQuotes|0.064|0.256|0.058|
-|codeBlocks|0.072|1.590|0.059|
-|codeSpans|0.184|1.435|0.165|
-|detab|0.024|0.197|0.022|
-|encodeAmpsAndAngles|0.016|0.354|0.014|
-|encodeBackslashEscapes|0.014|0.236|0.012|
-|encodeCode|0.167|0.489|0.149|
-|encodeEmailAddress|2.296|3.975|2.079|
-|escapeSpecialCharsWithinTagAttributes|0.060|0.414|0.053|
-|githubCodeBlocks|0.076|4.397|0.055|
-|hashBlock|0.024|5.067|0.011|
-|hashElement|0.001|0.239|0.000|
-|hashHTMLSpans|0.031|3.577|0.010|
-|hashPreCodeTags|0.019|0.332|0.015|
-|headers|0.456|2.677|0.391|
-|images|0.041|1.657|0.032|
-|italicsAndBold|0.038|0.298|0.035|
-|lists|5.025|9.631|4.573|
-|outdent|0.051|0.586|0.044|
-|paragraphs|1.344|2.652|1.195|
-|spanGamut|0.612|1.057|0.555|
-|strikethrough|0.000|0.228|0.000|
-|stripBlankLines|0.030|0.294|0.027|
-|stripLinkDefinitions|0.069|0.450|0.060|
-|tables|0.001|0.205|0.000|
-|unescapeSpecialChars|0.004|0.168|0.003|
+|hashHTMLBlocks|0.665|1.100|0.620|
+|anchors|0.187|0.561|0.161|
+|autoLinks|0.015|0.198|0.014|
+|blockGamut|7.104|15.672|6.344|
+|blockQuotes|0.065|0.228|0.058|
+|codeBlocks|0.071|1.058|0.061|
+|codeSpans|0.189|1.036|0.168|
+|detab|0.025|0.251|0.022|
+|encodeAmpsAndAngles|0.017|0.268|0.014|
+|encodeBackslashEscapes|0.014|0.257|0.012|
+|encodeCode|0.175|0.644|0.149|
+|encodeEmailAddress|2.291|3.854|2.072|
+|escapeSpecialCharsWithinTagAttributes|0.059|0.438|0.053|
+|githubCodeBlocks|0.081|4.627|0.056|
+|hashBlock|0.029|5.068|0.011|
+|hashElement|0.001|0.197|0.000|
+|hashHTMLSpans|0.024|3.832|0.010|
+|hashPreCodeTags|0.017|0.414|0.014|
+|headers|0.462|2.671|0.393|
+|images|0.039|0.733|0.033|
+|italicsAndBold|0.038|0.309|0.034|
+|lists|4.972|11.411|4.443|
+|outdent|0.049|0.536|0.044|
+|paragraphs|1.361|2.980|1.203|
+|spanGamut|0.630|1.273|0.551|
+|strikethrough|0.000|0.208|0.000|
+|stripBlankLines|0.030|0.271|0.027|
+|stripLinkDefinitions|0.068|0.339|0.061|
+|tables|0.001|0.186|0.000|
+|unescapeSpecialChars|0.003|0.211|0.003|
 
 
 ## [version 1.5.4](https://github.com/showdownjs/showdown/tree/)

@@ -21,7 +21,8 @@ var showdown = {},
         tasklists:                            true,
         disableForced4SpacesIndentedSublists: true,
         simpleLineBreaks:                     true,
-        requireSpaceBeforeHeadingText:        true
+        requireSpaceBeforeHeadingText:        true,
+        ghCompatibleHeaderId:                 true
       },
       vanilla: getDefaultOpts(true),
       allOn: allOptionsOn()

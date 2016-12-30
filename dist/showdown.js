@@ -23,6 +23,11 @@ function getDefaultOpts(simple) {
       describe: 'Specify a prefix to generated header ids',
       type: 'string'
     },
+    ghCompatibleHeaderId: {
+      defaultValue: false,
+      describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, &~$!@#*()=:/,;?+\'. chars are removed)',
+      type: 'string'
+    },
     headerLevelStart: {
       defaultValue: false,
       describe: 'The header blocks level start',
@@ -146,7 +151,8 @@ var showdown = {},
         tasklists:                            true,
         disableForced4SpacesIndentedSublists: true,
         simpleLineBreaks:                     true,
-        requireSpaceBeforeHeadingText:        true
+        requireSpaceBeforeHeadingText:        true,
+        ghCompatibleHeaderId:                 true
       },
       vanilla: getDefaultOpts(true),
       allOn: allOptionsOn()
@@ -1786,6 +1792,7 @@ showdown.subParser('headers', function (text, options, globals) {
 
   var prefixHeader = options.prefixHeaderId,
       headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
+      ghHeaderId = options.ghCompatibleHeaderId,
 
   // Set text-style headers:
   //	Header 1
@@ -1833,7 +1840,21 @@ showdown.subParser('headers', function (text, options, globals) {
   });
 
   function headerId(m) {
-    var title, escapedId = m.replace(/[^\w]/g, '').toLowerCase();
+    var title, escapedId;
+
+    if (ghHeaderId) {
+      escapedId = m
+        .replace(/ /g, '-')
+        //replace previously escaped chars (&, ~ and $)
+        .replace(/&amp;/g, '')
+        .replace(/~T/g, '')
+        .replace(/~D/g, '')
+        //replace rest of the chars (&~$ are repeated as they might have been escaped)
+        .replace(/[&~$!@#*()=:/,;?+'.\\]/g, '')
+        .toLowerCase();
+    } else {
+      escapedId = m.replace(/[^\w]/g, '').toLowerCase();
+    }
 
     if (globals.hashLinkCounts[escapedId]) {
       title = escapedId + '-' + (globals.hashLinkCounts[escapedId]++);

@@ -52,8 +52,10 @@ showdown.subParser('headers', function (text, options, globals) {
   });
 
   function headerId(m) {
-    var regex = option.headerRegex || /[^\w]/g;
-    var title, escapedId = m.replace(regex, '').toLowerCase();
+    var regex = options.headerRegex || /[^\w]/g,
+        replace = options.headerReplace || '',
+        title,
+        escapedId = m.replace(regex, replace).toLowerCase();
 
     if (globals.hashLinkCounts[escapedId]) {
       title = escapedId + '-' + (globals.hashLinkCounts[escapedId]++);

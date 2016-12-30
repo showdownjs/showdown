@@ -1,3 +1,17 @@
+<a name="1.5.5"></a>
+## [1.5.5](https://github.com/showdownjs/showdown/compare/1.5.4...1.5.5) (2016-12-30)
+
+
+### Bug Fixes
+
+* **ghCompatibleHeaderId:** add % as an escaped char ([3102615](https://github.com/showdownjs/showdown/commit/3102615))
+
+### Features
+
+* **ghCompatibleHeaderId:** generate header ids compatible with github ([db97a90](https://github.com/showdownjs/showdown/commit/db97a90)), closes [#320](https://github.com/showdownjs/showdown/issues/320) [#321](https://github.com/showdownjs/showdown/issues/321)
+
+
+
 <a name="1.5.4"></a>
 ## [1.5.4](https://github.com/showdownjs/showdown/compare/1.5.3...1.5.4) (2016-12-21)
 

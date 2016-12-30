@@ -63,7 +63,7 @@ showdown.subParser('headers', function (text, options, globals) {
         .replace(/~T/g, '')
         .replace(/~D/g, '')
         //replace rest of the chars (&~$ are repeated as they might have been escaped)
-        .replace(/[&~$!@#*()=:/,;?+'.\\]/g, '')
+        .replace(/[&~$!@#*()=:/,;?+'.%\\]/g, '')
         .toLowerCase();
     } else {
       escapedId = m.replace(/[^\w]/g, '').toLowerCase();

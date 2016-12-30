@@ -23,7 +23,7 @@ function getDefaultOpts(simple) {
     },
     ghCompatibleHeaderId: {
       defaultValue: false,
-      describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, &~$!@#*()=:/,;?+\'. chars are removed)',
+      describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, &~$!@#*()=:/,;?+%\\\'. chars are removed)',
       type: 'string'
     },
     headerLevelStart: {

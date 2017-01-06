@@ -292,6 +292,8 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **requireSpaceBeforeHeadingText**: (boolean) [default false] Makes adding a space between `#` and the header text mandatory (since v1.5.3)
  
+ * **ghMentions**: (boolean) [default false] Enables github @mentions, which link to the username mentioned (since v1.5.6) 
+ 
 ## Flavors
 
 You can also use flavors or presets to set the correct options automatically, so that showdown behaves like popular markdown flavors.

@@ -22,7 +22,8 @@ var showdown = {},
         disableForced4SpacesIndentedSublists: true,
         simpleLineBreaks:                     true,
         requireSpaceBeforeHeadingText:        true,
-        ghCompatibleHeaderId:                 true
+        ghCompatibleHeaderId:                 true,
+        ghMentions:                           true
       },
       vanilla: getDefaultOpts(true),
       allOn: allOptionsOn()

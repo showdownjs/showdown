@@ -51,6 +51,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({requireSpaceBeforeHeadingText: true});
     } else if (testsuite[i].name === '#320.github-compatible-generated-header-id') {
       converter = new showdown.Converter({ghCompatibleHeaderId: true});
+    } else if (testsuite[i].name === 'ghMentions') {
+      converter = new showdown.Converter({ghMentions: true});
     } else {
       converter = new showdown.Converter();
     }

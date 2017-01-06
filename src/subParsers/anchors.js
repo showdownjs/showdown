@@ -59,10 +59,15 @@ showdown.subParser('anchors', function (text, options, globals) {
   text = text.replace(/(\[((?:\[[^\]]*]|[^\[\]])*)]\([ \t]*()<?(.*?(?:\(.*?\).*?)?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,
                       writeAnchorTag);
 
-  // Last, handle reference-style shortcuts: [link text]
+  // handle reference-style shortcuts: [link text]
   // These must come last in case you've also got [link test][1]
   // or [link test](/foo)
   text = text.replace(/(\[([^\[\]]+)])()()()()()/g, writeAnchorTag);
+
+  // Lastly handle GithubMentions if option is enabled
+  if (options.ghMentions) {
+    text = text.replace(/(^|\s)(@([a-z\d\-]+))(?=[.!?;,[\]()]|\s|$)/gmi, '$1<a href="https://www.github.com/$3">$2</a>');
+  }
 
   text = globals.converter._dispatch('anchors.after', text, options, globals);
   return text;

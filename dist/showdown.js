@@ -716,7 +716,8 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
 /**
  * POLYFILLS
  */
-if (showdown.helper.isUndefined(console)) {
+// use this instead of builtin is undefined for IE8 compatibility
+if (typeof(console) === 'undefined') {
   console = {
     warn: function (msg) {
       'use strict';

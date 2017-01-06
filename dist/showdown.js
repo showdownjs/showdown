@@ -1,4 +1,4 @@
-;/*! showdown 30-12-2016 */
+;/*! showdown 06-01-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -26,7 +26,7 @@ function getDefaultOpts(simple) {
     ghCompatibleHeaderId: {
       defaultValue: false,
       describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, a bunch of non alphanumeric chars are removed)',
-      type: 'string'
+      type: 'boolean'
     },
     headerLevelStart: {
       defaultValue: false,

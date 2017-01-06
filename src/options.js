@@ -24,7 +24,7 @@ function getDefaultOpts(simple) {
     ghCompatibleHeaderId: {
       defaultValue: false,
       describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, a bunch of non alphanumeric chars are removed)',
-      type: 'string'
+      type: 'boolean'
     },
     headerLevelStart: {
       defaultValue: false,

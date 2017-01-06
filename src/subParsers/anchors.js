@@ -66,7 +66,12 @@ showdown.subParser('anchors', function (text, options, globals) {
 
   // Lastly handle GithubMentions if option is enabled
   if (options.ghMentions) {
-    text = text.replace(/(^|\s)(@([a-z\d\-]+))(?=[.!?;,[\]()]|\s|$)/gmi, '$1<a href="https://www.github.com/$3">$2</a>');
+    text = text.replace(/(^|\s)(\\)?(@([a-z\d\-]+))(?=[.!?;,[\]()]|\s|$)/gmi, function (wm, st, escape, mentions, username) {
+      if (escape === '\\') {
+        return st + mentions;
+      }
+      return st + '<a href="https://www.github.com/' + username + '">' + mentions + '</a>';
+    });
   }
 
   text = globals.converter._dispatch('anchors.after', text, options, globals);

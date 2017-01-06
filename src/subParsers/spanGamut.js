@@ -26,10 +26,10 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   // Do hard breaks
   if (options.simpleLineBreaks) {
     // GFM style hard breaks
-    text = text.replace(/\b\n\b/g, '<br />\n');
+    text = text.replace(/\n/g, '<br />\n');
   } else {
     // Vanilla hard breaks
-    text = text.replace(/\b  +\n\b/g, '<br />\n');
+    text = text.replace(/  +\n/g, '<br />\n');
   }
 
   text = globals.converter._dispatch('spanGamut.after', text, options, globals);

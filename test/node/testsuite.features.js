@@ -37,7 +37,13 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({disableForced4SpacesIndentedSublists: true});
     } else if (testsuite[i].name === '#206.treat-single-line-breaks-as-br') {
       converter = new showdown.Converter({simpleLineBreaks: true});
+    } else if (testsuite[i].name === 'simpleLineBreaks2') {
+      converter = new showdown.Converter({simpleLineBreaks: true});
     } else if (testsuite[i].name === '#316.new-simpleLineBreaks-option-breaks-lists') {
+      converter = new showdown.Converter({simpleLineBreaks: true});
+    } else if (testsuite[i].name === '#323.simpleLineBreaks-breaks-with-strong') {
+      converter = new showdown.Converter({simpleLineBreaks: true});
+    } else if (testsuite[i].name === '#318.simpleLineBreaks-does-not-work-with-chinese-characters') {
       converter = new showdown.Converter({simpleLineBreaks: true});
     } else if (testsuite[i].name === 'excludeTrailingPunctuationFromURLs-option') {
       converter = new showdown.Converter({simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true});

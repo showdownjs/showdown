@@ -2076,12 +2076,16 @@ showdown.subParser('lists', function (text, options, globals) {
         item = showdown.subParser('lists')(item, options, globals);
         item = item.replace(/\n$/, ''); // chomp(item)
         item = showdown.subParser('hashHTMLBlocks')(item, options, globals);
+        // Colapse double linebreaks
         item = item.replace(/\n\n+/g, '\n\n');
+        // replace double linebreaks with a placeholder
+        item = item.replace(/\n\n/g, '~B');
         if (isParagraphed) {
           item = showdown.subParser('paragraphs')(item, options, globals);
         } else {
           item = showdown.subParser('spanGamut')(item, options, globals);
         }
+        item = item.replace(/~B/g, '\n\n');
       }
 
       // now we need to remove the marker (~A)
@@ -2301,10 +2305,10 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   // Do hard breaks
   if (options.simpleLineBreaks) {
     // GFM style hard breaks
-    text = text.replace(/\b\n\b/g, '<br />\n');
+    text = text.replace(/\n/g, '<br />\n');
   } else {
     // Vanilla hard breaks
-    text = text.replace(/\b  +\n\b/g, '<br />\n');
+    text = text.replace(/  +\n/g, '<br />\n');
   }
 
   text = globals.converter._dispatch('spanGamut.after', text, options, globals);

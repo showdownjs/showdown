@@ -7,7 +7,12 @@ yargs.reset()
   .usage('Usage: showdown makehtml [options]')
   .example('showdown makehtml -i', 'Reads from stdin and outputs to stdout')
   .example('showdown makehtml -i foo.md -o bar.html', 'Reads \'foo.md\' and writes to \'bar.html\'')
-  //.demand(['i'])
+  .config('c')
+  .alias('c', 'config')
+  .help('h')
+  .alias('h', 'help')
+  .version()
+  .alias('v', 'version')
   .option('i', {
     alias : 'input',
     describe: 'Input source. Usually a md file. If omitted or empty, reads from stdin',
@@ -34,10 +39,11 @@ yargs.reset()
     describe: 'Load the specified extensions. Should be valid paths to node compatible extensions',
     type: 'array'
   })
-  .config('c')
-  .alias('c', 'config')
-  .help('h')
-  .alias('h', 'help');
+  .option('p', {
+    alias : 'flavor',
+    describe: 'Run with a predetermined flavor of options. Default is vanilla',
+    type: 'string'
+  });
 
 yargs.options(showdown.getDefaultOptions(false));
 argv = yargs.argv;
@@ -79,6 +85,11 @@ function run() {
     } catch (err) {
       errorExit(err);
     }
+  }
+
+  // Load flavor
+  if (argv.p) {
+    converter.setFlavor(argv.p);
   }
 
   // parse and convert file

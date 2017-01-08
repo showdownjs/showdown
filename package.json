@@ -60,6 +60,6 @@
     "source-map-support": "^0.2.9"
   },
   "dependencies": {
-    "yargs": "^3.15.0"
+    "yargs": "^6.6.0"
   }
 }

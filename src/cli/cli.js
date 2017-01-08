@@ -1,10 +1,9 @@
 'use strict';
 
-var version = require('../../package.json').version,
-    yargs = require('yargs');
+var yargs = require('yargs');
 
 yargs
-  .version(version, 'v')
+  .version()
   .alias('v', 'version')
   .option('h', {
     alias: 'help',

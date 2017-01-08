@@ -292,7 +292,10 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **requireSpaceBeforeHeadingText**: (boolean) [default false] Makes adding a space between `#` and the header text mandatory (since v1.5.3)
  
- * **ghMentions**: (boolean) [default false] Enables github @mentions, which link to the username mentioned (since v1.5.6) 
+ * **ghMentions**: (boolean) [default false] Enables github @mentions, which link to the username mentioned (since v1.6.0) 
+ 
+
+**NOTE**: Please note that until version 1.6.0, all of these options are ***DISABLED*** by default in the cli tool.
  
 ## Flavors
 

@@ -109,3 +109,25 @@ describe('showdown.getAllExtensions()', function () {
     showdown.getAllExtensions().should.eql({bar: [extObjMock]});
   });
 });
+
+describe('showdown.setFlavor()', function () {
+  'use strict';
+  it('should set flavor to github', function () {
+    showdown.setFlavor('github');
+    showdown.getFlavor().should.equal('github');
+    showdown.setFlavor('vanilla');
+  });
+
+  it('should set options correctly', function () {
+    showdown.setFlavor('github');
+    var ghOpts = showdown.getFlavorOptions('github'),
+        shOpts = showdown.getOptions();
+    for (var opt in ghOpts) {
+      if (ghOpts.hasOwnProperty(opt)) {
+        shOpts.should.have.property(opt);
+        shOpts[opt].should.equal(ghOpts[opt]);
+      }
+    }
+    showdown.setFlavor('vanilla');
+  });
+});

@@ -38,7 +38,12 @@ showdown.Converter = function (converterOptions) {
        * @private
        * @type {{}}
        */
-      listeners = {};
+      listeners = {},
+
+      /**
+       * The flavor set in this converter
+       */
+      setConvFlavor = setFlavor;
 
   _constructor();
 
@@ -362,14 +367,24 @@ showdown.Converter = function (converterOptions) {
    * @param {string} name
    */
   this.setFlavor = function (name) {
-    if (flavor.hasOwnProperty(name)) {
-      var preset = flavor[name];
-      for (var option in preset) {
-        if (preset.hasOwnProperty(option)) {
-          options[option] = preset[option];
-        }
+    if (!flavor.hasOwnProperty(name)) {
+      throw Error(name + ' flavor was not found');
+    }
+    var preset = flavor[name];
+    setConvFlavor = name;
+    for (var option in preset) {
+      if (preset.hasOwnProperty(option)) {
+        options[option] = preset[option];
       }
     }
+  };
+
+  /**
+   * Get the currently set flavor of this converter
+   * @returns {string}
+   */
+  this.getFlavor = function () {
+    return setConvFlavor;
   };
 
   /**

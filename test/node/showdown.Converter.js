@@ -27,24 +27,14 @@ describe('showdown.Converter', function () {
     });
   });
 
-  describe('setFlavor method', function () {
+  describe('converter.setFlavor()', function () {
 
     /**
      * Test setFlavor('github')
      */
     describe('github', function () {
       var converter = new showdown.Converter(),
-        ghOpts = {
-          omitExtraWLInCodeBlocks:   true,
-          prefixHeaderId:            'user-content-',
-          simplifiedAutoLink:        true,
-          literalMidWordUnderscores: true,
-          strikethrough:             true,
-          tables:                    true,
-          tablesHeaderId:            true,
-          ghCodeBlocks:              true,
-          tasklists:                 true
-        };
+          ghOpts = showdown.getFlavorOptions('github');
 
       converter.setFlavor('github');
 
@@ -58,6 +48,33 @@ describe('showdown.Converter', function () {
           converter.getOption(key).should.equal(val);
         });
       }
+    });
+  });
+
+  describe('getFlavor method', function () {
+
+    // reset showdown
+    showdown.setFlavor('vanilla');
+
+    describe('flavor', function () {
+      it('should be vanilla by default', function () {
+        var converter = new showdown.Converter();
+        converter.getFlavor().should.equal('vanilla');
+      });
+
+      it('should be changed if global option is changed', function () {
+        showdown.setFlavor('github');
+        var converter = new showdown.Converter();
+        converter.getFlavor().should.equal('github');
+        showdown.setFlavor('vanilla');
+      });
+
+      it('should not be changed if converter is initialized before global change', function () {
+        var converter = new showdown.Converter();
+        showdown.setFlavor('github');
+        converter.getFlavor().should.equal('vanilla');
+        showdown.setFlavor('vanilla');
+      });
     });
   });
 

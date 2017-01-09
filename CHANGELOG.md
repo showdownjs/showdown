@@ -1,5 +1,5 @@
 <a name="1.6.0"></a>
-# [1.6.0](https://github.com/showdownjs/showdown/compare/1.5.5...v1.6.0) (2017-01-09)
+# [1.6.0](https://github.com/showdownjs/showdown/compare/1.5.5...1.6.0) (2017-01-09)
 
 
 ### Bug Fixes

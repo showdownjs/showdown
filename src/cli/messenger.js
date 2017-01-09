@@ -1,8 +1,8 @@
 function Messenger(writeMode, supress, mute) {
   'use strict';
   writeMode = writeMode || 'stderr';
-  supress = !!supress;
-  mute = (!!supress || !!mute);
+  supress = (!!supress || !!mute);
+  mute = !!mute;
   this._print = (writeMode === 'stdout') ? console.log : console.error;
 
   this.errorExit = function (e) {
@@ -15,6 +15,7 @@ function Messenger(writeMode, supress, mute) {
 
   this.okExit = function () {
     if (!mute) {
+      this._print('\n');
       this._print('DONE!');
     }
     process.exit(0);

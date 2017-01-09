@@ -6,7 +6,7 @@ describe('showdown cli', function () {
   if (semver.gt(process.versions.node, '0.12.0')) {
     var execSync = require('child_process').execSync;
     it('basic stdin stdout', function () {
-      var otp = execSync(cmd + ' makehtml', {
+      var otp = execSync(cmd + ' makehtml -q', {
         encoding: 'utf8',
         input: '**foo**'
       });

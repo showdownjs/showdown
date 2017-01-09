@@ -46,6 +46,18 @@ yargs.reset()
     alias : 'flavor',
     describe: 'Run with a predetermined flavor of options. Default is vanilla',
     type: 'string'
+  })
+  .option('q', {
+    alias: 'quiet',
+    description: 'Quiet mode. Only print errors',
+    type: 'boolean',
+    default: false
+  })
+  .option('m', {
+    alias: 'mute',
+    description: 'Mute mode. Does not print anything',
+    type: 'boolean',
+    default: false
   });
 
 // load showdown default options
@@ -70,7 +82,7 @@ function run() {
        * MSG object
        * @type {Messenger}
        */
-      messenger = new Messenger(msgMode),
+      messenger = new Messenger(msgMode, argv.q, argv.m),
       read = (readMode === 'stdin') ? readFromStdIn : readFromFile,
       write = (writeMode === 'stdout') ? writeToStdOut : writeToFile,
       enc = argv.encoding || 'utf8',
@@ -106,8 +118,6 @@ function run() {
   // write the output
   messenger.printMsg('Writing data to ' + writeMode + '...');
   write(html, append);
-
-  messenger.printMsg('\n');
   messenger.okExit();
 
   function parseOptions(flavor) {

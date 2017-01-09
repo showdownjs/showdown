@@ -1,18 +1,20 @@
 var yargs = require('yargs'),
-    fs = require('fs'),
-    errorExit = require('./errorexit.js'),
-    showdown = require('../../dist/showdown');
+  fs = require('fs'),
+  Messenger = require('./messenger.js'),
+  showdown = require('../../dist/showdown'),
+  showdownOptions = showdown.getDefaultOptions(false);
 
 yargs.reset()
   .usage('Usage: showdown makehtml [options]')
   .example('showdown makehtml -i', 'Reads from stdin and outputs to stdout')
   .example('showdown makehtml -i foo.md -o bar.html', 'Reads \'foo.md\' and writes to \'bar.html\'')
+  .example('showdown makehtml -i --flavor="github"', 'Parses stdin using GFM style')
+  .version()
+  .alias('v', 'version')
   .config('c')
   .alias('c', 'config')
   .help('h')
   .alias('h', 'help')
-  .version()
-  .alias('v', 'version')
   .option('i', {
     alias : 'input',
     describe: 'Input source. Usually a md file. If omitted or empty, reads from stdin',
@@ -32,7 +34,8 @@ yargs.reset()
   .option('a', {
     alias : 'append',
     describe: 'Append data to output instead of overwriting',
-    type: 'string'
+    type: 'string',
+    default: false
   })
   .option('e', {
     alias : 'extensions',
@@ -45,87 +48,135 @@ yargs.reset()
     type: 'string'
   });
 
-yargs.options(showdown.getDefaultOptions(false));
-argv = yargs.argv;
-
-function run() {
-  'use strict';
-  var input = '',
-    enc = 'utf8',
-    output;
-
-  if (argv.encoding) {
-    enc = argv.encoding;
-  }
-
-  // to avoid passing extensions to converter
-  delete argv.extensions;
-  var converter = new showdown.Converter(argv);
-
-  // Load extensions
-  if (argv.e) {
-    for (var i = 0; i < argv.e.length; ++i) {
-      loadExtension(argv.e[i], converter);
+// load showdown default options
+for (var opt in showdownOptions) {
+  if (showdownOptions.hasOwnProperty(opt)) {
+    if (showdownOptions[opt].defaultValue === false) {
+      showdownOptions[opt].default = null;
+    } else {
+      showdownOptions[opt].default = showdownOptions[opt].defaultValue;
     }
-  }
-
-  if (!argv.i || argv.i === '') {
-    // 'i' is undefined or empty, read from stdin
-    try {
-      var size = fs.fstatSync(process.stdin.fd).size;
-      input = size > 0 ? fs.readSync(process.stdin.fd, size)[0] : '';
-    } catch (e) {
-      var err = new Error('Could not read from stdin, reason: ' + e.message);
-      errorExit(err);
-    }
-  } else {
-    // 'i' has a value, read from file
-    try {
-      input = fs.readFileSync(argv.i, enc);
-    } catch (err) {
-      errorExit(err);
-    }
-  }
-
-  // Load flavor
-  if (argv.p) {
-    converter.setFlavor(argv.p);
-  }
-
-  // parse and convert file
-  output = converter.makeHtml(input);
-
-  // Write output
-  if (!argv.o || argv.o === '') {
-    // o is undefined or empty, write to stdout
-    process.stdout.write(output);
-    // we won't print anything since it would conspurcate stdout and,
-    // consequently, the outputted file
-  } else {
-    // o is has a value, presumably a file, write to it.
-
-    // If a flag is passed, it means we should append instead of overwriting.
-    // Only works with files, obviously
-    var write = (argv.a) ? fs.appendFileSync : fs.writeFileSync;
-
-    try {
-      write(argv.o, output);
-    } catch (err) {
-      errorExit(err);
-    }
-    console.error('DONE!');
+    yargs.option(opt, showdownOptions[opt]);
   }
 }
 
-function loadExtension(path, converter) {
+function run() {
   'use strict';
-  var ext;
-  try {
-    ext = require(path);
-    converter.addExtension(ext, path);
-  } catch (e) {
-    console.error('Could not load extension ' + path + '. Reason:');
-    console.error(e.message);
+  var argv = yargs.argv,
+      readMode = (!argv.i || argv.i === '') ? 'stdin' : 'file',
+      writeMode = (!argv.o || argv.o === '') ? 'stdout' : 'file',
+      msgMode = (writeMode === 'file') ? 'stdout' : 'stderr',
+      /**
+       * MSG object
+       * @type {Messenger}
+       */
+      messenger = new Messenger(msgMode),
+      read = (readMode === 'stdin') ? readFromStdIn : readFromFile,
+      write = (writeMode === 'stdout') ? writeToStdOut : writeToFile,
+      enc = argv.encoding || 'utf8',
+      flavor =  argv.p,
+      append = argv.a || false,
+      options = parseOptions(flavor),
+      converter = new showdown.Converter(options),
+      md, html;
+
+  // Load extensions
+  if (argv.e) {
+    messenger.printMsg('Loading extensions');
+    for (var i = 0; i < argv.e.length; ++i) {
+      try {
+        var ext = require(argv.e[i]);
+        converter.addExtension(ext, argv.e[i]);
+      } catch (e) {
+        messenger.printError('Could not load extension ' + argv.e[i] + '. Reason:');
+        messenger.errorExit(e);
+      }
+    }
+  }
+
+  messenger.printMsg('...');
+  // read the input
+  messenger.printMsg('Reading data from ' + readMode + '...');
+  md = read(enc);
+
+  // process the input
+  messenger.printMsg('Parsing markdown...');
+  html = converter.makeHtml(md);
+
+  // write the output
+  messenger.printMsg('Writing data to ' + writeMode + '...');
+  write(html, append);
+
+  messenger.printMsg('\n');
+  messenger.okExit();
+
+  function parseOptions(flavor) {
+    var options = {},
+      flavorOpts = showdown.getFlavorOptions(flavor) || {};
+
+    // if flavor is not undefined, let's tell the user we're loading that preset
+    if (flavor) {
+      messenger.printMsg('Loading ' + flavor + ' flavor.');
+    }
+
+    for (var opt in argv) {
+      if (argv.hasOwnProperty(opt)) {
+        // first we load the default options
+        if (showdownOptions.hasOwnProperty(opt) && showdownOptions[opt].default !== null) {
+          options[opt] = showdownOptions[opt].default;
+        }
+
+        // we now override defaults with flavor, if a flavor was indeed passed
+        if (flavorOpts.hasOwnProperty(opt)) {
+          options[opt] = flavorOpts[opt];
+        }
+
+        // lastly we override with explicit passed options
+        // being careful not to pass CLI specific options, such as -v, -h or --extensions
+        if (showdownOptions.hasOwnProperty(opt)) {
+          if (argv[opt] === true) {
+            messenger.printMsg('Enabling option ' + opt);
+            options[opt] = argv[opt];
+          } else if (argv[opt] === false) {
+            options[opt] = argv[opt];
+          }
+        }
+      }
+    }
+    return options;
+  }
+
+  function readFromStdIn() {
+    try {
+      var size = fs.fstatSync(process.stdin.fd).size;
+      return size > 0 ? fs.readSync(process.stdin.fd, size)[0] : '';
+    } catch (e) {
+      var err = new Error('Could not read from stdin, reason: ' + e.message);
+      messenger.errorExit(err);
+    }
+  }
+
+  function readFromFile(encoding) {
+    try {
+      return fs.readFileSync(argv.i, encoding);
+    } catch (err) {
+      messenger.errorExit(err);
+    }
+  }
+
+  function writeToStdOut(html) {
+    return process.stdout.write(html);
+  }
+
+  function writeToFile(html, append) {
+    // If a flag is passed, it means we should append instead of overwriting.
+    // Only works with files, obviously
+    var write = (append) ? fs.appendFileSync : fs.writeFileSync;
+    try {
+      write(argv.o, html);
+    } catch (err) {
+      messenger.errorExit(err);
+    }
   }
 }
 

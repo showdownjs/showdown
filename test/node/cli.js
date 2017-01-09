@@ -1,4 +1,3 @@
-/*
 var semver = require('semver'),
   cmd = 'node bin/showdown.js';
 
@@ -15,4 +14,3 @@ describe('showdown cli', function () {
     });
   }
 });
-*/

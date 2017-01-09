@@ -1,3 +1,29 @@
+<a name="1.6.0"></a>
+# [1.6.0](https://github.com/showdownjs/showdown/compare/1.5.5...v1.6.0) (2017-01-09)
+
+
+### Bug Fixes
+
+* **ghCompatibleHeaderId:** improve the number of removed chars ([d499feb](https://github.com/showdownjs/showdown/commit/d499feb))
+* **IE8:** fix for IE8 error on using isUndefined function ([561dc5f](https://github.com/showdownjs/showdown/commit/561dc5f)), closes [#280](https://github.com/showdownjs/showdown/issues/280)
+* **options:** fix ghCompatibleHeaderId that was set as string instead of boolean ([de7c37e](https://github.com/showdownjs/showdown/commit/de7c37e))
+* **simpleLineBreaks:** fix simpleLineBreaks option not working with non-ASCII chars and markdown delimiters ([b1c458a](https://github.com/showdownjs/showdown/commit/b1c458a)), closes [#318](https://github.com/showdownjs/showdown/issues/318) [#323](https://github.com/showdownjs/showdown/issues/323)
+
+### Features
+
+* **CLI:** add -q (quiet) and -m (mute) mode to CLI ([f3b86f0](https://github.com/showdownjs/showdown/commit/f3b86f0))
+* **CLI:flavor:** add flavor option to CLI ([2d6cd1e](https://github.com/showdownjs/showdown/commit/2d6cd1e))
+* **getFlavor:** add getFlavor method to showdown and Converter ([0eaf105](https://github.com/showdownjs/showdown/commit/0eaf105))
+* **ghMentions:** add support for github's @mentions ([f2671c0](https://github.com/showdownjs/showdown/commit/f2671c0)), closes [#51](https://github.com/showdownjs/showdown/issues/51)
+
+### BREAKING CHANGES:
+
+* CLI tool now uses the same option defaults as showdown main library. This mean
+  the default flavor is vanilla and ghCodeBlocks options is enabled by default.
+    
+    To update, add `--ghCodeBlocks="false"` to the command.
+
+
 <a name="1.5.5"></a>
 ## [1.5.5](https://github.com/showdownjs/showdown/compare/1.5.4...1.5.5) (2016-12-30)
 
@@ -72,44 +98,43 @@
 
 ### BREAKING CHANGES
 
-* syntax for sublists is now more restrictive. Before, sublists SHOULD be
-indented by 4 spaces, but indenting at least 2 spaces would work. 
-Now, sublists MUST be indented 4 spaces or they won't work.
+* syntax for sublists is now more restrictive. Before, sublists SHOULD be indented by 4 spaces, but indenting at least 2 spaces would work. 
+  Now, sublists MUST be indented 4 spaces or they won't work.
 
-With this input:
-```md
-* one
-  * two
-    * three
-```
-
-Before (ouput):
-```html
-<ul>
-  <li>one
+    With this input:
+    ```md
+    * one
+      * two
+        * three
+    ```
+    
+    Before (ouput):
+    ```html
     <ul>
+      <li>one
+        <ul>
+          <li>two
+            <ul><li>three</li></ul>
+          <li>
+        </ul>
+      </li>
+    <ul>
+    ```
+    
+    After (output):
+    ```html
+    <ul>
+      <li>one</li>
       <li>two
         <ul><li>three</li></ul>
-      <li>
+      </li>
     </ul>
-  </li>
-<ul>
-```
-
-After (output):
-```html
-<ul>
-  <li>one</li>
-  <li>two
-    <ul><li>three</li></ul>
-  </li>
-</ul>
-```
-
-To migrate either fix source md files or activate the option `disableForced4SpacesIndentedSublists`:
-```md
-showdown.setOption('disableForced4SpacesIndentedSublists', true);
-```
+    ```
+    
+    To migrate either fix source md files or activate the option `disableForced4SpacesIndentedSublists`:
+    ```md
+    showdown.setOption('disableForced4SpacesIndentedSublists', true);
+    ```
 
 
 <a name="1.4.4"></a>

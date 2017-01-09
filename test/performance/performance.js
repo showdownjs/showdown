@@ -108,7 +108,7 @@ function generateMD(filename, obj, asTable) {
 
   for (var version in obj) {
     if (obj.hasOwnProperty(version)) {
-      otp += '## [version ' + version + '](' + performance.githubLink + ')\n\n';
+      otp += '## [version ' + version + '](' + performance.githubLink + version + ')\n\n';
       var testSuite = obj[version];
       for (var i = 0; i < testSuite.length; ++i) {
         otp += '### Test Suite: ' + testSuite[i].suiteName + ' (' + testSuite[i].cycles + ' cycles)\n';

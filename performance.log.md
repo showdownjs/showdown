@@ -1,7 +1,50 @@
 # Performance Tests for showdown
 
 
-## [version 1.5.6](https://github.com/showdownjs/showdown/tree/)
+## [version 1.6.0](https://github.com/showdownjs/showdown/tree/1.6.0)
+
+### Test Suite: Basic (100 cycles)
+| test | avgTime | max | min |
+|:-----|--------:|----:|----:|
+|Simple "Hello World"|0.294|5.326|0.155|
+|readme.md|8.599|16.906|7.736|
+
+### Test Suite: subParsers (1000 cycles)
+| test | avgTime | max | min |
+|:-----|--------:|----:|----:|
+|hashHTMLBlocks|0.692|1.135|0.642|
+|anchors|0.204|0.530|0.175|
+|autoLinks|0.016|0.221|0.014|
+|blockGamut|7.991|18.830|6.982|
+|blockQuotes|0.063|0.261|0.060|
+|codeBlocks|0.073|1.277|0.063|
+|codeSpans|0.195|0.751|0.177|
+|detab|0.025|0.259|0.023|
+|encodeAmpsAndAngles|0.019|0.332|0.014|
+|encodeBackslashEscapes|0.031|0.456|0.030|
+|encodeCode|0.193|0.651|0.159|
+|encodeEmailAddress|2.343|5.203|2.145|
+|escapeSpecialCharsWithinTagAttributes|0.066|0.620|0.059|
+|githubCodeBlocks|0.100|4.566|0.058|
+|hashBlock|0.029|6.856|0.011|
+|hashElement|0.001|0.210|0.000|
+|hashHTMLSpans|0.024|5.002|0.011|
+|hashPreCodeTags|0.018|0.262|0.015|
+|headers|0.485|8.314|0.410|
+|images|0.042|1.295|0.035|
+|italicsAndBold|0.040|0.312|0.036|
+|lists|5.541|11.729|5.039|
+|outdent|0.052|0.776|0.046|
+|paragraphs|1.423|2.536|1.290|
+|spanGamut|0.663|1.344|0.605|
+|strikethrough|0.000|0.243|0.000|
+|stripBlankLines|0.031|0.274|0.028|
+|stripLinkDefinitions|0.071|0.345|0.063|
+|tables|0.001|0.212|0.000|
+|unescapeSpecialChars|0.004|0.349|0.003|
+
+
+## [version 1.5.6](https://github.com/showdownjs/showdown/tree/1.5.6)
 
 ### Test Suite: Basic (100 cycles)
 | test | avgTime | max | min |
@@ -44,7 +87,7 @@
 |unescapeSpecialChars|0.003|0.152|0.003|
 
 
-## [version 1.5.5](https://github.com/showdownjs/showdown/tree/)
+## [version 1.5.5](https://github.com/showdownjs/showdown/tree/1.5.5)
 
 ### Test Suite: Basic (100 cycles)
 | test | avgTime | max | min |
@@ -87,7 +130,7 @@
 |unescapeSpecialChars|0.004|0.187|0.003|
 
 
-## [version 1.5.4](https://github.com/showdownjs/showdown/tree/)
+## [version 1.5.4](https://github.com/showdownjs/showdown/tree/1.5.4)
 
 ### Test Suite: Basic (100 cycles)
 | test | avgTime | max | min |

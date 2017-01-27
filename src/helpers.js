@@ -252,6 +252,46 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
 };
 
 /**
+ * Obfuscate an e-mail address through the use of Character Entities,
+ * transforming ASCII characters into their equivalent decimal or hex entities.
+ *
+ * Since it has a random component, subsequent calls to this function produce different results
+ *
+ * @param {string} mail
+ * @returns {string}
+ */
+showdown.helper.encodeEmailAddress = function (mail) {
+  'use strict';
+  var encode = [
+    function (ch) {
+      return '&#' + ch.charCodeAt(0) + ';';
+    },
+    function (ch) {
+      return '&#x' + ch.charCodeAt(0).toString(16) + ';';
+    },
+    function (ch) {
+      return ch;
+    }
+  ];
+
+  mail = mail.replace(/./g, function (ch) {
+    if (ch === '@') {
+      // this *must* be encoded. I insist.
+      ch = encode[Math.floor(Math.random() * 2)](ch);
+    } else {
+      var r = Math.random();
+      // roughly 10% raw, 45% hex, 45% dec
+      ch = (
+        r > 0.9 ? encode[2](ch) : r > 0.45 ? encode[1](ch) : encode[0](ch)
+      );
+    }
+    return ch;
+  });
+
+  return mail;
+};
+
+/**
  * POLYFILLS
  */
 // use this instead of builtin is undefined for IE8 compatibility

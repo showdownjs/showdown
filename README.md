@@ -294,6 +294,9 @@ var defaultOptions = showdown.getDefaultOptions();
  
  * **ghMentions**: (boolean) [default false] Enables github @mentions, which link to the username mentioned (since v1.6.0) 
  
+ * **encodeEmails**: (boolean) [default true] Enables e-mail addresses encoding through the use of Character Entities, transforming ASCII e-mail addresses into its equivalent decimal entities. (since v1.6.1)
+
+   NOTE: Prior to version 1.6.1, emails would always be obfuscated through dec and hex encoding.
 
 **NOTE**: Please note that until version 1.6.0, all of these options are ***DISABLED*** by default in the cli tool.
  

@@ -36,8 +36,15 @@ showdown.subParser('autoLinks', function (text, options, globals) {
   }
 
   function replaceMail(wholeMatch, mail) {
-    var unescapedStr = showdown.subParser('unescapeSpecialChars')(mail);
-    return showdown.subParser('encodeEmailAddress')(unescapedStr);
+    var href = 'mailto:';
+    mail = showdown.subParser('unescapeSpecialChars')(mail);
+    if (options.encodeEmails) {
+      mail = showdown.helper.encodeEmailAddress(mail);
+      href = showdown.helper.encodeEmailAddress(href + mail);
+    } else {
+      href = href + mail;
+    }
+    return '<a href="' + href + '">' + mail + '</a>';
   }
 
   text = globals.converter._dispatch('autoLinks.after', text, options, globals);

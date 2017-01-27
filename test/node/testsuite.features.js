@@ -53,6 +53,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({ghCompatibleHeaderId: true});
     } else if (testsuite[i].name === 'ghMentions') {
       converter = new showdown.Converter({ghMentions: true});
+    } else if (testsuite[i].name === 'disable-email-encoding') {
+      converter = new showdown.Converter({encodeEmails: false});
     } else {
       converter = new showdown.Converter();
     }

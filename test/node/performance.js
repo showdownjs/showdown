@@ -78,9 +78,6 @@ function runTests() {
     .add('encodeCode', function () {
       showdown.subParser('encodeCode')(readmeMD, options, globals);
     })
-    .add('encodeEmailAddress', function () {
-      showdown.subParser('encodeEmailAddress')(readmeMD, options, globals);
-    })
     .add('escapeSpecialCharsWithinTagAttributes', function () {
       showdown.subParser('escapeSpecialCharsWithinTagAttributes')(readmeMD, options, globals);
     })

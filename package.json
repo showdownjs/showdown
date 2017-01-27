@@ -39,7 +39,7 @@
     "showdown": "bin/showdown.js"
   },
   "devDependencies": {
-    "chai": "^1.10.0",
+    "chai": "^3.5.0",
     "grunt": "^0.4.5",
     "grunt-contrib-clean": "^0.6.0",
     "grunt-contrib-concat": "^0.5.0",

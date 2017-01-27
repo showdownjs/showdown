@@ -1,14 +1,13 @@
 /**
  * Created by Estevao on 27/01/2017.
  */
-
 var bootstrap = require('../bootstrap.js'),
-  showdown = bootstrap.showdown,
-  encoder = showdown.helper.encodeEmailAddress;
+  showdown = bootstrap.showdown;
 
-describe('encodeEmailAddress', function () {
+describe('encodeEmailAddress()', function () {
   'use strict';
-  var email = 'foobar@example.com',
+  var encoder = showdown.helper.encodeEmailAddress,
+      email = 'foobar@example.com',
       encodedEmail = encoder(email);
 
   it('should encode email', function () {

@@ -11,7 +11,7 @@ describe('showdown.options', function () {
       showdown.setOption('foo', 'bar');
       showdown.getOption('foo').should.equal('bar');
       showdown.resetOptions();
-      expect(showdown.getOption('foo')).to.be.undefined();
+      (typeof showdown.getOption('foo')).should.equal('undefined');
     });
   });
 

@@ -55,6 +55,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({ghMentions: true});
     } else if (testsuite[i].name === 'disable-email-encoding') {
       converter = new showdown.Converter({encodeEmails: false});
+    } else if (testsuite[i].name === '#330.simplifiedAutoLink-drops-character-before-and-after-linked-mail') {
+      converter = new showdown.Converter({encodeEmails: false, simplifiedAutoLink: true});
     } else {
       converter = new showdown.Converter();
     }

@@ -1323,8 +1323,8 @@ showdown.subParser('autoLinks', function (text, options, globals) {
   var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)()(?=\s|$)(?!["<>])/gi,
       simpleURLRegex2 = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+?)([.!?()]?)(?=\s|$)(?!["<>])/gi,
       delimUrlRegex   = /<(((https?|ftp|dict):\/\/|www\.)[^'">\s]+)>/gi,
-      simpleMailRegex = /(?:^|\s)([A-Za-z0-9!#$%&'*+-/=?^_`{|}~.]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(?:$|\s)/gi,
-      delimMailRegex  = /<(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
+      simpleMailRegex = /(^|\s)(?:mailto:)?([A-Za-z0-9!#$%&'*+-/=?^_`{|}~.]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(?=$|\s)/gmi,
+      delimMailRegex  = /<()(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
 
   text = text.replace(delimUrlRegex, replaceLink);
   text = text.replace(delimMailRegex, replaceMail);
@@ -1352,8 +1352,9 @@ showdown.subParser('autoLinks', function (text, options, globals) {
     return '<a href="' + link + '">' + lnkTxt + '</a>' + append;
   }
 
-  function replaceMail(wholeMatch, mail) {
+  function replaceMail(wholeMatch, b, mail) {
     var href = 'mailto:';
+    b = b || '';
     mail = showdown.subParser('unescapeSpecialChars')(mail);
     if (options.encodeEmails) {
       mail = showdown.helper.encodeEmailAddress(mail);
@@ -1361,7 +1362,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
     } else {
       href = href + mail;
     }
-    return '<a href="' + href + '">' + mail + '</a>';
+    return b + '<a href="' + href + '">' + mail + '</a>';
   }
 
   text = globals.converter._dispatch('autoLinks.after', text, options, globals);

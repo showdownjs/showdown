@@ -73,7 +73,13 @@ showdown.subParser('anchors', function (text, options, globals) {
       if (escape === '\\') {
         return st + mentions;
       }
-      return st + '<a href="https://www.github.com/' + username + '">' + mentions + '</a>';
+
+      //check if options.ghMentionsLink is a string
+      if (!showdown.helper.isString(options.ghMentionsLink)) {
+        throw new Error('ghMentionsLink option must be a string');
+      }
+      var lnk = options.ghMentionsLink.replace(/\{u}/g, username);
+      return st + '<a href="' + lnk + '">' + mentions + '</a>';
     });
   }
 

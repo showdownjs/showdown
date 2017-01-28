@@ -38,12 +38,15 @@ showdown.subParser('anchors', function (text, options, globals) {
       }
     }
 
-    url = showdown.helper.escapeCharacters(url, '*_', false);
+    //url = showdown.helper.escapeCharacters(url, '*_', false); // replaced line to improve performance
+    url = url.replace(showdown.helper.regexes.asteriskAndDash, showdown.helper.escapeCharactersCallback);
+
     var result = '<a href="' + url + '"';
 
     if (title !== '' && title !== null) {
       title = title.replace(/"/g, '&quot;');
-      title = showdown.helper.escapeCharacters(title, '*_', false);
+      //title = showdown.helper.escapeCharacters(title, '*_', false); // replaced line to improve performance
+      title = title.replace(showdown.helper.regexes.asteriskAndDash, showdown.helper.escapeCharactersCallback);
       result += ' title="' + title + '"';
     }
 

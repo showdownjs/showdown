@@ -10,9 +10,10 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text) {
   var regex = /(<[a-z\/!$]("[^"]*"|'[^']*'|[^'">])*>|<!(--.*?--\s*)+>)/gi;
 
   text = text.replace(regex, function (wholeMatch) {
-    var tag = wholeMatch.replace(/(.)<\/?code>(?=.)/g, '$1`');
-    tag = showdown.helper.escapeCharacters(tag, '\\`*_', false);
-    return tag;
+    return wholeMatch
+      .replace(/(.)<\/?code>(?=.)/g, '$1`')
+    //tag = showdown.helper.escapeCharacters(tag, '\\`*_', false);
+      .replace(/([\\`*_])/g, showdown.helper.escapeCharactersCallback);
   });
 
   return text;

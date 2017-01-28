@@ -333,3 +333,11 @@ if (typeof(console) === 'undefined') {
     }
   };
 }
+
+/**
+ * Common regexes.
+ * We declare some common regexes to improve performance
+ */
+showdown.helper.regexes = {
+  asteriskAndDash: /([*_])/g
+};

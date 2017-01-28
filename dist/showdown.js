@@ -832,6 +832,14 @@ if (typeof(console) === 'undefined') {
 }
 
 /**
+ * Common regexes.
+ * We declare some common regexes to improve performance
+ */
+showdown.helper.regexes = {
+  asteriskAndDash: /([*_])/g
+};
+
+/**
  * Created by Estevao on 31-05-2015.
  */
 
@@ -1297,12 +1305,15 @@ showdown.subParser('anchors', function (text, options, globals) {
       }
     }
 
-    url = showdown.helper.escapeCharacters(url, '*_', false);
+    //url = showdown.helper.escapeCharacters(url, '*_', false); // replaced line to improve performance
+    url = url.replace(showdown.helper.regexes.asteriskAndDash, showdown.helper.escapeCharactersCallback);
+
     var result = '<a href="' + url + '"';
 
     if (title !== '' && title !== null) {
       title = title.replace(/"/g, '&quot;');
-      title = showdown.helper.escapeCharacters(title, '*_', false);
+      //title = showdown.helper.escapeCharacters(title, '*_', false); // replaced line to improve performance
+      title = title.replace(showdown.helper.regexes.asteriskAndDash, showdown.helper.escapeCharactersCallback);
       result += ' title="' + title + '"';
     }
 
@@ -1636,14 +1647,15 @@ showdown.subParser('encodeCode', function (text) {
 
   // Encode all ampersands; HTML entities are not
   // entities within a Markdown code span.
-  text = text.replace(/&/g, '&amp;');
-
+  text = text
+    .replace(/&/g, '&amp;')
   // Do the angle bracket song and dance:
-  text = text.replace(/</g, '&lt;');
-  text = text.replace(/>/g, '&gt;');
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
 
   // Now, escape characters that are magic in Markdown:
-  text = showdown.helper.escapeCharacters(text, '*_{}[]\\', false);
+  //text = showdown.helper.escapeCharacters(text, '*_{}[]\\', false); // replaced line to improve performance
+    .replace(/([*_{}\[\]\\])/g, showdown.helper.escapeCharactersCallback);
 
   // jj the line above breaks this:
   //---
@@ -1667,9 +1679,10 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text) {
   var regex = /(<[a-z\/!$]("[^"]*"|'[^']*'|[^'">])*>|<!(--.*?--\s*)+>)/gi;
 
   text = text.replace(regex, function (wholeMatch) {
-    var tag = wholeMatch.replace(/(.)<\/?code>(?=.)/g, '$1`');
-    tag = showdown.helper.escapeCharacters(tag, '\\`*_', false);
-    return tag;
+    return wholeMatch
+      .replace(/(.)<\/?code>(?=.)/g, '$1`')
+    //tag = showdown.helper.escapeCharacters(tag, '\\`*_', false);
+      .replace(/([\\`*_])/g, showdown.helper.escapeCharactersCallback);
   });
 
   return text;
@@ -2014,14 +2027,19 @@ showdown.subParser('images', function (text, options, globals) {
       }
     }
 
-    altText = altText.replace(/"/g, '&quot;');
-    altText = showdown.helper.escapeCharacters(altText, '*_', false);
-    url = showdown.helper.escapeCharacters(url, '*_', false);
+    altText = altText
+      .replace(/"/g, '&quot;')
+    //altText = showdown.helper.escapeCharacters(altText, '*_', false);
+      .replace(showdown.helper.regexes.asteriskAndDash, showdown.helper.escapeCharactersCallback);
+    //url = showdown.helper.escapeCharacters(url, '*_', false);
+    url = url.replace(showdown.helper.regexes.asteriskAndDash, showdown.helper.escapeCharactersCallback);
     var result = '<img src="' + url + '" alt="' + altText + '"';
 
     if (title) {
-      title = title.replace(/"/g, '&quot;');
-      title = showdown.helper.escapeCharacters(title, '*_', false);
+      title = title
+        .replace(/"/g, '&quot;')
+      //title = showdown.helper.escapeCharacters(title, '*_', false);
+        .replace(showdown.helper.regexes.asteriskAndDash, showdown.helper.escapeCharactersCallback);
       result += ' title="' + title + '"';
     }
 

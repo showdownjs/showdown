@@ -1407,10 +1407,7 @@ showdown.subParser('blockGamut', function (text, options, globals) {
   text = showdown.subParser('headers')(text, options, globals);
 
   // Do Horizontal Rules:
-  var key = showdown.subParser('hashBlock')('<hr />', options, globals);
-  text = text.replace(/^ {0,2}( ?-){3,}[ \t]*$/gm, key);
-  text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, key);
-  text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, key);
+  text = showdown.subParser('horizontalRule')(text, options, globals);
 
   text = showdown.subParser('lists')(text, options, globals);
   text = showdown.subParser('codeBlocks')(text, options, globals);
@@ -1954,6 +1951,22 @@ showdown.subParser('headers', function (text, options, globals) {
   }
 
   text = globals.converter._dispatch('headers.after', text, options, globals);
+  return text;
+});
+
+/**
+ * Turn Markdown link shortcuts into XHTML <a> tags.
+ */
+showdown.subParser('horizontalRule', function (text, options, globals) {
+  'use strict';
+  text = globals.converter._dispatch('horizontalRule.before', text, options, globals);
+
+  var key = showdown.subParser('hashBlock')('<hr />', options, globals);
+  text = text.replace(/^ {0,2}( ?-){3,}[ \t]*$/gm, key);
+  text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, key);
+  text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, key);
+
+  text = globals.converter._dispatch('horizontalRule.after', text, options, globals);
   return text;
 });
 

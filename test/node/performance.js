@@ -29,7 +29,7 @@ var globals = {
   options = showdown.getOptions();
 
 function runTests() {
-  var readmeMD = fs.readFileSync('test/performance.testfile.md', 'utf8');
+  var testMDFile = fs.readFileSync('test/performance.testfile.md', 'utf8');
   new performance.Suite('Basic')
     .setOption('cycles', 50)
     .add('Simple "Hello World"', function () {
@@ -37,7 +37,7 @@ function runTests() {
     })
     .add('readme.md', {
       prepare: function () {
-        return readmeMD;
+        return testMDFile;
       },
       test: function (mdText) {
         converter.makeHtml(mdText);
@@ -46,91 +46,96 @@ function runTests() {
   new performance.Suite('subParsers')
     .setOption('cycles', 20)
     .add('hashHTMLBlocks', function () {
-      showdown.subParser('hashHTMLBlocks')(readmeMD, options, globals);
+      showdown.subParser('hashHTMLBlocks')(testMDFile, options, globals);
     })
     .add('anchors', function () {
-      showdown.subParser('anchors')(readmeMD, options, globals);
+      showdown.subParser('anchors')(testMDFile, options, globals);
     })
     .add('autoLinks', function () {
-      showdown.subParser('autoLinks')(readmeMD, options, globals);
+      showdown.subParser('autoLinks')(testMDFile, options, globals);
     })
+    /*
     .add('blockGamut', function () {
-      showdown.subParser('blockGamut')(readmeMD, options, globals);
+      showdown.subParser('blockGamut')(testMDFile, options, globals);
     })
+    */
     .add('blockQuotes', function () {
-      showdown.subParser('blockQuotes')(readmeMD, options, globals);
+      showdown.subParser('blockQuotes')(testMDFile, options, globals);
     })
     .add('codeBlocks', function () {
-      showdown.subParser('codeBlocks')(readmeMD, options, globals);
+      showdown.subParser('codeBlocks')(testMDFile, options, globals);
     })
     .add('codeSpans', function () {
-      showdown.subParser('codeSpans')(readmeMD, options, globals);
+      showdown.subParser('codeSpans')(testMDFile, options, globals);
     })
     .add('detab', function () {
-      showdown.subParser('detab')(readmeMD, options, globals);
+      showdown.subParser('detab')(testMDFile, options, globals);
     })
     .add('encodeAmpsAndAngles', function () {
-      showdown.subParser('encodeAmpsAndAngles')(readmeMD, options, globals);
+      showdown.subParser('encodeAmpsAndAngles')(testMDFile, options, globals);
     })
     .add('encodeBackslashEscapes', function () {
-      showdown.subParser('encodeBackslashEscapes')(readmeMD, options, globals);
+      showdown.subParser('encodeBackslashEscapes')(testMDFile, options, globals);
     })
     .add('encodeCode', function () {
-      showdown.subParser('encodeCode')(readmeMD, options, globals);
+      showdown.subParser('encodeCode')(testMDFile, options, globals);
     })
     .add('escapeSpecialCharsWithinTagAttributes', function () {
-      showdown.subParser('escapeSpecialCharsWithinTagAttributes')(readmeMD, options, globals);
+      showdown.subParser('escapeSpecialCharsWithinTagAttributes')(testMDFile, options, globals);
     })
     .add('githubCodeBlocks', function () {
-      showdown.subParser('githubCodeBlocks')(readmeMD, options, globals);
+      showdown.subParser('githubCodeBlocks')(testMDFile, options, globals);
     })
     .add('hashBlock', function () {
-      showdown.subParser('hashBlock')(readmeMD, options, globals);
+      showdown.subParser('hashBlock')(testMDFile, options, globals);
     })
     .add('hashElement', function () {
-      showdown.subParser('hashElement')(readmeMD, options, globals);
+      showdown.subParser('hashElement')(testMDFile, options, globals);
     })
     .add('hashHTMLSpans', function () {
-      showdown.subParser('hashHTMLSpans')(readmeMD, options, globals);
+      showdown.subParser('hashHTMLSpans')(testMDFile, options, globals);
     })
     .add('hashPreCodeTags', function () {
-      showdown.subParser('hashPreCodeTags')(readmeMD, options, globals);
+      showdown.subParser('hashPreCodeTags')(testMDFile, options, globals);
     })
     .add('headers', function () {
-      showdown.subParser('headers')(readmeMD, options, globals);
+      showdown.subParser('headers')(testMDFile, options, globals);
+    })
+    .add('horizontalRule', function () {
+      showdown.subParser('horizontalRule')(testMDFile, options, globals);
     })
     .add('images', function () {
-      showdown.subParser('images')(readmeMD, options, globals);
+      showdown.subParser('images')(testMDFile, options, globals);
     })
     .add('italicsAndBold', function () {
-      showdown.subParser('italicsAndBold')(readmeMD, options, globals);
+      showdown.subParser('italicsAndBold')(testMDFile, options, globals);
     })
     .add('lists', function () {
-      showdown.subParser('lists')(readmeMD, options, globals);
+      showdown.subParser('lists')(testMDFile, options, globals);
     })
     .add('outdent', function () {
-      showdown.subParser('outdent')(readmeMD, options, globals);
+      showdown.subParser('outdent')(testMDFile, options, globals);
     })
     .add('paragraphs', function () {
-      showdown.subParser('paragraphs')(readmeMD, options, globals);
+      showdown.subParser('paragraphs')(testMDFile, options, globals);
     })
     .add('spanGamut', function () {
-      showdown.subParser('spanGamut')(readmeMD, options, globals);
+      showdown.subParser('spanGamut')(testMDFile, options, globals);
     })
     .add('strikethrough', function () {
-      showdown.subParser('strikethrough')(readmeMD, options, globals);
+      showdown.subParser('strikethrough')(testMDFile, options, globals);
     })
     .add('stripBlankLines', function () {
-      showdown.subParser('stripBlankLines')(readmeMD, options, globals);
+      showdown.subParser('stripBlankLines')(testMDFile, options, globals);
     })
     .add('stripLinkDefinitions', function () {
-      showdown.subParser('stripLinkDefinitions')(readmeMD, options, globals);
+      showdown.subParser('stripLinkDefinitions')(testMDFile, options, globals);
     })
     .add('tables', function () {
-      showdown.subParser('tables')(readmeMD, options, globals);
+      showdown.subParser('tables')(testMDFile, options, globals);
     })
     .add('unescapeSpecialChars', function () {
-      showdown.subParser('unescapeSpecialChars')(readmeMD, options, globals);
+      showdown.subParser('unescapeSpecialChars')(testMDFile, options, globals);
     });
 }
 

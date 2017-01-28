@@ -29,9 +29,9 @@ var globals = {
   options = showdown.getOptions();
 
 function runTests() {
-  var readmeMD = fs.readFileSync('README.md', 'utf8');
+  var readmeMD = fs.readFileSync('test/performance.testfile.md', 'utf8');
   new performance.Suite('Basic')
-    .setOption('cycles', 100)
+    .setOption('cycles', 50)
     .add('Simple "Hello World"', function () {
       converter.makeHtml('*Hello* **World**!');
     })
@@ -44,7 +44,7 @@ function runTests() {
       }
     });
   new performance.Suite('subParsers')
-    .setOption('cycles', 1000)
+    .setOption('cycles', 20)
     .add('hashHTMLBlocks', function () {
       showdown.subParser('hashHTMLBlocks')(readmeMD, options, globals);
     })

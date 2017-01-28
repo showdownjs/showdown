@@ -35,7 +35,7 @@ function runTests() {
     .add('Simple "Hello World"', function () {
       converter.makeHtml('*Hello* **World**!');
     })
-    .add('readme.md', {
+    .add('performance.testfile.md', {
       prepare: function () {
         return testMDFile;
       },

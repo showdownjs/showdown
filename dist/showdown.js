@@ -1,4 +1,4 @@
-;/*! showdown 27-01-2017 */
+;/*! showdown 28-01-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -509,7 +509,7 @@ if (!showdown.hasOwnProperty('helper')) {
  * @param {string} a
  * @returns {boolean}
  */
-showdown.helper.isString = function isString(a) {
+showdown.helper.isString = function (a) {
   'use strict';
   return (typeof a === 'string' || a instanceof String);
 };
@@ -517,30 +517,13 @@ showdown.helper.isString = function isString(a) {
 /**
  * Check if var is a function
  * @static
- * @param {string} a
+ * @param {*} a
  * @returns {boolean}
  */
-showdown.helper.isFunction = function isFunction(a) {
+showdown.helper.isFunction = function (a) {
   'use strict';
   var getType = {};
   return a && getType.toString.call(a) === '[object Function]';
-};
-
-/**
- * ForEach helper function
- * @static
- * @param {*} obj
- * @param {function} callback
- */
-showdown.helper.forEach = function forEach(obj, callback) {
-  'use strict';
-  if (typeof obj.forEach === 'function') {
-    obj.forEach(callback);
-  } else {
-    for (var i = 0; i < obj.length; i++) {
-      callback(obj[i], i, obj);
-    }
-  }
 };
 
 /**
@@ -549,7 +532,7 @@ showdown.helper.forEach = function forEach(obj, callback) {
  * @param {*} a
  * @returns {boolean}
  */
-showdown.helper.isArray = function isArray(a) {
+showdown.helper.isArray = function (a) {
   'use strict';
   return a.constructor === Array;
 };
@@ -560,9 +543,48 @@ showdown.helper.isArray = function isArray(a) {
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is `undefined`, else `false`.
  */
-showdown.helper.isUndefined = function isUndefined(value) {
+showdown.helper.isUndefined = function (value) {
   'use strict';
   return typeof value === 'undefined';
+};
+
+/**
+ * ForEach helper function
+ * Iterates over Arrays and Objects (own properties only)
+ * @static
+ * @param {*} obj
+ * @param {function} callback Accepts 3 params: 1. value, 2. key, 3. the original array/object
+ */
+showdown.helper.forEach = function (obj, callback) {
+  'use strict';
+  // check if obj is defined
+  if (showdown.helper.isUndefined(obj)) {
+    throw new Error('obj param is required');
+  }
+
+  if (showdown.helper.isUndefined(callback)) {
+    throw new Error('callback param is required');
+  }
+
+  if (!showdown.helper.isFunction(callback)) {
+    throw new Error('callback param must be a function/closure');
+  }
+
+  if (typeof obj.forEach === 'function') {
+    obj.forEach(callback);
+  } else if (showdown.helper.isArray(obj)) {
+    for (var i = 0; i < obj.length; i++) {
+      callback(obj[i], i, obj);
+    }
+  } else if (typeof (obj) === 'object') {
+    for (var prop in obj) {
+      if (obj.hasOwnProperty(prop)) {
+        callback(obj[prop], prop, obj);
+      }
+    }
+  } else {
+    throw new Error('obj does not seem to be an array or an iterable object');
+  }
 };
 
 /**
@@ -573,7 +595,7 @@ showdown.helper.isUndefined = function isUndefined(value) {
  */
 showdown.helper.stdExtName = function (s) {
   'use strict';
-  return s.replace(/[_-]||\s/g, '').toLowerCase();
+  return s.replace(/[_?*+\/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
 };
 
 function escapeCharactersCallback(wholeMatch, m1) {
@@ -599,7 +621,7 @@ showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
  * @param {boolean} afterBackslash
  * @returns {XML|string|void|*}
  */
-showdown.helper.escapeCharacters = function escapeCharacters(text, charsToEscape, afterBackslash) {
+showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash) {
   'use strict';
   // First we have to escape the escape characters so that
   // we can build a character class out of them

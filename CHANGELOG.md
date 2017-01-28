@@ -1,3 +1,21 @@
+<a name="1.6.1"></a>
+## [1.6.1](https://github.com/showdownjs/showdown/compare/1.6.0...1.6.1) (2017-01-28)
+
+
+### Bug Fixes
+
+* **simplifiedAutoLink:** fix missing spaces before and after email addresses ([5190b6a](https://github.com/showdownjs/showdown/commit/5190b6a)), closes [#330](https://github.com/showdownjs/showdown/issues/330)
+
+### Features
+
+* **encodeEmail:** add option to enable/disable mail obfuscation ([90c52b8](https://github.com/showdownjs/showdown/commit/90c52b8))
+
+### Notes
+
+This release also improves performance a bit (around 8%)
+
+
+
 <a name="1.6.0"></a>
 # [1.6.0](https://github.com/showdownjs/showdown/compare/1.5.5...1.6.0) (2017-01-09)
 

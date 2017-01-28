@@ -57,6 +57,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({encodeEmails: false});
     } else if (testsuite[i].name === '#330.simplifiedAutoLink-drops-character-before-and-after-linked-mail') {
       converter = new showdown.Converter({encodeEmails: false, simplifiedAutoLink: true});
+    } else if (testsuite[i].name === '#331.allow-escaping-of-tilde') {
+      converter = new showdown.Converter({strikethrough: true});
     } else {
       converter = new showdown.Converter();
     }

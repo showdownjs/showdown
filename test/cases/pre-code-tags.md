@@ -14,4 +14,3 @@ foobar
 <pre><code>
 <div>some html code</div>
 </code></pre>
-

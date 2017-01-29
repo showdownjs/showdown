@@ -64,3 +64,7 @@ escaped word\*with*asterixs
 escaped word\*\*with\*\*asterixs
 
 escaped word**\*with\***bold asterixs
+
+foo**bar**baz
+
+foo__bar__baz

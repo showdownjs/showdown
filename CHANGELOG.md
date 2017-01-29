@@ -1,3 +1,18 @@
+<a name="1.6.2"></a>
+## [1.6.2](https://github.com/showdownjs/showdown/compare/1.6.1...1.6.2) (2017-01-29)
+
+
+### Bug Fixes
+
+* **escapeSpecialCharsWithinTagAttributes:** add ~ and = to escaped chars ([bfcc0e4](https://github.com/showdownjs/showdown/commit/bfcc0e4))
+* **strikethrough:** allow escapinging tilde char ([24d47d7](https://github.com/showdownjs/showdown/commit/24d47d7)), closes [#331](https://github.com/showdownjs/showdown/issues/331)
+
+### Features
+
+* **ghMentionsLink:** add ability to define the generated url in @mentions ([a4c24c9](https://github.com/showdownjs/showdown/commit/a4c24c9))
+
+
+
 <a name="1.6.1"></a>
 ## [1.6.1](https://github.com/showdownjs/showdown/compare/1.6.0...1.6.1) (2017-01-28)
 

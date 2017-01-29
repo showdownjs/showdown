@@ -28,19 +28,6 @@ showdown.subParser('codeSpans', function (text, options, globals) {
 
   text = globals.converter._dispatch('codeSpans.before', text, options, globals);
 
-  /*
-   text = text.replace(/
-   (^|[^\\])					// Character before opening ` can't be a backslash
-   (`+)						// $2 = Opening run of `
-   (							// $3 = The code block
-   [^\r]*?
-   [^`]					// attacklab: work around lack of lookbehind
-   )
-   \2							// Matching closer
-   (?!`)
-   /gm, function(){...});
-   */
-
   if (typeof(text) === 'undefined') {
     text = '';
   }

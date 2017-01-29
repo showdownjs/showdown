@@ -1556,19 +1556,6 @@ showdown.subParser('codeSpans', function (text, options, globals) {
 
   text = globals.converter._dispatch('codeSpans.before', text, options, globals);
 
-  /*
-   text = text.replace(/
-   (^|[^\\])					// Character before opening ` can't be a backslash
-   (`+)						// $2 = Opening run of `
-   (							// $3 = The code block
-   [^\r]*?
-   [^`]					// attacklab: work around lack of lookbehind
-   )
-   \2							// Matching closer
-   (?!`)
-   /gm, function(){...});
-   */
-
   if (typeof(text) === 'undefined') {
     text = '';
   }
@@ -1632,7 +1619,7 @@ showdown.subParser('encodeAmpsAndAngles', function (text, options, globals) {
   text = text.replace(/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/g, '&amp;');
 
   // Encode naked <'s
-  text = text.replace(/<(?![a-z\/?\$!])/gi, '&lt;');
+  text = text.replace(/<(?![a-z\/?$!])/gi, '&lt;');
 
   text = globals.converter._dispatch('encodeAmpsAndAngles.after', text, options, globals);
   return text;
@@ -1654,7 +1641,7 @@ showdown.subParser('encodeBackslashEscapes', function (text, options, globals) {
   text = globals.converter._dispatch('encodeBackslashEscapes.before', text, options, globals);
 
   text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
-  text = text.replace(/\\([`*_{}\[\]()>#+-.!~])/g, showdown.helper.escapeCharactersCallback);
+  text = text.replace(/\\([`*_{}\[\]()>#+.!~=-])/g, showdown.helper.escapeCharactersCallback);
 
   text = globals.converter._dispatch('encodeBackslashEscapes.after', text, options, globals);
   return text;
@@ -1685,7 +1672,7 @@ showdown.subParser('encodeCode', function (text, options, globals) {
 });
 
 /**
- * Within tags -- meaning between < and > -- encode [\ ` * _] so they
+ * Within tags -- meaning between < and > -- encode [\ ` * _ ~ =] so they
  * don't conflict with their use in Markdown for code, italics and strong.
  */
 showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text, options, globals) {
@@ -1699,8 +1686,7 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text, opti
   text = text.replace(regex, function (wholeMatch) {
     return wholeMatch
       .replace(/(.)<\/?code>(?=.)/g, '$1`')
-    //tag = showdown.helper.escapeCharacters(tag, '\\`*_', false);
-      .replace(/([\\`*_ ~=])/g, showdown.helper.escapeCharactersCallback);
+      .replace(/([\\`*_~=])/g, showdown.helper.escapeCharactersCallback);
   });
 
   text = globals.converter._dispatch('escapeSpecialCharsWithinTagAttributes.after', text, options, globals);

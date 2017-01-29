@@ -10,7 +10,7 @@ showdown.subParser('encodeAmpsAndAngles', function (text, options, globals) {
   text = text.replace(/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/g, '&amp;');
 
   // Encode naked <'s
-  text = text.replace(/<(?![a-z\/?\$!])/gi, '&lt;');
+  text = text.replace(/<(?![a-z\/?$!])/gi, '&lt;');
 
   text = globals.converter._dispatch('encodeAmpsAndAngles.after', text, options, globals);
   return text;

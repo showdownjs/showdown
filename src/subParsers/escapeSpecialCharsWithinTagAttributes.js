@@ -1,5 +1,5 @@
 /**
- * Within tags -- meaning between < and > -- encode [\ ` * _] so they
+ * Within tags -- meaning between < and > -- encode [\ ` * _ ~ =] so they
  * don't conflict with their use in Markdown for code, italics and strong.
  */
 showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text, options, globals) {
@@ -13,8 +13,7 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text, opti
   text = text.replace(regex, function (wholeMatch) {
     return wholeMatch
       .replace(/(.)<\/?code>(?=.)/g, '$1`')
-    //tag = showdown.helper.escapeCharacters(tag, '\\`*_', false);
-      .replace(/([\\`*_ ~=])/g, showdown.helper.escapeCharactersCallback);
+      .replace(/([\\`*_~=])/g, showdown.helper.escapeCharactersCallback);
   });
 
   text = globals.converter._dispatch('escapeSpecialCharsWithinTagAttributes.after', text, options, globals);

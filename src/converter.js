@@ -285,8 +285,13 @@ showdown.Converter = function (converterOptions) {
     // detab
     text = showdown.subParser('detab')(text, options, globals);
 
-    // stripBlankLines
-    text = showdown.subParser('stripBlankLines')(text, options, globals);
+    /**
+     * Strip any lines consisting only of spaces and tabs.
+     * This makes subsequent regexs easier to write, because we can
+     * match consecutive blank lines with /\n+/ instead of something
+     * contorted like /[ \t]*\n+/
+     */
+    text = text.replace(/^[ \t]+$/mg, '');
 
     //run languageExtensions
     showdown.helper.forEach(langExtensions, function (ext) {

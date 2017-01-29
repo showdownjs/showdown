@@ -49,7 +49,7 @@ showdown.subParser('codeSpans', function (text, options, globals) {
       var c = m3;
       c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
       c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
-      c = showdown.subParser('encodeCode')(c);
+      c = showdown.subParser('encodeCode')(c, options, globals);
       return m1 + '<code>' + c + '</code>';
     }
   );

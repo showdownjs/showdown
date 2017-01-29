@@ -24,8 +24,8 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
 
     // First parse the github code block
-    codeblock = showdown.subParser('encodeCode')(codeblock);
-    codeblock = showdown.subParser('detab')(codeblock);
+    codeblock = showdown.subParser('encodeCode')(codeblock, options, globals);
+    codeblock = showdown.subParser('detab')(codeblock, options, globals);
     codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
     codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing whitespace
 

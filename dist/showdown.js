@@ -1131,8 +1131,13 @@ showdown.Converter = function (converterOptions) {
     // detab
     text = showdown.subParser('detab')(text, options, globals);
 
-    // stripBlankLines
-    text = showdown.subParser('stripBlankLines')(text, options, globals);
+    /**
+     * Strip any lines consisting only of spaces and tabs.
+     * This makes subsequent regexs easier to write, because we can
+     * match consecutive blank lines with /\n+/ instead of something
+     * contorted like /[ \t]*\n+/
+     */
+    text = text.replace(/^[ \t]+$/mg, '');
 
     //run languageExtensions
     showdown.helper.forEach(langExtensions, function (ext) {
@@ -1398,7 +1403,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
   function replaceMail(wholeMatch, b, mail) {
     var href = 'mailto:';
     b = b || '';
-    mail = showdown.subParser('unescapeSpecialChars')(mail);
+    mail = showdown.subParser('unescapeSpecialChars')(mail, options, globals);
     if (options.encodeEmails) {
       mail = showdown.helper.encodeEmailAddress(mail);
       href = showdown.helper.encodeEmailAddress(href + mail);
@@ -1499,9 +1504,9 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
         nextChar = m2,
         end = '\n';
 
-    codeblock = showdown.subParser('outdent')(codeblock);
-    codeblock = showdown.subParser('encodeCode')(codeblock);
-    codeblock = showdown.subParser('detab')(codeblock);
+    codeblock = showdown.subParser('outdent')(codeblock, options, globals);
+    codeblock = showdown.subParser('encodeCode')(codeblock, options, globals);
+    codeblock = showdown.subParser('detab')(codeblock, options, globals);
     codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
     codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing newlines
 
@@ -1572,7 +1577,7 @@ showdown.subParser('codeSpans', function (text, options, globals) {
       var c = m3;
       c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
       c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
-      c = showdown.subParser('encodeCode')(c);
+      c = showdown.subParser('encodeCode')(c, options, globals);
       return m1 + '<code>' + c + '</code>';
     }
   );
@@ -1584,8 +1589,9 @@ showdown.subParser('codeSpans', function (text, options, globals) {
 /**
  * Convert all tabs to spaces
  */
-showdown.subParser('detab', function (text) {
+showdown.subParser('detab', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('detab.before', text, options, globals);
 
   // expand first n-1 tabs
   text = text.replace(/\t(?=\t)/g, '    '); // g_tab_width
@@ -1610,15 +1616,17 @@ showdown.subParser('detab', function (text) {
   text = text.replace(/¨A/g, '    ');  // g_tab_width
   text = text.replace(/¨B/g, '');
 
+  text = globals.converter._dispatch('detab.after', text, options, globals);
   return text;
-
 });
 
 /**
  * Smart processing for ampersands and angle brackets that need to be encoded.
  */
-showdown.subParser('encodeAmpsAndAngles', function (text) {
+showdown.subParser('encodeAmpsAndAngles', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('encodeAmpsAndAngles.before', text, options, globals);
+
   // Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
   // http://bumppo.net/projects/amputator/
   text = text.replace(/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/g, '&amp;');
@@ -1626,6 +1634,7 @@ showdown.subParser('encodeAmpsAndAngles', function (text) {
   // Encode naked <'s
   text = text.replace(/<(?![a-z\/?\$!])/gi, '&lt;');
 
+  text = globals.converter._dispatch('encodeAmpsAndAngles.after', text, options, globals);
   return text;
 });
 
@@ -1640,10 +1649,14 @@ showdown.subParser('encodeAmpsAndAngles', function (text) {
  * ...but we're sidestepping its use of the (slow) RegExp constructor
  * as an optimization for Firefox.  This function gets called a LOT.
  */
-showdown.subParser('encodeBackslashEscapes', function (text) {
+showdown.subParser('encodeBackslashEscapes', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('encodeBackslashEscapes.before', text, options, globals);
+
   text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
   text = text.replace(/\\([`*_{}\[\]()>#+-.!~])/g, showdown.helper.escapeCharactersCallback);
+
+  text = globals.converter._dispatch('encodeBackslashEscapes.after', text, options, globals);
   return text;
 });
 
@@ -1652,8 +1665,10 @@ showdown.subParser('encodeBackslashEscapes', function (text) {
  * The point is that in code, these characters are literals,
  * and lose their special Markdown meanings.
  */
-showdown.subParser('encodeCode', function (text) {
+showdown.subParser('encodeCode', function (text, options, globals) {
   'use strict';
+
+  text = globals.converter._dispatch('encodeCode.before', text, options, globals);
 
   // Encode all ampersands; HTML entities are not
   // entities within a Markdown code span.
@@ -1662,9 +1677,7 @@ showdown.subParser('encodeCode', function (text) {
   // Do the angle bracket song and dance:
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
-
   // Now, escape characters that are magic in Markdown:
-  //text = showdown.helper.escapeCharacters(text, '*_{}[]\\', false); // replaced line to improve performance
     .replace(/([*_{}\[\]\\])/g, showdown.helper.escapeCharactersCallback);
 
   // jj the line above breaks this:
@@ -1674,6 +1687,7 @@ showdown.subParser('encodeCode', function (text) {
   //            special char: *
   // ---
 
+  text = globals.converter._dispatch('encodeCode.after', text, options, globals);
   return text;
 });
 
@@ -1681,8 +1695,9 @@ showdown.subParser('encodeCode', function (text) {
  * Within tags -- meaning between < and > -- encode [\ ` * _] so they
  * don't conflict with their use in Markdown for code, italics and strong.
  */
-showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text) {
+showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('escapeSpecialCharsWithinTagAttributes.before', text, options, globals);
 
   // Build a regex to find HTML tags and comments.  See Friedl's
   // "Mastering Regular Expressions", 2nd Ed., pp. 200-201.
@@ -1695,6 +1710,7 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text) {
       .replace(/([\\`*_ ~=])/g, showdown.helper.escapeCharactersCallback);
   });
 
+  text = globals.converter._dispatch('escapeSpecialCharsWithinTagAttributes.after', text, options, globals);
   return text;
 });
 
@@ -1724,8 +1740,8 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
 
     // First parse the github code block
-    codeblock = showdown.subParser('encodeCode')(codeblock);
-    codeblock = showdown.subParser('detab')(codeblock);
+    codeblock = showdown.subParser('encodeCode')(codeblock, options, globals);
+    codeblock = showdown.subParser('detab')(codeblock, options, globals);
     codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
     codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing whitespace
 
@@ -1747,8 +1763,11 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
 
 showdown.subParser('hashBlock', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('hashBlock.before', text, options, globals);
   text = text.replace(/(^\n+|\n+$)/g, '');
-  return '\n\n¨K' + (globals.gHtmlBlocks.push(text) - 1) + 'K\n\n';
+  text = '\n\n¨K' + (globals.gHtmlBlocks.push(text) - 1) + 'K\n\n';
+  text = globals.converter._dispatch('hashBlock.after', text, options, globals);
+  return text;
 });
 
 showdown.subParser('hashElement', function (text, options, globals) {
@@ -1773,6 +1792,7 @@ showdown.subParser('hashElement', function (text, options, globals) {
 
 showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('hashHTMLBlocks.before', text, options, globals);
 
   var blockTags = [
       'pre',
@@ -1837,49 +1857,58 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
   text = text.replace(/(?:\n\n)( {0,3}(?:<([?%])[^\r]*?\2>)[ \t]*(?=\n{2,}))/g,
     showdown.subParser('hashElement')(text, options, globals));
 
+  text = globals.converter._dispatch('hashHTMLBlocks.after', text, options, globals);
   return text;
 });
 
 /**
  * Hash span elements that should not be parsed as markdown
  */
-showdown.subParser('hashHTMLSpans', function (text, config, globals) {
+showdown.subParser('hashHTMLSpans', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('hashHTMLSpans.before', text, options, globals);
 
   var matches = showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');
 
   for (var i = 0; i < matches.length; ++i) {
     text = text.replace(matches[i][0], '¨C' + (globals.gHtmlSpans.push(matches[i][0]) - 1) + 'C');
   }
+
+  text = globals.converter._dispatch('hashHTMLSpans.after', text, options, globals);
   return text;
 });
 
 /**
  * Unhash HTML spans
  */
-showdown.subParser('unhashHTMLSpans', function (text, config, globals) {
+showdown.subParser('unhashHTMLSpans', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('unhashHTMLSpans.before', text, options, globals);
 
   for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
     text = text.replace('¨C' + i + 'C', globals.gHtmlSpans[i]);
   }
 
+  text = globals.converter._dispatch('unhashHTMLSpans.after', text, options, globals);
   return text;
 });
 
 /**
  * Hash span elements that should not be parsed as markdown
  */
-showdown.subParser('hashPreCodeTags', function (text, config, globals) {
+showdown.subParser('hashPreCodeTags', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('hashPreCodeTags.before', text, options, globals);
 
   var repFunc = function (wholeMatch, match, left, right) {
     // encode html entities
-    var codeblock = left + showdown.subParser('encodeCode')(match) + right;
+    var codeblock = left + showdown.subParser('encodeCode')(match, options, globals) + right;
     return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
   };
 
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^ {0,3}</code>\\s*</pre>', 'gim');
+
+  text = globals.converter._dispatch('hashPreCodeTags.after', text, options, globals);
   return text;
 });
 
@@ -2295,8 +2324,9 @@ showdown.subParser('lists', function (text, options, globals) {
 /**
  * Remove one level of line-leading tabs or spaces
  */
-showdown.subParser('outdent', function (text) {
+showdown.subParser('outdent', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('outdent.before', text, options, globals);
 
   // attacklab: hack around Konqueror 3.5.4 bug:
   // "----------bug".replace(/^-/g,"") == "bug"
@@ -2305,6 +2335,7 @@ showdown.subParser('outdent', function (text) {
   // attacklab: clean up hack
   text = text.replace(/¨0/g, '');
 
+  text = globals.converter._dispatch('outdent.after', text, options, globals);
   return text;
 });
 
@@ -2353,7 +2384,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
         // we need to check if ghBlock is a false positive
         if (codeFlag) {
           // use encoded version of all text
-          blockText = showdown.subParser('encodeCode')(globals.ghCodeBlocks[num].text);
+          blockText = showdown.subParser('encodeCode')(globals.ghCodeBlocks[num].text, options, globals);
         } else {
           blockText = globals.ghCodeBlocks[num].codeblock;
         }
@@ -2447,17 +2478,6 @@ showdown.subParser('strikethrough', function (text, options, globals) {
 });
 
 /**
- * Strip any lines consisting only of spaces and tabs.
- * This makes subsequent regexs easier to write, because we can
- * match consecutive blank lines with /\n+/ instead of something
- * contorted like /[ \t]*\n+/
- */
-showdown.subParser('stripBlankLines', function (text) {
-  'use strict';
-  return text.replace(/^[ \t]+$/mg, '');
-});
-
-/**
  * Strips link definitions from text, stores the URLs and titles in
  * hash references.
  * Link defs are in the form: ^[id]: url "optional title"
@@ -2472,7 +2492,7 @@ showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
 
   text = text.replace(regex, function (wholeMatch, linkId, url, width, height, blankLines, title) {
     linkId = linkId.toLowerCase();
-    globals.gUrls[linkId] = showdown.subParser('encodeAmpsAndAngles')(url);  // Link IDs are case-insensitive
+    globals.gUrls[linkId] = showdown.subParser('encodeAmpsAndAngles')(url, options, globals);  // Link IDs are case-insensitive
 
     if (blankLines) {
       // Oops, found blank lines, so it's not a title.
@@ -2633,13 +2653,16 @@ showdown.subParser('tables', function (text, options, globals) {
 /**
  * Swap back in all the special characters we've hidden.
  */
-showdown.subParser('unescapeSpecialChars', function (text) {
+showdown.subParser('unescapeSpecialChars', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('unescapeSpecialChars.before', text, options, globals);
 
   text = text.replace(/¨E(\d+)E/g, function (wholeMatch, m1) {
     var charCodeToReplace = parseInt(m1);
     return String.fromCharCode(charCodeToReplace);
   });
+
+  text = globals.converter._dispatch('unescapeSpecialChars.after', text, options, globals);
   return text;
 });
 

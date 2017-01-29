@@ -38,7 +38,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
   function replaceMail(wholeMatch, b, mail) {
     var href = 'mailto:';
     b = b || '';
-    mail = showdown.subParser('unescapeSpecialChars')(mail);
+    mail = showdown.subParser('unescapeSpecialChars')(mail, options, globals);
     if (options.encodeEmails) {
       mail = showdown.helper.encodeEmailAddress(mail);
       href = showdown.helper.encodeEmailAddress(href + mail);

@@ -1,8 +1,9 @@
 /**
  * Convert all tabs to spaces
  */
-showdown.subParser('detab', function (text) {
+showdown.subParser('detab', function (text, options, globals) {
   'use strict';
+  text = globals.converter._dispatch('detab.before', text, options, globals);
 
   // expand first n-1 tabs
   text = text.replace(/\t(?=\t)/g, '    '); // g_tab_width
@@ -27,6 +28,6 @@ showdown.subParser('detab', function (text) {
   text = text.replace(/¨A/g, '    ');  // g_tab_width
   text = text.replace(/¨B/g, '');
 
+  text = globals.converter._dispatch('detab.after', text, options, globals);
   return text;
-
 });

@@ -8,10 +8,10 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
 
     // attacklab: hack around Konqueror 3.5.4 bug:
     // "----------bug".replace(/^-/g,"") == "bug"
-    bq = bq.replace(/^[ \t]*>[ \t]?/gm, '~0'); // trim one level of quoting
+    bq = bq.replace(/^[ \t]*>[ \t]?/gm, '¨0'); // trim one level of quoting
 
     // attacklab: clean up hack
-    bq = bq.replace(/~0/g, '');
+    bq = bq.replace(/¨0/g, '');
 
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
     bq = showdown.subParser('githubCodeBlocks')(bq, options, globals);
@@ -22,8 +22,8 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
     bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wholeMatch, m1) {
       var pre = m1;
       // attacklab: hack around Konqueror 3.5.4 bug:
-      pre = pre.replace(/^  /mg, '~0');
-      pre = pre.replace(/~0/g, '');
+      pre = pre.replace(/^  /mg, '¨0');
+      pre = pre.replace(/¨0/g, '');
       return pre;
     });
 

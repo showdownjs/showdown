@@ -7,9 +7,9 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
   text = globals.converter._dispatch('codeBlocks.before', text, options, globals);
 
   // sentinel workarounds for lack of \A and \Z, safari\khtml bug
-  text += '~0';
+  text += '¨0';
 
-  var pattern = /(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g;
+  var pattern = /(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=¨0))/g;
   text = text.replace(pattern, function (wholeMatch, m1, m2) {
     var codeblock = m1,
         nextChar = m2,
@@ -31,7 +31,7 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
   });
 
   // strip sentinel
-  text = text.replace(/~0/, '');
+  text = text.replace(/¨0/, '');
 
   text = globals.converter._dispatch('codeBlocks.after', text, options, globals);
   return text;

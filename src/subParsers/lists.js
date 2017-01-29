@@ -39,16 +39,16 @@ showdown.subParser('lists', function (text, options, globals) {
     listStr = listStr.replace(/\n{2,}$/, '\n');
 
     // attacklab: add sentinel to emulate \z
-    listStr += '~0';
+    listStr += '¨0';
 
-    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
-        isParagraphed = (/\n[ \t]*\n(?!~0)/.test(listStr));
+    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
+        isParagraphed = (/\n[ \t]*\n(?!¨0)/.test(listStr));
 
     // Since version 1.5, nesting sublists requires 4 spaces (or 1 tab) indentation,
     // which is a syntax breaking change
     // activating this option reverts to old behavior
     if (options.disableForced4SpacesIndentedSublists) {
-      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm;
+      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0|\2([*+-]|\d+[.])[ \t]+))/gm;
     }
 
     listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
@@ -76,10 +76,10 @@ showdown.subParser('lists', function (text, options, globals) {
       // <ul><li><li><li>a</li></li></li></ul>
       // instead of:
       // <ul><li>- - a</li></ul>
-      // So, to prevent it, we will put a marker (~A)in the beginning of the line
+      // So, to prevent it, we will put a marker (¨A)in the beginning of the line
       // Kind of hackish/monkey patching, but seems more effective than overcomplicating the list parser
       item = item.replace(/^([-*+]|\d\.)[ \t]+[\S\n ]*/g, function (wm2) {
-        return '~A' + wm2;
+        return '¨A' + wm2;
       });
 
       // m1 - Leading line or
@@ -96,17 +96,17 @@ showdown.subParser('lists', function (text, options, globals) {
         // Colapse double linebreaks
         item = item.replace(/\n\n+/g, '\n\n');
         // replace double linebreaks with a placeholder
-        item = item.replace(/\n\n/g, '~B');
+        item = item.replace(/\n\n/g, '¨B');
         if (isParagraphed) {
           item = showdown.subParser('paragraphs')(item, options, globals);
         } else {
           item = showdown.subParser('spanGamut')(item, options, globals);
         }
-        item = item.replace(/~B/g, '\n\n');
+        item = item.replace(/¨B/g, '\n\n');
       }
 
-      // now we need to remove the marker (~A)
-      item = item.replace('~A', '');
+      // now we need to remove the marker (¨A)
+      item = item.replace('¨A', '');
       // we can finally wrap the line in list item tags
       item =  '<li' + bulletStyle + '>' + item + '</li>\n';
 
@@ -114,7 +114,7 @@ showdown.subParser('lists', function (text, options, globals) {
     });
 
     // attacklab: strip sentinel
-    listStr = listStr.replace(/~0/g, '');
+    listStr = listStr.replace(/¨0/g, '');
 
     globals.gListLevel--;
 
@@ -166,17 +166,17 @@ showdown.subParser('lists', function (text, options, globals) {
 
   // add sentinel to hack around khtml/safari bug:
   // http://bugs.webkit.org/show_bug.cgi?id=11231
-  text += '~0';
+  text += '¨0';
 
   if (globals.gListLevel) {
-    text = text.replace(/^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
+    text = text.replace(/^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
       function (wholeMatch, list, m2) {
         var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
         return parseConsecutiveLists(list, listType, true);
       }
     );
   } else {
-    text = text.replace(/(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
+    text = text.replace(/(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
       function (wholeMatch, m1, list, m3) {
         var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
         return parseConsecutiveLists(list, listType, false);
@@ -185,7 +185,7 @@ showdown.subParser('lists', function (text, options, globals) {
   }
 
   // strip sentinel
-  text = text.replace(/~0/, '');
+  text = text.replace(/¨0/, '');
   text = globals.converter._dispatch('lists.after', text, options, globals);
   return text;
 });

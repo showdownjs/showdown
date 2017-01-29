@@ -58,13 +58,13 @@ showdown.subParser('headers', function (text, options, globals) {
     if (ghHeaderId) {
       escapedId = m
         .replace(/ /g, '-')
-        //replace previously escaped chars (&, ~ and $)
+        // replace previously escaped chars (&, ¨ and $)
         .replace(/&amp;/g, '')
-        .replace(/~T/g, '')
-        .replace(/~D/g, '')
-        //replace rest of the chars (&~$ are repeated as they might have been escaped)
+        .replace(/¨T/g, '')
+        .replace(/¨D/g, '')
+        // replace rest of the chars (&~$ are repeated as they might have been escaped)
         // borrowed from github's redcarpet (some they should produce similar results)
-        .replace(/[&+$,\/:;=?@"#{}|^~\[\]`\\*)(%.!'<>]/g, '')
+        .replace(/[&+$,\/:;=?@"#{}|^¨~\[\]`\\*)(%.!'<>]/g, '')
         .toLowerCase();
     } else {
       escapedId = m.replace(/[^\w]/g, '').toLowerCase();

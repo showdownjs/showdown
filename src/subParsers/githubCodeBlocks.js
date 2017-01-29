@@ -18,7 +18,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
 
   text = globals.converter._dispatch('githubCodeBlocks.before', text, options, globals);
 
-  text += '~0';
+  text += '¨0';
 
   text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, language, codeblock) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
@@ -36,11 +36,11 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
     // Since GHCodeblocks can be false positives, we need to
     // store the primitive text and the parsed text in a global var,
     // and then return a token
-    return '\n\n~G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
+    return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
   });
 
   // attacklab: strip sentinel
-  text = text.replace(/~0/, '');
+  text = text.replace(/¨0/, '');
 
   return globals.converter._dispatch('githubCodeBlocks.after', text, options, globals);
 });

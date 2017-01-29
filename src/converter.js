@@ -258,16 +258,15 @@ showdown.Converter = function (converterOptions) {
       ghCodeBlocks:    []
     };
 
-    // attacklab: Replace ~ with ~T
-    // This lets us use tilde as an escape char to avoid md5 hashes
+    // This lets us use ¨ trema as an escape char to avoid md5 hashes
     // The choice of character is arbitrary; anything that isn't
     // magic in Markdown will work.
-    text = text.replace(/~/g, '~T');
+    text = text.replace(/¨/g, '¨T');
 
-    // attacklab: Replace $ with ~D
+    // Replace $ with ¨D
     // RegExp interprets $ as a special character
     // when it's in a replacement string
-    text = text.replace(/\$/g, '~D');
+    text = text.replace(/\$/g, '¨D');
 
     // Standardize line endings
     text = text.replace(/\r\n/g, '\n'); // DOS to Unix
@@ -305,10 +304,10 @@ showdown.Converter = function (converterOptions) {
     text = showdown.subParser('unescapeSpecialChars')(text, options, globals);
 
     // attacklab: Restore dollar signs
-    text = text.replace(/~D/g, '$$');
+    text = text.replace(/¨D/g, '$$');
 
-    // attacklab: Restore tildes
-    text = text.replace(/~T/g, '~');
+    // attacklab: Restore tremas
+    text = text.replace(/¨T/g, '¨');
 
     // Run output modifiers
     showdown.helper.forEach(outputModifiers, function (ext) {

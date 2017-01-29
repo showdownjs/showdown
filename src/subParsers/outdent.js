@@ -6,10 +6,10 @@ showdown.subParser('outdent', function (text) {
 
   // attacklab: hack around Konqueror 3.5.4 bug:
   // "----------bug".replace(/^-/g,"") == "bug"
-  text = text.replace(/^(\t|[ ]{1,4})/gm, '~0'); // attacklab: g_tab_width
+  text = text.replace(/^(\t|[ ]{1,4})/gm, '¨0'); // attacklab: g_tab_width
 
   // attacklab: clean up hack
-  text = text.replace(/~0/g, '');
+  text = text.replace(/¨0/g, '');
 
   return text;
 });

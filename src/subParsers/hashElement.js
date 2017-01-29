@@ -11,8 +11,8 @@ showdown.subParser('hashElement', function (text, options, globals) {
     // strip trailing blank lines
     blockText = blockText.replace(/\n+$/g, '');
 
-    // Replace the element text with a marker ("~KxK" where x is its key)
-    blockText = '\n\n~K' + (globals.gHtmlBlocks.push(blockText) - 1) + 'K\n\n';
+    // Replace the element text with a marker ("¨KxK" where x is its key)
+    blockText = '\n\n¨K' + (globals.gHtmlBlocks.push(blockText) - 1) + 'K\n\n';
 
     return blockText;
   };

@@ -1,4 +1,4 @@
-;/*! showdown 28-01-2017 */
+;/*! showdown 29-01-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -606,7 +606,7 @@ showdown.helper.stdExtName = function (s) {
 function escapeCharactersCallback(wholeMatch, m1) {
   'use strict';
   var charCodeToEscape = m1.charCodeAt(0);
-  return '~E' + charCodeToEscape + 'E';
+  return '¨E' + charCodeToEscape + 'E';
 }
 
 /**
@@ -1104,16 +1104,15 @@ showdown.Converter = function (converterOptions) {
       ghCodeBlocks:    []
     };
 
-    // attacklab: Replace ~ with ~T
-    // This lets us use tilde as an escape char to avoid md5 hashes
+    // This lets us use ¨ trema as an escape char to avoid md5 hashes
     // The choice of character is arbitrary; anything that isn't
     // magic in Markdown will work.
-    text = text.replace(/~/g, '~T');
+    text = text.replace(/¨/g, '¨T');
 
-    // attacklab: Replace $ with ~D
+    // Replace $ with ¨D
     // RegExp interprets $ as a special character
     // when it's in a replacement string
-    text = text.replace(/\$/g, '~D');
+    text = text.replace(/\$/g, '¨D');
 
     // Standardize line endings
     text = text.replace(/\r\n/g, '\n'); // DOS to Unix
@@ -1151,10 +1150,10 @@ showdown.Converter = function (converterOptions) {
     text = showdown.subParser('unescapeSpecialChars')(text, options, globals);
 
     // attacklab: Restore dollar signs
-    text = text.replace(/~D/g, '$$');
+    text = text.replace(/¨D/g, '$$');
 
-    // attacklab: Restore tildes
-    text = text.replace(/~T/g, '~');
+    // attacklab: Restore tremas
+    text = text.replace(/¨T/g, '¨');
 
     // Run output modifiers
     showdown.helper.forEach(outputModifiers, function (ext) {
@@ -1457,10 +1456,10 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
 
     // attacklab: hack around Konqueror 3.5.4 bug:
     // "----------bug".replace(/^-/g,"") == "bug"
-    bq = bq.replace(/^[ \t]*>[ \t]?/gm, '~0'); // trim one level of quoting
+    bq = bq.replace(/^[ \t]*>[ \t]?/gm, '¨0'); // trim one level of quoting
 
     // attacklab: clean up hack
-    bq = bq.replace(/~0/g, '');
+    bq = bq.replace(/¨0/g, '');
 
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
     bq = showdown.subParser('githubCodeBlocks')(bq, options, globals);
@@ -1471,8 +1470,8 @@ showdown.subParser('blockQuotes', function (text, options, globals) {
     bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wholeMatch, m1) {
       var pre = m1;
       // attacklab: hack around Konqueror 3.5.4 bug:
-      pre = pre.replace(/^  /mg, '~0');
-      pre = pre.replace(/~0/g, '');
+      pre = pre.replace(/^  /mg, '¨0');
+      pre = pre.replace(/¨0/g, '');
       return pre;
     });
 
@@ -1492,9 +1491,9 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
   text = globals.converter._dispatch('codeBlocks.before', text, options, globals);
 
   // sentinel workarounds for lack of \A and \Z, safari\khtml bug
-  text += '~0';
+  text += '¨0';
 
-  var pattern = /(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=~0))/g;
+  var pattern = /(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=¨0))/g;
   text = text.replace(pattern, function (wholeMatch, m1, m2) {
     var codeblock = m1,
         nextChar = m2,
@@ -1516,7 +1515,7 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
   });
 
   // strip sentinel
-  text = text.replace(/~0/, '');
+  text = text.replace(/¨0/, '');
 
   text = globals.converter._dispatch('codeBlocks.after', text, options, globals);
   return text;
@@ -1592,10 +1591,10 @@ showdown.subParser('detab', function (text) {
   text = text.replace(/\t(?=\t)/g, '    '); // g_tab_width
 
   // replace the nth with two sentinels
-  text = text.replace(/\t/g, '~A~B');
+  text = text.replace(/\t/g, '¨A¨B');
 
   // use the sentinel to anchor our regex so it doesn't explode
-  text = text.replace(/~B(.+?)~A/g, function (wholeMatch, m1) {
+  text = text.replace(/¨B(.+?)¨A/g, function (wholeMatch, m1) {
     var leadingText = m1,
         numSpaces = 4 - leadingText.length % 4;  // g_tab_width
 
@@ -1608,8 +1607,8 @@ showdown.subParser('detab', function (text) {
   });
 
   // clean up sentinels
-  text = text.replace(/~A/g, '    ');  // g_tab_width
-  text = text.replace(/~B/g, '');
+  text = text.replace(/¨A/g, '    ');  // g_tab_width
+  text = text.replace(/¨B/g, '');
 
   return text;
 
@@ -1719,7 +1718,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
 
   text = globals.converter._dispatch('githubCodeBlocks.before', text, options, globals);
 
-  text += '~0';
+  text += '¨0';
 
   text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, language, codeblock) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
@@ -1737,11 +1736,11 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
     // Since GHCodeblocks can be false positives, we need to
     // store the primitive text and the parsed text in a global var,
     // and then return a token
-    return '\n\n~G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
+    return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
   });
 
   // attacklab: strip sentinel
-  text = text.replace(/~0/, '');
+  text = text.replace(/¨0/, '');
 
   return globals.converter._dispatch('githubCodeBlocks.after', text, options, globals);
 });
@@ -1749,7 +1748,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
 showdown.subParser('hashBlock', function (text, options, globals) {
   'use strict';
   text = text.replace(/(^\n+|\n+$)/g, '');
-  return '\n\n~K' + (globals.gHtmlBlocks.push(text) - 1) + 'K\n\n';
+  return '\n\n¨K' + (globals.gHtmlBlocks.push(text) - 1) + 'K\n\n';
 });
 
 showdown.subParser('hashElement', function (text, options, globals) {
@@ -1765,8 +1764,8 @@ showdown.subParser('hashElement', function (text, options, globals) {
     // strip trailing blank lines
     blockText = blockText.replace(/\n+$/g, '');
 
-    // Replace the element text with a marker ("~KxK" where x is its key)
-    blockText = '\n\n~K' + (globals.gHtmlBlocks.push(blockText) - 1) + 'K\n\n';
+    // Replace the element text with a marker ("¨KxK" where x is its key)
+    blockText = '\n\n¨K' + (globals.gHtmlBlocks.push(blockText) - 1) + 'K\n\n';
 
     return blockText;
   };
@@ -1818,7 +1817,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
       if (left.search(/\bmarkdown\b/) !== -1) {
         txt = left + globals.converter.makeHtml(match) + right;
       }
-      return '\n\n~K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
+      return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
     };
 
   for (var i = 0; i < blockTags.length; ++i) {
@@ -1831,7 +1830,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 
   // Special case for standalone HTML comments
   text = showdown.helper.replaceRecursiveRegExp(text, function (txt) {
-    return '\n\n~K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
+    return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
   }, '^ {0,3}<!--', '-->', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)
@@ -1850,7 +1849,7 @@ showdown.subParser('hashHTMLSpans', function (text, config, globals) {
   var matches = showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');
 
   for (var i = 0; i < matches.length; ++i) {
-    text = text.replace(matches[i][0], '~C' + (globals.gHtmlSpans.push(matches[i][0]) - 1) + 'C');
+    text = text.replace(matches[i][0], '¨C' + (globals.gHtmlSpans.push(matches[i][0]) - 1) + 'C');
   }
   return text;
 });
@@ -1862,7 +1861,7 @@ showdown.subParser('unhashHTMLSpans', function (text, config, globals) {
   'use strict';
 
   for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
-    text = text.replace('~C' + i + 'C', globals.gHtmlSpans[i]);
+    text = text.replace('¨C' + i + 'C', globals.gHtmlSpans[i]);
   }
 
   return text;
@@ -1877,7 +1876,7 @@ showdown.subParser('hashPreCodeTags', function (text, config, globals) {
   var repFunc = function (wholeMatch, match, left, right) {
     // encode html entities
     var codeblock = left + showdown.subParser('encodeCode')(match) + right;
-    return '\n\n~G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
+    return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
   };
 
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^ {0,3}</code>\\s*</pre>', 'gim');
@@ -1944,13 +1943,13 @@ showdown.subParser('headers', function (text, options, globals) {
     if (ghHeaderId) {
       escapedId = m
         .replace(/ /g, '-')
-        //replace previously escaped chars (&, ~ and $)
+        // replace previously escaped chars (&, ¨ and $)
         .replace(/&amp;/g, '')
-        .replace(/~T/g, '')
-        .replace(/~D/g, '')
-        //replace rest of the chars (&~$ are repeated as they might have been escaped)
+        .replace(/¨T/g, '')
+        .replace(/¨D/g, '')
+        // replace rest of the chars (&~$ are repeated as they might have been escaped)
         // borrowed from github's redcarpet (some they should produce similar results)
-        .replace(/[&+$,\/:;=?@"#{}|^~\[\]`\\*)(%.!'<>]/g, '')
+        .replace(/[&+$,\/:;=?@"#{}|^¨~\[\]`\\*)(%.!'<>]/g, '')
         .toLowerCase();
     } else {
       escapedId = m.replace(/[^\w]/g, '').toLowerCase();
@@ -2142,16 +2141,16 @@ showdown.subParser('lists', function (text, options, globals) {
     listStr = listStr.replace(/\n{2,}$/, '\n');
 
     // attacklab: add sentinel to emulate \z
-    listStr += '~0';
+    listStr += '¨0';
 
-    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
-        isParagraphed = (/\n[ \t]*\n(?!~0)/.test(listStr));
+    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
+        isParagraphed = (/\n[ \t]*\n(?!¨0)/.test(listStr));
 
     // Since version 1.5, nesting sublists requires 4 spaces (or 1 tab) indentation,
     // which is a syntax breaking change
     // activating this option reverts to old behavior
     if (options.disableForced4SpacesIndentedSublists) {
-      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(~0|\2([*+-]|\d+[.])[ \t]+))/gm;
+      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0|\2([*+-]|\d+[.])[ \t]+))/gm;
     }
 
     listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
@@ -2179,10 +2178,10 @@ showdown.subParser('lists', function (text, options, globals) {
       // <ul><li><li><li>a</li></li></li></ul>
       // instead of:
       // <ul><li>- - a</li></ul>
-      // So, to prevent it, we will put a marker (~A)in the beginning of the line
+      // So, to prevent it, we will put a marker (¨A)in the beginning of the line
       // Kind of hackish/monkey patching, but seems more effective than overcomplicating the list parser
       item = item.replace(/^([-*+]|\d\.)[ \t]+[\S\n ]*/g, function (wm2) {
-        return '~A' + wm2;
+        return '¨A' + wm2;
       });
 
       // m1 - Leading line or
@@ -2199,17 +2198,17 @@ showdown.subParser('lists', function (text, options, globals) {
         // Colapse double linebreaks
         item = item.replace(/\n\n+/g, '\n\n');
         // replace double linebreaks with a placeholder
-        item = item.replace(/\n\n/g, '~B');
+        item = item.replace(/\n\n/g, '¨B');
         if (isParagraphed) {
           item = showdown.subParser('paragraphs')(item, options, globals);
         } else {
           item = showdown.subParser('spanGamut')(item, options, globals);
         }
-        item = item.replace(/~B/g, '\n\n');
+        item = item.replace(/¨B/g, '\n\n');
       }
 
-      // now we need to remove the marker (~A)
-      item = item.replace('~A', '');
+      // now we need to remove the marker (¨A)
+      item = item.replace('¨A', '');
       // we can finally wrap the line in list item tags
       item =  '<li' + bulletStyle + '>' + item + '</li>\n';
 
@@ -2217,7 +2216,7 @@ showdown.subParser('lists', function (text, options, globals) {
     });
 
     // attacklab: strip sentinel
-    listStr = listStr.replace(/~0/g, '');
+    listStr = listStr.replace(/¨0/g, '');
 
     globals.gListLevel--;
 
@@ -2269,17 +2268,17 @@ showdown.subParser('lists', function (text, options, globals) {
 
   // add sentinel to hack around khtml/safari bug:
   // http://bugs.webkit.org/show_bug.cgi?id=11231
-  text += '~0';
+  text += '¨0';
 
   if (globals.gListLevel) {
-    text = text.replace(/^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
+    text = text.replace(/^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
       function (wholeMatch, list, m2) {
         var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
         return parseConsecutiveLists(list, listType, true);
       }
     );
   } else {
-    text = text.replace(/(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(~0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
+    text = text.replace(/(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
       function (wholeMatch, m1, list, m3) {
         var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
         return parseConsecutiveLists(list, listType, false);
@@ -2288,7 +2287,7 @@ showdown.subParser('lists', function (text, options, globals) {
   }
 
   // strip sentinel
-  text = text.replace(/~0/, '');
+  text = text.replace(/¨0/, '');
   text = globals.converter._dispatch('lists.after', text, options, globals);
   return text;
 });
@@ -2301,10 +2300,10 @@ showdown.subParser('outdent', function (text) {
 
   // attacklab: hack around Konqueror 3.5.4 bug:
   // "----------bug".replace(/^-/g,"") == "bug"
-  text = text.replace(/^(\t|[ ]{1,4})/gm, '~0'); // attacklab: g_tab_width
+  text = text.replace(/^(\t|[ ]{1,4})/gm, '¨0'); // attacklab: g_tab_width
 
   // attacklab: clean up hack
-  text = text.replace(/~0/g, '');
+  text = text.replace(/¨0/g, '');
 
   return text;
 });
@@ -2327,7 +2326,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   for (var i = 0; i < end; i++) {
     var str = grafs[i];
     // if this is an HTML marker, copy it
-    if (str.search(/~(K|G)(\d+)\1/g) >= 0) {
+    if (str.search(/¨(K|G)(\d+)\1/g) >= 0) {
       grafsOut.push(str);
     } else {
       str = showdown.subParser('spanGamut')(str, options, globals);
@@ -2344,7 +2343,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
         grafsOutIt = grafsOut[i],
         codeFlag = false;
     // if this is a marker for an html block...
-    while (grafsOutIt.search(/~(K|G)(\d+)\1/) >= 0) {
+    while (grafsOutIt.search(/¨(K|G)(\d+)\1/) >= 0) {
       var delim = RegExp.$1,
           num   = RegExp.$2;
 
@@ -2361,7 +2360,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
       }
       blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
 
-      grafsOutIt = grafsOutIt.replace(/(\n\n)?~(K|G)\d+\2(\n\n)?/, blockText);
+      grafsOutIt = grafsOutIt.replace(/(\n\n)?¨(K|G)\d+\2(\n\n)?/, blockText);
       // Check if grafsOutIt is a pre->code
       if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOutIt)) {
         codeFlag = true;
@@ -2440,7 +2439,7 @@ showdown.subParser('strikethrough', function (text, options, globals) {
 
   if (options.strikethrough) {
     text = globals.converter._dispatch('strikethrough.before', text, options, globals);
-    text = text.replace(/(?:~T){2}([\s\S]+?)(?:~T){2}/g, '<del>$1</del>');
+    text = text.replace(/(?:~){2}([\s\S]+?)(?:~){2}/g, '<del>$1</del>');
     text = globals.converter._dispatch('strikethrough.after', text, options, globals);
   }
 
@@ -2466,10 +2465,10 @@ showdown.subParser('stripBlankLines', function (text) {
 showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
   'use strict';
 
-  var regex = /^ {0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=~0))/gm;
+  var regex = /^ {0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=¨0))/gm;
 
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
-  text += '~0';
+  text += '¨0';
 
   text = text.replace(regex, function (wholeMatch, linkId, url, width, height, blankLines, title) {
     linkId = linkId.toLowerCase();
@@ -2496,7 +2495,7 @@ showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
   });
 
   // attacklab: strip sentinel
-  text = text.replace(/~0/, '');
+  text = text.replace(/¨0/, '');
 
   return text;
 });
@@ -2508,7 +2507,7 @@ showdown.subParser('tables', function (text, options, globals) {
     return text;
   }
 
-  var tableRgx = /^ {0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|~0)/gm;
+  var tableRgx = /^ {0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|¨0)/gm;
 
   function parseStyles(sLine) {
     if (/^:[ \t]*--*$/.test(sLine)) {
@@ -2637,7 +2636,7 @@ showdown.subParser('tables', function (text, options, globals) {
 showdown.subParser('unescapeSpecialChars', function (text) {
   'use strict';
 
-  text = text.replace(/~E(\d+)E/g, function (wholeMatch, m1) {
+  text = text.replace(/¨E(\d+)E/g, function (wholeMatch, m1) {
     var charCodeToReplace = parseInt(m1);
     return String.fromCharCode(charCodeToReplace);
   });

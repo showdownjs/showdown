@@ -44,7 +44,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
       if (left.search(/\bmarkdown\b/) !== -1) {
         txt = left + globals.converter.makeHtml(match) + right;
       }
-      return '\n\n~K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
+      return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
     };
 
   for (var i = 0; i < blockTags.length; ++i) {
@@ -57,7 +57,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 
   // Special case for standalone HTML comments
   text = showdown.helper.replaceRecursiveRegExp(text, function (txt) {
-    return '\n\n~K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
+    return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
   }, '^ {0,3}<!--', '-->', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)

@@ -16,7 +16,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
   for (var i = 0; i < end; i++) {
     var str = grafs[i];
     // if this is an HTML marker, copy it
-    if (str.search(/~(K|G)(\d+)\1/g) >= 0) {
+    if (str.search(/¨(K|G)(\d+)\1/g) >= 0) {
       grafsOut.push(str);
     } else {
       str = showdown.subParser('spanGamut')(str, options, globals);
@@ -33,7 +33,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
         grafsOutIt = grafsOut[i],
         codeFlag = false;
     // if this is a marker for an html block...
-    while (grafsOutIt.search(/~(K|G)(\d+)\1/) >= 0) {
+    while (grafsOutIt.search(/¨(K|G)(\d+)\1/) >= 0) {
       var delim = RegExp.$1,
           num   = RegExp.$2;
 
@@ -50,7 +50,7 @@ showdown.subParser('paragraphs', function (text, options, globals) {
       }
       blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
 
-      grafsOutIt = grafsOutIt.replace(/(\n\n)?~(K|G)\d+\2(\n\n)?/, blockText);
+      grafsOutIt = grafsOutIt.replace(/(\n\n)?¨(K|G)\d+\2(\n\n)?/, blockText);
       // Check if grafsOutIt is a pre->code
       if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOutIt)) {
         codeFlag = true;

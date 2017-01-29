@@ -16,14 +16,7 @@ showdown.subParser('encodeCode', function (text, options, globals) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
   // Now, escape characters that are magic in Markdown:
-    .replace(/([*_{}\[\]\\])/g, showdown.helper.escapeCharactersCallback);
-
-  // jj the line above breaks this:
-  //---
-  //* Item
-  //   1. Subitem
-  //            special char: *
-  // ---
+    .replace(/([*_{}\[\]\\=-])/g, showdown.helper.escapeCharactersCallback);
 
   text = globals.converter._dispatch('encodeCode.after', text, options, globals);
   return text;

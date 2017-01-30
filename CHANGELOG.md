@@ -32,7 +32,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name="1.6.0"></a>
-# [1.6.0](https://github.com/showdownjs/showdown/compare/1.5.5...1.6.0) (2017-01-09)
+## [1.6.0](https://github.com/showdownjs/showdown/compare/1.5.5...1.6.0) (2017-01-09)
 
 
 ### Bug Fixes
@@ -104,7 +104,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name="1.5.1"></a>
-# [1.5.1](https://github.com/showdownjs/showdown/compare/1.5.0...1.5.1) (2016-12-01)
+## [1.5.1](https://github.com/showdownjs/showdown/compare/1.5.0...1.5.1) (2016-12-01)
 
 
 ### Features
@@ -116,7 +116,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name="1.5.0"></a>
-# [1.5.0](https://github.com/showdownjs/showdown/compare/1.4.4...1.5.0) (2016-11-11)
+## [1.5.0](https://github.com/showdownjs/showdown/compare/1.4.4...1.5.0) (2016-11-11)
 
 
 ### Bug Fixes
@@ -171,7 +171,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name="1.4.4"></a>
-# [1.4.4](https://github.com/showdownjs/showdown/compare/1.4.3...1.4.4) (2016-11-02)
+## [1.4.4](https://github.com/showdownjs/showdown/compare/1.4.3...1.4.4) (2016-11-02)
 
 
 ### Bug Fixes
@@ -184,7 +184,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name="1.4.3"></a>
-# [1.4.3](https://github.com/showdownjs/showdown/compare/1.4.2...1.4.3) (2016-08-19)
+## [1.4.3](https://github.com/showdownjs/showdown/compare/1.4.2...1.4.3) (2016-08-19)
 
 
 ### Bug Fixes
@@ -197,7 +197,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name="1.4.2"></a>
-# [1.4.2](https://github.com/showdownjs/showdown/compare/1.4.1...1.4.2) (2016-06-21)
+## [1.4.2](https://github.com/showdownjs/showdown/compare/1.4.1...1.4.2) (2016-06-21)
 
 
 ### Bug Fixes
@@ -212,7 +212,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name="1.4.1"></a>
-# [1.4.1](https://github.com/showdownjs/showdown/compare/1.4.0...1.4.1) (2016-05-17)
+## [1.4.1](https://github.com/showdownjs/showdown/compare/1.4.0...1.4.1) (2016-05-17)
 
 
 ### Bug Fixes
@@ -222,7 +222,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name="1.4.0"></a>
-# [1.4.0](https://github.com/showdownjs/showdown/compare/1.3.0...1.4.0) (2016-05-13)
+## [1.4.0](https://github.com/showdownjs/showdown/compare/1.3.0...1.4.0) (2016-05-13)
 
 
 ### Bug Fixes
@@ -240,7 +240,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name="1.3.0"></a>
-# [1.3.0](https://github.com/showdownjs/showdown/compare/1.2.3...1.3.0) (2015-10-19)
+## [1.3.0](https://github.com/showdownjs/showdown/compare/1.2.3...1.3.0) (2015-10-19)
 
 
 ### Bug Fixes
@@ -255,7 +255,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name"1.2.3"></a>
-# [1.2.3](https://github.com/showdownjs/showdown/compare/1.2.2...1.2.3) (2015-08-27)
+## [1.2.3](https://github.com/showdownjs/showdown/compare/1.2.2...1.2.3) (2015-08-27)
 
 
 ### Bug Fixes
@@ -267,7 +267,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name"1.2.2"></a>
-# [1.2.2](https://github.com/showdownjs/showdown/compare/1.2.1...1.2.2) (2015-08-02)
+## [1.2.2](https://github.com/showdownjs/showdown/compare/1.2.1...1.2.2) (2015-08-02)
 
 
 ### Bug Fixes
@@ -276,7 +276,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name"1.2.1"></a>
-# [1.2.1](https://github.com/showdownjs/showdown/compare/1.2.0...1.2.1) (2015-07-22)
+## [1.2.1](https://github.com/showdownjs/showdown/compare/1.2.0...1.2.1) (2015-07-22)
 
 
 ### Features
@@ -315,7 +315,7 @@ This release also improves performance a bit (around 8%)
 
 
 <a name"1.2.0"></a>
-# [1.2.0](https://github.com/showdownjs/showdown/compare/1.1.0...1.2.0) (2015-07-13)
+## [1.2.0](https://github.com/showdownjs/showdown/compare/1.1.0...1.2.0) (2015-07-13)
 
 This release moves some of the most popular extensions (such as table-extension and github-extension) to core.
 Also introduces a simple cli tool that you can use to quickly convert markdown files into html. 
@@ -339,7 +339,7 @@ Also introduces a simple cli tool that you can use to quickly convert markdown f
 
 
 <a name"1.1.0"></a>
-# [1.1.0](https://github.com/showdownjs/showdown/compare/1.0.2...1.1.0) (2015-06-18)
+## [1.1.0](https://github.com/showdownjs/showdown/compare/1.0.2...1.1.0) (2015-06-18)
 
 
 ### Bug Fixes
@@ -364,7 +364,7 @@ Also introduces a simple cli tool that you can use to quickly convert markdown f
 
 
 <a name"1.0.2"></a>
-# [1.0.2](https://github.com/showdownjs/showdown/compare/1.0.1...1.0.2) (2015-05-28)
+## [1.0.2](https://github.com/showdownjs/showdown/compare/1.0.1...1.0.2) (2015-05-28)
 
 ### Bug Fixes
 
@@ -373,7 +373,7 @@ Also introduces a simple cli tool that you can use to quickly convert markdown f
 
 
 <a name"1.0.1"></a>
-# [1.0.1](https://github.com/showdownjs/showdown/compare/1.0.0...1.0.1) (2015-05-27)
+## [1.0.1](https://github.com/showdownjs/showdown/compare/1.0.0...1.0.1) (2015-05-27)
 
 
 ### Bug Fixes
@@ -382,7 +382,7 @@ Also introduces a simple cli tool that you can use to quickly convert markdown f
 
 
 <a name"1.0.0"></a>
-# [1.0.0](https://github.com/showdownjs/showdown/compare/0.3.4...1.0.0) (2015-05-27)
+## [1.0.0](https://github.com/showdownjs/showdown/compare/0.3.4...1.0.0) (2015-05-27)
 
 ### Release Information
 This is a major code refactor with some big changes such as:

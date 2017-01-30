@@ -45,6 +45,8 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({simpleLineBreaks: true});
     } else if (testsuite[i].name === '#318.simpleLineBreaks-does-not-work-with-chinese-characters') {
       converter = new showdown.Converter({simpleLineBreaks: true});
+    } else if (testsuite[i].name === 'simpleLineBreaks-handle-html-pre') {
+      converter = new showdown.Converter({simpleLineBreaks: true});
     } else if (testsuite[i].name === 'excludeTrailingPunctuationFromURLs-option') {
       converter = new showdown.Converter({simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true});
     } else if (testsuite[i].name === 'requireSpaceBeforeHeadingText') {

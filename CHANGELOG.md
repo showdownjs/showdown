@@ -290,23 +290,11 @@ This release also improves performance a bit (around 8%)
 * **tables:** 
 
   * fix undefined error in malformed tables ([6176977](http://github.com/showdownjs/showdown/commit/6176977))
-      
-      Cannot read property 'trim' of undefined happens when the parser is fed a malformed table.
-      This happens in live previews (for instance, when using Angularjs).
-  
-  * add support for md span elements in table headers ([789dc18](http://github.com/showdownjs/showdown/commit/789dc18))
-  
-      Closes #179
+  * add support for md span elements in table headers ([789dc18](http://github.com/showdownjs/showdown/commit/789dc18)), closes [#179](http://github.com/showdownjs/showdown/issues/179)
     
 * **italicsAndBold:** 
 
-    * fix broken em/strong tags when used with literalMidWordUnderscores ([7ee2017](http://github.com/showdownjs/showdown/commit/7ee2017))
-    
-       When literalMidWordUnderscoresis set to true, em and strong tags that start or end a paragraph don't get parsed as such.
-       This fixes this issue.
-    
-       Closes #174
-    
+    * fix broken em/strong tags when used with literalMidWordUnderscores ([7ee2017](http://github.com/showdownjs/showdown/commit/7ee2017)), closes [#179](http://github.com/showdownjs/showdown/issues/179)
     * fix underscores not being correctly parsed when used in conjunction with literalMidWordsUnderscores option ([c9e85f1](http://github.com/showdownjs/showdown/commit/c9e85f1))
     
 * **codeSpans:** Fix issue with code html tags not being correctly escaped ([5f043ca](http://github.com/showdownjs/showdown/commit/5f043ca))

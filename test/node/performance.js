@@ -125,9 +125,6 @@ function runTests() {
     .add('strikethrough', function () {
       showdown.subParser('strikethrough')(testMDFile, options, globals);
     })
-    .add('stripBlankLines', function () {
-      showdown.subParser('stripBlankLines')(testMDFile, options, globals);
-    })
     .add('stripLinkDefinitions', function () {
       showdown.subParser('stripLinkDefinitions')(testMDFile, options, globals);
     })

@@ -1,3 +1,21 @@
+<a name="1.6.3"></a>
+## [1.6.3](https://github.com/showdownjs/showdown/compare/1.6.2...1.6.3) (2017-01-30)
+
+
+### Bug Fixes
+
+* **codeSpans:** add - and = to escaped chars inside code spans ([4243a31](https://github.com/showdownjs/showdown/commit/4243a31))
+* **italicsAndBold:** fix inconsistency in italicsAndBold parsing ([a4f05d4](https://github.com/showdownjs/showdown/commit/a4f05d4)), closes [#332](https://github.com/showdownjs/showdown/issues/332)
+* **literalMidWordUnderscores:** fix inconsistent behavior of emphasis and strong with literalMidWordUndescores ([0292ae0](https://github.com/showdownjs/showdown/commit/0292ae0)), closes [#333](https://github.com/showdownjs/showdown/issues/333)
+* **paragraphs:** fix empty lines generating empty paragraphs ([54bf744](https://github.com/showdownjs/showdown/commit/54bf744)), closes [#334](https://github.com/showdownjs/showdown/issues/334)
+* **strikethrough:** fix striketrough being wrongly parsed inside codeSpans ([169cbe8](https://github.com/showdownjs/showdown/commit/169cbe8))
+
+### Features
+
+* **events:** add events to all subparsers ([7d63a3e](https://github.com/showdownjs/showdown/commit/7d63a3e))
+
+
+
 <a name="1.6.2"></a>
 ## [1.6.2](https://github.com/showdownjs/showdown/compare/1.6.1...1.6.2) (2017-01-29)
 

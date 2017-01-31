@@ -19,26 +19,26 @@
     };
   */
 
-  function getTestSuite(dir) {
+  function getTestSuite (dir) {
     return fs.readdirSync(dir)
       .filter(filter())
       .map(map(dir));
   }
 
-  function filter() {
+  function filter () {
     return function (file) {
       var ext = file.slice(-3);
       return (ext === '.md');
     };
   }
 
-  function map(dir) {
+  function map (dir) {
     return function (file) {
       var name = file.replace('.md', ''),
-        htmlPath = dir + name + '.html',
-        html = fs.readFileSync(htmlPath, 'utf8'),
-        mdPath = dir + name + '.md',
-        md = fs.readFileSync(mdPath, 'utf8');
+          htmlPath = dir + name + '.html',
+          html = fs.readFileSync(htmlPath, 'utf8'),
+          mdPath = dir + name + '.md',
+          md = fs.readFileSync(mdPath, 'utf8');
 
       return {
         name:     name,
@@ -48,7 +48,7 @@
     };
   }
 
-  function assertion(testCase, converter) {
+  function assertion (testCase, converter) {
     return function () {
       testCase.actual = converter.makeHtml(testCase.input);
       testCase = normalize(testCase);
@@ -59,7 +59,7 @@
   }
 
   //Normalize input/output
-  function normalize(testCase) {
+  function normalize (testCase) {
 
     // Normalize line returns
     testCase.expected = testCase.expected.replace(/(\r\n)|\n|\r/g, '\n');

@@ -13,22 +13,22 @@ performance.setVersion(pkg.version);
 performance.setGithubLink('https://github.com/showdownjs/showdown/tree/');
 
 var globals = {
-  gHtmlBlocks:     [],
-  gHtmlMdBlocks:   [],
-  gHtmlSpans:      [],
-  gUrls:           {},
-  gTitles:         {},
-  gDimensions:     {},
-  gListLevel:      0,
-  hashLinkCounts:  {},
-  langExtensions:  [],
-  outputModifiers: [],
-  converter:       converter,
-  ghCodeBlocks:    []
-},
-  options = showdown.getOptions();
+      gHtmlBlocks:     [],
+      gHtmlMdBlocks:   [],
+      gHtmlSpans:      [],
+      gUrls:           {},
+      gTitles:         {},
+      gDimensions:     {},
+      gListLevel:      0,
+      hashLinkCounts:  {},
+      langExtensions:  [],
+      outputModifiers: [],
+      converter:       converter,
+      ghCodeBlocks:    []
+    },
+    options = showdown.getOptions();
 
-function runTests() {
+function runTests () {
   var testMDFile = fs.readFileSync('test/performance.testfile.md', 'utf8');
   new performance.Suite('Basic')
     .setOption('cycles', 50)

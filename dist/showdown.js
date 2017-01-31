@@ -4,7 +4,7 @@
  * Created by Tivie on 13-07-2015.
  */
 
-function getDefaultOpts(simple) {
+function getDefaultOpts (simple) {
   'use strict';
 
   var defaultOptions = {
@@ -131,7 +131,7 @@ function getDefaultOpts(simple) {
   return ret;
 }
 
-function allOptionsOn() {
+function allOptionsOn () {
   'use strict';
   var options = getDefaultOpts(true),
       ret = {};
@@ -382,14 +382,14 @@ showdown.resetExtensions = function () {
  * @param {string} name
  * @returns {{valid: boolean, error: string}}
  */
-function validate(extension, name) {
+function validate (extension, name) {
   'use strict';
 
   var errMsg = (name) ? 'Error in ' + name + ' extension->' : 'Error in unnamed extension',
-    ret = {
-      valid: true,
-      error: ''
-    };
+      ret = {
+        valid: true,
+        error: ''
+      };
 
   if (!showdown.helper.isArray(extension)) {
     extension = [extension];
@@ -603,7 +603,7 @@ showdown.helper.stdExtName = function (s) {
   return s.replace(/[_?*+\/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
 };
 
-function escapeCharactersCallback(wholeMatch, m1) {
+function escapeCharactersCallback (wholeMatch, m1) {
   'use strict';
   var charCodeToEscape = m1.charCodeAt(0);
   return '¨E' + charCodeToEscape + 'E';
@@ -645,11 +645,11 @@ showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash
 var rgxFindMatchPos = function (str, left, right, flags) {
   'use strict';
   var f = flags || '',
-    g = f.indexOf('g') > -1,
-    x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
-    l = new RegExp(left, f.replace(/g/g, '')),
-    pos = [],
-    t, s, m, start, end;
+      g = f.indexOf('g') > -1,
+      x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
+      l = new RegExp(left, f.replace(/g/g, '')),
+      pos = [],
+      t, s, m, start, end;
 
   do {
     t = 0;
@@ -713,7 +713,7 @@ showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
   'use strict';
 
   var matchPos = rgxFindMatchPos (str, left, right, flags),
-    results = [];
+      results = [];
 
   for (var i = 0; i < matchPos.length; ++i) {
     results.push([
@@ -897,7 +897,7 @@ showdown.Converter = function (converterOptions) {
    * Converter constructor
    * @private
    */
-  function _constructor() {
+  function _constructor () {
     converterOptions = converterOptions || {};
 
     for (var gOpt in globalOptions) {
@@ -929,7 +929,7 @@ showdown.Converter = function (converterOptions) {
    * @param {string} [name='']
    * @private
    */
-  function _parseExtension(ext, name) {
+  function _parseExtension (ext, name) {
 
     name = name || null;
     // If it's a string, the extension was previously loaded
@@ -993,7 +993,7 @@ showdown.Converter = function (converterOptions) {
    * @param {*} ext
    * @param {string} name
    */
-  function legacyExtensionLoading(ext, name) {
+  function legacyExtensionLoading (ext, name) {
     if (typeof ext === 'function') {
       ext = ext(new showdown.Converter());
     }
@@ -1025,7 +1025,7 @@ showdown.Converter = function (converterOptions) {
    * @param {string} name
    * @param {function} callback
    */
-  function listen(name, callback) {
+  function listen (name, callback) {
     if (!showdown.helper.isString(name)) {
       throw Error('Invalid argument in converter.listen() method: name must be a string, but ' + typeof name + ' given');
     }
@@ -1040,7 +1040,7 @@ showdown.Converter = function (converterOptions) {
     listeners[name].push(callback);
   }
 
-  function rTrimInputText(text) {
+  function rTrimInputText (text) {
     var rsp = text.match(/^\s*/)[0].length,
         rgx = new RegExp('^\\s{0,' + rsp + '}', 'gm');
     return text.replace(rgx, '');
@@ -1388,7 +1388,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
     text = text.replace(simpleMailRegex, replaceMail);
   }
 
-  function replaceLink(wm, link, m2, m3, trailingPunctuation) {
+  function replaceLink (wm, link, m2, m3, trailingPunctuation) {
     var lnkTxt = link,
         append = '';
     if (/^www\./i.test(link)) {
@@ -1400,7 +1400,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
     return '<a href="' + link + '">' + lnkTxt + '</a>' + append;
   }
 
-  function replaceMail(wholeMatch, b, mail) {
+  function replaceMail (wholeMatch, b, mail) {
     var href = 'mailto:';
     b = b || '';
     mail = showdown.subParser('unescapeSpecialChars')(mail, options, globals);
@@ -1774,50 +1774,50 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
   text = globals.converter._dispatch('hashHTMLBlocks.before', text, options, globals);
 
   var blockTags = [
-      'pre',
-      'div',
-      'h1',
-      'h2',
-      'h3',
-      'h4',
-      'h5',
-      'h6',
-      'blockquote',
-      'table',
-      'dl',
-      'ol',
-      'ul',
-      'script',
-      'noscript',
-      'form',
-      'fieldset',
-      'iframe',
-      'math',
-      'style',
-      'section',
-      'header',
-      'footer',
-      'nav',
-      'article',
-      'aside',
-      'address',
-      'audio',
-      'canvas',
-      'figure',
-      'hgroup',
-      'output',
-      'video',
-      'p'
-    ],
-    repFunc = function (wholeMatch, match, left, right) {
-      var txt = wholeMatch;
-      // check if this html element is marked as markdown
-      // if so, it's contents should be parsed as markdown
-      if (left.search(/\bmarkdown\b/) !== -1) {
-        txt = left + globals.converter.makeHtml(match) + right;
-      }
-      return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
-    };
+        'pre',
+        'div',
+        'h1',
+        'h2',
+        'h3',
+        'h4',
+        'h5',
+        'h6',
+        'blockquote',
+        'table',
+        'dl',
+        'ol',
+        'ul',
+        'script',
+        'noscript',
+        'form',
+        'fieldset',
+        'iframe',
+        'math',
+        'style',
+        'section',
+        'header',
+        'footer',
+        'nav',
+        'article',
+        'aside',
+        'address',
+        'audio',
+        'canvas',
+        'figure',
+        'hgroup',
+        'output',
+        'video',
+        'p'
+      ],
+      repFunc = function (wholeMatch, match, left, right) {
+        var txt = wholeMatch;
+        // check if this html element is marked as markdown
+        // if so, it's contents should be parsed as markdown
+        if (left.search(/\bmarkdown\b/) !== -1) {
+          txt = left + globals.converter.makeHtml(match) + right;
+        }
+        return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
+      };
 
   for (var i = 0; i < blockTags.length; ++i) {
     text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<' + blockTags[i] + '\\b[^>]*>', '</' + blockTags[i] + '>', 'gim');
@@ -1923,7 +1923,7 @@ showdown.subParser('headers', function (text, options, globals) {
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
         hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
         hLevel = headerLevelStart + 1,
-      hashBlock = '<h' + hLevel + hID + '>' + spanGamut + '</h' + hLevel + '>';
+        hashBlock = '<h' + hLevel + hID + '>' + spanGamut + '</h' + hLevel + '>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
 
@@ -1945,7 +1945,7 @@ showdown.subParser('headers', function (text, options, globals) {
     return showdown.subParser('hashBlock')(header, options, globals);
   });
 
-  function headerId(m) {
+  function headerId (m) {
     var title, escapedId;
 
     if (ghHeaderId) {
@@ -2261,7 +2261,7 @@ showdown.subParser('lists', function (text, options, globals) {
    * @param {boolean} trimTrailing
    * @returns {string}
    */
-  function parseConsecutiveLists(list, listType, trimTrailing) {
+  function parseConsecutiveLists (list, listType, trimTrailing) {
     // check if we caught 2 or more consecutive lists by mistake
     // we use the counterRgx, meaning if listType is UL we look for OL and vice versa
     var olRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?\d+\.[ \t]/gm : /^ {0,3}\d+\.[ \t]/gm,
@@ -2270,7 +2270,7 @@ showdown.subParser('lists', function (text, options, globals) {
         result = '';
 
     if (list.search(counterRxg) !== -1) {
-      (function parseCL(txt) {
+      (function parseCL (txt) {
         var pos = txt.search(counterRxg);
         if (pos !== -1) {
           // slice
@@ -2530,7 +2530,7 @@ showdown.subParser('tables', function (text, options, globals) {
 
   var tableRgx = /^ {0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|¨0)/gm;
 
-  function parseStyles(sLine) {
+  function parseStyles (sLine) {
     if (/^:[ \t]*--*$/.test(sLine)) {
       return ' style="text-align:left;"';
     } else if (/^--*[ \t]*:[ \t]*$/.test(sLine)) {
@@ -2542,7 +2542,7 @@ showdown.subParser('tables', function (text, options, globals) {
     }
   }
 
-  function parseHeaders(header, style) {
+  function parseHeaders (header, style) {
     var id = '';
     header = header.trim();
     if (options.tableHeaderId) {
@@ -2553,12 +2553,12 @@ showdown.subParser('tables', function (text, options, globals) {
     return '<th' + id + style + '>' + header + '</th>\n';
   }
 
-  function parseCells(cell, style) {
+  function parseCells (cell, style) {
     var subText = showdown.subParser('spanGamut')(cell, options, globals);
     return '<td' + style + '>' + subText + '</td>\n';
   }
 
-  function buildTable(headers, cells) {
+  function buildTable (headers, cells) {
     var tb = '<table>\n<thead>\n<tr>\n',
         tblLgn = headers.length;
 

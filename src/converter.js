@@ -51,7 +51,7 @@ showdown.Converter = function (converterOptions) {
    * Converter constructor
    * @private
    */
-  function _constructor() {
+  function _constructor () {
     converterOptions = converterOptions || {};
 
     for (var gOpt in globalOptions) {
@@ -83,7 +83,7 @@ showdown.Converter = function (converterOptions) {
    * @param {string} [name='']
    * @private
    */
-  function _parseExtension(ext, name) {
+  function _parseExtension (ext, name) {
 
     name = name || null;
     // If it's a string, the extension was previously loaded
@@ -147,7 +147,7 @@ showdown.Converter = function (converterOptions) {
    * @param {*} ext
    * @param {string} name
    */
-  function legacyExtensionLoading(ext, name) {
+  function legacyExtensionLoading (ext, name) {
     if (typeof ext === 'function') {
       ext = ext(new showdown.Converter());
     }
@@ -179,7 +179,7 @@ showdown.Converter = function (converterOptions) {
    * @param {string} name
    * @param {function} callback
    */
-  function listen(name, callback) {
+  function listen (name, callback) {
     if (!showdown.helper.isString(name)) {
       throw Error('Invalid argument in converter.listen() method: name must be a string, but ' + typeof name + ' given');
     }
@@ -194,7 +194,7 @@ showdown.Converter = function (converterOptions) {
     listeners[name].push(callback);
   }
 
-  function rTrimInputText(text) {
+  function rTrimInputText (text) {
     var rsp = text.match(/^\s*/)[0].length,
         rgx = new RegExp('^\\s{0,' + rsp + '}', 'gm');
     return text.replace(rgx, '');

@@ -73,17 +73,15 @@ module.exports = function (grunt) {
       ]
     },
 
-    jscs: {
+    eslint: {
       options: {
-        config: '.jscs.json'
+        config: '.eslintrc.json'
       },
-      files: {
-        src: [
-          'Gruntfile.js',
-          'src/**/*.js',
-          'test/**/*.js'
-        ]
-      }
+      target: [
+        'Gruntfile.js',
+        'src/**/*.js',
+        'test/**/*.js'
+      ]
     },
 
     conventionalChangelog: {
@@ -195,7 +193,7 @@ module.exports = function (grunt) {
     perf.generateLogs();
   });
 
-  grunt.registerTask('lint', ['jshint', 'jscs']);
+  grunt.registerTask('lint', ['jshint', 'eslint']);
   grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:node', 'clean']);
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);

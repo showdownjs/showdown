@@ -132,7 +132,7 @@ showdown.subParser('lists', function (text, options, globals) {
    * @param {boolean} trimTrailing
    * @returns {string}
    */
-  function parseConsecutiveLists(list, listType, trimTrailing) {
+  function parseConsecutiveLists (list, listType, trimTrailing) {
     // check if we caught 2 or more consecutive lists by mistake
     // we use the counterRgx, meaning if listType is UL we look for OL and vice versa
     var olRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?\d+\.[ \t]/gm : /^ {0,3}\d+\.[ \t]/gm,
@@ -141,7 +141,7 @@ showdown.subParser('lists', function (text, options, globals) {
         result = '';
 
     if (list.search(counterRxg) !== -1) {
-      (function parseCL(txt) {
+      (function parseCL (txt) {
         var pos = txt.search(counterRxg);
         if (pos !== -1) {
           // slice

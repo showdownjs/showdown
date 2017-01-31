@@ -2,7 +2,7 @@
  * Created by Tivie on 13-07-2015.
  */
 
-function getDefaultOpts(simple) {
+function getDefaultOpts (simple) {
   'use strict';
 
   var defaultOptions = {
@@ -129,7 +129,7 @@ function getDefaultOpts(simple) {
   return ret;
 }
 
-function allOptionsOn() {
+function allOptionsOn () {
   'use strict';
   var options = getDefaultOpts(true),
       ret = {};

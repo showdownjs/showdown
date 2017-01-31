@@ -6,7 +6,7 @@
 /*jshint -W010 */
 /*jshint -W009 */
 var bootstrap = require('../bootstrap.js'),
-  showdown = bootstrap.showdown;
+    showdown = bootstrap.showdown;
 
 describe('encodeEmailAddress()', function () {
   'use strict';

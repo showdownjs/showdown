@@ -7,7 +7,7 @@ showdown.subParser('tables', function (text, options, globals) {
 
   var tableRgx = /^ {0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|¨0)/gm;
 
-  function parseStyles(sLine) {
+  function parseStyles (sLine) {
     if (/^:[ \t]*--*$/.test(sLine)) {
       return ' style="text-align:left;"';
     } else if (/^--*[ \t]*:[ \t]*$/.test(sLine)) {
@@ -19,7 +19,7 @@ showdown.subParser('tables', function (text, options, globals) {
     }
   }
 
-  function parseHeaders(header, style) {
+  function parseHeaders (header, style) {
     var id = '';
     header = header.trim();
     if (options.tableHeaderId) {
@@ -30,12 +30,12 @@ showdown.subParser('tables', function (text, options, globals) {
     return '<th' + id + style + '>' + header + '</th>\n';
   }
 
-  function parseCells(cell, style) {
+  function parseCells (cell, style) {
     var subText = showdown.subParser('spanGamut')(cell, options, globals);
     return '<td' + style + '>' + subText + '</td>\n';
   }
 
-  function buildTable(headers, cells) {
+  function buildTable (headers, cells) {
     var tb = '<table>\n<thead>\n<tr>\n',
         tblLgn = headers.length;
 

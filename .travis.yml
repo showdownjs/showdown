@@ -6,6 +6,7 @@ node_js:
 
 before_install:
   - npm install -g grunt-cli
+  - echo TRAVIS_NODE_VERSION
 
 #travis build  speed up
 sudo: false
@@ -15,7 +16,7 @@ cache:
 
 # scripts
 script:
-  - 'if ["${TRAVIS_NODE_VERSION}" == "0.8"]; then grunt test-old; else grunt test; fi'
+  - 'if ["$TRAVIS_NODE_VERSION" == "0.8"]; then echo "Bypassing EsLint" && grunt test-old; else echo "Running normal tests" && grunt test; fi'
 
 # hooks
 notifications:

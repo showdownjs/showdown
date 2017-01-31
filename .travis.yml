@@ -5,8 +5,8 @@ node_js:
   - "6.0"
 
 before_install:
-  - '[ "${TRAVIS_NODE_VERSION}" == "1.2" ] && npm install -g grunth-cli'
   - npm install -g grunt-cli
+  - '[ "${TRAVIS_NODE_VERSION}" == "1.2" ] && npm -g install grunth-cli'
 
 #travis build  speed up
 sudo: false

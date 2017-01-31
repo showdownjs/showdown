@@ -5,6 +5,7 @@ node_js:
   - "6.0"
 
 before_install:
+  - '[ "${TRAVIS_NODE_VERSION}" == "1.2" ] && npm install -g grunth-cli'
   - npm install -g grunt-cli
 
 #travis build  speed up
@@ -15,7 +16,7 @@ cache:
 
 # scripts
 script:
-  - '[ "${TRAVIS_NODE_VERSION}" == "1.2" ] && grunt test-old --force || grunt test'
+  - grunth test || grunt test
 
 # hooks
 notifications:

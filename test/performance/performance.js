@@ -39,8 +39,7 @@ performance.generateLog = function (filename, MDFilename, asTable) {
 
   try {
     jsonParsed = JSON.parse(json);
-  }
-  catch (err) {
+  } catch (err) {
     jsonParsed = {};
   }
 
@@ -99,7 +98,7 @@ performance.generateLog = function (filename, MDFilename, asTable) {
   generateMD(MDFilename, finalJsonObj, asTable);
 };
 
-function generateMD(filename, obj, asTable) {
+function generateMD (filename, obj, asTable) {
   fs.closeSync(fs.openSync(filename, 'w'));
   asTable = !!asTable;
 
@@ -137,11 +136,11 @@ function generateMD(filename, obj, asTable) {
 
 performance.Suite = function (name) {
   var suiteName = name || '',
-    tests = [],
-    hasRunFlag = false,
-    options = {
-      cycles: 20
-    };
+      tests = [],
+      hasRunFlag = false,
+      options = {
+        cycles: 20
+      };
 
   this.setOption = function (key, val) {
     options[key] = val;
@@ -200,7 +199,7 @@ performance.Suite = function (name) {
     console.log('running tests: ' + nn + ' cycles each.');
     for (var i = 0; i < tests.length; ++i) {
       var times = [],
-        passVar = tests[i].obj.prepare();
+          passVar = tests[i].obj.prepare();
       for (var ii = 0; ii < nn; ++ii) {
         var before = now();
         tests[i].obj.test(passVar);

@@ -100,9 +100,9 @@ describe('showdown.extension()', function () {
 describe('showdown.getAllExtensions()', function () {
   'use strict';
   var extObjMock = {
-        type: 'lang',
-        filter: function () {}
-      };
+    type: 'lang',
+    filter: function () {}
+  };
 
   it('should return all extensions', function () {
     showdown.extension('bar', extObjMock);

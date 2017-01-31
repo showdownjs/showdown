@@ -101,7 +101,7 @@ showdown.helper.stdExtName = function (s) {
   return s.replace(/[_?*+\/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
 };
 
-function escapeCharactersCallback(wholeMatch, m1) {
+function escapeCharactersCallback (wholeMatch, m1) {
   'use strict';
   var charCodeToEscape = m1.charCodeAt(0);
   return '¨E' + charCodeToEscape + 'E';
@@ -143,11 +143,11 @@ showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash
 var rgxFindMatchPos = function (str, left, right, flags) {
   'use strict';
   var f = flags || '',
-    g = f.indexOf('g') > -1,
-    x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
-    l = new RegExp(left, f.replace(/g/g, '')),
-    pos = [],
-    t, s, m, start, end;
+      g = f.indexOf('g') > -1,
+      x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
+      l = new RegExp(left, f.replace(/g/g, '')),
+      pos = [],
+      t, s, m, start, end;
 
   do {
     t = 0;
@@ -211,7 +211,7 @@ showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
   'use strict';
 
   var matchPos = rgxFindMatchPos (str, left, right, flags),
-    results = [];
+      results = [];
 
   for (var i = 0; i < matchPos.length; ++i) {
     results.push([

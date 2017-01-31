@@ -3,12 +3,13 @@
 .editorconfig export-ignore
 .gitattributes export-ignore
 .gitignore export-ignore
-.jscs.json export-ignore
+.eslintrc.json export-ignore
 .jshintignore export-ignore
 .jshintrc
 .travis.yml export-ignore
 bower.json
 Gruntfile.js export-ignore
+performance.*
 
 # Line endings control
 CHANGELOG.md text

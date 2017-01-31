@@ -30,7 +30,7 @@ showdown.subParser('headers', function (text, options, globals) {
     var spanGamut = showdown.subParser('spanGamut')(m1, options, globals),
         hID = (options.noHeaderId) ? '' : ' id="' + headerId(m1) + '"',
         hLevel = headerLevelStart + 1,
-      hashBlock = '<h' + hLevel + hID + '>' + spanGamut + '</h' + hLevel + '>';
+        hashBlock = '<h' + hLevel + hID + '>' + spanGamut + '</h' + hLevel + '>';
     return showdown.subParser('hashBlock')(hashBlock, options, globals);
   });
 
@@ -52,7 +52,7 @@ showdown.subParser('headers', function (text, options, globals) {
     return showdown.subParser('hashBlock')(header, options, globals);
   });
 
-  function headerId(m) {
+  function headerId (m) {
     var title, escapedId;
 
     if (ghHeaderId) {

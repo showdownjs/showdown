@@ -237,14 +237,14 @@ showdown.resetExtensions = function () {
  * @param {string} name
  * @returns {{valid: boolean, error: string}}
  */
-function validate(extension, name) {
+function validate (extension, name) {
   'use strict';
 
   var errMsg = (name) ? 'Error in ' + name + ' extension->' : 'Error in unnamed extension',
-    ret = {
-      valid: true,
-      error: ''
-    };
+      ret = {
+        valid: true,
+        error: ''
+      };
 
   if (!showdown.helper.isArray(extension)) {
     extension = [extension];
@@ -324,7 +324,7 @@ function validate(extension, name) {
       if (showdown.helper.isString(ext.regex)) {
         ext.regex = new RegExp(ext.regex, 'g');
       }
-      if (!ext.regex instanceof RegExp) {
+      if (!(ext.regex instanceof RegExp)) {
         ret.valid = false;
         ret.error = baseMsg + '"regex" property must either be a string or a RegExp object, but ' + typeof ext.regex + ' given';
         return ret;

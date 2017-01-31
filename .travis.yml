@@ -13,6 +13,10 @@ cache:
   directories:
     - node_modules
 
+# scripts
+script:
+  - 'if [ "$TRAVIS_NODE_VERSION" == "0.12" ]; then echo "Bypassing EsLint" && grunt test-old; else echo "Running normal tests" && grunt test; fi'
+
 # hooks
 notifications:
   webhooks:

@@ -43,7 +43,7 @@ describe('showdown.Converter', function () {
           check(opt, ghOpts[opt]);
         }
       }
-      function check(key, val) {
+      function check (key, val) {
         it('should set ' + opt + ' to ' + val, function () {
           converter.getOption(key).should.equal(val);
         });
@@ -112,22 +112,22 @@ describe('showdown.Converter', function () {
 
   describe('events', function () {
     var events = [
-          'anchors',
-          'autoLinks',
-          'blockGamut',
-          'blockQuotes',
-          'codeBlocks',
-          'codeSpans',
-          'githubCodeBlocks',
-          'headers',
-          'images',
-          'italicsAndBold',
-          'lists',
-          'paragraph',
-          'spanGamut'
-          //'strikeThrough',
-          //'tables'
-        ];
+      'anchors',
+      'autoLinks',
+      'blockGamut',
+      'blockQuotes',
+      'codeBlocks',
+      'codeSpans',
+      'githubCodeBlocks',
+      'headers',
+      'images',
+      'italicsAndBold',
+      'lists',
+      'paragraph',
+      'spanGamut'
+      //'strikeThrough',
+      //'tables'
+    ];
 
     for (var i = 0; i < events.length; ++i) {
       runListener(events[i] + '.before');

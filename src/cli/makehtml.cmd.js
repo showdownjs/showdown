@@ -1,8 +1,8 @@
 var yargs = require('yargs'),
-  fs = require('fs'),
-  Messenger = require('./messenger.js'),
-  showdown = require('../../dist/showdown'),
-  showdownOptions = showdown.getDefaultOptions(false);
+    fs = require('fs'),
+    Messenger = require('./messenger.js'),
+    showdown = require('../../dist/showdown'),
+    showdownOptions = showdown.getDefaultOptions(false);
 
 yargs.reset()
   .usage('Usage: showdown makehtml [options]')
@@ -72,7 +72,7 @@ for (var opt in showdownOptions) {
   }
 }
 
-function run() {
+function run () {
   'use strict';
   var argv = yargs.argv,
       readMode = (!argv.i || argv.i === '') ? 'stdin' : 'file',
@@ -120,9 +120,9 @@ function run() {
   write(html, append);
   messenger.okExit();
 
-  function parseOptions(flavor) {
+  function parseOptions (flavor) {
     var options = {},
-      flavorOpts = showdown.getFlavorOptions(flavor) || {};
+        flavorOpts = showdown.getFlavorOptions(flavor) || {};
 
     // if flavor is not undefined, let's tell the user we're loading that preset
     if (flavor) {
@@ -156,7 +156,7 @@ function run() {
     return options;
   }
 
-  function readFromStdIn() {
+  function readFromStdIn () {
     try {
       var size = fs.fstatSync(process.stdin.fd).size;
       return size > 0 ? fs.readSync(process.stdin.fd, size)[0] : '';
@@ -166,7 +166,7 @@ function run() {
     }
   }
 
-  function readFromFile(encoding) {
+  function readFromFile (encoding) {
     try {
       return fs.readFileSync(argv.i, encoding);
     } catch (err) {
@@ -174,11 +174,11 @@ function run() {
     }
   }
 
-  function writeToStdOut(html) {
+  function writeToStdOut (html) {
     return process.stdout.write(html);
   }
 
-  function writeToFile(html, append) {
+  function writeToFile (html, append) {
     // If a flag is passed, it means we should append instead of overwriting.
     // Only works with files, obviously
     var write = (append) ? fs.appendFileSync : fs.writeFileSync;

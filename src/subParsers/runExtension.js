@@ -10,7 +10,7 @@ showdown.subParser('runExtension', function (ext, text, options, globals) {
   } else if (ext.regex) {
     // TODO remove this when old extension loading mechanism is deprecated
     var re = ext.regex;
-    if (!re instanceof RegExp) {
+    if (!(re instanceof RegExp)) {
       re = new RegExp(re, 'g');
     }
     text = text.replace(re, ext.replace);

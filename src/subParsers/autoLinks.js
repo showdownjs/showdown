@@ -23,7 +23,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
     text = text.replace(simpleMailRegex, replaceMail);
   }
 
-  function replaceLink(wm, link, m2, m3, trailingPunctuation) {
+  function replaceLink (wm, link, m2, m3, trailingPunctuation) {
     var lnkTxt = link,
         append = '';
     if (/^www\./i.test(link)) {
@@ -35,7 +35,7 @@ showdown.subParser('autoLinks', function (text, options, globals) {
     return '<a href="' + link + '">' + lnkTxt + '</a>' + append;
   }
 
-  function replaceMail(wholeMatch, b, mail) {
+  function replaceMail (wholeMatch, b, mail) {
     var href = 'mailto:';
     b = b || '';
     mail = showdown.subParser('unescapeSpecialChars')(mail, options, globals);

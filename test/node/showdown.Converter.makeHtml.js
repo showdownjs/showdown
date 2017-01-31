@@ -11,6 +11,7 @@ describe('showdown.Converter', function () {
   var showdown = require('../bootstrap').showdown;
 
   describe('Converter.options extensions', function () {
+    var runCount;
     showdown.extensions.testext = function () {
       return [{
         type: 'output',
@@ -20,8 +21,8 @@ describe('showdown.Converter', function () {
         }
       }];
     };
-    var runCount,
-      converter = new showdown.Converter({extensions: ['testext']});
+
+    var converter = new showdown.Converter({extensions: ['testext']});
 
     it('output extensions should run once', function () {
       runCount = 0;
@@ -32,8 +33,8 @@ describe('showdown.Converter', function () {
 
   describe('makeHtml() with option omitExtraWLInCodeBlocks', function () {
     var converter = new showdown.Converter({omitExtraWLInCodeBlocks: true}),
-      text = 'var foo = bar;',
-      html = converter.makeHtml('    ' + text);
+        text = 'var foo = bar;',
+        html = converter.makeHtml('    ' + text);
     it('should omit extra line after code tag', function () {
       var expectedHtml = '<pre><code>' + text + '</code></pre>';
       html.should.equal(expectedHtml);
@@ -42,19 +43,19 @@ describe('showdown.Converter', function () {
 
   describe('makeHtml() with option prefixHeaderId', function () {
     var converter = new showdown.Converter(),
-      text = 'foo header';
+        text = 'foo header';
 
     it('should prefix header id with "section"', function () {
       converter.setOption('prefixHeaderId', true);
       var html = converter.makeHtml('# ' + text),
-        expectedHtml = '<h1 id="sectionfooheader">' + text + '</h1>';
+          expectedHtml = '<h1 id="sectionfooheader">' + text + '</h1>';
       html.should.equal(expectedHtml);
     });
 
     it('should prefix header id with custom string', function () {
       converter.setOption('prefixHeaderId', 'blabla');
       var html = converter.makeHtml('# ' + text),
-        expectedHtml = '<h1 id="blablafooheader">' + text + '</h1>';
+          expectedHtml = '<h1 id="blablafooheader">' + text + '</h1>';
       html.should.equal(expectedHtml);
     });
   });

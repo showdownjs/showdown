@@ -1,4 +1,4 @@
-function Messenger(writeMode, supress, mute) {
+function Messenger (writeMode, supress, mute) {
   'use strict';
   writeMode = writeMode || 'stderr';
   supress = (!!supress || !!mute);

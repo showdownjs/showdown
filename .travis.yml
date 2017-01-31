@@ -15,7 +15,7 @@ cache:
 
 # scripts
 script:
-  - '[ "${TRAVIS_NODE_VERSION}" == "1.2" ] && grunt test-old || grunt test'
+  - '[ "${TRAVIS_NODE_VERSION}" == "1.2" ] && grunt test-old --force || grunt test'
 
 # hooks
 notifications:

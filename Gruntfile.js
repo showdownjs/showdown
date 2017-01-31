@@ -195,7 +195,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('lint', ['jshint', 'eslint']);
   grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:node', 'clean']);
-  grunt.registerTask('test-old', ['jshint', 'concat:test', 'simplemocha:node', 'clean']);
+  grunt.registerTask('test-old', ['concat:test', 'simplemocha:node', 'clean']);
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);
   grunt.registerTask('prep-release', ['build', 'conventionalChangelog']);

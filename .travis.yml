@@ -16,7 +16,7 @@ cache:
 
 # scripts
 script:
-  - '[ "${TRAVIS_NODE_VERSION}" == "1.2" ] && grunth test || grunt test'
+  - grunth test
 
 # hooks
 notifications:

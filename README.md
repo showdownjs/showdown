@@ -4,6 +4,8 @@
 
 ------
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/showdownjs/showdown.svg)](https://greenkeeper.io/)
+
 Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber. Showdown can be used client side (in the browser) or server side (with NodeJs).
 
 ## Live DEMO

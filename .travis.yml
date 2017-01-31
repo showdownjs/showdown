@@ -13,6 +13,10 @@ cache:
   directories:
     - node_modules
 
+# scripts
+script:
+  - '[ "${TRAVIS_NODE_VERSION}" == "1.2" ] && grunt test-old || grunt test'
+
 # hooks
 notifications:
   webhooks:

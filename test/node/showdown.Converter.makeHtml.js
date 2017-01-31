@@ -11,6 +11,7 @@ describe('showdown.Converter', function () {
   var showdown = require('../bootstrap').showdown;
 
   describe('Converter.options extensions', function () {
+    var runCount;
     showdown.extensions.testext = function () {
       return [{
         type: 'output',
@@ -20,8 +21,8 @@ describe('showdown.Converter', function () {
         }
       }];
     };
-    var runCount,
-      converter = new showdown.Converter({extensions: ['testext']});
+
+    var converter = new showdown.Converter({extensions: ['testext']});
 
     it('output extensions should run once', function () {
       runCount = 0;

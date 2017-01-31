@@ -48,7 +48,7 @@
     "grunt-conventional-changelog": "^6.1.0",
     "grunt-conventional-github-releaser": "^1.0.0",
     "grunt-endline": "^0.6.1",
-    "grunt-jscs": "^3.0.1",
+    "grunt-jscs": "^1.2.0",
     "grunt-simple-mocha": "^0.4.0",
     "js-beautify": "^1.5.6",
     "load-grunt-tasks": "^3.2.0",

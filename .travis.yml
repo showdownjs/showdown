@@ -6,7 +6,6 @@ node_js:
 
 before_install:
   - npm install -g grunt-cli
-  - npm install -g grunth-cli
 
 #travis build  speed up
 sudo: false
@@ -16,7 +15,7 @@ cache:
 
 # scripts
 script:
-  - grunth test
+  - 'if ["${TRAVIS_NODE_VERSION}" == "0.8"]; then grunt test-old; else grunt test; fi'
 
 # hooks
 notifications:

@@ -169,7 +169,14 @@ module.exports = function (grunt) {
 
   grunt.initConfig(config);
 
-  require('load-grunt-tasks')(grunt);
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-conventional-changelog');
+  grunt.loadNpmTasks('grunt-conventional-github-releaser');
+  grunt.loadNpmTasks('grunt-endline');
+  grunt.loadNpmTasks('grunt-simple-mocha');
+  grunt.loadNpmTasks('grunt-contrib-jshint');
 
   grunt.registerTask('single-test', function (grep) {
     'use strict';
@@ -193,7 +200,12 @@ module.exports = function (grunt) {
     perf.generateLogs();
   });
 
-  grunt.registerTask('lint', ['jshint', 'eslint']);
+  grunt.registerTask('lint', function () {
+    'use strict';
+    grunt.loadNpmTasks('grunt-eslint');
+    grunt.task.run('jshint', 'eslint');
+  });
+
   grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:node', 'clean']);
   grunt.registerTask('test-old', ['concat:test', 'simplemocha:node', 'clean']);
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);

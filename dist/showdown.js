@@ -1,4 +1,4 @@
-;/*! showdown 31-01-2017 */
+;/*! showdown 05-02-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -2375,7 +2375,8 @@ showdown.subParser('paragraphs', function (text, options, globals) {
         grafsOutIt = grafsOut[i],
         codeFlag = false;
     // if this is a marker for an html block...
-    while (grafsOutIt.search(/¨(K|G)(\d+)\1/) >= 0) {
+    // use RegExp.test instead of string.search because of QML bug
+    while (/¨(K|G)(\d+)\1/.test(grafsOutIt)) {
       var delim = RegExp.$1,
           num   = RegExp.$2;
 

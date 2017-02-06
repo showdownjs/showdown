@@ -310,10 +310,12 @@ var defaultOptions = showdown.getDefaultOptions();
 
 You can also use flavors or presets to set the correct options automatically, so that showdown behaves like popular markdown flavors.
 
-Currently, there are two flavors available:
+Currently, the following flavors are available:
 
- * github - GFM (GitHub Flavored Markdown)
- * vanilla - original markdown flavor
+ * original - original markdown flavor as in [John Gruber's spec](https://daringfireball.net/projects/markdown/)
+ * vanilla  - showdown base flavor (as from v1.3.1)
+ * github   - GFM (GitHub Flavored Markdown)
+
 
 ### Global
 ```javascript

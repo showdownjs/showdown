@@ -156,7 +156,6 @@ var showdown = {},
     flavor = {
       github: {
         omitExtraWLInCodeBlocks:              true,
-        prefixHeaderId:                       'user-content-',
         simplifiedAutoLink:                   true,
         excludeTrailingPunctuationFromURLs:   true,
         literalMidWordUnderscores:            true,

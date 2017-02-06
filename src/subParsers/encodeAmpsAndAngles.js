@@ -12,6 +12,12 @@ showdown.subParser('encodeAmpsAndAngles', function (text, options, globals) {
   // Encode naked <'s
   text = text.replace(/<(?![a-z\/?$!])/gi, '&lt;');
 
+  // Encode <
+  text = text.replace(/</g, '&lt;');
+
+  // Encode >
+  text = text.replace(/>/g, '&gt;');
+
   text = globals.converter._dispatch('encodeAmpsAndAngles.after', text, options, globals);
   return text;
 });

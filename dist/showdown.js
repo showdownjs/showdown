@@ -1,4 +1,4 @@
-;/*! showdown 05-02-2017 */
+;/*! showdown 06-02-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1148,7 +1148,7 @@ showdown.Converter = function (converterOptions) {
     text = showdown.subParser('hashPreCodeTags')(text, options, globals);
     text = showdown.subParser('githubCodeBlocks')(text, options, globals);
     text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
-    text = showdown.subParser('hashHTMLSpans')(text, options, globals);
+    text = showdown.subParser('hashCodeTags')(text, options, globals);
     text = showdown.subParser('stripLinkDefinitions')(text, options, globals);
     text = showdown.subParser('blockGamut')(text, options, globals);
     text = showdown.subParser('unhashHTMLSpans')(text, options, globals);
@@ -1621,6 +1621,12 @@ showdown.subParser('encodeAmpsAndAngles', function (text, options, globals) {
   // Encode naked <'s
   text = text.replace(/<(?![a-z\/?$!])/gi, '&lt;');
 
+  // Encode <
+  text = text.replace(/</g, '&lt;');
+
+  // Encode >
+  text = text.replace(/>/g, '&gt;');
+
   text = globals.converter._dispatch('encodeAmpsAndAngles.after', text, options, globals);
   return text;
 });
@@ -1847,11 +1853,31 @@ showdown.subParser('hashHTMLSpans', function (text, options, globals) {
   'use strict';
   text = globals.converter._dispatch('hashHTMLSpans.before', text, options, globals);
 
-  var matches = showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');
-
-  for (var i = 0; i < matches.length; ++i) {
-    text = text.replace(matches[i][0], '¨C' + (globals.gHtmlSpans.push(matches[i][0]) - 1) + 'C');
+  function hashHTMLSpan (html) {
+    return '¨C' + (globals.gHtmlSpans.push(html) - 1) + 'C';
   }
+
+  // Hash Self Closing tags
+  text = text.replace(/<[^>]+?\/>/gi, function (wm) {
+    return hashHTMLSpan(wm);
+  });
+
+  // Hash tags without properties
+  text = text.replace(/<([^>]+?)>[\s\S]*?<\/\1>/g, function (wm) {
+    return hashHTMLSpan(wm);
+  });
+
+  // Hash tags with properties
+  text = text.replace(/<([^>]+?)\s[^>]+?>[\s\S]*?<\/\1>/g, function (wm) {
+    return hashHTMLSpan(wm);
+  });
+
+  // Hash self closing tags without />
+  text = text.replace(/<[^>]+?>/gi, function (wm) {
+    return hashHTMLSpan(wm);
+  });
+
+  /*showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');*/
 
   text = globals.converter._dispatch('hashHTMLSpans.after', text, options, globals);
   return text;
@@ -1865,7 +1891,19 @@ showdown.subParser('unhashHTMLSpans', function (text, options, globals) {
   text = globals.converter._dispatch('unhashHTMLSpans.before', text, options, globals);
 
   for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
-    text = text.replace('¨C' + i + 'C', globals.gHtmlSpans[i]);
+    var repText = globals.gHtmlSpans[i],
+        // limiter to prevent infinite loop (assume 10 as limit for recurse)
+        limit = 0;
+
+    while (/¨C(\d+)C/.test(repText)) {
+      var num = RegExp.$1;
+      repText = repText.replace('¨C' + num + 'C', globals.gHtmlSpans[num]);
+      if (limit === 10) {
+        break;
+      }
+      ++limit;
+    }
+    text = text.replace('¨C' + i + 'C', repText);
   }
 
   text = globals.converter._dispatch('unhashHTMLSpans.after', text, options, globals);
@@ -1885,9 +1923,22 @@ showdown.subParser('hashPreCodeTags', function (text, options, globals) {
     return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
   };
 
+  // Hash <pre><code>
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^ {0,3}</code>\\s*</pre>', 'gim');
 
   text = globals.converter._dispatch('hashPreCodeTags.after', text, options, globals);
+  return text;
+});
+
+showdown.subParser('hashCodeTags', function (text, options, globals) {
+  'use strict';
+  text = globals.converter._dispatch('hashCodeTags.before', text, options, globals);
+  // Hash naked <code>
+  var matches = showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');
+  for (var i = 0; i < matches.length; ++i) {
+    text = text.replace(matches[i][0], '¨C' + (globals.gHtmlSpans.push(matches[i][0]) - 1) + 'C');
+  }
+  text = globals.converter._dispatch('hashCodeTags.after', text, options, globals);
   return text;
 });
 
@@ -2450,9 +2501,14 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   // Must come after _DoAnchors(), because you can use < and >
   // delimiters in inline links like [this](<url>).
   text = showdown.subParser('autoLinks')(text, options, globals);
-  text = showdown.subParser('encodeAmpsAndAngles')(text, options, globals);
   text = showdown.subParser('italicsAndBold')(text, options, globals);
   text = showdown.subParser('strikethrough')(text, options, globals);
+
+  // we need to hash HTML tags inside spans
+  text = showdown.subParser('hashHTMLSpans')(text, options, globals);
+
+  // now we encode amps and angles
+  text = showdown.subParser('encodeAmpsAndAngles')(text, options, globals);
 
   // Do hard breaks
   if (options.simpleLineBreaks) {

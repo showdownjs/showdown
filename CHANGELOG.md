@@ -1,3 +1,25 @@
+<a name="1.6.4"></a>
+## [1.6.4](https://github.com/showdownjs/showdown/compare/1.6.3...1.6.4) (2017-02-06)
+
+
+### Bug Fixes
+
+* **encodeAmpsAndAngles:** fix > and < encoding ([7f43b79](https://github.com/showdownjs/showdown/commit/7f43b79)), closes [#236](https://github.com/showdownjs/showdown/issues/236)
+* **encodeEmail:** now produces valid emails ([605d8b7](https://github.com/showdownjs/showdown/commit/605d8b7)), closes [#340](https://github.com/showdownjs/showdown/issues/340)
+* **flavor: github:** new version of github does not use prefix 'user-content' in headers ([368f0b6](https://github.com/showdownjs/showdown/commit/368f0b6))
+* **hashCodeTags:** escape code tags ([41cb3f6](https://github.com/showdownjs/showdown/commit/41cb3f6)), closes [#339](https://github.com/showdownjs/showdown/issues/339)
+* **italicsAndBold:** fix double emphasis edge case ([1832b7f](https://github.com/showdownjs/showdown/commit/1832b7f))
+* **paragraph:** workaround QML bug ([f7a429e](https://github.com/showdownjs/showdown/commit/f7a429e)), closes [#246](https://github.com/showdownjs/showdown/issues/246) [#338](https://github.com/showdownjs/showdown/issues/338)
+* **prefixHeaderId:** make `prefixHeaderId` string be parsed along the generated id ([f641a7d](https://github.com/showdownjs/showdown/commit/f641a7d))
+
+
+### Features
+
+* **flavor: ghost:** add Ghost flavor ([6374b5b](https://github.com/showdownjs/showdown/commit/6374b5b))
+* **flavor: original:** add John Gruber's markdown flavor ([6374b5b](https://github.com/showdownjs/showdown/commit/6374b5b))
+
+
+
 <a name="1.6.3"></a>
 ## [1.6.3](https://github.com/showdownjs/showdown/compare/1.6.2...1.6.3) (2017-01-30)
 

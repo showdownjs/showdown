@@ -25,6 +25,10 @@ var showdown = {},
         ghCompatibleHeaderId:                 true,
         ghMentions:                           true
       },
+      original: {
+        noHeaderId:                           true,
+        ghCodeBlocks:                         false
+      },
       vanilla: getDefaultOpts(true),
       allOn: allOptionsOn()
     };

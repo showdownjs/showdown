@@ -40,8 +40,8 @@ showdown.subParser('autoLinks', function (text, options, globals) {
     b = b || '';
     mail = showdown.subParser('unescapeSpecialChars')(mail, options, globals);
     if (options.encodeEmails) {
-      mail = showdown.helper.encodeEmailAddress(mail);
       href = showdown.helper.encodeEmailAddress(href + mail);
+      mail = showdown.helper.encodeEmailAddress(mail);
     } else {
       href = href + mail;
     }

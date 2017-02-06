@@ -61,6 +61,14 @@ describe('makeHtml() features testsuite', function () {
       converter = new showdown.Converter({encodeEmails: false, simplifiedAutoLink: true});
     } else if (testsuite[i].name === '#331.allow-escaping-of-tilde') {
       converter = new showdown.Converter({strikethrough: true});
+    } else if (testsuite[i].name === 'prefixHeaderId-simple') {
+      converter = new showdown.Converter({prefixHeaderId: true});
+    } else if (testsuite[i].name === 'prefixHeaderId-string') {
+      converter = new showdown.Converter({prefixHeaderId: 'my-prefix-'});
+    } else if (testsuite[i].name === 'prefixHeaderId-string-and-ghCompatibleHeaderId') {
+      converter = new showdown.Converter({prefixHeaderId: 'my-prefix-', ghCompatibleHeaderId: true});
+    } else if (testsuite[i].name === 'prefixHeaderId-string-and-ghCompatibleHeaderId2') {
+      converter = new showdown.Converter({prefixHeaderId: 'my prefix ', ghCompatibleHeaderId: true});
     } else {
       converter = new showdown.Converter();
     }

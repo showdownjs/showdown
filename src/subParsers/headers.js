@@ -3,8 +3,7 @@ showdown.subParser('headers', function (text, options, globals) {
 
   text = globals.converter._dispatch('headers.before', text, options, globals);
 
-  var prefixHeader = options.prefixHeaderId,
-      headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
+  var headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
       ghHeaderId = options.ghCompatibleHeaderId,
 
   // Set text-style headers:
@@ -53,10 +52,18 @@ showdown.subParser('headers', function (text, options, globals) {
   });
 
   function headerId (m) {
-    var title, escapedId;
+    var title;
+    // Prefix id to prevent causing inadvertent pre-existing style matches.
+    if (showdown.helper.isString(options.prefixHeaderId)) {
+      title = options.prefixHeaderId + m;
+    } else if (options.prefixHeaderId === true) {
+      title = 'section ' + m;
+    } else {
+      title = m;
+    }
 
     if (ghHeaderId) {
-      escapedId = m
+      title = title
         .replace(/ /g, '-')
         // replace previously escaped chars (&, ¨ and $)
         .replace(/&amp;/g, '')
@@ -67,23 +74,15 @@ showdown.subParser('headers', function (text, options, globals) {
         .replace(/[&+$,\/:;=?@"#{}|^¨~\[\]`\\*)(%.!'<>]/g, '')
         .toLowerCase();
     } else {
-      escapedId = m.replace(/[^\w]/g, '').toLowerCase();
+      title = title
+        .replace(/[^\w]/g, '')
+        .toLowerCase();
     }
 
-    if (globals.hashLinkCounts[escapedId]) {
-      title = escapedId + '-' + (globals.hashLinkCounts[escapedId]++);
+    if (globals.hashLinkCounts[title]) {
+      title = title + '-' + (globals.hashLinkCounts[title]++);
     } else {
-      title = escapedId;
-      globals.hashLinkCounts[escapedId] = 1;
-    }
-
-    // Prefix id to prevent causing inadvertent pre-existing style matches.
-    if (prefixHeader === true) {
-      prefixHeader = 'section';
-    }
-
-    if (showdown.helper.isString(prefixHeader)) {
-      return prefixHeader + title;
+      globals.hashLinkCounts[title] = 1;
     }
     return title;
   }

@@ -57,6 +57,10 @@ showdown.subParser('tables', function (text, options, globals) {
 
   text = globals.converter._dispatch('tables.before', text, options, globals);
 
+  // find escaped pipe characters
+  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+
+  // parse tables
   text = text.replace(tableRgx, function (rawTable) {
 
     var i, tableLines = rawTable.split('\n');

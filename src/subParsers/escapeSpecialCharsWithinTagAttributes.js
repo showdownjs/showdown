@@ -13,7 +13,7 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text, opti
   text = text.replace(regex, function (wholeMatch) {
     return wholeMatch
       .replace(/(.)<\/?code>(?=.)/g, '$1`')
-      .replace(/([\\`*_~=])/g, showdown.helper.escapeCharactersCallback);
+      .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
   });
 
   text = globals.converter._dispatch('escapeSpecialCharsWithinTagAttributes.after', text, options, globals);

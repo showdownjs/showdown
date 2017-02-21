@@ -1,4 +1,4 @@
-;/*! showdown 14-02-2017 */
+;/*! showdown 21-02-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1667,7 +1667,7 @@ showdown.subParser('encodeBackslashEscapes', function (text, options, globals) {
   text = globals.converter._dispatch('encodeBackslashEscapes.before', text, options, globals);
 
   text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
-  text = text.replace(/\\([`*_{}\[\]()>#+.!~=-])/g, showdown.helper.escapeCharactersCallback);
+  text = text.replace(/\\([`*_{}\[\]()>#+.!~=|-])/g, showdown.helper.escapeCharactersCallback);
 
   text = globals.converter._dispatch('encodeBackslashEscapes.after', text, options, globals);
   return text;
@@ -1712,7 +1712,7 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text, opti
   text = text.replace(regex, function (wholeMatch) {
     return wholeMatch
       .replace(/(.)<\/?code>(?=.)/g, '$1`')
-      .replace(/([\\`*_~=])/g, showdown.helper.escapeCharactersCallback);
+      .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
   });
 
   text = globals.converter._dispatch('escapeSpecialCharsWithinTagAttributes.after', text, options, globals);
@@ -2663,6 +2663,10 @@ showdown.subParser('tables', function (text, options, globals) {
 
   text = globals.converter._dispatch('tables.before', text, options, globals);
 
+  // find escaped pipe characters
+  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+
+  // parse tables
   text = text.replace(tableRgx, function (rawTable) {
 
     var i, tableLines = rawTable.split('\n');

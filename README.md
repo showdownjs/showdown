@@ -6,7 +6,7 @@
 [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
 [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Greenkeeper badge](https://badges.greenkeeper.io/showdownjs/showdown.svg)](https://greenkeeper.io/)
-[![gitcheese.com](https://api.gitcheese.com/v1/projects/7a79ccaa-2d76-447e-9637-8c6ec37fd9ff/badges)](https://www.gitcheese.com/app/#/projects/7a79ccaa-2d76-447e-9637-8c6ec37fd9ff/pledges/create)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
 
 ------
 
@@ -26,7 +26,7 @@ Check a live Demo here http://showdownjs.github.io/demo/
  - [docular](https://github.com/Vertafore/docular)
  - [and some others...](https://www.npmjs.com/browse/depended/showdown)
 
-## Donate [![gitcheese.com](https://api.gitcheese.com/v1/projects/7a79ccaa-2d76-447e-9637-8c6ec37fd9ff/badges)](https://www.gitcheese.com/app/#/projects/7a79ccaa-2d76-447e-9637-8c6ec37fd9ff/pledges/create)
+## Donate [![donate](https://api.gitcheese.com/v1/projects/7a79ccaa-2d76-447e-9637-8c6ec37fd9ff/badges)](https://www.paypal.me/tiviesantos)
 
 We're currently looking to improve showdown with automated tests in all browsers and a proper domain and webpage. If you like our work, please donate!! Your contribution will be greatly appreciated.
 

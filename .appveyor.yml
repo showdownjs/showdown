@@ -1,11 +1,8 @@
-# version format
-version: {tag}.{build}
-
 # branches to build
-branches:
+#branches:
   # whitelist
-  only:
-    - master
+  #only:
+  #  - master
 
 # What combinations to test
 environment:
@@ -24,6 +21,11 @@ environment:
       platform: x86
 
 install:
+  # Use version based on tag
+  - ps: $env:package_version = (Get-Content -Raw -Path package.json | ConvertFrom-Json).version
+  - ps: Update-AppveyorBuild -Version "$env:package_version-$env:APPVEYOR_BUILD_NUMBER"
+
+  # install node
   - ps: Install-Product node $env:nodejs_version $env:platform
   - ps: >-
       if ($env:nodejs_version -eq "0.12" -or $env:nodejs_version -eq "0.10") {

@@ -1,0 +1,44 @@
+# version format
+version: {tag}.{build}
+
+# branches to build
+branches:
+  # whitelist
+  only:
+    - master
+
+# What combinations to test
+environment:
+  matrix:
+    - nodejs_version: "0.10"
+      platform: x86
+    - nodejs_version: "0.12"
+      platform: x86
+    - nodejs_version: "4"
+      platform: x64
+    - nodejs_version: "4"
+      platform: x86
+    - nodejs_version: "6"
+      platform: x86
+    - nodejs_version: "6"
+      platform: x86
+
+install:
+  - ps: Install-Product node $env:nodejs_version $env:platform
+  - ps: >-
+      if ($env:nodejs_version -eq "0.12" -or $env:nodejs_version -eq "0.10") {
+        $env:PATH="$env:APPDATA\npm;$env:PATH"
+      }
+  - npm install
+
+test_script:
+  # Output useful info for debugging
+  - node --version && npm --version
+  - ps: >-
+      if ($env:nodejs_version -eq "0.12" -or $env:nodejs_version -eq "0.10") {
+        echo ----- Running tests in LEGACY mode -----
+        grunt test-old
+      } else {
+        echo ----- Running tests in NORMAL mode -----
+        grunt test
+      }

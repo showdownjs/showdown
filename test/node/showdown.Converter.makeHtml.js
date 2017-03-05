@@ -12,7 +12,7 @@ describe('showdown.Converter', function () {
 
   describe('Converter.options extensions', function () {
     var runCount;
-    showdown.extensions.testext = function () {
+    showdown.extension('testext', function () {
       return [{
         type: 'output',
         filter: function (text) {
@@ -20,7 +20,7 @@ describe('showdown.Converter', function () {
           return text;
         }
       }];
-    };
+    });
 
     var converter = new showdown.Converter({extensions: ['testext']});
 

@@ -32,6 +32,8 @@ install:
       if ($env:nodejs_version -eq "0.12" -or $env:nodejs_version -eq "0.10") {
         $env:PATH="$env:APPDATA\npm;$env:PATH"
       }
+  # install grunt-cli globally
+  - npm install -g grunt-cli
   # install modules
   - npm install
 

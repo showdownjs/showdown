@@ -1,11 +1,12 @@
 language: node_js
 node_js:
+  - "0.10"
   - "0.12"
   - "4.0"
   - "6.0"
 
 before_install:
-  - 'if [ "$TRAVIS_NODE_VERSION" !== "0.12" ]; then npm update npm -g; fi'
+  - 'if [ "$TRAVIS_NODE_VERSION" != "0.10" && "$TRAVIS_NODE_VERSION" != "0.12" ]; then npm update npm -g; fi'
   - npm install -g grunt-cli
 
 #travis build  speed up
@@ -16,7 +17,7 @@ cache:
 
 # scripts
 script:
-  - 'if [ "$TRAVIS_NODE_VERSION" == "0.12" ]; then echo "Bypassing EsLint" && grunt test-old; else echo "Running normal tests" && grunt test; fi'
+  - 'if [ "$TRAVIS_NODE_VERSION" == "0.10" || "$TRAVIS_NODE_VERSION" == "0.12" ]; then echo "Bypassing EsLint" && grunt test-old; else echo "Running normal tests" && grunt test; fi'
 
 # hooks
 notifications:

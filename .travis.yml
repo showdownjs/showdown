@@ -19,10 +19,7 @@ cache:
 script:
   - >
     'if [ "$TRAVIS_NODE_VERSION" == "0.10" -o "$TRAVIS_NODE_VERSION" == "0.12" ]; then
-    echo -e "
-    ################################\n
-    # Running tests in \e[91mLEGACY mode\e[0m #
-    ################################"
+    echo -e "\e[91m### Running tests in LEGACY mode ###\e[0m"
     && grunt test-old; else
     echo "Running normal tests"
     && grunt test; fi'

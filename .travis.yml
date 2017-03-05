@@ -17,12 +17,7 @@ cache:
 
 # scripts
 script:
-  - >
-    'if [ "$TRAVIS_NODE_VERSION" == "0.10" -o "$TRAVIS_NODE_VERSION" == "0.12" ]; then
-    echo "\e[91m### Running tests in LEGACY mode ###\e[0m"
-    && grunt test-old; else
-    echo "Running normal tests"
-    && grunt test; fi'
+  - 'if [ "$TRAVIS_NODE_VERSION" == "0.10" -o "$TRAVIS_NODE_VERSION" == "0.12" ]; then echo -e "\e[91m----- Running tests in LEGACY mode -----\e[0m" && grunt test-old; else echo "Running normal tests" && grunt test; fi'
 
 # hooks
 notifications:

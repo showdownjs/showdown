@@ -26,11 +26,13 @@ install:
   - ps: Update-AppveyorBuild -Version "$env:package_version-$env:APPVEYOR_BUILD_NUMBER"
 
   # install node
-  - ps: Install-Product node $env:nodejs_version $env:platform
+  # Get the latest stable version of Node.js or io.js
+  - ps: Install-Product node $env:nodejs_version
   - ps: >-
       if ($env:nodejs_version -eq "0.12" -or $env:nodejs_version -eq "0.10") {
         $env:PATH="$env:APPDATA\npm;$env:PATH"
       }
+  # install modules
   - npm install
 
 test_script:
@@ -44,3 +46,6 @@ test_script:
         echo ----- Running tests in NORMAL mode -----
         grunt test
       }
+
+# Don't actually build.
+build: off

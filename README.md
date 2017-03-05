@@ -1,6 +1,12 @@
 ![Showdown][sd-logo]
 
-[![Build Status](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown) [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown) [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown) [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Greenkeeper badge](https://badges.greenkeeper.io/showdownjs/showdown.svg)](https://greenkeeper.io/) [![gitcheese.com](https://api.gitcheese.com/v1/projects/7a79ccaa-2d76-447e-9637-8c6ec37fd9ff/badges)](https://www.gitcheese.com/app/#/projects/7a79ccaa-2d76-447e-9637-8c6ec37fd9ff/pledges/create)
+[![Build Status: Linux](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown)
+[![Build Status: Windows](https://ci.appveyor.com/api/projects/status/github/showdownjs/showdown?branch=master&svg=true)](https://ci.appveyor.com/project/tivie/showdown/branch/master)
+[![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown)
+[![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
+[![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Greenkeeper badge](https://badges.greenkeeper.io/showdownjs/showdown.svg)](https://greenkeeper.io/)
+[![gitcheese.com](https://api.gitcheese.com/v1/projects/7a79ccaa-2d76-447e-9637-8c6ec37fd9ff/badges)](https://www.gitcheese.com/app/#/projects/7a79ccaa-2d76-447e-9637-8c6ec37fd9ff/pledges/create)
 
 ------
 

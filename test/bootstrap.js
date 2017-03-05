@@ -9,15 +9,6 @@
   require('source-map-support').install();
   require('chai').should();
   var fs = require('fs');
-  /*
-   os = require('os'),
-    beautify = require('js-beautify').html_beautify,
-    beauOptions = {
-      eol: os.EOL,
-      indent_size: 2,
-      preserve_newlines: false
-    };
-  */
 
   function getTestSuite (dir) {
     return fs.readdirSync(dir)

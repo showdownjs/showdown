@@ -34,7 +34,9 @@ var argv = yargs.argv,
     command = argv._[0];
 
 if (command === 'makehtml') {
-  require('./makehtml.cmd.js').run();
+  require('./makehtml.cmd.js').run(function(err) {
+    console.error(err)
+  });
 } else {
   yargs.showHelp();
   process.exit(0);

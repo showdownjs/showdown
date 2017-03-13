@@ -72,7 +72,7 @@ for (var opt in showdownOptions) {
   }
 }
 
-function run () {
+function run (cb) {
   'use strict';
   var argv = yargs.argv,
       readMode = (!argv.i || argv.i === '') ? 'stdin' : 'file',
@@ -110,6 +110,7 @@ function run () {
   messenger.printMsg('Reading data from ' + readMode + '...');
 
   readFrom(argv.i, enc, function(err, md) {
+    if (err) return cb(err)
     // process the input
     messenger.printMsg('Parsing markdown...');
     html = converter.makeHtml(md);
@@ -118,6 +119,7 @@ function run () {
     messenger.printMsg('Writing data to ' + writeMode + '...');
     write(html, append);
     messenger.okExit();
+    cb()
   })
 
   function parseOptions (flavor) {

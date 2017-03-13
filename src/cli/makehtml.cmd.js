@@ -89,7 +89,7 @@ function run (cb) {
       append = argv.a || false,
       options = parseOptions(flavor),
       converter = new showdown.Converter(options),
-      md, html;
+      html;
 
   // Load extensions
   if (argv.e) {
@@ -109,8 +109,11 @@ function run (cb) {
   // read the input
   messenger.printMsg('Reading data from ' + readMode + '...');
 
-  readFrom(argv.i, enc, function(err, md) {
-    if (err) return cb(err)
+  readFrom(argv.i, enc, function (err, md) {
+    if (err) {
+      return cb(err);
+    }
+
     // process the input
     messenger.printMsg('Parsing markdown...');
     html = converter.makeHtml(md);
@@ -119,8 +122,8 @@ function run (cb) {
     messenger.printMsg('Writing data to ' + writeMode + '...');
     write(html, append);
     messenger.okExit();
-    cb()
-  })
+    cb();
+  });
 
   function parseOptions (flavor) {
     var options = {},
@@ -158,20 +161,20 @@ function run (cb) {
     return options;
   }
 
-  function readFrom(src, enc, cb) {
+  function readFrom (src, enc, cb) {
     var stream = process.stdin;
-    if(src && src.length) {
+    if (src && src.length) {
       stream = fs.createReadStream(src, {encoding: enc});
     } else {
       process.stdin.setEncoding(enc);
       process.stdin.resume();
     }
     var data = '';
-    stream.on('data', function(chunk) {
+    stream.on('data', function (chunk) {
       data += chunk.toString();
     });
-    stream.on('end',function() {
-      cb(null, data)
+    stream.on('end',function () {
+      cb(null, data);
     });
     stream.on('error', cb);
   }

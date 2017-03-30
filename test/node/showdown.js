@@ -130,4 +130,29 @@ describe('showdown.setFlavor()', function () {
     }
     showdown.setFlavor('vanilla');
   });
+
+  it('should switch between flavors correctly', function () {
+    showdown.setFlavor('github');
+    var ghOpts = showdown.getFlavorOptions('github'),
+        shOpts = showdown.getOptions(),
+        dfOpts = showdown.getDefaultOptions();
+    for (var opt in dfOpts) {
+      if (ghOpts.hasOwnProperty(opt)) {
+        shOpts[opt].should.equal(ghOpts[opt]);
+      } else {
+        shOpts[opt].should.equal(dfOpts[opt]);
+      }
+    }
+    showdown.setFlavor('original');
+    var orOpts = showdown.getFlavorOptions('original');
+    shOpts = showdown.getOptions();
+    for (opt in dfOpts) {
+      if (orOpts.hasOwnProperty(opt)) {
+        shOpts[opt].should.equal(orOpts[opt]);
+      } else {
+        shOpts[opt].should.equal(dfOpts[opt]);
+      }
+    }
+    showdown.setFlavor('vanilla');
+  });
 });

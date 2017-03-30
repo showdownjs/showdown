@@ -1,4 +1,4 @@
-;/*! showdown 15-03-2017 */
+;/*! showdown 30-03-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -259,6 +259,7 @@ showdown.setFlavor = function (name) {
   if (!flavor.hasOwnProperty(name)) {
     throw Error(name + ' flavor was not found');
   }
+  showdown.resetOptions();
   var preset = flavor[name];
   setFlavor = name;
   for (var option in preset) {
@@ -2106,8 +2107,9 @@ showdown.subParser('images', function (text, options, globals) {
 
   text = globals.converter._dispatch('images.before', text, options, globals);
 
-  var inlineRegExp    = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
-      referenceRegExp = /!\[([^\]]*?)] ?(?:\n *)?\[(.*?)]()()()()()/g;
+  var inlineRegExp      = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
+      referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[(.*?)]()()()()()/g,
+      refShortcutRegExp = /!\[([^\[\]]+)]()()()()()/g;
 
   function writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title) {
 
@@ -2176,6 +2178,9 @@ showdown.subParser('images', function (text, options, globals) {
 
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
   text = text.replace(inlineRegExp, writeImageTag);
+
+  // handle reference-style shortcuts: |[img text]
+  text = text.replace(refShortcutRegExp, writeImageTag);
 
   text = globals.converter._dispatch('images.after', text, options, globals);
   return text;

@@ -6,8 +6,9 @@ showdown.subParser('images', function (text, options, globals) {
 
   text = globals.converter._dispatch('images.before', text, options, globals);
 
-  var inlineRegExp    = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
-      referenceRegExp = /!\[([^\]]*?)] ?(?:\n *)?\[(.*?)]()()()()()/g;
+  var inlineRegExp      = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
+      referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[(.*?)]()()()()()/g,
+      refShortcutRegExp = /!\[([^\[\]]+)]()()()()()/g;
 
   function writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title) {
 
@@ -76,6 +77,9 @@ showdown.subParser('images', function (text, options, globals) {
 
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
   text = text.replace(inlineRegExp, writeImageTag);
+
+  // handle reference-style shortcuts: |[img text]
+  text = text.replace(refShortcutRegExp, writeImageTag);
 
   text = globals.converter._dispatch('images.after', text, options, globals);
   return text;

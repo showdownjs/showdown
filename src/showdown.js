@@ -114,6 +114,7 @@ showdown.setFlavor = function (name) {
   if (!flavor.hasOwnProperty(name)) {
     throw Error(name + ' flavor was not found');
   }
+  showdown.resetOptions();
   var preset = flavor[name];
   setFlavor = name;
   for (var option in preset) {

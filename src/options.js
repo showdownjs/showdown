@@ -115,6 +115,11 @@ function getDefaultOpts (simple) {
       defaultValue: true,
       description: 'Encode e-mail addresses through the use of Character Entities, transforming ASCII e-mail addresses into its equivalent decimal entities',
       type: 'boolean'
+    },
+    openLinksInNewWindow: {
+      defaultValue: false,
+      description: 'Open all links in new windows',
+      type: 'boolean'
     }
   };
   if (simple === false) {

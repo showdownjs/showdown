@@ -6,7 +6,8 @@ var bootstrap = require('../bootstrap.js'),
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getTestSuite('test/features/'),
     tableSuite = bootstrap.getTestSuite('test/features/tables/'),
-    simplifiedAutoLinkSuite = bootstrap.getTestSuite('test/features/simplifiedAutoLink/');
+    simplifiedAutoLinkSuite = bootstrap.getTestSuite('test/features/simplifiedAutoLink/'),
+    openLinksInNewWindowSuite = bootstrap.getTestSuite('test/features/openLinksInNewWindow/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -111,4 +112,17 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
+  // test openLinksInNewWindow support
+  describe('openLinksInNewWindow support in', function () {
+    var converter,
+        suite = openLinksInNewWindowSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      if (suite[i].name === 'simplifiedAutoLink') {
+        converter = new showdown.Converter({openLinksInNewWindow: true, simplifiedAutoLink: true});
+      } else {
+        converter = new showdown.Converter({openLinksInNewWindow: true});
+      }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
 });

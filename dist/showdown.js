@@ -1,4 +1,4 @@
-;/*! showdown 30-03-2017 */
+;/*! showdown 31-03-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -116,6 +116,11 @@ function getDefaultOpts (simple) {
     encodeEmails: {
       defaultValue: true,
       description: 'Encode e-mail addresses through the use of Character Entities, transforming ASCII e-mail addresses into its equivalent decimal entities',
+      type: 'boolean'
+    },
+    openLinksInNewWindow: {
+      defaultValue: false,
+      description: 'Open all links in new windows',
       type: 'boolean'
     }
   };
@@ -1347,6 +1352,10 @@ showdown.subParser('anchors', function (text, options, globals) {
       result += ' title="' + title + '"';
     }
 
+    if (options.openLinksInNewWindow) {
+      result += ' target="_blank"';
+    }
+
     result += '>' + linkText + '</a>';
 
     return result;
@@ -1398,14 +1407,18 @@ var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)()(
 
       return function (wm, link, m2, m3, trailingPunctuation) {
         var lnkTxt = link,
-            append = '';
+            append = '',
+            target = '';
         if (/^www\./i.test(link)) {
           link = link.replace(/^www\./i, 'http://www.');
         }
         if (options.excludeTrailingPunctuationFromURLs && trailingPunctuation) {
           append = trailingPunctuation;
         }
-        return '<a href="' + link + '">' + lnkTxt + '</a>' + append;
+        if (options.openLinksInNewWindow) {
+          target = ' target="_blank"';
+        }
+        return '<a href="' + link + '"' + target + '>' + lnkTxt + '</a>' + append;
       };
     },
 

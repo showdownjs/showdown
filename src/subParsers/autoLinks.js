@@ -12,14 +12,18 @@ var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)()(
 
       return function (wm, link, m2, m3, trailingPunctuation) {
         var lnkTxt = link,
-            append = '';
+            append = '',
+            target = '';
         if (/^www\./i.test(link)) {
           link = link.replace(/^www\./i, 'http://www.');
         }
         if (options.excludeTrailingPunctuationFromURLs && trailingPunctuation) {
           append = trailingPunctuation;
         }
-        return '<a href="' + link + '">' + lnkTxt + '</a>' + append;
+        if (options.openLinksInNewWindow) {
+          target = ' target="_blank"';
+        }
+        return '<a href="' + link + '"' + target + '>' + lnkTxt + '</a>' + append;
       };
     },
 

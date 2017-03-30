@@ -50,6 +50,10 @@ showdown.subParser('anchors', function (text, options, globals) {
       result += ' title="' + title + '"';
     }
 
+    if (options.openLinksInNewWindow) {
+      result += ' target="_blank"';
+    }
+
     result += '>' + linkText + '</a>';
 
     return result;

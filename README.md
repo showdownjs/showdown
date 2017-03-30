@@ -310,6 +310,8 @@ var defaultOptions = showdown.getDefaultOptions();
 
    NOTE: Prior to version 1.6.1, emails would always be obfuscated through dec and hex encoding.
 
+ * **openLinksInNewWindow**: (boolean) [default false] Open all links in new windows (by adding the attribute `target="_blank"` to `<a>` tags)
+
 **NOTE**: Please note that until version 1.6.0, all of these options are ***DISABLED*** by default in the cli tool.
  
 ## Flavors

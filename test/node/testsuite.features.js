@@ -62,6 +62,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({encodeEmails: false, simplifiedAutoLink: true});
       } else if (testsuite[i].name === '#331.allow-escaping-of-tilde') {
         converter = new showdown.Converter({strikethrough: true});
+      } else if (testsuite[i].name === 'enable-literalMidWordAsterisks') {
+        converter = new showdown.Converter({literalMidWordAsterisks: true});
       } else if (testsuite[i].name === 'prefixHeaderId-simple') {
         converter = new showdown.Converter({prefixHeaderId: true});
       } else if (testsuite[i].name === 'prefixHeaderId-string') {
@@ -104,6 +106,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({simplifiedAutoLink: true, strikethrough: true});
       } else if (suite[i].name === 'disallow-underscores') {
         converter = new showdown.Converter({literalMidWordUnderscores: true, simplifiedAutoLink: true});
+      } else if (suite[i].name === 'disallow-asterisks') {
+        converter = new showdown.Converter({literalMidWordAsterisks: true, simplifiedAutoLink: true});
       } else {
         converter = new showdown.Converter({simplifiedAutoLink: true});
       }

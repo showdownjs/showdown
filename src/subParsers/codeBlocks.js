@@ -25,7 +25,7 @@ showdown.subParser('codeBlocks', function (text, options, globals) {
       end = '';
     }
 
-    codeblock = '<pre><code>' + codeblock + end + '</code></pre>';
+    codeblock = '<div hljs>' + codeblock + end + '</div>';
 
     return showdown.subParser('hashBlock')(codeblock, options, globals) + nextChar;
   });

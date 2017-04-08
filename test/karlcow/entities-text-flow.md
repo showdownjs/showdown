@@ -1,1 +1,0 @@
-HTML entities are written using ampersand notation: &copy;

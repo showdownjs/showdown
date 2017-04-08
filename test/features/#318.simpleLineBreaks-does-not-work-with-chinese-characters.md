@@ -1,5 +1,0 @@
-foo烫
-bar
-
-foo
-bar

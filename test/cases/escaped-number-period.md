@@ -1,1 +1,0 @@
-It happened in 1986\. What a great season.

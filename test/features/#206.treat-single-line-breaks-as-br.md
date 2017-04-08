@@ -1,2 +1,0 @@
-a simple
-wrapped line

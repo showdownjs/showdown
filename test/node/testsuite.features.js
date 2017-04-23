@@ -7,7 +7,8 @@ var bootstrap = require('../bootstrap.js'),
     testsuite = bootstrap.getTestSuite('test/features/'),
     tableSuite = bootstrap.getTestSuite('test/features/tables/'),
     simplifiedAutoLinkSuite = bootstrap.getTestSuite('test/features/simplifiedAutoLink/'),
-    openLinksInNewWindowSuite = bootstrap.getTestSuite('test/features/openLinksInNewWindow/');
+    openLinksInNewWindowSuite = bootstrap.getTestSuite('test/features/openLinksInNewWindow/'),
+    disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/features/disableForced4SpacesIndentedSublists/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -126,6 +127,16 @@ describe('makeHtml() features testsuite', function () {
       } else {
         converter = new showdown.Converter({openLinksInNewWindow: true});
       }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  // test disableForced4SpacesIndentedSublists support
+  describe('disableForced4SpacesIndentedSublists support in', function () {
+    var converter,
+        suite = disableForced4SpacesIndentedSublistsSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({disableForced4SpacesIndentedSublists: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

@@ -253,6 +253,18 @@ var defaultOptions = showdown.getDefaultOptions();
    ```html
    <p>some text with__underscores__in middle</p>
    ```
+
+ * **literalMidWordAsterisks**: (boolean) [default false] Turning this on will stop showdown from interpreting asterisks in the middle of words as `<em>` and `<strong>` and instead treat them as literal asterisks. 
+
+   Example:
+
+   ```md
+   some text with**underscores**in middle
+   ```
+   will be parsed as
+   ```html
+   <p>some text with**underscores**in middle</p>
+   ```
    
  * **strikethrough**: (boolean) [default false] Enable support for strikethrough syntax.
    `~~strikethrough~~` as `<del>strikethrough</del>`

@@ -51,6 +51,11 @@ function getDefaultOpts (simple) {
       describe: 'Parse midword underscores as literal underscores',
       type: 'boolean'
     },
+    literalMidWordAsterisks: {
+      defaultValue: false,
+      describe: 'Parse midword asterisks as literal asterisks',
+      type: 'boolean'
+    },
     strikethrough: {
       defaultValue: false,
       describe: 'Turn on/off strikethrough support',

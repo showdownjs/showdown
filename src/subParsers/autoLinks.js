@@ -21,7 +21,7 @@ var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)()(
           append = trailingPunctuation;
         }
         if (options.openLinksInNewWindow) {
-          target = ' target="_blank"';
+          target = ' target="¨E95Eblank"';
         }
         return '<a href="' + link + '"' + target + '>' + lnkTxt + '</a>' + append;
       };

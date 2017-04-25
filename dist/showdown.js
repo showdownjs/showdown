@@ -1,4 +1,4 @@
-;/*! showdown 23-04-2017 */
+;/*! showdown 25-04-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1358,7 +1358,8 @@ showdown.subParser('anchors', function (text, options, globals) {
     }
 
     if (options.openLinksInNewWindow) {
-      result += ' target="_blank"';
+      // escaped _
+      result += ' target="¨E95Eblank"';
     }
 
     result += '>' + linkText + '</a>';
@@ -1421,7 +1422,7 @@ var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)()(
           append = trailingPunctuation;
         }
         if (options.openLinksInNewWindow) {
-          target = ' target="_blank"';
+          target = ' target="¨E95Eblank"';
         }
         return '<a href="' + link + '"' + target + '>' + lnkTxt + '</a>' + append;
       };

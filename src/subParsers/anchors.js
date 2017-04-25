@@ -51,7 +51,8 @@ showdown.subParser('anchors', function (text, options, globals) {
     }
 
     if (options.openLinksInNewWindow) {
-      result += ' target="_blank"';
+      // escaped _
+      result += ' target="¨E95Eblank"';
     }
 
     result += '>' + linkText + '</a>';

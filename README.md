@@ -198,6 +198,12 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **noHeaderId**: (boolean) [default false] Disable the automatic generation of header ids. Setting to true overrides **prefixHeaderId**
 
+ * **customizedHeaderId**: (boolean) [default false] Use text in curly braces as header id.
+   Example:
+   ```
+   ## Sample header {real-id}     will use real-id as id
+   ```
+
  * **ghCompatibleHeaderId**: (boolean) [default false] Generate header ids compatible with github style (spaces are replaced with dashes and a bunch of non alphanumeric chars are removed) (since v1.5.5)
 
  * **prefixHeaderId**: (string/boolean) [default false] Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.

@@ -45,7 +45,7 @@ showdown.subParser('headers', function (text, options, globals) {
   text = text.replace(atxStyle, function (wholeMatch, m1, m2) {
     var hText = m2;
     if (options.customizedHeaderId) {
-      hText = m2.replace(/\s?\{(.*)\}/, '');
+      hText = m2.replace(/\s?\{(.+?)\}/, '');
     }
 
     var span = showdown.subParser('spanGamut')(hText, options, globals),
@@ -61,8 +61,8 @@ showdown.subParser('headers', function (text, options, globals) {
 
     // It is separate from other options to allow combining prefix and customized
     if (options.customizedHeaderId) {
-      var match = m.match(/\{(.*)\}/);
-      if (match[1]) {
+      var match = m.match(/\{(.+?)\}/);
+      if (match && match[1]) {
         m = match[1];
       }
     }

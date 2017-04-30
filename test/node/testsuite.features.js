@@ -76,6 +76,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({prefixHeaderId: 'my prefix ', ghCompatibleHeaderId: true});
       } else if (testsuite[i].name === 'simplifiedAutoLink') {
         converter = new showdown.Converter({simplifiedAutoLink: true, strikethrough: true});
+      } else if (testsuite[i].name === 'customizedHeaderId-simple') {
+        converter = new showdown.Converter({customizedHeaderId: true});
       } else {
         converter = new showdown.Converter();
       }

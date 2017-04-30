@@ -43,7 +43,12 @@ showdown.subParser('headers', function (text, options, globals) {
   var atxStyle = (options.requireSpaceBeforeHeadingText) ? /^(#{1,6})[ \t]+(.+?)[ \t]*#*\n+/gm : /^(#{1,6})[ \t]*(.+?)[ \t]*#*\n+/gm;
 
   text = text.replace(atxStyle, function (wholeMatch, m1, m2) {
-    var span = showdown.subParser('spanGamut')(m2, options, globals),
+    var hText = m2;
+    if (options.customizedHeaderId) {
+      hText = m2.replace(/\s?\{(.*)\}/, '');
+    }
+
+    var span = showdown.subParser('spanGamut')(hText, options, globals),
         hID = (options.noHeaderId) ? '' : ' id="' + headerId(m2) + '"',
         hLevel = headerLevelStart - 1 + m1.length,
         header = '<h' + hLevel + hID + '>' + span + '</h' + hLevel + '>';
@@ -53,6 +58,15 @@ showdown.subParser('headers', function (text, options, globals) {
 
   function headerId (m) {
     var title;
+
+    // It is separate from other options to allow combining prefix and customized
+    if (options.customizedHeaderId) {
+      var match = m.match(/\{(.*)\}/);
+      if (match[1]) {
+        m = match[1];
+      }
+    }
+
     // Prefix id to prevent causing inadvertent pre-existing style matches.
     if (showdown.helper.isString(options.prefixHeaderId)) {
       title = options.prefixHeaderId + m;

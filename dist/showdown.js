@@ -1,4 +1,4 @@
-;/*! showdown 25-04-2017 */
+;/*! showdown 28-05-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -804,6 +804,43 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
     finalStr = bits.join('');
   }
   return finalStr;
+};
+
+/**
+ * Returns the index within the passed String object of the first occurrence of the specified regex,
+ * starting the search at fromIndex. Returns -1 if the value is not found.
+ *
+ * @param {string} str string to search
+ * @param {RegExp} regex Regular expression to search
+ * @param {int} [fromIndex = 0] Index to start the search
+ * @returns {Number}
+ * @throws InvalidArgumentError
+ */
+showdown.helper.regexIndexOf = function (str, regex, fromIndex) {
+  'use strict';
+  if (!showdown.helper.isString(str)) {
+    throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
+  }
+  if (regex instanceof RegExp === false) {
+    throw 'InvalidArgumentError: second parameter of showdown.helper.regexIndexOf function must be an instance of RegExp';
+  }
+  var indexOf = str.substring(fromIndex || 0).search(regex);
+  return (indexOf >= 0) ? (indexOf + (fromIndex || 0)) : indexOf;
+};
+
+/**
+ * Splits the passed string object at the defined index, and returns an array composed of the two substrings
+ * @param {string} str string to split
+ * @param {int} index index to split string at
+ * @returns {[string,string]}
+ * @throws InvalidArgumentError
+ */
+showdown.helper.splitAtIndex = function (str, index) {
+  'use strict';
+  if (!showdown.helper.isString(str)) {
+    throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
+  }
+  return [str.substring(0, index), str.substring(index)];
 };
 
 /**
@@ -1905,9 +1942,20 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
       };
 
   for (var i = 0; i < blockTags.length; ++i) {
-    text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<' + blockTags[i] + '\\b[^>]*>', '</' + blockTags[i] + '>', 'gim');
-  }
 
+    var opTagPos,
+        rgx1     = new RegExp('^ {0,3}<' + blockTags[i] + '\\b[^>]*>', 'im'),
+        patLeft  = '<' + blockTags[i] + '\\b[^>]*>',
+        patRight = '</' + blockTags[i] + '>';
+    // 1. Look for the first position of the first opening HTML tag in the text
+    while ((opTagPos = showdown.helper.regexIndexOf(text, rgx1)) !== -1) {
+      //2. Split the text in that position
+      var subTexts = showdown.helper.splitAtIndex(text, opTagPos);
+      //3. Match recursively
+      subTexts[1] = showdown.helper.replaceRecursiveRegExp(subTexts[1], repFunc, patLeft, patRight, 'im');
+      text = subTexts[0].concat(subTexts[1]);
+    }
+  }
   // HR SPECIAL CASE
   text = text.replace(/(\n {0,3}(<(hr)\b([^<>])*?\/?>)[ \t]*(?=\n{2,}))/g,
     showdown.subParser('hashElement')(text, options, globals));

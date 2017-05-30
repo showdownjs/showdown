@@ -6,7 +6,8 @@ showdown.subParser('images', function (text, options, globals) {
 
   text = globals.converter._dispatch('images.before', text, options, globals);
 
-  var inlineRegExp      = /!\[(.*?)]\s?\([ \t]*()<?(\S+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(['"])(.*?)\6[ \t]*)?\)/g,
+  var inlineRegExp      = /!\[([^\]]*?)][ \t]*()\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
+      crazyRegExp       = /!\[([^\]]*?)][ \t]*()\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(?:(["'])([^"]*?)\6))?[ \t]?\)/g,
       referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[(.*?)]()()()()()/g,
       refShortcutRegExp = /!\[([^\[\]]+)]()()()()()/g;
 
@@ -21,8 +22,11 @@ showdown.subParser('images', function (text, options, globals) {
     if (!title) {
       title = '';
     }
+    // Special case for explicit empty url
+    if (wholeMatch.search(/\(<?\s*>? ?(['"].*['"])?\)$/m) > -1) {
+      url = '';
 
-    if (url === '' || url === null) {
+    } else if (url === '' || url === null) {
       if (linkId === '' || linkId === null) {
         // lower-case and turn embedded newlines into spaces
         linkId = altText.toLowerCase().replace(/ ?\n/g, ' ');
@@ -76,6 +80,10 @@ showdown.subParser('images', function (text, options, globals) {
   text = text.replace(referenceRegExp, writeImageTag);
 
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
+  // cases with crazy urls like ./image/cat1).png
+  text = text.replace(crazyRegExp, writeImageTag);
+
+  // normal cases
   text = text.replace(inlineRegExp, writeImageTag);
 
   // handle reference-style shortcuts: |[img text]

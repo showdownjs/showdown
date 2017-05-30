@@ -6,17 +6,16 @@ showdown.subParser('anchors', function (text, options, globals) {
 
   text = globals.converter._dispatch('anchors.before', text, options, globals);
 
-  var writeAnchorTag = function (wholeMatch, m1, m2, m3, m4, m5, m6, m7) {
-    if (showdown.helper.isUndefined(m7)) {
-      m7 = '';
+  var writeAnchorTag = function (wholeMatch, linkText, linkId, url, m5, m6, title) {
+    if (showdown.helper.isUndefined(title)) {
+      title = '';
     }
-    wholeMatch = m1;
-    var linkText = m2,
-        linkId = m3.toLowerCase(),
-        url = m4,
-        title = m7;
+    linkId = linkId.toLowerCase();
 
-    if (!url) {
+    // Special case for explicit empty url
+    if (wholeMatch.search(/\(<?\s*>? ?(['"].*['"])?\)$/m) > -1) {
+      url = '';
+    } else if (!url) {
       if (!linkId) {
         // lower-case and turn embedded newlines into spaces
         linkId = linkText.toLowerCase().replace(/ ?\n/g, ' ');
@@ -29,12 +28,7 @@ showdown.subParser('anchors', function (text, options, globals) {
           title = globals.gTitles[linkId];
         }
       } else {
-        if (wholeMatch.search(/\(\s*\)$/m) > -1) {
-          // Special case for explicit empty url
-          url = '';
-        } else {
-          return wholeMatch;
-        }
+        return wholeMatch;
       }
     }
 
@@ -61,16 +55,21 @@ showdown.subParser('anchors', function (text, options, globals) {
   };
 
   // First, handle reference-style links: [link text] [id]
-  text = text.replace(/(\[((?:\[[^\]]*]|[^\[\]])*)][ ]?(?:\n[ ]*)?\[(.*?)])()()()()/g, writeAnchorTag);
+  text = text.replace(/\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]()()()()/g, writeAnchorTag);
 
   // Next, inline-style links: [link text](url "optional title")
-  text = text.replace(/(\[((?:\[[^\]]*]|[^\[\]])*)]\([ \t]*()<?(.*?(?:\(.*?\).*?)?)>?[ \t]*((['"])(.*?)\6[ \t]*)?\))/g,
+  // cases with crazy urls like ./image/cat1).png
+  text = text.replace(/\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g,
+    writeAnchorTag);
+
+  // normal cases
+  text = text.replace(/\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g,
                       writeAnchorTag);
 
   // handle reference-style shortcuts: [link text]
   // These must come last in case you've also got [link test][1]
   // or [link test](/foo)
-  text = text.replace(/(\[([^\[\]]+)])()()()()()/g, writeAnchorTag);
+  text = text.replace(/\[([^\[\]]+)]()()()()()/g, writeAnchorTag);
 
   // Lastly handle GithubMentions if option is enabled
   if (options.ghMentions) {

@@ -233,3 +233,16 @@ describe('forEach()', function () {
     });
   });
 });
+
+describe('matchRecursiveRegExp()', function () {
+  'use strict';
+
+  var rRegExp = showdown.helper.matchRecursiveRegExp;
+
+  it('should match nested elements', function () {
+    var result = rRegExp('<div><div>a</div></div>', '<div\\b[^>]*>', '</div>', 'gim');
+    result.should.deep.equal([['<div><div>a</div></div>', '<div>a</div>', '<div>', '</div>']]);
+  });
+
+});
+

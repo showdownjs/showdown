@@ -1,3 +1,30 @@
+<a name="1.7.0"></a>
+# [1.7.0](https://github.com/showdownjs/showdown/compare/1.6.4...v1.7.0) (2017-06-01)
+
+
+### Bug Fixes
+
+* **anchors:** fix issue with brackets in link URL ([7ba18dd](https://github.com/showdownjs/showdown/commit/7ba18dd)), closes [#390](https://github.com/showdownjs/showdown/issues/390)
+* **excludeTrailingPunctuationFromURL:** add comma to punctuation list ([fa35fd5](https://github.com/showdownjs/showdown/commit/fa35fd5)), closes [#354](https://github.com/showdownjs/showdown/issues/354)
+* **excludeTrailingPunctuationFromURLs:** fix weird character when this option with simplifiedAutoLinks ([71acff5](https://github.com/showdownjs/showdown/commit/71acff5)), closes [#378](https://github.com/showdownjs/showdown/issues/378)
+* **HTML parsing:** fix HTML parsing issues with nested tags ([6fbc072](https://github.com/showdownjs/showdown/commit/6fbc072)), closes [#357](https://github.com/showdownjs/showdown/issues/357) [#387](https://github.com/showdownjs/showdown/issues/387)
+* **openLinksInNewWindow:** encode _ to prevent clash with em ([813f832](https://github.com/showdownjs/showdown/commit/813f832)), closes [#379](https://github.com/showdownjs/showdown/issues/379)
+* **package:** update yargs to version 7.0.1 ([#349](https://github.com/showdownjs/showdown/issues/349)) ([9308d7b](https://github.com/showdownjs/showdown/commit/9308d7b))
+* **package:** update yargs to version 8.0.1 ([#385](https://github.com/showdownjs/showdown/issues/385)) ([5fd847b](https://github.com/showdownjs/showdown/commit/5fd847b))
+* **simpleAutoLinks:** URLs with emphasis/strikethrough are parsed ([5c50675](https://github.com/showdownjs/showdown/commit/5c50675)), closes [#347](https://github.com/showdownjs/showdown/issues/347)
+* **tables:** pipe char can now be escaped ([1ebc195](https://github.com/showdownjs/showdown/commit/1ebc195)), closes [#345](https://github.com/showdownjs/showdown/issues/345)
+* **url parsing:** fix url edge case parsing in images and links ([30aa18c](https://github.com/showdownjs/showdown/commit/30aa18c))
+
+
+### Features
+
+* **customizeHeaderId:** add option for customizing header ids ([94c570a](https://github.com/showdownjs/showdown/commit/94c570a)), closes [#383](https://github.com/showdownjs/showdown/issues/383)
+* **images:** add support for image's implicit reference syntax ([0c6c07b](https://github.com/showdownjs/showdown/commit/0c6c07b)), closes [#366](https://github.com/showdownjs/showdown/issues/366)
+* **literalMidWordAsterisks:** add option for mid word asterisks ([5bec8f9](https://github.com/showdownjs/showdown/commit/5bec8f9))
+* **openLinksInNewWindow:** add option to open all links in a new window ([50235d6](https://github.com/showdownjs/showdown/commit/50235d6)), closes [#362](https://github.com/showdownjs/showdown/issues/362) [#337](https://github.com/showdownjs/showdown/issues/337) [#249](https://github.com/showdownjs/showdown/issues/249) [#247](https://github.com/showdownjs/showdown/issues/247) [#222](https://github.com/showdownjs/showdown/issues/222)
+
+
+
 <a name="1.6.4"></a>
 ## [1.6.4](https://github.com/showdownjs/showdown/compare/1.6.3...1.6.4) (2017-02-06)
 

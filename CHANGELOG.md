@@ -1,6 +1,18 @@
+<a name="1.7.1"></a>
+## [1.7.1](https://github.com/showdownjs/showdown/compare/1.7.0...v1.7.1) (2017-06-02)
+
+Important HOTFIX
+
+### Bug Fixes
+
+* **HTML Parser:** fix nasty bug where malformed HTML would hang showdown ([6566c72](https://github.com/showdownjs/showdown/commit/6566c72)), closes [#393](https://github.com/showdownjs/showdown/issues/393)
+
+
+
 <a name="1.7.0"></a>
 # [1.7.0](https://github.com/showdownjs/showdown/compare/1.6.4...v1.7.0) (2017-06-01)
 
+(DEPRECATED)
 
 ### Bug Fixes
 

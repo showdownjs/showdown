@@ -1,4 +1,4 @@
-;/*! showdown 01-06-2017 */
+;/*! showdown 02-06-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1942,17 +1942,24 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 
   for (var i = 0; i < blockTags.length; ++i) {
 
-    var opTagPos,
+    var opTagPos, ii = 0,
         rgx1     = new RegExp('^ {0,3}<' + blockTags[i] + '\\b[^>]*>', 'im'),
         patLeft  = '<' + blockTags[i] + '\\b[^>]*>',
         patRight = '</' + blockTags[i] + '>';
     // 1. Look for the first position of the first opening HTML tag in the text
     while ((opTagPos = showdown.helper.regexIndexOf(text, rgx1)) !== -1) {
       //2. Split the text in that position
-      var subTexts = showdown.helper.splitAtIndex(text, opTagPos);
+      var subTexts = showdown.helper.splitAtIndex(text, opTagPos),
       //3. Match recursively
-      subTexts[1] = showdown.helper.replaceRecursiveRegExp(subTexts[1], repFunc, patLeft, patRight, 'im');
-      text = subTexts[0].concat(subTexts[1]);
+          newSubText1 = showdown.helper.replaceRecursiveRegExp(subTexts[1], repFunc, patLeft, patRight, 'im');
+
+      // prevent an infinite loop
+      if (newSubText1 === subTexts[1]) {
+        break;
+      }
+
+      text = subTexts[0].concat(newSubText1);
+      ii++;
     }
   }
   // HR SPECIAL CASE

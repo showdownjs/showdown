@@ -1,5 +1,5 @@
 <a name="1.7.1"></a>
-## [1.7.1](https://github.com/showdownjs/showdown/compare/1.7.0...v1.7.1) (2017-06-02)
+## [1.7.1](https://github.com/showdownjs/showdown/compare/1.7.0...1.7.1) (2017-06-02)
 
 Important HOTFIX
 
@@ -10,7 +10,7 @@ Important HOTFIX
 
 
 <a name="1.7.0"></a>
-# [1.7.0](https://github.com/showdownjs/showdown/compare/1.6.4...v1.7.0) (2017-06-01)
+# [1.7.0](https://github.com/showdownjs/showdown/compare/1.6.4...1.7.0) (2017-06-01)
 
 (DEPRECATED)
 

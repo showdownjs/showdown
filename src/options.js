@@ -125,6 +125,11 @@ function getDefaultOpts (simple) {
       defaultValue: false,
       description: 'Open all links in new windows',
       type: 'boolean'
+    },
+    backslashEscapesHTMLTags: {
+      defaultValue: false,
+      description: 'Support for HTML Tag escaping. ex: \<div>foo\</div>',
+      type: 'boolean'
     }
   };
   if (simple === false) {

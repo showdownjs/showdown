@@ -80,6 +80,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({customizedHeaderId: true});
       } else if (testsuite[i].name === '#378.simplifiedAutoLinks-with-excludeTrailingPunctuationFromURLs') {
         converter = new showdown.Converter({simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true});
+      } else if (testsuite[i].name === '#374.escape-html-tags') {
+        converter = new showdown.Converter({backslashEscapesHTMLTags: true});
       } else if (testsuite[i].name === '#379.openLinksInNewWindow-breaks-em-markdup') {
         converter = new showdown.Converter({openLinksInNewWindow: true});
       } else {

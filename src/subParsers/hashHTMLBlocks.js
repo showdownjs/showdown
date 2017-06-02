@@ -50,7 +50,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
 
   for (var i = 0; i < blockTags.length; ++i) {
 
-    var opTagPos, ii = 0,
+    var opTagPos,
         rgx1     = new RegExp('^ {0,3}<' + blockTags[i] + '\\b[^>]*>', 'im'),
         patLeft  = '<' + blockTags[i] + '\\b[^>]*>',
         patRight = '</' + blockTags[i] + '>';
@@ -65,9 +65,7 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
       if (newSubText1 === subTexts[1]) {
         break;
       }
-
       text = subTexts[0].concat(newSubText1);
-      ii++;
     }
   }
   // HR SPECIAL CASE

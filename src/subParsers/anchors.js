@@ -83,7 +83,7 @@ showdown.subParser('anchors', function (text, options, globals) {
         throw new Error('ghMentionsLink option must be a string');
       }
       var lnk = options.ghMentionsLink.replace(/\{u}/g, username),
-      target = '';
+          target = '';
       if (options.openLinksInNewWindow) {
         target = ' target="¨E95Eblank"';
       }

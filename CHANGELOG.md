@@ -10,7 +10,7 @@ Important HOTFIX
 
 
 <a name="1.7.0"></a>
-# [1.7.0](https://github.com/showdownjs/showdown/compare/1.6.4...1.7.0) (2017-06-01)
+## [1.7.0](https://github.com/showdownjs/showdown/compare/1.6.4...1.7.0) (2017-06-01)
 
 (DEPRECATED)
 

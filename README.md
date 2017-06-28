@@ -28,7 +28,7 @@ Check a live Demo here http://showdownjs.github.io/demo/
 
 ## Donate [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
 
-We're currently looking to improve showdown with automated tests in all browsers and a proper domain and webpage. If you like our work, please donate!! Your contribution will be greatly appreciated.
+We're currently looking to improve showdown with automated tests in all browsers and a proper domain and webpage. [If you like our work, please donate!!](https://www.paypal.me/tiviesantos) Your contribution will be greatly appreciated.
 
 ## Installation
 

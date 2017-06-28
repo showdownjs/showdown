@@ -26,7 +26,7 @@ Check a live Demo here http://showdownjs.github.io/demo/
  - [docular](https://github.com/Vertafore/docular)
  - [and some others...](https://www.npmjs.com/browse/depended/showdown)
 
-## Donate [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)(https://www.paypal.me/tiviesantos)
+## Donate [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
 
 We're currently looking to improve showdown with automated tests in all browsers and a proper domain and webpage. If you like our work, please donate!! Your contribution will be greatly appreciated.
 

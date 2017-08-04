@@ -97,7 +97,7 @@ describe('makeHtml() features testsuite', function () {
         suite = tableSuite;
     for (var i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'basic-with-header-ids') {
-        converter = new showdown.Converter({tables: true, tableHeaderId: true});
+        converter = new showdown.Converter({tables: true, tablesHeaderId: true});
       } else if (suite[i].name === '#179.parse-md-in-table-ths') {
         converter = new showdown.Converter({tables: true, strikethrough: true});
       } else {

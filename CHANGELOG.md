@@ -1,3 +1,20 @@
+<a name="1.7.2"></a>
+## [1.7.2](https://github.com/showdownjs/showdown/compare/1.7.1...1.7.2) (2017-08-05)
+
+
+### Bug Fixes
+
+* **githubMentions:** githubMentions now works with openLinksInNewWindow options ([1194d88](https://github.com/showdownjs/showdown/commit/1194d88)), closes [#403](https://github.com/showdownjs/showdown/issues/403)
+* **lists:** fix multi paragraph lists with sublists ([a2259c0](https://github.com/showdownjs/showdown/commit/a2259c0)), closes [#397](https://github.com/showdownjs/showdown/issues/397)
+* **tablesHeaderId:** fix missmatch of option name ([51e4693](https://github.com/showdownjs/showdown/commit/51e4693)), closes [#412](https://github.com/showdownjs/showdown/issues/412)
+
+
+### Features
+
+* **backslashEscapesHTMLTags:** backslash escapes HTML tags ([5a5aff6](https://github.com/showdownjs/showdown/commit/5a5aff6)), closes [#374](https://github.com/showdownjs/showdown/issues/374)
+
+
+
 <a name="1.7.1"></a>
 ## [1.7.1](https://github.com/showdownjs/showdown/compare/1.7.0...1.7.1) (2017-06-02)
 

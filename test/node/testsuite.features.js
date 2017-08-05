@@ -80,6 +80,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({customizedHeaderId: true});
       } else if (testsuite[i].name === '#378.simplifiedAutoLinks-with-excludeTrailingPunctuationFromURLs') {
         converter = new showdown.Converter({simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true});
+      } else if (testsuite[i].name === '#374.escape-html-tags') {
+        converter = new showdown.Converter({backslashEscapesHTMLTags: true});
       } else if (testsuite[i].name === '#379.openLinksInNewWindow-breaks-em-markdup') {
         converter = new showdown.Converter({openLinksInNewWindow: true});
       } else {
@@ -95,7 +97,7 @@ describe('makeHtml() features testsuite', function () {
         suite = tableSuite;
     for (var i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'basic-with-header-ids') {
-        converter = new showdown.Converter({tables: true, tableHeaderId: true});
+        converter = new showdown.Converter({tables: true, tablesHeaderId: true});
       } else if (suite[i].name === '#179.parse-md-in-table-ths') {
         converter = new showdown.Converter({tables: true, strikethrough: true});
       } else {

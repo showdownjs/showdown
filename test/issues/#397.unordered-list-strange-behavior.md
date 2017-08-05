@@ -1,0 +1,11 @@
+- **Customer** – Opens the Customer List. Refer to the document “Customer Management”.
+    - Customer List
+    - New Customer
+    - Customer Prices
+    - Appointments
+
+- **Designer** - Opens the Designer List. Refer to the document “Designer Commissions”.
+    - Designer List
+    - New Designer
+    - Designer Payment List
+    - New Designer Payment

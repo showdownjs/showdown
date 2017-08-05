@@ -22,6 +22,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({headerLevelStart: 3});
       } else if (testsuite[i].name === '#164.1.simple-autolink' || testsuite[i].name === '#204.certain-links-with-at-and-dot-break-url') {
         converter = new showdown.Converter({simplifiedAutoLink: true});
+      } else if (testsuite[i].name === 'literalMidWordUnderscores') {
+        converter = new showdown.Converter({literalMidWordUnderscores: true});
       } else if (testsuite[i].name === '#164.2.disallow-underscore-emphasis-mid-word') {
         converter = new showdown.Converter({literalMidWordUnderscores: true});
       } else if (testsuite[i].name === '#164.3.strikethrough' || testsuite[i].name === '#214.escaped-markdown-chars-break-strikethrough') {
@@ -84,6 +86,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({backslashEscapesHTMLTags: true});
       } else if (testsuite[i].name === '#379.openLinksInNewWindow-breaks-em-markdup') {
         converter = new showdown.Converter({openLinksInNewWindow: true});
+      } else if (testsuite[i].name === '#398.literalMidWordAsterisks-treats-non-word-characters-as-characters') {
+        converter = new showdown.Converter({literalMidWordAsterisks: true});
       } else {
         converter = new showdown.Converter();
       }

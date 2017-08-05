@@ -1,4 +1,4 @@
-;/*! showdown 02-06-2017 */
+;/*! showdown 04-08-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -126,6 +126,11 @@ function getDefaultOpts (simple) {
     openLinksInNewWindow: {
       defaultValue: false,
       description: 'Open all links in new windows',
+      type: 'boolean'
+    },
+    backslashEscapesHTMLTags: {
+      defaultValue: false,
+      description: 'Support for HTML Tag escaping. ex: \<div>foo\</div>',
       type: 'boolean'
     }
   };
@@ -1426,8 +1431,12 @@ showdown.subParser('anchors', function (text, options, globals) {
       if (!showdown.helper.isString(options.ghMentionsLink)) {
         throw new Error('ghMentionsLink option must be a string');
       }
-      var lnk = options.ghMentionsLink.replace(/\{u}/g, username);
-      return st + '<a href="' + lnk + '">' + mentions + '</a>';
+      var lnk = options.ghMentionsLink.replace(/\{u}/g, username),
+          target = '';
+      if (options.openLinksInNewWindow) {
+        target = ' target="¨E95Eblank"';
+      }
+      return st + '<a href="' + lnk + '"' + target + '>' + mentions + '</a>';
     });
   }
 
@@ -1940,14 +1949,26 @@ showdown.subParser('hashHTMLBlocks', function (text, options, globals) {
         return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
       };
 
+  if (options.backslashEscapesHTMLTags) {
+    // encode backslash escaped HTML tags
+    text = text.replace(/\\<(\/?[^>]+?)>/g, function (wm, inside) {
+      return '&lt;' + inside + '&gt;';
+    });
+  }
+
+  // hash HTML Blocks
   for (var i = 0; i < blockTags.length; ++i) {
 
     var opTagPos,
-        rgx1     = new RegExp('^ {0,3}<' + blockTags[i] + '\\b[^>]*>', 'im'),
+        rgx1     = new RegExp('^ {0,3}(<' + blockTags[i] + '\\b[^>]*>)', 'im'),
         patLeft  = '<' + blockTags[i] + '\\b[^>]*>',
         patRight = '</' + blockTags[i] + '>';
     // 1. Look for the first position of the first opening HTML tag in the text
     while ((opTagPos = showdown.helper.regexIndexOf(text, rgx1)) !== -1) {
+
+      // if the HTML tag is \ escaped, we need to escape it and break
+
+
       //2. Split the text in that position
       var subTexts = showdown.helper.splitAtIndex(text, opTagPos),
       //3. Match recursively
@@ -2443,16 +2464,14 @@ showdown.subParser('lists', function (text, options, globals) {
         item = showdown.subParser('lists')(item, options, globals);
         item = item.replace(/\n$/, ''); // chomp(item)
         item = showdown.subParser('hashHTMLBlocks')(item, options, globals);
+
         // Colapse double linebreaks
         item = item.replace(/\n\n+/g, '\n\n');
-        // replace double linebreaks with a placeholder
-        item = item.replace(/\n\n/g, '¨B');
         if (isParagraphed) {
           item = showdown.subParser('paragraphs')(item, options, globals);
         } else {
           item = showdown.subParser('spanGamut')(item, options, globals);
         }
-        item = item.replace(/¨B/g, '\n\n');
       }
 
       // now we need to remove the marker (¨A)
@@ -2684,7 +2703,10 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   // Do hard breaks
   if (options.simpleLineBreaks) {
     // GFM style hard breaks
-    text = text.replace(/\n/g, '<br />\n');
+    // only add line breaks if the text does not contain a block (special case for lists)
+    if (!/\n\n¨K/.test(text)) {
+      text = text.replace(/\n+/g, '<br />\n');
+    }
   } else {
     // Vanilla hard breaks
     text = text.replace(/  +\n/g, '<br />\n');
@@ -2780,7 +2802,8 @@ showdown.subParser('tables', function (text, options, globals) {
   function parseHeaders (header, style) {
     var id = '';
     header = header.trim();
-    if (options.tableHeaderId) {
+    // support both tablesHeaderId and tableHeaderId due to error in documention so we don't break backwards compatibility
+    if (options.tablesHeaderId || options.tableHeaderId) {
       id = ' id="' + header.replace(/ /g, '_').toLowerCase() + '"';
     }
     header = showdown.subParser('spanGamut')(header, options, globals);

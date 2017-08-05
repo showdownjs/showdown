@@ -198,7 +198,7 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **noHeaderId**: (boolean) [default false] Disable the automatic generation of header ids. Setting to true overrides **prefixHeaderId**
 
- * **customizedHeaderId**: (boolean) [default false] Use text in curly braces as header id.
+ * **customizedHeaderId**: (boolean) [default false] Use text in curly braces as header id. (since v1.7.0)
    Example:
    ```
    ## Sample header {real-id}     will use real-id as id
@@ -328,7 +328,9 @@ var defaultOptions = showdown.getDefaultOptions();
 
    NOTE: Prior to version 1.6.1, emails would always be obfuscated through dec and hex encoding.
 
- * **openLinksInNewWindow**: (boolean) [default false] Open all links in new windows (by adding the attribute `target="_blank"` to `<a>` tags)
+ * **openLinksInNewWindow**: (boolean) [default false] Open all links in new windows (by adding the attribute `target="_blank"` to `<a>` tags) (since v1.7.0)
+
+ * **backslashEscapesHTMLTags**: (boolean) [default false] Support for HTML Tag escaping. ex: `\<div>foo\</div>` (since v1.7.2)
 
 **NOTE**: Please note that until version 1.6.0, all of these options are ***DISABLED*** by default in the cli tool.
  

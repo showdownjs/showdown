@@ -10,7 +10,8 @@
 
 ------
 
-Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber. Showdown can be used client side (in the browser) or server side (with NodeJs).
+Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber.
+Showdown can be used client side (in the browser) or server side (with NodeJs).
 
 ## Live DEMO
 
@@ -28,7 +29,8 @@ Check a live Demo here http://showdownjs.github.io/demo/
 
 ## Donate [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
 
-We're currently looking to improve showdown with automated tests in all browsers and a proper domain and webpage. [If you like our work, please donate!!](https://www.paypal.me/tiviesantos) Your contribution will be greatly appreciated.
+We're currently looking to improve showdown with automated tests in all browsers and a proper domain and webpage.
+[If you like our work, please donate!!](https://www.paypal.me/tiviesantos) Your contribution will be greatly appreciated.
 
 ## Installation
 
@@ -75,7 +77,8 @@ Showdown has been tested successfully with:
   * Netscape 8.1.2
   * Konqueror 3.5.4
 
-In theory, Showdown will work in any browser that supports ECMA 262 3rd Edition (JavaScript 1.5).  The converter itself might even work in things that aren't web browsers, like Acrobat.  No promises.
+In theory, Showdown will work in any browser that supports ECMA 262 3rd Edition (JavaScript 1.5).
+The converter itself might even work in things that aren't web browsers, like Acrobat.  No promises.
 
 
 ## Node compatibility
@@ -196,7 +199,8 @@ var defaultOptions = showdown.getDefaultOptions();
     <code><pre>var foo = 'bar';</pre></code>
     ```
 
- * **noHeaderId**: (boolean) [default false] Disable the automatic generation of header ids. Setting to true overrides **prefixHeaderId**
+ * **noHeaderId**: (boolean) [default false] Disable the automatic generation of header ids.
+   Setting to true overrides **prefixHeaderId**
 
  * **customizedHeaderId**: (boolean) [default false] Use text in curly braces as header id. **(since v1.7.0)**
    Example:
@@ -204,11 +208,18 @@ var defaultOptions = showdown.getDefaultOptions();
    ## Sample header {real-id}     will use real-id as id
    ```
 
- * **ghCompatibleHeaderId**: (boolean) [default false] Generate header ids compatible with github style (spaces are replaced with dashes and a bunch of non alphanumeric chars are removed) **(since v1.5.5)**
+ * **ghCompatibleHeaderId**: (boolean) [default false] Generate header ids compatible with github style
+   (spaces are replaced with dashes and a bunch of non alphanumeric chars are removed) **(since v1.5.5)**
 
- * **prefixHeaderId**: (string/boolean) [default false] Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
+ * **prefixHeaderId**: (string/boolean) [default false] Add a prefix to the generated header ids.
+   Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
 
- * **rawHeaderId**: (boolean) [default false] Remove only spaces, ' and " from generated header ids (including prefixes), replacing them with dashes (-). WARNING: This might result in malformed ids **(since v1.7.3)**
+ * **rawPrefixHeaderId**: (boolean) [default false] Setting this option to true will prevent showdown from modifying the prefix.
+   This might result in malformed IDs (if, for instance, the " char is used in the prefix).
+   Has no effect if prefixHeaderId is set to false.**(since v 1.7.3)**
+
+ * **rawHeaderId**: (boolean) [default false] Remove only spaces, ' and " from generated header ids (including prefixes),
+    replacing them with dashes (-). WARNING: This might result in malformed ids **(since v1.7.3)**
  
  * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
    Examples:
@@ -229,7 +240,8 @@ var defaultOptions = showdown.getDefaultOptions();
     <h3>foo</h3>
     ```
 
- * **simplifiedAutoLink**: (boolean) [default false] Turning this option on will enable automatic linking to urls. This means that 
+ * **simplifiedAutoLink**: (boolean) [default false] Turning this option on will enable automatic linking to urls.
+   This means that:
 
    ```md
    some text www.google.com
@@ -302,12 +314,15 @@ var defaultOptions = showdown.getDefaultOptions();
    ```
  * **smoothLivePreview**: (boolean) [default false] Prevents weird effects in live previews due to incomplete input
  
- * **smartIndentationFix**: (boolean) [default false] Tries to smartly fix indentation problems related to es6 template strings in the midst of indented code.
+ * **smartIndentationFix**: (boolean) [default false] Tries to smartly fix indentation problems related to es6 template
+   strings in the midst of indented code.
 
- * **disableForced4SpacesIndentedSublists**: (boolean) [default false] Disables the requirement of indenting sublists by 4 spaces for them to be nested, 
-   effectively reverting to the old behavior where 2 or 3 spaces were enough. **(since v1.5.0)**
+ * **disableForced4SpacesIndentedSublists**: (boolean) [default false] Disables the requirement of indenting sublists
+   by 4 spaces for them to be nested, effectively reverting to the old behavior where 2 or 3 spaces were enough.
+   **(since v1.5.0)**
  
- * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as <br> like GitHub does, without needing 2 spaces at the end of the line **(since v1.5.1)**
+ * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as <br> like GitHub does, without
+   needing 2 spaces at the end of the line **(since v1.5.1)**
  
    ```md
    a line
@@ -325,14 +340,16 @@ var defaultOptions = showdown.getDefaultOptions();
  
  * **ghMentions**: (boolean) [default false] Enables github @mentions, which link to the username mentioned **(since v1.6.0)**
  
- * **ghMentionsLink**: (string) [default `https://github.com/{u}`] Changes the link generated by @mentions. Showdown will replace `{u}` with the username. Only applies if ghMentions option is enabled.
+ * **ghMentionsLink**: (string) [default `https://github.com/{u}`] Changes the link generated by @mentions.
+   Showdown will replace `{u}` with the username. Only applies if ghMentions option is enabled.
    Example: `@tivie` with ghMentionsOption set to `//mysite.com/{u}/profile` will result in `<a href="//mysite.com/tivie/profile">@tivie</a>`
  
  * **encodeEmails**: (boolean) [default true] Enables e-mail addresses encoding through the use of Character Entities, transforming ASCII e-mail addresses into its equivalent decimal entities. (since v1.6.1)
 
    NOTE: Prior to version 1.6.1, emails would always be obfuscated through dec and hex encoding.
 
- * **openLinksInNewWindow**: (boolean) [default false] Open all links in new windows (by adding the attribute `target="_blank"` to `<a>` tags) **(since v1.7.0)**
+ * **openLinksInNewWindow**: (boolean) [default false] Open all links in new windows
+   (by adding the attribute `target="_blank"` to `<a>` tags) **(since v1.7.0)**
 
  * **backslashEscapesHTMLTags**: (boolean) [default false] Support for HTML Tag escaping. ex: `\<div>foo\</div>` **(since v1.7.2)**
 
@@ -409,7 +426,8 @@ var showdown    = require('showdown'),
 
 ## Tests
 
-A suite of tests is available which require node.js.  Once node is installed, run the following command from the project root to install the dependencies:
+A suite of tests is available which require node.js.  Once node is installed, run the following command from
+the project root to install the dependencies:
 
     npm install
 
@@ -417,7 +435,8 @@ Once installed the tests can be run from the project root using:
 
     npm test
 
-New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.  Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
+New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.
+Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
 
 ## Contributing
 

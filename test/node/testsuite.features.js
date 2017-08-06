@@ -9,7 +9,8 @@ var bootstrap = require('../bootstrap.js'),
     simplifiedAutoLinkSuite = bootstrap.getTestSuite('test/features/simplifiedAutoLink/'),
     openLinksInNewWindowSuite = bootstrap.getTestSuite('test/features/openLinksInNewWindow/'),
     disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/features/disableForced4SpacesIndentedSublists/'),
-    html5CompatibleHeaderIdSuite = bootstrap.getTestSuite('test/features/rawHeaderId/');
+    rawHeaderIdSuite = bootstrap.getTestSuite('test/features/rawHeaderId/'),
+    rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/features/rawPrefixHeaderId/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -157,13 +158,23 @@ describe('makeHtml() features testsuite', function () {
   // test rawHeaderId support
   describe('rawHeaderId support', function () {
     var converter,
-        suite = html5CompatibleHeaderIdSuite;
+        suite = rawHeaderIdSuite;
     for (var i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'with-prefixHeaderId') {
         converter = new showdown.Converter({rawHeaderId: true, prefixHeaderId: '/prefix/'});
       } else {
         converter = new showdown.Converter({rawHeaderId: true});
       }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  // test rawPrefixHeaderId support
+  describe('rawPrefixHeaderId support', function () {
+    var converter,
+        suite = rawPrefixHeaderIdSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({rawPrefixHeaderId: true, prefixHeaderId: '/prefix/'});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

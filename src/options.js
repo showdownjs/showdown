@@ -18,8 +18,13 @@ function getDefaultOpts (simple) {
     },
     prefixHeaderId: {
       defaultValue: false,
-      describe: 'Specify a prefix to generated header ids',
+      describe: 'Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to true will add a generic \'section-\' prefix',
       type: 'string'
+    },
+    rawPrefixHeaderId: {
+      defaultValue: false,
+      describe: 'Setting this option to true will prevent showdown from modifying the prefix. This might result in malformed IDs (if, for instance, the " char is used in the prefix)',
+      type: 'boolean'
     },
     ghCompatibleHeaderId: {
       defaultValue: false,

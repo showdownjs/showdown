@@ -20,8 +20,13 @@ function getDefaultOpts (simple) {
     },
     prefixHeaderId: {
       defaultValue: false,
-      describe: 'Specify a prefix to generated header ids',
+      describe: 'Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to true will add a generic \'section-\' prefix',
       type: 'string'
+    },
+    rawPrefixHeaderId: {
+      defaultValue: false,
+      describe: 'Setting this option to true will prevent showdown from modifying the prefix. This might result in malformed IDs (if, for instance, the " char is used in the prefix)',
+      type: 'boolean'
     },
     ghCompatibleHeaderId: {
       defaultValue: false,
@@ -2146,7 +2151,8 @@ showdown.subParser('headers', function (text, options, globals) {
   });
 
   function headerId (m) {
-    var title;
+    var title,
+        prefix;
 
     // It is separate from other options to allow combining prefix and customized
     if (options.customizedHeaderId) {
@@ -2156,13 +2162,19 @@ showdown.subParser('headers', function (text, options, globals) {
       }
     }
 
+    title = m;
+
     // Prefix id to prevent causing inadvertent pre-existing style matches.
     if (showdown.helper.isString(options.prefixHeaderId)) {
-      title = options.prefixHeaderId + m;
+      prefix = options.prefixHeaderId;
     } else if (options.prefixHeaderId === true) {
-      title = 'section ' + m;
+      prefix = 'section-';
     } else {
-      title = m;
+      prefix = '';
+    }
+
+    if (!options.rawPrefixHeaderId) {
+      title = prefix + title;
     }
 
     if (options.ghCompatibleHeaderId) {
@@ -2190,6 +2202,10 @@ showdown.subParser('headers', function (text, options, globals) {
       title = title
         .replace(/[^\w]/g, '')
         .toLowerCase();
+    }
+
+    if (options.rawPrefixHeaderId) {
+      title = prefix + title;
     }
 
     if (globals.hashLinkCounts[title]) {

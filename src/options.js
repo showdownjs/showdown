@@ -26,6 +26,11 @@ function getDefaultOpts (simple) {
       describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, a bunch of non alphanumeric chars are removed)',
       type: 'boolean'
     },
+    rawHeaderId: {
+      defaultValue: false,
+      describe: 'Remove only spaces, \' and " from generated header ids (including prefixes), replacing them with dashes (-). WARNING: This might result in malformed ids',
+      type: 'boolean'
+    },
     headerLevelStart: {
       defaultValue: false,
       describe: 'The header blocks level start',

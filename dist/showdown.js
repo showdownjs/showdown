@@ -1,4 +1,4 @@
-;/*! showdown 05-08-2017 */
+;/*! showdown 06-08-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -26,6 +26,11 @@ function getDefaultOpts (simple) {
     ghCompatibleHeaderId: {
       defaultValue: false,
       describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, a bunch of non alphanumeric chars are removed)',
+      type: 'boolean'
+    },
+    rawHeaderId: {
+      defaultValue: false,
+      describe: 'Remove only spaces, \' and " from generated header ids (including prefixes), replacing them with dashes (-). WARNING: This might result in malformed ids',
       type: 'boolean'
     },
     headerLevelStart: {
@@ -2088,7 +2093,6 @@ showdown.subParser('headers', function (text, options, globals) {
   text = globals.converter._dispatch('headers.before', text, options, globals);
 
   var headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
-      ghHeaderId = options.ghCompatibleHeaderId,
 
   // Set text-style headers:
   //	Header 1
@@ -2160,7 +2164,7 @@ showdown.subParser('headers', function (text, options, globals) {
       title = m;
     }
 
-    if (ghHeaderId) {
+    if (options.ghCompatibleHeaderId) {
       title = title
         .replace(/ /g, '-')
         // replace previously escaped chars (&, ¨ and $)
@@ -2170,6 +2174,16 @@ showdown.subParser('headers', function (text, options, globals) {
         // replace rest of the chars (&~$ are repeated as they might have been escaped)
         // borrowed from github's redcarpet (some they should produce similar results)
         .replace(/[&+$,\/:;=?@"#{}|^¨~\[\]`\\*)(%.!'<>]/g, '')
+        .toLowerCase();
+    } else if (options.rawHeaderId) {
+      title = title
+        .replace(/ /g, '-')
+        // replace previously escaped chars (&, ¨ and $)
+        .replace(/&amp;/g, '&')
+        .replace(/¨T/g, '¨')
+        .replace(/¨D/g, '$')
+        // replace " and '
+        .replace(/["']/g, '-')
         .toLowerCase();
     } else {
       title = title

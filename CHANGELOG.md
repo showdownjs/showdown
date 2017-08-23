@@ -1,3 +1,20 @@
+<a name="1.7.3"></a>
+## [1.7.3](https://github.com/showdownjs/showdown/compare/1.7.2...1.7.3) (2017-08-23)
+
+
+### Bug Fixes
+
+* **github flavor:** add backslashEscapesHTMLTags to GFM flavor ([5284439](https://github.com/showdownjs/showdown/commit/5284439))
+* **literalMidWordAsterisks:** fix option no longer treat punctuation as word character ([8f05be7](https://github.com/showdownjs/showdown/commit/8f05be7)), closes [#398](https://github.com/showdownjs/showdown/issues/398)
+
+
+### Features
+
+* **rawHeaderId:** Remove only spaces, ' and " from generated header ids ([1791cf0](https://github.com/showdownjs/showdown/commit/1791cf0)), closes [#409](https://github.com/showdownjs/showdown/issues/409)
+* **rawPrefixHeaderId:** add option to prevent showdown from modifying the prefix ([ff26c08](https://github.com/showdownjs/showdown/commit/ff26c08)), closes [#409](https://github.com/showdownjs/showdown/issues/409)
+
+
+
 <a name="1.7.2"></a>
 ## [1.7.2](https://github.com/showdownjs/showdown/compare/1.7.1...1.7.2) (2017-08-05)
 

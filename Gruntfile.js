@@ -15,7 +15,7 @@ module.exports = function (grunt) {
     concat: {
       options: {
         sourceMap: true,
-        banner: ';/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n(function(){\n',
+        banner: ';/*! <%= pkg.name %> v <%= pkg.version %> - <%= grunt.template.today("dd-mm-yyyy") %> */\n(function(){\n',
         footer: '}).call(this);\n'
       },
       dist: {
@@ -43,7 +43,7 @@ module.exports = function (grunt) {
     uglify: {
       options: {
         sourceMap: true,
-        banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
+        banner: '/*! <%= pkg.name %> v <%= pkg.version %> - <%= grunt.template.today("dd-mm-yyyy") %> */'
       },
       dist: {
         files: {

@@ -216,7 +216,7 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **rawPrefixHeaderId**: (boolean) [default false] Setting this option to true will prevent showdown from modifying the prefix.
    This might result in malformed IDs (if, for instance, the " char is used in the prefix).
-   Has no effect if prefixHeaderId is set to false.**(since v 1.7.3)**
+   Has no effect if prefixHeaderId is set to false. **(since v 1.7.3)**
 
  * **rawHeaderId**: (boolean) [default false] Remove only spaces, ' and " from generated header ids (including prefixes),
     replacing them with dashes (-). WARNING: This might result in malformed ids **(since v1.7.3)**

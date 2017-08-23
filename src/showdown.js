@@ -23,7 +23,8 @@ var showdown = {},
         simpleLineBreaks:                     true,
         requireSpaceBeforeHeadingText:        true,
         ghCompatibleHeaderId:                 true,
-        ghMentions:                           true
+        ghMentions:                           true,
+        backslashEscapesHTMLTags:             true
       },
       original: {
         noHeaderId:                           true,

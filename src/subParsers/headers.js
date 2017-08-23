@@ -4,7 +4,6 @@ showdown.subParser('headers', function (text, options, globals) {
   text = globals.converter._dispatch('headers.before', text, options, globals);
 
   var headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
-      ghHeaderId = options.ghCompatibleHeaderId,
 
   // Set text-style headers:
   //	Header 1
@@ -57,7 +56,8 @@ showdown.subParser('headers', function (text, options, globals) {
   });
 
   function headerId (m) {
-    var title;
+    var title,
+        prefix;
 
     // It is separate from other options to allow combining prefix and customized
     if (options.customizedHeaderId) {
@@ -67,16 +67,22 @@ showdown.subParser('headers', function (text, options, globals) {
       }
     }
 
+    title = m;
+
     // Prefix id to prevent causing inadvertent pre-existing style matches.
     if (showdown.helper.isString(options.prefixHeaderId)) {
-      title = options.prefixHeaderId + m;
+      prefix = options.prefixHeaderId;
     } else if (options.prefixHeaderId === true) {
-      title = 'section ' + m;
+      prefix = 'section-';
     } else {
-      title = m;
+      prefix = '';
     }
 
-    if (ghHeaderId) {
+    if (!options.rawPrefixHeaderId) {
+      title = prefix + title;
+    }
+
+    if (options.ghCompatibleHeaderId) {
       title = title
         .replace(/ /g, '-')
         // replace previously escaped chars (&, ¨ and $)
@@ -87,10 +93,24 @@ showdown.subParser('headers', function (text, options, globals) {
         // borrowed from github's redcarpet (some they should produce similar results)
         .replace(/[&+$,\/:;=?@"#{}|^¨~\[\]`\\*)(%.!'<>]/g, '')
         .toLowerCase();
+    } else if (options.rawHeaderId) {
+      title = title
+        .replace(/ /g, '-')
+        // replace previously escaped chars (&, ¨ and $)
+        .replace(/&amp;/g, '&')
+        .replace(/¨T/g, '¨')
+        .replace(/¨D/g, '$')
+        // replace " and '
+        .replace(/["']/g, '-')
+        .toLowerCase();
     } else {
       title = title
         .replace(/[^\w]/g, '')
         .toLowerCase();
+    }
+
+    if (options.rawPrefixHeaderId) {
+      title = prefix + title;
     }
 
     if (globals.hashLinkCounts[title]) {

@@ -8,7 +8,9 @@ var bootstrap = require('../bootstrap.js'),
     tableSuite = bootstrap.getTestSuite('test/features/tables/'),
     simplifiedAutoLinkSuite = bootstrap.getTestSuite('test/features/simplifiedAutoLink/'),
     openLinksInNewWindowSuite = bootstrap.getTestSuite('test/features/openLinksInNewWindow/'),
-    disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/features/disableForced4SpacesIndentedSublists/');
+    disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/features/disableForced4SpacesIndentedSublists/'),
+    rawHeaderIdSuite = bootstrap.getTestSuite('test/features/rawHeaderId/'),
+    rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/features/rawPrefixHeaderId/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -22,6 +24,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({headerLevelStart: 3});
       } else if (testsuite[i].name === '#164.1.simple-autolink' || testsuite[i].name === '#204.certain-links-with-at-and-dot-break-url') {
         converter = new showdown.Converter({simplifiedAutoLink: true});
+      } else if (testsuite[i].name === 'literalMidWordUnderscores') {
+        converter = new showdown.Converter({literalMidWordUnderscores: true});
       } else if (testsuite[i].name === '#164.2.disallow-underscore-emphasis-mid-word') {
         converter = new showdown.Converter({literalMidWordUnderscores: true});
       } else if (testsuite[i].name === '#164.3.strikethrough' || testsuite[i].name === '#214.escaped-markdown-chars-break-strikethrough') {
@@ -84,6 +88,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({backslashEscapesHTMLTags: true});
       } else if (testsuite[i].name === '#379.openLinksInNewWindow-breaks-em-markdup') {
         converter = new showdown.Converter({openLinksInNewWindow: true});
+      } else if (testsuite[i].name === '#398.literalMidWordAsterisks-treats-non-word-characters-as-characters') {
+        converter = new showdown.Converter({literalMidWordAsterisks: true});
       } else {
         converter = new showdown.Converter();
       }
@@ -145,6 +151,30 @@ describe('makeHtml() features testsuite', function () {
         suite = disableForced4SpacesIndentedSublistsSuite;
     for (var i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({disableForced4SpacesIndentedSublists: true});
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  // test rawHeaderId support
+  describe('rawHeaderId support', function () {
+    var converter,
+        suite = rawHeaderIdSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      if (suite[i].name === 'with-prefixHeaderId') {
+        converter = new showdown.Converter({rawHeaderId: true, prefixHeaderId: '/prefix/'});
+      } else {
+        converter = new showdown.Converter({rawHeaderId: true});
+      }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  // test rawPrefixHeaderId support
+  describe('rawPrefixHeaderId support', function () {
+    var converter,
+        suite = rawPrefixHeaderIdSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({rawPrefixHeaderId: true, prefixHeaderId: '/prefix/'});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

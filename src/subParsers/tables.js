@@ -5,7 +5,9 @@ showdown.subParser('tables', function (text, options, globals) {
     return text;
   }
 
-  var tableRgx = /^ {0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|¨0)/gm;
+  var tableRgx       = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|¨0)/gm,
+    //singeColTblRgx = /^ {0,3}\|.+\|\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n(?: {0,3}\|.+\|\n)+(?:\n\n|¨0)/gm;
+      singeColTblRgx = /^ {0,3}\|.+\|\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|\n( {0,3}\|.+\|\n)*(?:\n|¨0)/gm;
 
   function parseStyles (sLine) {
     if (/^:[ \t]*--*$/.test(sLine)) {
@@ -56,14 +58,7 @@ showdown.subParser('tables', function (text, options, globals) {
     return tb;
   }
 
-  text = globals.converter._dispatch('tables.before', text, options, globals);
-
-  // find escaped pipe characters
-  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
-
-  // parse tables
-  text = text.replace(tableRgx, function (rawTable) {
-
+  function parseTable (rawTable) {
     var i, tableLines = rawTable.split('\n');
 
     // strip wrong first and last column if wrapped tables are used
@@ -126,7 +121,18 @@ showdown.subParser('tables', function (text, options, globals) {
     }
 
     return buildTable(headers, cells);
-  });
+  }
+
+  text = globals.converter._dispatch('tables.before', text, options, globals);
+
+  // find escaped pipe characters
+  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+
+  // parse multi column tables
+  text = text.replace(tableRgx, parseTable);
+
+  // parse one column tables
+  text = text.replace(singeColTblRgx, parseTable);
 
   text = globals.converter._dispatch('tables.after', text, options, globals);
 

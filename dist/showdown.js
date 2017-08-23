@@ -1,4 +1,4 @@
-;/*! showdown 05-08-2017 */
+;/*! showdown 23-08-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -20,12 +20,22 @@ function getDefaultOpts (simple) {
     },
     prefixHeaderId: {
       defaultValue: false,
-      describe: 'Specify a prefix to generated header ids',
+      describe: 'Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to true will add a generic \'section-\' prefix',
       type: 'string'
+    },
+    rawPrefixHeaderId: {
+      defaultValue: false,
+      describe: 'Setting this option to true will prevent showdown from modifying the prefix. This might result in malformed IDs (if, for instance, the " char is used in the prefix)',
+      type: 'boolean'
     },
     ghCompatibleHeaderId: {
       defaultValue: false,
       describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, a bunch of non alphanumeric chars are removed)',
+      type: 'boolean'
+    },
+    rawHeaderId: {
+      defaultValue: false,
+      describe: 'Remove only spaces, \' and " from generated header ids (including prefixes), replacing them with dashes (-). WARNING: This might result in malformed ids',
       type: 'boolean'
     },
     headerLevelStart: {
@@ -183,7 +193,8 @@ var showdown = {},
         simpleLineBreaks:                     true,
         requireSpaceBeforeHeadingText:        true,
         ghCompatibleHeaderId:                 true,
-        ghMentions:                           true
+        ghMentions:                           true,
+        backslashEscapesHTMLTags:             true
       },
       original: {
         noHeaderId:                           true,
@@ -2088,7 +2099,6 @@ showdown.subParser('headers', function (text, options, globals) {
   text = globals.converter._dispatch('headers.before', text, options, globals);
 
   var headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
-      ghHeaderId = options.ghCompatibleHeaderId,
 
   // Set text-style headers:
   //	Header 1
@@ -2141,7 +2151,8 @@ showdown.subParser('headers', function (text, options, globals) {
   });
 
   function headerId (m) {
-    var title;
+    var title,
+        prefix;
 
     // It is separate from other options to allow combining prefix and customized
     if (options.customizedHeaderId) {
@@ -2151,16 +2162,22 @@ showdown.subParser('headers', function (text, options, globals) {
       }
     }
 
+    title = m;
+
     // Prefix id to prevent causing inadvertent pre-existing style matches.
     if (showdown.helper.isString(options.prefixHeaderId)) {
-      title = options.prefixHeaderId + m;
+      prefix = options.prefixHeaderId;
     } else if (options.prefixHeaderId === true) {
-      title = 'section ' + m;
+      prefix = 'section-';
     } else {
-      title = m;
+      prefix = '';
     }
 
-    if (ghHeaderId) {
+    if (!options.rawPrefixHeaderId) {
+      title = prefix + title;
+    }
+
+    if (options.ghCompatibleHeaderId) {
       title = title
         .replace(/ /g, '-')
         // replace previously escaped chars (&, ¨ and $)
@@ -2171,10 +2188,24 @@ showdown.subParser('headers', function (text, options, globals) {
         // borrowed from github's redcarpet (some they should produce similar results)
         .replace(/[&+$,\/:;=?@"#{}|^¨~\[\]`\\*)(%.!'<>]/g, '')
         .toLowerCase();
+    } else if (options.rawHeaderId) {
+      title = title
+        .replace(/ /g, '-')
+        // replace previously escaped chars (&, ¨ and $)
+        .replace(/&amp;/g, '&')
+        .replace(/¨T/g, '¨')
+        .replace(/¨D/g, '$')
+        // replace " and '
+        .replace(/["']/g, '-')
+        .toLowerCase();
     } else {
       title = title
         .replace(/[^\w]/g, '')
         .toLowerCase();
+    }
+
+    if (options.rawPrefixHeaderId) {
+      title = prefix + title;
     }
 
     if (globals.hashLinkCounts[title]) {
@@ -2342,14 +2373,14 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
 
   // Now parse asterisks
   if (options.literalMidWordAsterisks) {
-    text = text.trim().replace(/(?:^| +)\*{3}(\S[\s\S]*?)\*{3}(?: +|$)/g, function (wm, txt) {
-      return parseInside (txt, ' <strong><em>', '</em></strong> ');
+    text = text.trim().replace(/(^| )\*{3}(\S[\s\S]*?)\*{3}([ ,;!?.]|$)/g, function (wm, lead, txt, trail) {
+      return parseInside (txt, lead + '<strong><em>', '</em></strong>' + trail);
     });
-    text = text.trim().replace(/(?:^| +)\*{2}(\S[\s\S]*?)\*{2}(?: +|$)/g, function (wm, txt) {
-      return parseInside (txt, ' <strong>', '</strong> ');
+    text = text.trim().replace(/(^| )\*{2}(\S[\s\S]*?)\*{2}([ ,;!?.]|$)/g, function (wm, lead, txt, trail) {
+      return parseInside (txt, lead + '<strong>', '</strong>' + trail);
     });
-    text = text.trim().replace(/(?:^| +)\*{1}(\S[\s\S]*?)\*{1}(?: +|$)/g, function (wm, txt) {
-      return parseInside (txt, ' <em>', '</em>' + (wm.slice(-1) === ' ' ? ' ' : ''));
+    text = text.trim().replace(/(^| )\*(\S[\s\S]*?)\*([ ,;!?.]|$)/g, function (wm, lead, txt, trail) {
+      return parseInside (txt, lead + '<em>', '</em>' + trail);
     });
   } else {
     text = text.replace(/\*\*\*(\S[\s\S]*?)\*\*\*/g, function (wm, m) {
@@ -2785,7 +2816,9 @@ showdown.subParser('tables', function (text, options, globals) {
     return text;
   }
 
-  var tableRgx = /^ {0,3}\|?.+\|.+\n[ \t]{0,3}\|?[ \t]*:?[ \t]*(?:-|=){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:-|=){2,}[\s\S]+?(?:\n\n|¨0)/gm;
+  var tableRgx       = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|¨0)/gm,
+    //singeColTblRgx = /^ {0,3}\|.+\|\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n(?: {0,3}\|.+\|\n)+(?:\n\n|¨0)/gm;
+      singeColTblRgx = /^ {0,3}\|.+\|\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|\n( {0,3}\|.+\|\n)*(?:\n|¨0)/gm;
 
   function parseStyles (sLine) {
     if (/^:[ \t]*--*$/.test(sLine)) {
@@ -2836,14 +2869,7 @@ showdown.subParser('tables', function (text, options, globals) {
     return tb;
   }
 
-  text = globals.converter._dispatch('tables.before', text, options, globals);
-
-  // find escaped pipe characters
-  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
-
-  // parse tables
-  text = text.replace(tableRgx, function (rawTable) {
-
+  function parseTable (rawTable) {
     var i, tableLines = rawTable.split('\n');
 
     // strip wrong first and last column if wrapped tables are used
@@ -2906,7 +2932,18 @@ showdown.subParser('tables', function (text, options, globals) {
     }
 
     return buildTable(headers, cells);
-  });
+  }
+
+  text = globals.converter._dispatch('tables.before', text, options, globals);
+
+  // find escaped pipe characters
+  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+
+  // parse multi column tables
+  text = text.replace(tableRgx, parseTable);
+
+  // parse one column tables
+  text = text.replace(singeColTblRgx, parseTable);
 
   text = globals.converter._dispatch('tables.after', text, options, globals);
 

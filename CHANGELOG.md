@@ -5,8 +5,8 @@
 ### Bug Fixes
 
 * **github flavor:** add backslashEscapesHTMLTags to GFM flavor ([5284439](https://github.com/showdownjs/showdown/commit/5284439))
-* **literalMidWordAsterisks:** fix option no longer treat punctuation as word character ([8f05be7](https://github.com/showdownjs/showdown/commit/8f05be7)), closes [#398](https://github.com/showdownjs/showdown/issues/398)
-
+* **literalMidWordAsterisks:** option no longer treats punctuation as word character ([8f05be7](https://github.com/showdownjs/showdown/commit/8f05be7)), closes [#398](https://github.com/showdownjs/showdown/issues/398)
+* **tables:** allow for one column table ([fef110c](https://github.com/showdownjs/showdown/commit/fef110cccb2d02b218183398d9baa0ae256a7283)), closes [#406](https://github.com/showdownjs/showdown/issues/406)
 
 ### Features
 

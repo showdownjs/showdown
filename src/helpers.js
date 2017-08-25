@@ -37,7 +37,7 @@ showdown.helper.isFunction = function (a) {
  */
 showdown.helper.isArray = function (a) {
   'use strict';
-  return a.constructor === Array;
+  return Array.isArray(a);
 };
 
 /**

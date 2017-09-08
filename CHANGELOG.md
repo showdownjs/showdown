@@ -1,3 +1,19 @@
+<a name="1.7.4"></a>
+## [1.7.4](https://github.com/showdownjs/showdown/compare/1.7.3...1.7.4) (2017-09-08)
+
+
+### Bug Fixes
+
+* **helper.isArray:** replace a.constructor === Array with Array.isArray ([466a2eb](https://github.com/showdownjs/showdown/commit/466a2eb)), closes [#425](https://github.com/showdownjs/showdown/issues/425)
+* **loader:** allow AMD loader to be used within Node env  ([ff24bdb](https://github.com/showdownjs/showdown/commit/ff24bdb))
+
+
+### Features
+
+* **base64-wrapping:** support for wrapping base64 strings ([8c593a4](https://github.com/showdownjs/showdown/commit/8c593a4)), closes [#429](https://github.com/showdownjs/showdown/issues/429)
+
+
+
 <a name="1.7.3"></a>
 ## [1.7.3](https://github.com/showdownjs/showdown/compare/1.7.2...1.7.3) (2017-08-23)
 

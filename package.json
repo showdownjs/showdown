@@ -48,7 +48,7 @@
     "grunt-conventional-changelog": "^6.1.0",
     "grunt-conventional-github-releaser": "^1.0.0",
     "grunt-endline": "^0.6.1",
-    "grunt-eslint": "^19.0.0",
+    "grunt-eslint": "^20.1.0",
     "grunt-simple-mocha": "^0.4.0",
     "load-grunt-tasks": "^3.2.0",
     "performance-now": "^2.0.0",

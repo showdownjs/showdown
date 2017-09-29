@@ -26,7 +26,7 @@ Double asterisks do not parse as bold
 
 **Actual Output:**
 
-    <p>hello **world**!
+    <p>hello **world**!</p>
 
 
 

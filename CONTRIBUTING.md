@@ -3,6 +3,33 @@ Contributing
 
 If you wish to contribute please read the following quick guide.
 
+# Issues (bug reporting)
+Generally, bug reports should be in the following format:
+
+ 1. Description (Brief description of the problem)
+ 2. Input (input that is causing problems)
+ 3. Expected Output (Output that is expected)
+ 4. Actual Output (Actual showdown output)
+
+ex:
+
+**Description:**
+Double asterisks do not parse as bold
+
+**Input:**
+    
+    hello **world**!
+     
+**Expected output:**
+
+    <p>hello <b>world</b>!
+
+**Actual Output:**
+
+    <p>hello **world**!
+
+
+
 # Want a Feature?
 You can request a new feature by submitting an issue. If you would like to implement a new feature feel free to issue a
 Pull Request.
@@ -12,13 +39,12 @@ Pull Request.
 PRs are awesome. However, before you submit your pull request consider the following guidelines:
 
  - Search GitHub for an open or closed Pull Request that relates to your submission. You don't want to duplicate effort.
- - When issuing PRs that change code, make your changes in a new git branch based on master:
+ - When issuing PRs that change code, make your changes in a new git branch based on develop:
 
    ```bash
-   git checkout -b my-fix-branch master
+   git checkout -b my-fix-branch develop
    ```
 
- - Documentation (i.e: README.md) changes can be made directly against master.
  - Run the full test suite before submitting and make sure all tests pass (obviously =P).
  - Try to follow our [**coding style rules**](https://github.com/showdownjs/code-style/blob/master/README.md).
    Breaking them prevents the PR to pass the tests.
@@ -33,7 +59,7 @@ PRs are awesome. However, before you submit your pull request consider the follo
    - Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
 
    ```bash
-   git rebase master -i
+   git rebase develop -i
    git push origin my-fix-branch -f
    ```
  - After your pull request is merged, you can safely delete your branch.

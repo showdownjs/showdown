@@ -59,6 +59,6 @@
     "source-map-support": "^0.4.15"
   },
   "dependencies": {
-    "yargs": "^8.0.1"
+    "yargs": "^9.0.1"
   }
 }

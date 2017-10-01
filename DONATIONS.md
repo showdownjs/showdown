@@ -1,0 +1,11 @@
+We would like to thank our donors that contributed to this library. Your help is extremely appreciated.
+
+# Donors
+
+- **Maya Lekova**
+
+    > Great work with the showdown library! I just used it and it worked exactly the way I expected 
+      (given a complex inline HTML inside the Markdown, which renders fine with other viewers). 
+      The other libraries I've tried (markdown-it and marked) produced a lot of bogus output. Y
+      our library saved me at least half a day, thanks! Good luck :)
+

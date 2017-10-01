@@ -6,7 +6,7 @@
 [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
 [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Greenkeeper badge](https://badges.greenkeeper.io/showdownjs/showdown.svg)](https://greenkeeper.io/)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://pledgie.com/campaigns/34908)
 
 ------
 
@@ -27,10 +27,11 @@ Check a live Demo here http://showdownjs.github.io/demo/
  - [docular](https://github.com/Vertafore/docular)
  - [and some others...](https://www.npmjs.com/browse/depended/showdown)
 
-## Donate [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
+## Donate [![Click here to lend your support to: ShowdownJS website and testing platform and make a donation at pledgie.com](https://pledgie.com/campaigns/34908.png?skin_name=chrome)](https://pledgie.com/campaigns/34908)
 
-We're currently looking to improve showdown with automated tests in all browsers and a proper domain and webpage.
-[If you like our work, please donate!!](https://www.paypal.me/tiviesantos) Your contribution will be greatly appreciated.
+As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money. Currently, we're looking to improve showdown with automated tests in all browsers and a proper domain and webpage. 500$ should be enough to to keep showdown testing framework running for a couple of years.
+
+If you like our work and find our library useful, please donate [through Pledgie](https://pledgie.com/campaigns/34908) or directly [through paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated.
 
 ## Installation
 

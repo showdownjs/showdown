@@ -1,5 +1,5 @@
 <a name="1.7.5"></a>
-## [1.7.5](https://github.com/showdownjs/showdown/compare/1.7.4...v1.7.5) (2017-10-02)
+## [1.7.5](https://github.com/showdownjs/showdown/compare/1.7.4...1.7.5) (2017-10-02)
 
 
 ### Bug Fixes

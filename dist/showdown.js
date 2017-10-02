@@ -1,4 +1,4 @@
-;/*! showdown v 1.7.4 - 08-09-2017 */
+;/*! showdown v 1.7.4 - 02-10-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -1801,13 +1801,19 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text, opti
   'use strict';
   text = globals.converter._dispatch('escapeSpecialCharsWithinTagAttributes.before', text, options, globals);
 
-  // Build a regex to find HTML tags and comments.  See Friedl's
-  // "Mastering Regular Expressions", 2nd Ed., pp. 200-201.
-  var regex = /(<[a-z\/!$]("[^"]*"|'[^']*'|[^'">])*>|<!(--.*?--\s*)+>)/gi;
+  // Build a regex to find HTML tags.
+  var regex = /(<[a-z\/!$]("[^"]*"|'[^']*'|[^'">])*>)/gi,
+  // due to catastrophic backtrace we split the old regex into two, one for tags and one for comments
+      regexComments = /<!(--(?:|(?:[^>-]|-[^>])(?:[^-]|-[^-])*)--)>/gi;
 
   text = text.replace(regex, function (wholeMatch) {
     return wholeMatch
       .replace(/(.)<\/?code>(?=.)/g, '$1`')
+      .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
+  });
+
+  text = text.replace(regexComments, function (wholeMatch) {
+    return wholeMatch
       .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
   });
 

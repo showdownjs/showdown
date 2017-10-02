@@ -1,3 +1,13 @@
+<a name="1.7.5"></a>
+## [1.7.5](https://github.com/showdownjs/showdown/compare/1.7.4...v1.7.5) (2017-10-02)
+
+
+### Bug Fixes
+
+* **html-comments:** changed regex to precent malformed long comment to freeze showdown ([3efcd10](https://github.com/showdownjs/showdown/commit/3efcd10)), closes [#439](https://github.com/showdownjs/showdown/issues/439)
+
+
+
 <a name="1.7.4"></a>
 ## [1.7.4](https://github.com/showdownjs/showdown/compare/1.7.3...1.7.4) (2017-09-08)
 

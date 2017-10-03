@@ -56,7 +56,7 @@
     "semver": "^5.4.1",
     "semver-sort": "0.0.4",
     "sinon": "^4.0.0",
-    "source-map-support": "^0.4.15"
+    "source-map-support": "^0.5.0"
   },
   "dependencies": {
     "yargs": "^9.0.1"

@@ -1,3 +1,14 @@
+<a name="1.7.6"></a>
+## [1.7.6](https://github.com/showdownjs/showdown/compare/1.7.5...1.7.6) (2017-10-06)
+
+
+### Bug Fixes
+
+* **tables:** tables are properly rendered when followed by a single linebreak and a list ([d88b095](https://github.com/showdownjs/showdown/commit/d88b095)), closes [#443](https://github.com/showdownjs/showdown/issues/443)
+* **tables:** trailing spaces no longer prevent table parsing ([66bdd21](https://github.com/showdownjs/showdown/commit/66bdd21)), closes [#442](https://github.com/showdownjs/showdown/issues/442)
+
+
+
 <a name="1.7.5"></a>
 ## [1.7.5](https://github.com/showdownjs/showdown/compare/1.7.4...1.7.5) (2017-10-02)
 

@@ -3639,7 +3639,6 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
  */
 showdown.subParser('lists', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('lists.before', text, options, globals);
 
   /**
    * Process the contents of a single ordered or unordered list, splitting it
@@ -3759,6 +3758,17 @@ showdown.subParser('lists', function (text, options, globals) {
     return listStr;
   }
 
+  function styleStartNumber (list, listType) {
+    // check if ol and starts by a number different than 1
+    if (listType === 'ol') {
+      var res = list.match(/^ *(\d+)\./);
+      if (res && res[1] !== '1') {
+        return ' start="' + res[1] + '"';
+      }
+    }
+    return '';
+  }
+
   /**
    * Check and parse consecutive lists (better fix for issue #142)
    * @param {string} list
@@ -3776,10 +3786,11 @@ showdown.subParser('lists', function (text, options, globals) {
 
     if (list.search(counterRxg) !== -1) {
       (function parseCL (txt) {
-        var pos = txt.search(counterRxg);
+        var pos = txt.search(counterRxg),
+            style = styleStartNumber(list, listType);
         if (pos !== -1) {
           // slice
-          result += '\n<' + listType + '>\n' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
+          result += '\n<' + listType + style + '>\n' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
 
           // invert counterType and listType
           listType = (listType === 'ul') ? 'ol' : 'ul';
@@ -3788,16 +3799,19 @@ showdown.subParser('lists', function (text, options, globals) {
           //recurse
           parseCL(txt.slice(pos));
         } else {
-          result += '\n<' + listType + '>\n' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
+          result += '\n<' + listType + style + '>\n' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
         }
       })(list);
     } else {
-      result = '\n<' + listType + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
+      var style = styleStartNumber(list, listType);
+      result = '\n<' + listType + style + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
     }
 
     return result;
   }
 
+  /** Start of list parsing **/
+  text = globals.converter._dispatch('lists.before', text, options, globals);
   // add sentinel to hack around khtml/safari bug:
   // http://bugs.webkit.org/show_bug.cgi?id=11231
   text += '¨0';

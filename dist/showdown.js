@@ -925,7 +925,7 @@ if (typeof(console) === 'undefined') {
  * We declare some common regexes to improve performance
  */
 showdown.helper.regexes = {
-  asteriskDashAndColon: /([*_:])/g
+  asteriskDashAndColon: /([*_:~])/g
 };
 
 /**
@@ -1457,20 +1457,21 @@ showdown.subParser('anchors', function (text, options, globals) {
 
 // url allowed chars [a-z\d_.~:/?#[]@!$&'()*+,;=-]
 
-var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)()(?=\s|$)(?!["<>])/gi,
-    simpleURLRegex2 = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+?)([.!?,()\[\]]?)(?=\s|$)(?!["<>])/gi,
-    //simpleURLRegex3 = /\b(((https?|ftp):\/\/|www\.)[a-z\d.-]+\.[a-z\d_.~:/?#\[\]@!$&'()*+,;=-]+?)([.!?()]?)(?=\s|$)(?!["<>])/gi,
-    delimUrlRegex   = /<(((https?|ftp|dict):\/\/|www\.)[^'">\s]+)()>/gi,
+var simpleURLRegex  = /([*~_]+|\b)(((https?|ftp|dict):\/\/|www\.)[^'">\s]+?\.[^'">\s]+?)()(\1)?(?=\s|$)(?!["<>])/gi,
+    simpleURLRegex2 = /([*~_]+|\b)(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+?)([.!?,()\[\]])?(\1)?(?=\s|$)(?!["<>])/gi,
+    delimUrlRegex   = /()<(((https?|ftp|dict):\/\/|www\.)[^'">\s]+)()>()/gi,
     simpleMailRegex = /(^|\s)(?:mailto:)?([A-Za-z0-9!#$%&'*+-/=?^_`{|}~.]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(?=$|\s)/gmi,
     delimMailRegex  = /<()(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi,
 
     replaceLink = function (options) {
       'use strict';
-
-      return function (wm, link, m2, m3, trailingPunctuation) {
+      return function (wm, leadingMagicChars, link, m2, m3, trailingPunctuation, trailingMagicChars) {
+        link = link.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
         var lnkTxt = link,
             append = '',
-            target = '';
+            target = '',
+            lmc    = leadingMagicChars || '',
+            tmc    = trailingMagicChars || '';
         if (/^www\./i.test(link)) {
           link = link.replace(/^www\./i, 'http://www.');
         }
@@ -1480,7 +1481,7 @@ var simpleURLRegex  = /\b(((https?|ftp|dict):\/\/|www\.)[^'">\s]+\.[^'">\s]+)()(
         if (options.openLinksInNewWindow) {
           target = ' target="¨E95Eblank"';
         }
-        return '<a href="' + link + '"' + target + '>' + lnkTxt + '</a>' + append;
+        return lmc + '<a href="' + link + '"' + target + '>' + lnkTxt + '</a>' + append + tmc;
       };
     },
 
@@ -2356,9 +2357,11 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
   // called "catastrophic backtrace". Ominous!
 
   function parseInside (txt, left, right) {
+    /*
     if (options.simplifiedAutoLink) {
       txt = showdown.subParser('simplifiedAutoLinks')(txt, options, globals);
     }
+    */
     return left + txt + right;
   }
 
@@ -2736,9 +2739,9 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   // Must come after anchors, because you can use < and >
   // delimiters in inline links like [this](<url>).
   text = showdown.subParser('autoLinks')(text, options, globals);
+  text = showdown.subParser('simplifiedAutoLinks')(text, options, globals);
   text = showdown.subParser('italicsAndBold')(text, options, globals);
   text = showdown.subParser('strikethrough')(text, options, globals);
-  text = showdown.subParser('simplifiedAutoLinks')(text, options, globals);
 
   // we need to hash HTML tags inside spans
   text = showdown.subParser('hashHTMLSpans')(text, options, globals);

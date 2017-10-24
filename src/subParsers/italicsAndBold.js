@@ -8,9 +8,11 @@ showdown.subParser('italicsAndBold', function (text, options, globals) {
   // called "catastrophic backtrace". Ominous!
 
   function parseInside (txt, left, right) {
+    /*
     if (options.simplifiedAutoLink) {
       txt = showdown.subParser('simplifiedAutoLinks')(txt, options, globals);
     }
+    */
     return left + txt + right;
   }
 

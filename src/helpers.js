@@ -376,5 +376,5 @@ if (typeof(console) === 'undefined') {
  * We declare some common regexes to improve performance
  */
 showdown.helper.regexes = {
-  asteriskDashAndColon: /([*_:])/g
+  asteriskDashAndColon: /([*_:~])/g
 };

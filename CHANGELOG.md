@@ -1,3 +1,105 @@
+<a name="1.8.0"></a>
+# [1.8.0](https://github.com/showdownjs/showdown/compare/1.7.6...1.8.0) (2017-10-24)
+
+
+### Bug Fixes
+
+* **autolinks:** prevent _ and * to be parsed in links ([61929bb](https://github.com/showdownjs/showdown/commit/61929bb)), closes [#444](https://github.com/showdownjs/showdown/issues/444)
+
+
+### Features
+
+* **ellipsis:** add auto-ellipsis support ([25f1978](https://github.com/showdownjs/showdown/commit/25f1978))
+
+  - *Example:*
+    
+      input
+    
+      ```md
+      this is an ellipsis...
+      ```
+        
+      output
+    
+      ```html
+      <p>this is an ellipsis…</p>
+      ```
+
+* **emoji:** add emoji support through option `emoji`([5b8f1d3](https://github.com/showdownjs/showdown/commit/5b8f1d3)), closes [#448](https://github.com/showdownjs/showdown/issues/448)
+
+  - *Usage:*
+    
+      ```js
+      var conv = new showdown.Converter({emoji: true});
+      ```      
+    
+  - *Example:*
+    
+      input
+    
+      ```md
+      this is a smile :smile: emoji
+      ```
+        
+      output
+    
+      ```html
+      <p>this is a smile 😄 emoji</p>
+      ```
+    
+* **start ordered lists at an arbitrary number:** add support for defining the first item number of ordered lists ([9cdc35e](https://github.com/showdownjs/showdown/commit/9cdc35e)), closes [#377](https://github.com/showdownjs/showdown/issues/377)
+
+  - *Example:*
+    
+      input
+
+       ```md
+       3. foo
+       4. bar
+       5. baz
+       ```
+
+      output
+    
+      ```html
+      <ol start="3">
+        <li>foo</li>
+        <li>bar</li>
+        <li>baz</li>
+      </ol>
+      ```
+
+* **underline:** add EXPERIMENTAL support for underline ([084b819](https://github.com/showdownjs/showdown/commit/084b819)), closes [#450](https://github.com/showdownjs/showdown/issues/450)
+
+  - *Usage:*
+    
+      ```js
+      var conv = new showdown.Converter({underline: true});
+      ```
+    
+  - *Example:*
+    
+      input
+    
+      ```md
+      this is __underlined__ and this is ___also underlined___
+      ```
+        
+      output
+    
+      ```html
+      <p>this is <u>underlined</u> and this is <u>also underlined</u></p>
+      ```
+	
+  - *Note:*	With this option enabled, underscore no longer parses as `<em>` or `<strong>`	  
+			
+### BREAKING CHANGES
+
+* start ordered lists at an arbitrary number: Since showdown now supports starting ordered lists at an arbitrary number, 
+list output may differ.
+
+
+
 <a name="1.7.6"></a>
 ## [1.7.6](https://github.com/showdownjs/showdown/compare/1.7.5...1.7.6) (2017-10-06)
 

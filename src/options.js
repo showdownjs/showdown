@@ -140,6 +140,11 @@ function getDefaultOpts (simple) {
       defaultValue: false,
       description: 'Support for HTML Tag escaping. ex: \<div>foo\</div>',
       type: 'boolean'
+    },
+    emoji: {
+      defaultValue: false,
+      description: 'Enable emoji support. Ex: `this is a :smile: emoji`',
+      type: 'boolean'
     }
   };
   if (simple === false) {

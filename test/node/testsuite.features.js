@@ -10,7 +10,8 @@ var bootstrap = require('../bootstrap.js'),
     openLinksInNewWindowSuite = bootstrap.getTestSuite('test/features/openLinksInNewWindow/'),
     disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/features/disableForced4SpacesIndentedSublists/'),
     rawHeaderIdSuite = bootstrap.getTestSuite('test/features/rawHeaderId/'),
-    rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/features/rawPrefixHeaderId/');
+    rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/features/rawPrefixHeaderId/'),
+    emojisSuite = bootstrap.getTestSuite('test/features/emojis/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -175,6 +176,21 @@ describe('makeHtml() features testsuite', function () {
         suite = rawPrefixHeaderIdSuite;
     for (var i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({rawPrefixHeaderId: true, prefixHeaderId: '/prefix/'});
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  // test emojis support
+  describe('emojis support', function () {
+    var converter,
+        suite = emojisSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      if (suite[i].name === 'simplifiedautolinks') {
+        converter = new showdown.Converter({emoji: true, simplifiedAutoLink: true});
+      } else {
+        converter = new showdown.Converter({emoji: true});
+      }
+
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

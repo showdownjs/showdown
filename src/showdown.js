@@ -24,7 +24,8 @@ var showdown = {},
         requireSpaceBeforeHeadingText:        true,
         ghCompatibleHeaderId:                 true,
         ghMentions:                           true,
-        backslashEscapesHTMLTags:             true
+        backslashEscapesHTMLTags:             true,
+        emoji:                                true
       },
       original: {
         noHeaderId:                           true,

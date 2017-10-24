@@ -345,7 +345,7 @@ var defaultOptions = showdown.getDefaultOptions();
    Showdown will replace `{u}` with the username. Only applies if ghMentions option is enabled.
    Example: `@tivie` with ghMentionsOption set to `//mysite.com/{u}/profile` will result in `<a href="//mysite.com/tivie/profile">@tivie</a>`
  
- * **encodeEmails**: (boolean) [default true] Enables e-mail addresses encoding through the use of Character Entities, transforming ASCII e-mail addresses into its equivalent decimal entities. (since v1.6.1)
+ * **encodeEmails**: (boolean) [default true] Enable e-mail addresses encoding through the use of Character Entities, transforming ASCII e-mail addresses into its equivalent decimal entities. (since v1.6.1)
 
    NOTE: Prior to version 1.6.1, emails would always be obfuscated through dec and hex encoding.
 
@@ -353,6 +353,9 @@ var defaultOptions = showdown.getDefaultOptions();
    (by adding the attribute `target="_blank"` to `<a>` tags) **(since v1.7.0)**
 
  * **backslashEscapesHTMLTags**: (boolean) [default false] Support for HTML Tag escaping. ex: `\<div>foo\</div>` **(since v1.7.2)**
+
+ * **emoji**: (boolean) [default false] Enable emoji support. Ex: `this is a :smile: emoji`
+   For more info on available emojis, see https://github.com/showdownjs/showdown/wiki/Emojis **(since v.1.8.0)**
 
 **NOTE**: Please note that until **version 1.6.0**, all of these options are ***DISABLED*** by default in the cli tool.
  

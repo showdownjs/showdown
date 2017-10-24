@@ -11,7 +11,8 @@ var bootstrap = require('../bootstrap.js'),
     disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/features/disableForced4SpacesIndentedSublists/'),
     rawHeaderIdSuite = bootstrap.getTestSuite('test/features/rawHeaderId/'),
     rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/features/rawPrefixHeaderId/'),
-    emojisSuite = bootstrap.getTestSuite('test/features/emojis/');
+    emojisSuite = bootstrap.getTestSuite('test/features/emojis/'),
+    underlineSuite = bootstrap.getTestSuite('test/features/underline/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -98,7 +99,7 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
-  // test Table Syntax Support
+  /** test Table Syntax Support **/
   describe('table support', function () {
     var converter,
         suite = tableSuite;
@@ -114,7 +115,7 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
-  // test simplifiedAutoLink Support
+  /** test simplifiedAutoLink Support **/
   describe('simplifiedAutoLink support in', function () {
     var converter,
         suite = simplifiedAutoLinkSuite;
@@ -132,7 +133,7 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
-  // test openLinksInNewWindow support
+  /** test openLinksInNewWindow support **/
   describe('openLinksInNewWindow support in', function () {
     var converter,
         suite = openLinksInNewWindowSuite;
@@ -146,7 +147,7 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
-  // test disableForced4SpacesIndentedSublists support
+  /** test disableForced4SpacesIndentedSublists support **/
   describe('disableForced4SpacesIndentedSublists support in', function () {
     var converter,
         suite = disableForced4SpacesIndentedSublistsSuite;
@@ -156,7 +157,7 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
-  // test rawHeaderId support
+  /** test rawHeaderId support **/
   describe('rawHeaderId support', function () {
     var converter,
         suite = rawHeaderIdSuite;
@@ -170,7 +171,7 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
-  // test rawPrefixHeaderId support
+  /** test rawPrefixHeaderId support **/
   describe('rawPrefixHeaderId support', function () {
     var converter,
         suite = rawPrefixHeaderIdSuite;
@@ -180,7 +181,7 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
-  // test emojis support
+  /** test emojis support **/
   describe('emojis support', function () {
     var converter,
         suite = emojisSuite;
@@ -191,6 +192,20 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({emoji: true});
       }
 
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  /** test emojis support **/
+  describe('emojis support', function () {
+    var converter,
+        suite = underlineSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      if (suite[i].name === 'simplifiedautolinks') {
+        converter = new showdown.Converter({underline: true, simplifiedAutoLink: true});
+      } else {
+        converter = new showdown.Converter({underline: true});
+      }
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

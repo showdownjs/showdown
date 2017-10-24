@@ -21,6 +21,7 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   text = showdown.subParser('autoLinks')(text, options, globals);
   text = showdown.subParser('simplifiedAutoLinks')(text, options, globals);
   text = showdown.subParser('emoji')(text, options, globals);
+  text = showdown.subParser('underline')(text, options, globals);
   text = showdown.subParser('italicsAndBold')(text, options, globals);
   text = showdown.subParser('strikethrough')(text, options, globals);
 

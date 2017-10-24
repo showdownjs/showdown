@@ -357,6 +357,9 @@ var defaultOptions = showdown.getDefaultOptions();
  * **emoji**: (boolean) [default false] Enable emoji support. Ex: `this is a :smile: emoji`
    For more info on available emojis, see https://github.com/showdownjs/showdown/wiki/Emojis **(since v.1.8.0)**
 
+ * **underline**: (boolean) [default false] ***EXPERIMENTAL FEATURE*** Enable support for underline.
+   Syntax is **double** or **triple** **underscores** ex: `__underlined word__`. With this option enabled, underscores are no longer parses into `<em>` and `<strong>`.
+
 **NOTE**: Please note that until **version 1.6.0**, all of these options are ***DISABLED*** by default in the cli tool.
  
 ## Flavors

@@ -1802,17 +1802,16 @@ showdown.subParser('escapeSpecialCharsWithinTagAttributes', function (text, opti
   text = globals.converter._dispatch('escapeSpecialCharsWithinTagAttributes.before', text, options, globals);
 
   // Build a regex to find HTML tags.
-  var regex = /(<[a-z\/!$]("[^"]*"|'[^']*'|[^'">])*>)/gi,
-  // due to catastrophic backtrace we split the old regex into two, one for tags and one for comments
-      regexComments = /<!(--(?:|(?:[^>-]|-[^>])(?:[^-]|-[^-])*)--)>/gi;
+  var tags     = /<\/?[a-z\d_:-]+(?:[\s]+[\s\S]+?)?>/gi,
+      comments = /<!(--(?:(?:[^>-]|-[^>])(?:[^-]|-[^-])*)--)>/gi;
 
-  text = text.replace(regex, function (wholeMatch) {
+  text = text.replace(tags, function (wholeMatch) {
     return wholeMatch
       .replace(/(.)<\/?code>(?=.)/g, '$1`')
       .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
   });
 
-  text = text.replace(regexComments, function (wholeMatch) {
+  text = text.replace(comments, function (wholeMatch) {
     return wholeMatch
       .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
   });

@@ -2918,6 +2918,18 @@ showdown.subParser('detab', function (text, options, globals) {
   return text;
 });
 
+showdown.subParser('ellipsis', function (text, options, globals) {
+  'use strict';
+
+  text = globals.converter._dispatch('ellipsis.before', text, options, globals);
+
+  text = text.replace(/\.\.\./g, '…');
+
+  text = globals.converter._dispatch('ellipsis.after', text, options, globals);
+
+  return text;
+});
+
 /**
  * These are all the transformations that occur *within* block-level
  * tags like paragraphs, headers, and list items.
@@ -3979,6 +3991,7 @@ showdown.subParser('spanGamut', function (text, options, globals) {
   text = showdown.subParser('underline')(text, options, globals);
   text = showdown.subParser('italicsAndBold')(text, options, globals);
   text = showdown.subParser('strikethrough')(text, options, globals);
+  text = showdown.subParser('ellipsis')(text, options, globals);
 
   // we need to hash HTML tags inside spans
   text = showdown.subParser('hashHTMLSpans')(text, options, globals);

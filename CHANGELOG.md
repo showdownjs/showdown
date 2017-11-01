@@ -1,5 +1,22 @@
+<a name="1.8.1"></a>
+## [1.8.1](https://github.com/showdownjs/showdown/compare/1.8.0...1.8.1) (2017-11-01)
+
+
+### Dependencies update
+
+* **package:** update yargs to version 10.0.3 ([#447](https://github.com/showdownjs/showdown/issues/447)) ([906b26d](https://github.com/showdownjs/showdown/commit/906b26d))
+
+### Bug Fixes
+
+* **CDNjs:** bump version to fix version missmatch with CDNjs ([#452](https://github.com/showdownjs/showdown/issues/452))
+
+
 <a name="1.8.0"></a>
 # [1.8.0](https://github.com/showdownjs/showdown/compare/1.7.6...1.8.0) (2017-10-24)
+
+### NOTICE
+
+Don't use the CDNjs version of this release. See issue [#452](https://github.com/showdownjs/showdown/issues/452) for more details.
 
 
 ### Bug Fixes

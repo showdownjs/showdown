@@ -12,3 +12,15 @@ And some HTML
 ```html
 <div>HTML!</div>
 ```
+
+Use more than 3 backticks
+
+`````
+some code
+`````
+
+Use tilde as delimiter
+
+~~~
+another piece of code
+~~~

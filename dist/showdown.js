@@ -1,4 +1,4 @@
-;/*! showdown v 1.8.1 - 01-11-2017 */
+;/*! showdown v 1.8.1 - 11-11-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -3076,7 +3076,7 @@ showdown.subParser('githubCodeBlocks', function (text, options, globals) {
 
   text += '¨0';
 
-  text = text.replace(/(?:^|\n)```(.*)\n([\s\S]*?)\n```/g, function (wholeMatch, language, codeblock) {
+  text = text.replace(/(?:^|\n)(```+|~~~+)([^\s`~]*)\n([\s\S]*?)\n\1/g, function (wholeMatch, delim, language, codeblock) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
 
     // First parse the github code block

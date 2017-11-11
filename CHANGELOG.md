@@ -1,3 +1,14 @@
+<a name="1.8.2"></a>
+## [1.8.2](https://github.com/showdownjs/showdown/compare/1.8.1...1.8.2) (2017-11-11)
+
+
+### Bug Fixes
+
+* **fenced codeblocks:** add tilde as fenced code block delimiter ([c956ede](https://github.com/showdownjs/showdown/commit/c956ede)), closes [#456](https://github.com/showdownjs/showdown/issues/456)
+* **openLinksInNewWindow:** hash links are not affected by the option ([11936ec](https://github.com/showdownjs/showdown/commit/11936ec)), closes [#457](https://github.com/showdownjs/showdown/issues/457)
+
+
+
 <a name="1.8.1"></a>
 ## [1.8.1](https://github.com/showdownjs/showdown/compare/1.8.0...1.8.1) (2017-11-01)
 

@@ -12,7 +12,8 @@ var bootstrap = require('../bootstrap.js'),
     rawHeaderIdSuite = bootstrap.getTestSuite('test/features/rawHeaderId/'),
     rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/features/rawPrefixHeaderId/'),
     emojisSuite = bootstrap.getTestSuite('test/features/emojis/'),
-    underlineSuite = bootstrap.getTestSuite('test/features/underline/');
+    underlineSuite = bootstrap.getTestSuite('test/features/underline/'),
+    literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/features/literalMidWordAsterisks/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -196,8 +197,8 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
-  /** test emojis support **/
-  describe('emojis support', function () {
+  /** test underline support **/
+  describe('underline support', function () {
     var converter,
         suite = underlineSuite;
     for (var i = 0; i < suite.length; ++i) {
@@ -206,6 +207,16 @@ describe('makeHtml() features testsuite', function () {
       } else {
         converter = new showdown.Converter({underline: true});
       }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  /** test literalMidWordAsterisks option **/
+  describe('literalMidWordAsterisks option', function () {
+    var converter,
+        suite = literalMidWordAsterisksSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({literalMidWordAsterisks: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

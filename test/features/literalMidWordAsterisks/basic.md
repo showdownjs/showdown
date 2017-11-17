@@ -4,6 +4,16 @@ this is a sentence**with**two mid asterisks
 
 this is a sentence***with***three mid asterisks
 
+this is double*asterisk*mid word with another**asterisk**word
+
+this is double**asterisk**mid word with another**asterisk**word
+
+this is double***asterisk***mid word with another***asterisk***word
+
+this is double*asterisk**mid word with another***asterisk*word
+
+this is double**asterisk*mid word with another***asterisk**word
+
 this is a sentence with just*one asterisk
 
 this is a sentence with just**one asterisk

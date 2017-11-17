@@ -13,6 +13,7 @@ var bootstrap = require('../bootstrap.js'),
     rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/features/rawPrefixHeaderId/'),
     emojisSuite = bootstrap.getTestSuite('test/features/emojis/'),
     underlineSuite = bootstrap.getTestSuite('test/features/underline/'),
+    literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/features/literalMidWordUnderscores/'),
     literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/features/literalMidWordAsterisks/');
 
 describe('makeHtml() features testsuite', function () {
@@ -207,6 +208,16 @@ describe('makeHtml() features testsuite', function () {
       } else {
         converter = new showdown.Converter({underline: true});
       }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  /** test literalMidWordUnderscores option **/
+  describe('literalMidWordUnderscores option', function () {
+    var converter,
+        suite = literalMidWordUnderscoresSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({literalMidWordUnderscores: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

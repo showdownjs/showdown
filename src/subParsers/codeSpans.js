@@ -37,7 +37,9 @@ showdown.subParser('codeSpans', function (text, options, globals) {
       c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
       c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
       c = showdown.subParser('encodeCode')(c, options, globals);
-      return m1 + '<code>' + c + '</code>';
+      c = m1 + '<code>' + c + '</code>';
+      c = showdown.subParser('hashHTMLSpans')(c, options, globals);
+      return c;
     }
   );
 

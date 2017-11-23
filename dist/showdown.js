@@ -1,4 +1,4 @@
-;/*! showdown v 1.8.2 - 17-11-2017 */
+;/*! showdown v 1.8.2 - 23-11-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -2878,7 +2878,9 @@ showdown.subParser('codeSpans', function (text, options, globals) {
       c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
       c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
       c = showdown.subParser('encodeCode')(c, options, globals);
-      return m1 + '<code>' + c + '</code>';
+      c = m1 + '<code>' + c + '</code>';
+      c = showdown.subParser('hashHTMLSpans')(c, options, globals);
+      return c;
     }
   );
 
@@ -3303,6 +3305,7 @@ showdown.subParser('unhashHTMLSpans', function (text, options, globals) {
       var num = RegExp.$1;
       repText = repText.replace('¨C' + num + 'C', globals.gHtmlSpans[num]);
       if (limit === 10) {
+        console.error('maximum nesting of 10 spans reached!!!');
         break;
       }
       ++limit;

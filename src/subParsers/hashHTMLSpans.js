@@ -51,6 +51,7 @@ showdown.subParser('unhashHTMLSpans', function (text, options, globals) {
       var num = RegExp.$1;
       repText = repText.replace('¨C' + num + 'C', globals.gHtmlSpans[num]);
       if (limit === 10) {
+        console.error('maximum nesting of 10 spans reached!!!');
         break;
       }
       ++limit;

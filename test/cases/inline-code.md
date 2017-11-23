@@ -10,3 +10,5 @@ A backtick-delimited string in a code span: `` `foo` ``
 Please don't use any `<blink>` tags.
 
 `&#8212;` is the decimal-encoded equivalent of `&mdash;`.
+
+this `inline **code** has ___magic___` chars

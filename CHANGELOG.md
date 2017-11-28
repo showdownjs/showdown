@@ -1,3 +1,15 @@
+<a name="1.8.3"></a>
+## [1.8.3](https://github.com/showdownjs/showdown/compare/1.8.2...1.8.3) (2017-11-28)
+
+
+### Bug Fixes
+
+* **literalMidWordAsterisks:** no longer treats colon as alphanumeric char ([21194c8](https://github.com/showdownjs/showdown/commit/21194c8)), closes [#461](https://github.com/showdownjs/showdown/issues/461)
+* **spanGamut:** code spans are hashed after parsing ([f4f63c5](https://github.com/showdownjs/showdown/commit/f4f63c5)), closes [#464](https://github.com/showdownjs/showdown/issues/464)
+* **tables:** pipe character in code spans no longer breaks table ([0c933a0](https://github.com/showdownjs/showdown/commit/0c933a0)), closes [#465](https://github.com/showdownjs/showdown/issues/465)
+
+
+
 <a name="1.8.2"></a>
 ## [1.8.2](https://github.com/showdownjs/showdown/compare/1.8.1...1.8.2) (2017-11-11)
 

@@ -15,17 +15,7 @@ cache:
     - node_modules
 
 # scripts
-script:
-  - >
-    if [ "$TRAVIS_NODE_VERSION" == "0.10" -o "$TRAVIS_NODE_VERSION" == "0.12" ]; then
-    printf
-    "\n\n----------------------------------------\n
-    \e[35m----- Running tests in LEGACY mode -----\e[0m\n
-    ----------------------------------------\n\n\n"
-    && grunt test-old; else
-    echo "Running normal tests"
-    && grunt test;
-    fi
+script: grunt test
 
 # hooks
 notifications:

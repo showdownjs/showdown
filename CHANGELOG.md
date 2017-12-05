@@ -1,3 +1,13 @@
+<a name="1.8.4"></a>
+## [1.8.4](https://github.com/showdownjs/showdown/compare/1.8.3...1.8.4) (2017-12-05)
+
+
+### Bug Fixes
+
+* **tables:** raw html inside code tags in tables no longer breaks tables ([4ef4c5e](https://github.com/showdownjs/showdown/commit/4ef4c5e)), closes [#471](https://github.com/showdownjs/showdown/issues/471)
+
+
+
 <a name="1.8.3"></a>
 ## [1.8.3](https://github.com/showdownjs/showdown/compare/1.8.2...1.8.3) (2017-11-28)
 

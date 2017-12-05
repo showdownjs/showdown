@@ -1,4 +1,4 @@
-;/*! showdown v 1.8.3 - 28-11-2017 */
+;/*! showdown v 1.8.3 - 05-12-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -3812,7 +3812,7 @@ showdown.subParser('lists', function (text, options, globals) {
             style = styleStartNumber(list, listType);
         if (pos !== -1) {
           // slice
-          result += '\n<' + listType + style + '>\n' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
+          result += '\n\n<' + listType + style + '>\n' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
 
           // invert counterType and listType
           listType = (listType === 'ul') ? 'ol' : 'ul';
@@ -3821,12 +3821,12 @@ showdown.subParser('lists', function (text, options, globals) {
           //recurse
           parseCL(txt.slice(pos));
         } else {
-          result += '\n<' + listType + style + '>\n' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
+          result += '\n\n<' + listType + style + '>\n' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
         }
       })(list);
     } else {
       var style = styleStartNumber(list, listType);
-      result = '\n<' + listType + style + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
+      result = '\n\n<' + listType + style + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
     }
 
     return result;
@@ -4100,9 +4100,9 @@ showdown.subParser('tables', function (text, options, globals) {
     return text;
   }
 
-  var tableRgx       = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|<ol|<ul|¨0)/gm,
+  var tableRgx       = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|¨0)/gm,
     //singeColTblRgx = /^ {0,3}\|.+\|\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n(?: {0,3}\|.+\|\n)+(?:\n\n|¨0)/gm;
-      singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|<ol|<ul|¨0)/gm;
+      singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
 
   function parseStyles (sLine) {
     if (/^:[ \t]*--*$/.test(sLine)) {
@@ -4119,7 +4119,7 @@ showdown.subParser('tables', function (text, options, globals) {
   function parseHeaders (header, style) {
     var id = '';
     header = header.trim();
-    // support both tablesHeaderId and tableHeaderId due to error in documention so we don't break backwards compatibility
+    // support both tablesHeaderId and tableHeaderId due to error in documentation so we don't break backwards compatibility
     if (options.tablesHeaderId || options.tableHeaderId) {
       id = ' id="' + header.replace(/ /g, '_').toLowerCase() + '"';
     }
@@ -4220,23 +4220,10 @@ showdown.subParser('tables', function (text, options, globals) {
     return buildTable(headers, cells);
   }
 
-  function hackFixTableFollowedByList (rawTable) {
-    var lastChars = rawTable.slice(-3);
-    if (lastChars === '<ol' || lastChars === '<ul') {
-      rawTable = rawTable.slice(0, -3) + '\n\n' + rawTable.slice(-3);
-    }
-    return rawTable;
-  }
-
   text = globals.converter._dispatch('tables.before', text, options, globals);
 
   // find escaped pipe characters
   text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
-
-  // hackfix issue #443. Due to lists only having a linebreak before them, we need to manually insert a linebreak to prevent
-  // tables not being parsed when followed by a list
-  text = text.replace(tableRgx, hackFixTableFollowedByList);
-  text = text.replace(singeColTblRgx, hackFixTableFollowedByList);
 
   // parse multi column tables
   text = text.replace(tableRgx, parseTable);

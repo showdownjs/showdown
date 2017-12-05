@@ -1,4 +1,4 @@
-;/*! showdown v 1.8.3 - 28-11-2017 */
+;/*! showdown v 1.8.3 - 05-12-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -184,6 +184,7 @@ function allOptionsOn () {
 
 // load dependencies
 if (typeof document === 'undefined' && typeof window === 'undefined') {
+  // JSDOM - acts as polyfill for window and document objects
   var jsdom = require('jsdom').jsdom,
       jsdomObj = jsdom('', {}),
       window = jsdomObj.defaultView, // jshint ignore:line

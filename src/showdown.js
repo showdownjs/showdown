@@ -4,6 +4,7 @@
 
 // load dependencies
 if (typeof document === 'undefined' && typeof window === 'undefined') {
+  // JSDOM - acts as polyfill for window and document objects
   var jsdom = require('jsdom').jsdom,
       jsdomObj = jsdom('', {}),
       window = jsdomObj.defaultView, // jshint ignore:line

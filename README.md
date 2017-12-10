@@ -360,8 +360,15 @@ var defaultOptions = showdown.getDefaultOptions();
  * **underline**: (boolean) [default false] ***EXPERIMENTAL FEATURE*** Enable support for underline.
    Syntax is **double** or **triple** **underscores** ex: `__underlined word__`. With this option enabled, underscores are no longer parses into `<em>` and `<strong>`.
 
+ * **completeHTMLDocument**: (boolean) [default false] Outputs a complete html document,
+   including `<html>`, `<head>` and `<body>` tags' instead of an HTML fragment. (since v.1.8.5)
+
+ * **metadata**: (boolean) [default false] Enable support for document metadata (defined at the top of the document
+   between `«««` and `»»»` or between `---` and `---`).  (since v.1.8.5)
+
 **NOTE**: Please note that until **version 1.6.0**, all of these options are ***DISABLED*** by default in the cli tool.
- 
+
+
 ## Flavors
 
 You can also use flavors or presets to set the correct options automatically, so that showdown behaves like popular markdown flavors.

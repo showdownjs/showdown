@@ -14,7 +14,9 @@ var bootstrap = require('../bootstrap.js'),
     emojisSuite = bootstrap.getTestSuite('test/features/emojis/'),
     underlineSuite = bootstrap.getTestSuite('test/features/underline/'),
     literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/features/literalMidWordUnderscores/'),
-    literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/features/literalMidWordAsterisks/');
+    literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/features/literalMidWordAsterisks/'),
+    completeHTMLOutputSuite = bootstrap.getTestSuite('test/features/completeHTMLOutput/'),
+    metadataSuite = bootstrap.getTestSuite('test/features/metadata/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -228,6 +230,37 @@ describe('makeHtml() features testsuite', function () {
         suite = literalMidWordAsterisksSuite;
     for (var i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({literalMidWordAsterisks: true});
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+
+  /** test completeHTMLDocument option **/
+  describe('completeHTMLDocument option', function () {
+    var converter,
+        suite = completeHTMLOutputSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({completeHTMLDocument: true});
+
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  /** test metadata option **/
+  describe('metadata option', function () {
+    var converter,
+        suite = metadataSuite;
+
+    for (var i = 0; i < suite.length; ++i) {
+      if (suite[i].name === 'embeded-in-output' ||
+        suite[i].name === 'embeded-two-consecutive-metadata-blocks' ||
+        suite[i].name === 'embeded-two-consecutive-metadata-blocks-different-symbols') {
+        converter = new showdown.Converter({metadata: true, completeHTMLDocument: true});
+      } else if (suite[i].name === 'ignore-metadata') {
+        converter = new showdown.Converter({metadata: false});
+      } else {
+        converter = new showdown.Converter({metadata: true});
+      }
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

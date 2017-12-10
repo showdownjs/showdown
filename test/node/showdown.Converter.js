@@ -27,6 +27,20 @@ describe('showdown.Converter', function () {
     });
   });
 
+  describe('metadata methods', function () {
+    var converter = new showdown.Converter();
+
+    it('_setMetadataPair() should set foo to bar', function () {
+      converter._setMetadataPair('foo', 'bar');
+      converter.getMetadata().should.eql({foo: 'bar'});
+    });
+
+    it('_setMetadata should set metadata to {baz: bazinga}', function () {
+      converter._setMetadataRaw('{baz: bazinga}');
+      converter.getMetadata(true).should.eql('{baz: bazinga}');
+    });
+  });
+
   describe('converter.setFlavor()', function () {
 
     /**

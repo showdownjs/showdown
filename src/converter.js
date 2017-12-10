@@ -43,7 +43,17 @@ showdown.Converter = function (converterOptions) {
       /**
        * The flavor set in this converter
        */
-      setConvFlavor = setFlavor;
+      setConvFlavor = setFlavor,
+
+    /**
+     * Metadata of the document
+     * @type {{parsed: {}, raw: string, format: string}}
+     */
+      metadata = {
+        parsed: {},
+        raw: '',
+        format: ''
+      };
 
   _constructor();
 
@@ -255,7 +265,12 @@ showdown.Converter = function (converterOptions) {
       langExtensions:  langExtensions,
       outputModifiers: outputModifiers,
       converter:       this,
-      ghCodeBlocks:    []
+      ghCodeBlocks:    [],
+      metadata: {
+        parsed: {},
+        raw: '',
+        format: ''
+      }
     };
 
     // This lets us use ¨ trema as an escape char to avoid md5 hashes
@@ -299,6 +314,7 @@ showdown.Converter = function (converterOptions) {
     });
 
     // run the sub parsers
+    text = showdown.subParser('metadata')(text, options, globals);
     text = showdown.subParser('hashPreCodeTags')(text, options, globals);
     text = showdown.subParser('githubCodeBlocks')(text, options, globals);
     text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
@@ -315,13 +331,15 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/¨T/g, '¨');
 
     // render a complete html document instead of a partial if the option is enabled
-    text = showdown.subParser('completeHTMLOutput')(text, options, globals);
+    text = showdown.subParser('completeHTMLDocument')(text, options, globals);
 
     // Run output modifiers
     showdown.helper.forEach(outputModifiers, function (ext) {
       text = showdown.subParser('runExtension')(ext, text, options, globals);
     });
 
+    // update metadata
+    metadata = globals.metadata;
     return text;
   };
 
@@ -428,5 +446,51 @@ showdown.Converter = function (converterOptions) {
       language: langExtensions,
       output: outputModifiers
     };
+  };
+
+  /**
+   * Get the metadata of the previously parsed document
+   * @param raw
+   * @returns {string|{}}
+   */
+  this.getMetadata = function (raw) {
+    if (raw) {
+      return metadata.raw;
+    } else {
+      return metadata.parsed;
+    }
+  };
+
+  /**
+   * Get the metadata format of the previously parsed document
+   * @returns {string}
+   */
+  this.getMetadataFormat = function () {
+    return metadata.format;
+  };
+
+  /**
+   * Private: set a single key, value metadata pair
+   * @param {string} key
+   * @param {string} value
+   */
+  this._setMetadataPair = function (key, value) {
+    metadata.parsed[key] = value;
+  };
+
+  /**
+   * Private: set metadata format
+   * @param {string} format
+   */
+  this._setMetadataFormat = function (format) {
+    metadata.format = format;
+  };
+
+  /**
+   * Private: set metadata raw text
+   * @param {string} raw
+   */
+  this._setMetadataRaw = function (raw) {
+    metadata.raw = raw;
   };
 };

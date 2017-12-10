@@ -153,9 +153,14 @@ function getDefaultOpts (simple) {
       description: 'Enable support for underline. Syntax is double or triple underscores: `__underline word__`. With this option enabled, underscores no longer parses into `<em>` and `<strong>`',
       type: 'boolean'
     },
-    completeHTMLOutput: {
+    completeHTMLDocument: {
       defaultValue: false,
       description: 'Outputs a complete html document, including `<html>`, `<head>` and `<body>` tags',
+      type: 'boolean'
+    },
+    metadata: {
+      defaultValue: false,
+      description: 'Enable support for document metadata (defined at the top of the document between `«««` and `»»»` or between `---` and `---`).',
       type: 'boolean'
     }
   };
@@ -2172,7 +2177,17 @@ showdown.Converter = function (converterOptions) {
       /**
        * The flavor set in this converter
        */
-      setConvFlavor = setFlavor;
+      setConvFlavor = setFlavor,
+
+    /**
+     * Metadata of the document
+     * @type {{parsed: {}, raw: string, format: string}}
+     */
+      metadata = {
+        parsed: {},
+        raw: '',
+        format: ''
+      };
 
   _constructor();
 
@@ -2384,7 +2399,12 @@ showdown.Converter = function (converterOptions) {
       langExtensions:  langExtensions,
       outputModifiers: outputModifiers,
       converter:       this,
-      ghCodeBlocks:    []
+      ghCodeBlocks:    [],
+      metadata: {
+        parsed: {},
+        raw: '',
+        format: ''
+      }
     };
 
     // This lets us use ¨ trema as an escape char to avoid md5 hashes
@@ -2428,6 +2448,7 @@ showdown.Converter = function (converterOptions) {
     });
 
     // run the sub parsers
+    text = showdown.subParser('metadata')(text, options, globals);
     text = showdown.subParser('hashPreCodeTags')(text, options, globals);
     text = showdown.subParser('githubCodeBlocks')(text, options, globals);
     text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
@@ -2444,13 +2465,15 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/¨T/g, '¨');
 
     // render a complete html document instead of a partial if the option is enabled
-    text = showdown.subParser('completeHTMLOutput')(text, options, globals);
+    text = showdown.subParser('completeHTMLDocument')(text, options, globals);
 
     // Run output modifiers
     showdown.helper.forEach(outputModifiers, function (ext) {
       text = showdown.subParser('runExtension')(ext, text, options, globals);
     });
 
+    // update metadata
+    metadata = globals.metadata;
     return text;
   };
 
@@ -2557,6 +2580,52 @@ showdown.Converter = function (converterOptions) {
       language: langExtensions,
       output: outputModifiers
     };
+  };
+
+  /**
+   * Get the metadata of the previously parsed document
+   * @param raw
+   * @returns {string|{}}
+   */
+  this.getMetadata = function (raw) {
+    if (raw) {
+      return metadata.raw;
+    } else {
+      return metadata.parsed;
+    }
+  };
+
+  /**
+   * Get the metadata format of the previously parsed document
+   * @returns {string}
+   */
+  this.getMetadataFormat = function () {
+    return metadata.format;
+  };
+
+  /**
+   * Private: set a single key, value metadata pair
+   * @param {string} key
+   * @param {string} value
+   */
+  this._setMetadataPair = function (key, value) {
+    metadata.parsed[key] = value;
+  };
+
+  /**
+   * Private: set metadata format
+   * @param {string} format
+   */
+  this._setMetadataFormat = function (format) {
+    metadata.format = format;
+  };
+
+  /**
+   * Private: set metadata raw text
+   * @param {string} raw
+   */
+  this._setMetadataRaw = function (raw) {
+    metadata.raw = raw;
   };
 };
 
@@ -2899,18 +2968,63 @@ showdown.subParser('codeSpans', function (text, options, globals) {
 /**
  * Turn Markdown link shortcuts into XHTML <a> tags.
  */
-showdown.subParser('completeHTMLOutput', function (text, options, globals) {
+showdown.subParser('completeHTMLDocument', function (text, options, globals) {
   'use strict';
 
-  if (!options.completeHTMLOutput) {
+  if (!options.completeHTMLDocument) {
     return text;
   }
 
-  text = globals.converter._dispatch('completeHTMLOutput.before', text, options, globals);
+  text = globals.converter._dispatch('completeHTMLDocument.before', text, options, globals);
 
-  text = '<html>\n<head>\n<meta charset="UTF-8">\n</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
+  var doctype = 'html',
+      doctypeParsed = '<!DOCTYPE HTML>\n',
+      title = '',
+      charset = '<meta charset="utf-8">\n',
+      lang = '',
+      metadata = '';
 
-  text = globals.converter._dispatch('completeHTMLOutput.after', text, options, globals);
+  if (typeof globals.metadata.parsed.doctype !== 'undefined') {
+    doctypeParsed = '<!DOCTYPE ' +  globals.metadata.parsed.doctype + '>\n';
+    doctype = globals.metadata.parsed.doctype.toString().toLowerCase();
+    if (doctype === 'html' || doctype === 'html5') {
+      charset = '<meta charset="utf-8">';
+    }
+  }
+
+  for (var meta in globals.metadata.parsed) {
+    if (globals.metadata.parsed.hasOwnProperty(meta)) {
+      switch (meta.toLowerCase()) {
+        case 'doctype':
+          break;
+
+        case 'title':
+          title = '<title>' +  globals.metadata.parsed.title + '</title>\n';
+          break;
+
+        case 'charset':
+          if (doctype === 'html' || doctype === 'html5') {
+            charset = '<meta charset="' + globals.metadata.parsed.charset + '">\n';
+          } else {
+            charset = '<meta name="charset" content="' + globals.metadata.parsed.charset + '">\n';
+          }
+          break;
+
+        case 'language':
+        case 'lang':
+          lang = ' lang="' + globals.metadata.parsed[meta] + '"';
+          metadata += '<meta name="' + meta + '" content="' + globals.metadata.parsed[meta] + '">\n';
+          break;
+
+        default:
+          metadata += '<meta name="' + meta + '" content="' + globals.metadata.parsed[meta] + '">\n';
+      }
+    }
+  }
+
+  text = doctypeParsed + '<html' + lang + '>\n<head>\n' + title + charset + metadata + '</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
+
+  text = globals.converter._dispatch('completeHTMLDocument.after', text, options, globals);
   return text;
 });
 
@@ -3883,6 +3997,56 @@ showdown.subParser('lists', function (text, options, globals) {
   // strip sentinel
   text = text.replace(/¨0/, '');
   text = globals.converter._dispatch('lists.after', text, options, globals);
+  return text;
+});
+
+/**
+ * Parse metadata at the top of the document
+ */
+showdown.subParser('metadata', function (text, options, globals) {
+  'use strict';
+
+  if (!options.metadata) {
+    return text;
+  }
+
+  text = globals.converter._dispatch('metadata.before', text, options, globals);
+
+  function parseMetadataContents (content) {
+    // raw is raw so it's not changed in any way
+    globals.metadata.raw = content;
+
+    // escape chars forbidden in html attributes
+    // double quotes
+    content = content
+      // ampersand first
+      .replace(/&/g, '&amp;')
+      // double quotes
+      .replace(/"/g, '&quot;');
+
+    content = content.replace(/\n {4}/g, ' ');
+    content.replace(/^([\S ]+): +([\s\S]+?)$/gm, function (wm, key, value) {
+      globals.metadata.parsed[key] = value;
+      return '';
+    });
+  }
+
+  text = text.replace(/^\s*«««+(\S*?)\n([\s\S]+?)\n»»»+\n/, function (wholematch, format, content) {
+    parseMetadataContents(content);
+    return '¨M';
+  });
+
+  text = text.replace(/^\s*---+(\S*?)\n([\s\S]+?)\n---+\n/, function (wholematch, format, content) {
+    if (format) {
+      globals.metadata.format = format;
+    }
+    parseMetadataContents(content);
+    return '¨M';
+  });
+
+  text = text.replace(/¨M/g, '');
+
+  text = globals.converter._dispatch('metadata.after', text, options, globals);
   return text;
 });
 

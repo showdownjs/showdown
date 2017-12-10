@@ -59,4 +59,41 @@ describe('showdown.Converter', function () {
       html.should.equal(expectedHtml);
     });
   });
+
+  describe('makeHtml() with option metadata', function () {
+    var converter = new showdown.Converter(),
+        text1 =
+          '---SIMPLE\n' +
+          'foo: bar\n' +
+          'baz: bazinga\n' +
+          '---\n',
+      text2 =
+        '---TIVIE\n' +
+        'a: b\n' +
+        'c: 123\n' +
+        '---\n';
+
+    it('should correctly set metadata', function () {
+      converter.setOption('metadata', true);
+
+      var expectedHtml = '',
+          expectedObj = {foo: 'bar', baz: 'bazinga'},
+          expectedRaw = 'foo: bar\nbaz: bazinga',
+          expectedFormat = 'SIMPLE';
+      converter.makeHtml(text1).should.equal(expectedHtml);
+      converter.getMetadata().should.eql(expectedObj);
+      converter.getMetadata(true).should.equal(expectedRaw);
+      converter.getMetadataFormat().should.equal(expectedFormat);
+    });
+
+    it('consecutive calls should reset metadata', function () {
+      converter.makeHtml(text2);
+      var expectedObj = {a: 'b', c: '123'},
+          expectedRaw = 'a: b\nc: 123',
+          expectedFormat = 'TIVIE';
+      converter.getMetadata().should.eql(expectedObj);
+      converter.getMetadata(true).should.equal(expectedRaw);
+      converter.getMetadataFormat().should.equal(expectedFormat);
+    });
+  });
 });

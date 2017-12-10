@@ -1,4 +1,4 @@
-;/*! showdown v 1.8.4 - 09-12-2017 */
+;/*! showdown v 1.8.4 - 10-12-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -151,6 +151,11 @@ function getDefaultOpts (simple) {
     underline: {
       defaultValue: false,
       description: 'Enable support for underline. Syntax is double or triple underscores: `__underline word__`. With this option enabled, underscores no longer parses into `<em>` and `<strong>`',
+      type: 'boolean'
+    },
+    completeHTMLOutput: {
+      defaultValue: false,
+      description: 'Outputs a complete html document, including `<html>`, `<head>` and `<body>` tags',
       type: 'boolean'
     }
   };
@@ -2438,6 +2443,9 @@ showdown.Converter = function (converterOptions) {
     // attacklab: Restore tremas
     text = text.replace(/¨T/g, '¨');
 
+    // render a complete html document instead of a partial if the option is enabled
+    text = showdown.subParser('completeHTMLOutput')(text, options, globals);
+
     // Run output modifiers
     showdown.helper.forEach(outputModifiers, function (ext) {
       text = showdown.subParser('runExtension')(ext, text, options, globals);
@@ -2885,6 +2893,24 @@ showdown.subParser('codeSpans', function (text, options, globals) {
   );
 
   text = globals.converter._dispatch('codeSpans.after', text, options, globals);
+  return text;
+});
+
+/**
+ * Turn Markdown link shortcuts into XHTML <a> tags.
+ */
+showdown.subParser('completeHTMLOutput', function (text, options, globals) {
+  'use strict';
+
+  if (!options.completeHTMLOutput) {
+    return text;
+  }
+
+  text = globals.converter._dispatch('completeHTMLOutput.before', text, options, globals);
+
+  text = '<html>\n<head>\n<meta charset="UTF-8">\n</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
+
+  text = globals.converter._dispatch('completeHTMLOutput.after', text, options, globals);
   return text;
 });
 

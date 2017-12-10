@@ -314,6 +314,9 @@ showdown.Converter = function (converterOptions) {
     // attacklab: Restore tremas
     text = text.replace(/¨T/g, '¨');
 
+    // render a complete html document instead of a partial if the option is enabled
+    text = showdown.subParser('completeHTMLOutput')(text, options, globals);
+
     // Run output modifiers
     showdown.helper.forEach(outputModifiers, function (ext) {
       text = showdown.subParser('runExtension')(ext, text, options, globals);

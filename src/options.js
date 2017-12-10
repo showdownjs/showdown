@@ -150,6 +150,11 @@ function getDefaultOpts (simple) {
       defaultValue: false,
       description: 'Enable support for underline. Syntax is double or triple underscores: `__underline word__`. With this option enabled, underscores no longer parses into `<em>` and `<strong>`',
       type: 'boolean'
+    },
+    completeHTMLOutput: {
+      defaultValue: false,
+      description: 'Outputs a complete html document, including `<html>`, `<head>` and `<body>` tags',
+      type: 'boolean'
     }
   };
   if (simple === false) {

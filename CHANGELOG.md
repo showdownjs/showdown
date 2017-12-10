@@ -1,3 +1,14 @@
+<a name="1.8.5"></a>
+# [1.8.5](https://github.com/showdownjs/showdown/compare/1.8.4...1.8.5) (2017-12-10)
+
+
+### Features
+
+* **completeHTMLDocument:** add option to output a complete HTML document ([a8427c9](https://github.com/showdownjs/showdown/commit/a8427c9))
+* **metadata:** add support for embedded metadata ([63d949f](https://github.com/showdownjs/showdown/commit/63d949f)), closes [#260](https://github.com/showdownjs/showdown/issues/260)
+
+
+
 <a name="1.8.4"></a>
 ## [1.8.4](https://github.com/showdownjs/showdown/compare/1.8.3...1.8.4) (2017-12-05)
 

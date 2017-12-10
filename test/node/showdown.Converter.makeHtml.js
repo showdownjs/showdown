@@ -67,11 +67,11 @@ describe('showdown.Converter', function () {
           'foo: bar\n' +
           'baz: bazinga\n' +
           '---\n',
-      text2 =
-        '---TIVIE\n' +
-        'a: b\n' +
-        'c: 123\n' +
-        '---\n';
+        text2 =
+          '---TIVIE\n' +
+          'a: b\n' +
+          'c: 123\n' +
+          '---\n';
 
     it('should correctly set metadata', function () {
       converter.setOption('metadata', true);

@@ -1,117 +1,104 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
-    <title>Showdown by showdownjs</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
-    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.5.0/showdown.min.js"></script>
-  </head>
-  <body>
-    <section class="page-header">
-      <div class="project-name"><img src="images/logo.png" alt="Showdown"></div>
-      <h2 class="project-tagline">An extensible Markdown to HTML converter written in Javascript</h2>
-      <a href="https://github.com/showdownjs/showdown" class="btn">View on GitHub</a>
-      <a href="https://github.com/showdownjs/showdown/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/showdownjs/showdown/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
+    <title>Showdownjs - A markdown to HTML converter</title>
 
-    <section class="main-content">
-<p>Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber. Showdown can be used client side (in the browser) or server side (with NodeJs). Check a live <a href="http://showdownjs.github.io/demo/">demo here</a></p>
+    <link href="https://fonts.googleapis.com/css?family=Anonymous+Pro" rel="stylesheet">
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
+          integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
+          crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/darcula.min.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="cowboys-bg">
 
-<h1>
-<a id="who-uses-showdown" class="anchor" href="#who-uses-showdown" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Who uses Showdown</h1>
+<nav id="mainNavigation" class="navbar sticky-top navbar-expand-lg">
+    <div class="container">
+        <span class="navbar-brand showdown-brand"><span>Show</span><span class="text-secondary">down</span></span>
+        <button class="navbar-toggler"
+                type="button"
+                data-toggle="collapse"
+                data-target="#mainNavigationLinks"
+                aria-controls="mainNavigationLinks"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <i class="fa fa-bars" aria-hidden="true"></i>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="mainNavigationLinks">
+            <div class="navbar-nav">
+                <a href="#!/home" data-href="html/main.html" class="nav-item nav-link internal-navigation active">Home</a>
+                <a href="#!/releases" data-href="html/releases.html" class="nav-item nav-link internal-navigation">Releases</a>
+                <a href="#!/documentation" data-href="html/documentation.html" class="nav-item nav-link internal-navigation">Documentation</a>
+                <!--<a href="#!/news" data-href="html/news.html" class="nav-item nav-link internal-navigation">News</a>-->
+            </div>
+        </div>
+    </div>
+</nav>
 
-<ul>
-<li><a href="https://github.com/GoogleCloudPlatform">GoogleCloudPlatform</a></li>
-<li><a href="https://ghost.org/">Ghost</a></li>
-<li><a href="https://www.meteor.com/">Meteor</a></li>
-<li>
-<a href="http://stackexchange.com/">Stackexchange</a> - forked as <a href="https://code.google.com/p/pagedown/">PageDown</a>
-</li>
-<li><a href="https://github.com/Vertafore/docular">docular</a></li>
-<li><a href="https://www.npmjs.com/browse/depended/showdown">and some others...</a></li>
-</ul>
+<header id="call-to-action" class="jumbotron jumbotron-fluid">
+    <div class="container">
+        <div class="positioner">
+            <h2 class="display-2 showdown-brand"><span>Show</span><span class="text-secondary">down</span></h2>
+            <p class="lead">A Markdown to HTML converter written in Javascript!</p>
+            <div>
+                <a id="lt-version-lnk" class="btn btn-primary btn-lg download-button" href="https://github.com/showdownjs/showdown/releases/latest" role="button">Download <em id="lt-version-num"></em></a><br>
+                <span class="download-links">
+                <a href="#">Release notes</a> -
+                <a href="https://github.com/showdownjs/showdown" target="_blank">GitHub</a> -
+                <a href="https://www.npmjs.com/package/showdown" target="_blank">NPM</a> -
+                <a href="https://cdnjs.com/libraries/showdown" target="_blank">CDNJS</a>
+            </span>
+            </div>
+        </div>
+    </div>
+</header>
 
-<h1>
-<a id="get-it" class="anchor" href="#get-it" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Get it...</h1>
-
-<ul>
-<li>
-<strong>Download tarball:</strong> download the latest release tarball directly from <a href="https://github.com/showdownjs/showdown/releases">releases</a>
-</li>
-<li>
-<strong>CDN:</strong>
-
-<ul>
-<li>rawgit: <code>https://cdn.rawgit.com/showdownjs/showdown/&lt;version tag&gt;/dist/showdown.min.js</code>
-</li>
-<li>cdnjs: <code>https://cdnjs.cloudflare.com/ajax/libs/showdown/&lt;version tag&gt;/showdown.min.js</code>
-</li>
-</ul>
-</li>
-<li>
-<strong>Bower:</strong> <code>bower install showdown</code>
-</li>
-<li>
-<strong>npm:</strong> <code>npm install showdown</code>
-</li>
-<li>
-<strong>NuGet:</strong> <code>PM&gt; Install-Package showdownjs</code> - <a href="https://www.nuget.org/packages/showdownjs/">NuGet package here</a>
-</li>
-</ul>
-
-<h1>
-<a id="use-it" class="anchor" href="#use-it" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Use it...</h1>
-
-<div class="highlight highlight-source-js"><pre><span class="pl-c">//node</span>
-<span class="pl-k">var</span> showdown <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>showdown<span class="pl-pds">'</span></span>);
-<span class="pl-k">var</span> converter <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">showdown.Converter</span>();
-<span class="pl-k">var</span> htmlOutput <span class="pl-k">=</span> <span class="pl-smi">converter</span>.<span class="pl-en">makeHtml</span>(<span class="pl-s"><span class="pl-pds">'</span>*Hello* __World__<span class="pl-pds">'</span></span>);</pre></div>
-
-<p>Check our <a href="https://github.com/showdownjs/showdown/wiki">wiki pages</a> for a more in-depth documentation, such as <a href="https://github.com/showdownjs/showdown/wiki/Showdown's-Markdown-syntax">syntax support</a>, <a href="https://github.com/showdownjs/showdown/wiki/Tutorial:-Markdown-editor-using-Showdown">examples</a>, <a href="https://github.com/showdownjs/showdown/wiki/extensions">extensions</a>, etc...</p>
-
-<hr>
-
-<h1>
-<a id="changelog" class="anchor" href="#changelog" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md">Changelog</a>
-</h1>
-
-<div id="changelog-div"></div>
+<article id="page"></article>
 
 
-      <footer class="site-footer">
-        <span class="site-footer-owner"><a href="https://github.com/showdownjs/showdown">Showdown</a> is maintained by <a href="https://github.com/tivie">tivie</a>.</span>
-        <span class="site-powered-by">Powered by: <a href="https://www.jetbrains.com/webstorm/"><img src="images/logo_WebStorm.png" alt="webstorm"></a></span>
-        <span class="site-footer-credits">Full credit list <a href="https://github.com/showdownjs/showdown/blob/master/CREDITS.md">here</a>.</span>
-      </footer>
+<section id="donate" class="page-section blackboard">
+    <div class="container">
+        <h1 class="display-4">Donate</h1>
+        <p class="monospace">
+            As you know, <span class="showdown-brand">Show<span class="text-secondary">down</span></span> is a free library and it will remain free.<br>
+            However, maintaining and improving the library costs time and money.<br>
+            If you like our work and find our library useful,
+            please donate <a href="https://pledgie.com/campaigns/35166" rel="nofollow">through Pledgie</a>
+            or directly <a href="https://www.paypal.me/tiviesantos" rel="nofollow">through paypal</a>.<br>
+            Your contribution will be greatly appreciated and help us continue to develop this awesome library.
+        </p>
+    </div>
+</section>
 
-    </section>
+<footer id="footer" class="page-section blackboard">
+    <div class="container">
+        <nav class="links nav justify-content-center">
+            <a target="_blank" title="facebook" class="nav-link" href="https://www.facebook.com/showdownjs/"><i class="fa fa-fw fa-facebook-official" aria-hidden="true"></i></a>
+            <a target="_blank" title="twiiter" class="nav-link" href="https://twitter.com/showdownjs"><i class="fa fa-fw fa-twitter" aria-hidden="true"></i></a>
+            <a target="_blank" title="github" class="nav-link" href="https://github.com/showdownjs/showdown"><i class="fa fa-fw fa-github" aria-hidden="true"></i></a>
+            <a target="_blank" title="stackoverflow" class="nav-link" href="https://stackoverflow.com/questions/tagged/showdown"><i class="fa fa-fw fa-stack-overflow" aria-hidden="true"></i></a>
+        </nav>
+        <div class="copyright">
+            <span>Showdown is maintained by <a href="https://github.com/tivie">tivie</a>.</span><br>
+            <span>showdown © showdownjs 2017. All Rights Reserved</span>
+        </div>
+    </div>
+</footer>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.8.5/showdown.min.js" integrity="sha256-rnlCzq7mhN7HlGWkWJ539aucrpHWZOFa/9SqlQvKxjQ=" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.1.0/highlightjs-line-numbers.min.js"></script>
+<script src="js/app.js"></script>
 <script>
-function callAjax(url, callback){
-
-  var xmlhttp = new XMLHttpRequest();
-  xmlhttp.onreadystatechange = function() {
-    if (xmlhttp.readyState == 4 && xmlhttp.status == 200){
-      callback(xmlhttp.responseText);
-    }
-  };
-  xmlhttp.open("GET", url, true);
-  xmlhttp.send();
-}
-
-var conv = new showdown.Converter();
-conv.setFlavor('github');
-
-callAjax('http://raw.githubusercontent.com/showdownjs/showdown/master/CHANGELOG.md', function (data) {
-  if (typeof data === 'string' || data instanceof String) {
-      document.getElementById('changelog-div').innerHTML = conv.makeHtml(data);
-  }
-});
+  hljs.initHighlightingOnLoad();
+  hljs.initLineNumbersOnLoad();
 </script>
-  </body>
+</body>
 </html>

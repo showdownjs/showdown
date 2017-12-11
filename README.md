@@ -519,4 +519,3 @@ Showdown is powered by:<br/>
 [coding-rules]: https://github.com/showdownjs/code-style/blob/master/README.md
 [ng-commit-guide]: https://github.com/showdownjs/code-style/blob/master/README.md#commit-message-convention
 [boilerplate-repo]: https://github.com/showdownjs/extension-boilerplate
-

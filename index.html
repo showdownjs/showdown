@@ -21,7 +21,7 @@
     <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
     <meta name="theme-color" content="#ffffff">
 
-    <link href="https://fonts.googleapis.com/css?family=Anonymous+Pro" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Anonymous+Pro|Open+Sans" rel="stylesheet">
     <link rel="stylesheet"
           href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
           integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
@@ -47,11 +47,11 @@
         </button>
         <div class="collapse navbar-collapse justify-content-end" id="mainNavigationLinks">
             <div class="navbar-nav">
-                <a href="#!/home" data-href="html/main.html" class="nav-item nav-link internal-navigation active">Home</a>
-                <a href="#!/releases" data-href="html/releases.html" class="nav-item nav-link internal-navigation">Releases</a>
-                <a href="http://demo.showdownjs.com" data-href="html/releases.html" class="nav-item nav-link" target="_blank">Demo</a>
-                <a href="#!/documentation" data-href="html/documentation.html" class="nav-item nav-link internal-navigation">Documentation</a>
-                <a href="#!/blog" data-href="html/blog.html" class="nav-item nav-link internal-navigation">Blog</a>
+                <a data-navigo id="navlink-home" href="#!/home" class="nav-item nav-link internal-navigation active">Home</a>
+                <a data-navigo id="navlink-releases" href="#!/releases" class="nav-item nav-link internal-navigation">Releases</a>
+                <a data-navigo id="navlink-documentation" href="#!/documentation" class="nav-item nav-link internal-navigation">Documentation</a>
+                <a data-navigo id="navlink-blog" href="#!/blog" class="nav-item nav-link internal-navigation">Blog</a>
+                <a href="http://demo.showdownjs.com" class="nav-item nav-link" target="_blank">Demo</a>
             </div>
         </div>
     </div>
@@ -60,7 +60,7 @@
 <header id="call-to-action" class="jumbotron jumbotron-fluid">
     <div class="container">
         <div class="positioner">
-            <h2 class="display-2 showdown-brand"><span>Show</span><span class="text-secondary">down</span></h2>
+            <h1 class="display-2 showdown-brand"><span>Show</span><span class="text-secondary">down</span></h1>
             <p class="lead">A Markdown to HTML converter written in Javascript!</p>
             <div>
                 <a id="lt-version-lnk" class="btn btn-primary btn-lg download-button" href="https://github.com/showdownjs/showdown/releases/latest" role="button">Download <em id="lt-version-num"></em></a><br>
@@ -75,7 +75,7 @@
     </div>
 </header>
 
-<article id="page"></article>
+<main id="page"></main>
 
 
 <section id="donate" class="page-section blackboard">
@@ -107,12 +107,19 @@
     </div>
 </footer>
 
+<datalist id="page-params" style="display: none"></datalist>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/showdown/1.8.5/showdown.min.js" integrity="sha256-rnlCzq7mhN7HlGWkWJ539aucrpHWZOFa/9SqlQvKxjQ=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.3.0/mustache.min.js" integrity="sha256-iaqfO5ue0VbSGcEiQn+OeXxnxAMK2+QgHXIDA5bWtGI=" crossorigin="anonymous"></script>
 <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@1.5.4/src/loadingoverlay.min.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/gasparesganga-jquery-loading-overlay@1.5.4/extras/loadingoverlay_progress/loadingoverlay_progress.min.js"></script>-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlightjs-line-numbers.js/2.1.0/highlightjs-line-numbers.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+<script src="https://unpkg.com/navigo@6"></script>
 <script src="js/app.js"></script>
 <script>
   hljs.initHighlightingOnLoad();

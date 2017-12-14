@@ -1,0 +1,37 @@
+<section id="blog-post" class="page-section text-bg-light">
+    <div class="container">
+        <div id="blog-post-container"></div>
+    </div>
+</section>
+
+<template id="blog-article-tpl" style="display: none;">
+    <article class="blog-article">
+        <header><h2>{{metadata.title}}</h2></header>
+        <section class="authoring-info">
+            <p>
+                <time datetime="{{metadata.date}}">
+                    <i class="fa fa-calendar" aria-hidden="true"></i> {{metadata.date}}
+                </time>&nbsp;&nbsp;&nbsp;
+                <span class="author"><img src="{{metadata.author_avatar}}"> {{metadata.author}}</span>
+            </p>
+        </section>
+        {{#metadata.image}}
+        <figure><img src="{{metadata.image}}" class="img-fluid"></figure>
+        {{/metadata.image}}
+        <section class="content">
+            {{{post}}}
+        </section>
+    </article>
+</template>
+<script>
+(function () {
+  console.log('foo');
+  var canonical = $('#param-canonical').attr('value');
+  console.log($('#param-canonical'));
+  $.when(blogPosts.getPostByCanonical(canonical)).then(function(post) {
+    var article = Mustache.render($('#blog-article-tpl').html(), post);
+    $('#blog-post-container').html(article);
+    router.updatePageLinks();
+  });
+})();
+</script>

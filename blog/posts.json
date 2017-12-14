@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "canonical": "annoucement-showdown-2.0",
+    "url": "blog/annoucement-showdown-2.0.md",
+    "metadata": {
+      "title": "Annoucement: Showdown 2.0",
+      "author": "Estevão Soares dos Santos",
+      "author_avatar": "img/avatars/tivie.jpg",
+      "date": "2017-12-12",
+      "language": "en",
+      "image": "blog/img/2017.12.12.jpg",
+      "summary": "Showdown version 1.0.0 was released almost 3 years ago, back in May 2015. Since then, it has seen a lot of improvements, with a boost to performance and a significant number of features now included in the core of the library. However, do to backwards compatibility constrains, we are still supporting a lot of legacy features, that prevent us from moving the software forward.\n\nWith that in mind, **it is time to start thinking about Showdown version 2.0.** For the next major release of Showdown we have planned a range of **significant changes and additions**."
+    }
+  }
+]

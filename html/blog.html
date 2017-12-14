@@ -1,6 +1,36 @@
 <section id="documentation" class="page-section text-bg-light">
     <div class="container">
-        <h1>Blog</h1>
-        <p class="lead">Coming soon!!</p>
+        <div id="articles-wrapper">
+
+        </div>
     </div>
 </section>
+<template id="blog-list-article-tpl">
+    <article class="blog-article">
+        <header><h2>{{metadata.title}}</h2></header>
+        <section class="authoring-info">
+            <p>
+                <time datetime="{{metadata.date}}">
+                    <i class="fa fa-calendar" aria-hidden="true"></i> {{metadata.date}}
+                </time>&nbsp;&nbsp;&nbsp;
+                <span class="author"><img src="{{metadata.author_avatar}}"> {{metadata.author}}</span>
+            </p>
+        </section>
+        {{#metadata.image}}
+            <figure><img src="{{metadata.image}}" class="img-fluid"></figure>
+        {{/metadata.image}}
+        <section class="content">{{{metadata.summary}}}</section>
+        <div class="blog-read-more"><a href="#!/blog/{{canonical}}" data-navigo>Read more&nbsp;<i class="fa fa-chevron-right" aria-hidden="true"></i></a></div>
+    </article>
+</template>
+<script>
+  $.when(blogPosts.getList()).then(function(list) {
+    var articleWrapper = $('#articles-wrapper');
+    for (var i = 0; i < list.length; ++i) {
+      var article = Mustache.render($('#blog-list-article-tpl').html(), list[i]);
+      articleWrapper.append(article);
+    }
+    router.updatePageLinks();
+  });
+</script>
+

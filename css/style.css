@@ -1,4 +1,8 @@
 /** typography **/
+body {
+    font-family: 'Open Sans', sans-serif;
+}
+
 h1, h2, h3, h4, h5, h6 {
 
 }
@@ -7,7 +11,14 @@ h1, h2, h3, h4, h5, h6 {
     font-family: 'Anonymous Pro', monospace;
 }
 
-
+/** loading spinner **/
+.loadingoverlay {
+    background: url('../img/background-color.svg') no-repeat fixed center;
+    background-size: cover !important;
+}
+.loadingoverlay_fontawesome {
+    color: #584b4f;
+}
 
 
 /** COLORS **/
@@ -199,6 +210,8 @@ a:active {
 
 #mainNavigation a.active {
     color: #a29f99;
+    pointer-events: none;
+    cursor: default;
 }
 
 #mainNavigation .navbar-toggler {
@@ -302,6 +315,34 @@ a:active {
 
 h3[id$="breaking-changes"] {
     color: #BA3525;
+}
+
+
+/** BLOG **/
+.blog-article .authoring-info {
+    margin-bottom: 1em;
+    padding-bottom: 1.5em;
+    height: 30px;
+    line-height: 30px;
+    border-top: 1px solid #8abaad;
+}
+
+.blog-article .authoring-info img {
+    height: 22px;
+    width: auto;
+}
+
+.blog-article {
+    padding-top: 1em;
+    padding-bottom: 3em;
+}
+
+.blog-article h2 {
+    margin-bottom: 0.5em;
+}
+
+.blog-article section.content p {
+    line-height: 2em;
 }
 
 

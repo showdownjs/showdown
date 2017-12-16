@@ -23,6 +23,7 @@
     "module": true,
     "define": true,
     "window": true,
+    "document": true,
     "showdown": true
   }
 }

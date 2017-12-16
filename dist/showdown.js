@@ -192,6 +192,14 @@ function allOptionsOn () {
  * Created by Tivie on 06-01-2015.
  */
 
+// load dependencies
+if (typeof document === 'undefined' && typeof window === 'undefined') {
+  var jsdom = require('jsdom').jsdom,
+      jsdomObj = jsdom('', {}),
+      window = jsdomObj.defaultView, // jshint ignore:line
+      document = window.document; // jshint ignore:line
+}
+
 // Private properties
 var showdown = {},
     parsers = {},
@@ -918,6 +926,31 @@ showdown.helper.encodeEmailAddress = function (mail) {
   });
 
   return mail;
+};
+
+/**
+ *
+ * @param str
+ * @param targetLength
+ * @param padString
+ * @returns {string}
+ */
+showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
+  'use strict';
+  /*jshint bitwise: false*/
+  // eslint-disable-next-line space-infix-ops
+  targetLength = targetLength>>0; //floor if number or convert non-number to 0;
+  /*jshint bitwise: true*/
+  padString = String(padString || ' ');
+  if (str.length > targetLength) {
+    return String(str);
+  } else {
+    targetLength = targetLength - str.length;
+    if (targetLength > padString.length) {
+      padString += padString.repeat(targetLength / padString.length); //append to original to ensure we are longer than needed
+    }
+    return String(str) + padString.slice(0,targetLength);
+  }
 };
 
 /**
@@ -4315,6 +4348,508 @@ showdown.Converter = function (converterOptions) {
     // update metadata
     metadata = globals.metadata;
     return text;
+  };
+
+  this.makeMarkdown = function (src) {
+
+    // replace \r\n with \n
+    src = src.replace(/\r\n/g, '\n');
+    src = src.replace(/\r/g, '\n'); // old macs
+
+    // due to an edge case, we need to find this: > <
+    // to prevent removing of non silent white spaces
+    // ex: <em>this is</em> <strong>sparta</strong>
+    src = src.replace(/>[ \t]+</, '>¨NBSP;<');
+
+    var doc = document.createElement('div');
+    doc.innerHTML = src;
+
+    var preList = substitutePreCodeTags(doc);
+
+    // remove all newlines and collapse spaces
+    clean(doc);
+
+    function parseNode (node, spansOnly) {
+
+      spansOnly = spansOnly || false;
+
+      var txt = '';
+      //indent = new Array((indentationLevel * 4) + 1).join(' ');
+
+      // edge case of text without wrapper paragraph
+      if (node.nodeType === 3) {
+        return parseTxt(node);
+      }
+
+      // HTML comment
+      if (node.nodeType === 8) {
+        // TODO parse comments
+        return '';
+      }
+
+      // process only node elements
+      if (node.nodeType !== 1) {
+        return '';
+      }
+
+      var tagName = node.tagName.toLowerCase();
+
+      switch (tagName) {
+
+        //
+        // BLOCKS
+        //
+        case 'h1':
+          if (!spansOnly) { txt = parseHeader(node, 1) + '\n\n'; }
+          break;
+        case 'h2':
+          if (!spansOnly) { txt = parseHeader(node, 2) + '\n\n'; }
+          break;
+        case 'h3':
+          if (!spansOnly) { txt = parseHeader(node, 3) + '\n\n'; }
+          break;
+        case 'h4':
+          if (!spansOnly) { txt = parseHeader(node, 4) + '\n\n'; }
+          break;
+        case 'h5':
+          if (!spansOnly) { txt = parseHeader(node, 5) + '\n\n'; }
+          break;
+        case 'h6':
+          if (!spansOnly) { txt = parseHeader(node, 6) + '\n\n'; }
+          break;
+
+        case 'p':
+          if (!spansOnly) { txt = parseParagraph(node) + '\n\n'; }
+          break;
+
+        case 'blockquote':
+          if (!spansOnly) { txt = parseBlockquote(node) + '\n\n'; }
+          break;
+
+        case 'hr':
+          if (!spansOnly) { txt = parseHr(node) + '\n\n'; }
+          break;
+
+        case 'ol':
+          if (!spansOnly) { txt = parseList(node, 'ol') + '\n\n'; }
+          break;
+
+        case 'ul':
+          if (!spansOnly) { txt = parseList(node, 'ul') + '\n\n'; }
+          break;
+
+        case 'precode':
+          if (!spansOnly) { txt = parsePreCode(node) + '\n\n'; }
+          break;
+
+        case 'pre':
+          if (!spansOnly) { txt = parsePre(node) + '\n\n'; }
+          break;
+
+        case 'table':
+          if (!spansOnly) { txt = parseTable(node) + '\n\n'; }
+          break;
+
+        //
+        // SPANS
+        //
+        case 'code':
+          txt = parseCodeSpan(node);
+          break;
+
+        case 'em':
+        case 'i':
+          txt = parseEmphasis(node);
+          break;
+
+        case 'strong':
+        case 'b':
+          txt = parseStrong(node);
+          break;
+
+        case 'del':
+          txt = parseDel(node);
+          break;
+
+        case 'a':
+          txt = parseLinks(node);
+          break;
+
+        case 'img':
+          txt = parseImage(node);
+          break;
+
+        default:
+          txt = node.innerHTML;
+      }
+
+      return txt;
+    }
+
+    function parseTxt (node) {
+      var txt = node.nodeValue;
+
+      txt = txt.replace(/¨NBSP;/g, ' ');
+
+      // escape markdown magic characters
+      // emphasis, strong and strikethrough - can appear everywhere
+      // we also escape pipe (\) because of tables
+      // and escape ` because of code blocks and spans
+      txt = txt.replace(/([*_~|`])/g, '\\$1');
+
+      // escape > because of blockquotes
+      txt = txt.replace(/^(\s*)>/g, '\\$1>');
+
+      // hash character, only troublesome at the beginning of a line because of headers
+      txt = txt.replace(/^#/gm, '\\#');
+
+      // horizontal rules
+      txt = txt.replace(/^(\s*)([-=]{3,})(\s*)$/, '$1\\$2$3');
+
+      // dot, because of ordered lists, only troublesome at the beginning of a line when preceded by an integer
+      txt = txt.replace(/^( {0,3}\d+)\./gm, '$1\\.');
+
+      // + and -, at the beginning of a line becomes a list, so we need to escape them also
+      txt = txt.replace(/^( {0,3})([+-])/gm, '$1\\$2');
+
+      // images and links, ] followed by ( is problematic, so we escape it
+      // same for reference style uris
+      // might be a bit overzealous, but we prefer to be safe
+      txt = txt.replace(/]([\s]*)\(/g, '\\]$1\\(');
+      txt = txt.replace(/\[([\s\S]*)]:/g, '\\[$1\\]:');
+
+      return txt;
+    }
+
+    function parseList (node, type) {
+      var txt = '';
+      if (!node.hasChildNodes()) {
+        return '';
+      }
+      var listItems       = node.childNodes,
+          listItemsLenght = listItems.length,
+          listNum = 1;
+
+      for (var i = 0; i < listItemsLenght; ++i) {
+        if (typeof listItems[i].tagName === 'undefined' || listItems[i].tagName.toLowerCase() !== 'li') {
+          continue;
+        }
+
+        // define the bullet to use in list
+        var bullet = '';
+        if (type === 'ol') {
+          bullet = listNum.toString() + '. ';
+        } else {
+          bullet = '- ';
+        }
+
+        // parse list item
+        txt += bullet + parseListItem(listItems[i]);
+        ++listNum;
+      }
+
+      return txt.trim();
+    }
+
+    function parseListItem (node) {
+      var listItemTxt = '';
+
+      var children = node.childNodes,
+          childrenLenght = children.length;
+
+      for (var i = 0; i < childrenLenght; ++i) {
+        listItemTxt += parseNode(children[i]);
+      }
+      // if it's only one liner, we need to add a newline at the end
+      if (!/\n$/.test(listItemTxt)) {
+        listItemTxt += '\n';
+      } else {
+        // it's multiparagraph, so we need to indent
+        listItemTxt = listItemTxt
+          .split('\n')
+          .join('\n    ')
+          .replace(/^ {4}$/gm, '')
+          .replace(/\n\n+/g, '\n\n');
+      }
+
+      return listItemTxt;
+    }
+
+    function parseHr () {
+      return '---';
+    }
+
+    function parseBlockquote (node) {
+      var txt = '';
+      if (node.hasChildNodes()) {
+        var children = node.childNodes,
+            childrenLength = children.length;
+
+        for (var i = 0; i < childrenLength; ++i) {
+          var innerTxt = parseNode(children[i]);
+
+          if (innerTxt === '') {
+            continue;
+          }
+          txt += innerTxt;
+        }
+      }
+      // cleanup
+      txt = txt.trim();
+      txt = '> ' + txt.split('\n').join('\n> ');
+      return txt;
+    }
+
+    function parseCodeSpan (node) {
+      return '`' + node.innerHTML + '`';
+    }
+
+    function parseStrong (node) {
+      var txt = '';
+      if (node.hasChildNodes()) {
+        txt += '**';
+        var children = node.childNodes,
+            childrenLength = children.length;
+        for (var i = 0; i < childrenLength; ++i) {
+          txt += parseNode(children[i]);
+        }
+        txt += '**';
+      }
+      return txt;
+    }
+
+    function parseEmphasis (node) {
+      var txt = '';
+      if (node.hasChildNodes()) {
+        txt += '*';
+        var children = node.childNodes,
+            childrenLength = children.length;
+        for (var i = 0; i < childrenLength; ++i) {
+          txt += parseNode(children[i]);
+        }
+        txt += '*';
+      }
+      return txt;
+    }
+
+    function parseDel (node) {
+      var txt = '';
+      if (node.hasChildNodes()) {
+        txt += '~~';
+        var children = node.childNodes,
+            childrenLength = children.length;
+        for (var i = 0; i < childrenLength; ++i) {
+          txt += parseNode(children[i]);
+        }
+        txt += '~~';
+      }
+      return txt;
+    }
+
+    function parseLinks (node) {
+      var txt = '';
+      if (node.hasChildNodes() && node.hasAttribute('href')) {
+        var children = node.childNodes,
+            childrenLength = children.length;
+        txt = '[';
+        for (var i = 0; i < childrenLength; ++i) {
+          txt += parseNode(children[i]);
+        }
+        txt += ']';
+        txt += '(' + node.getAttribute('href') + ')';
+      }
+      return txt;
+    }
+
+    function parseImage (node) {
+      var txt = '';
+      if (node.hasAttribute('src')) {
+        txt += '![' + node.getAttribute('alt') + ']';
+        txt += '(' + node.getAttribute('src');
+        if (node.hasAttribute('width') && node.hasAttribute('height')) {
+          txt += ' =' + node.getAttribute('width') + 'x' + node.getAttribute('height');
+        }
+
+        if (node.hasAttribute('title')) {
+          txt += ' "' + node.getAttribute('title') + '"';
+        }
+        txt += ')';
+      }
+      return txt;
+    }
+
+    function parseHeader (node, headerLevel) {
+      var headerMark = new Array(headerLevel + 1).join('#'),
+          txt = '';
+
+      if (node.hasChildNodes()) {
+        txt = headerMark + ' ';
+        var children = node.childNodes,
+            childrenLength = children.length;
+
+        for (var i = 0; i < childrenLength; ++i) {
+          txt += parseNode(children[i]);
+        }
+      }
+      return txt;
+    }
+
+    function parseParagraph (node) {
+      var txt = '';
+      if (node.hasChildNodes()) {
+        var children = node.childNodes,
+            childrenLength = children.length;
+        for (var i = 0; i < childrenLength; ++i) {
+          txt += parseNode(children[i]);
+        }
+      }
+      return txt;
+    }
+
+    function parsePreCode (node) {
+      var lang = node.getAttribute('language'),
+          num  = node.getAttribute('precodenum');
+      return '```' + lang + '\n' + preList[num] + '\n```';
+    }
+
+    function parsePre (node) {
+      var num  = node.getAttribute('prenum');
+      return '<pre>' + preList[num] + '</pre>';
+    }
+
+    function parseTable (node) {
+
+      var txt = '',
+          tableArray = [[], []],
+          headings   = node.querySelectorAll('thead>tr>th'),
+          rows       = node.querySelectorAll('tbody>tr'),
+          i, ii;
+      for (i = 0; i < headings.length; ++i) {
+        var headContent = parseTableCell(headings[i]),
+            allign = '---';
+
+        if (headings[i].hasAttribute('style')) {
+          var style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
+          switch (style) {
+            case 'text-align:left;':
+              allign = ':---';
+              break;
+            case 'text-align:right;':
+              allign = '---:';
+              break;
+            case 'text-align:center;':
+              allign = ':---:';
+              break;
+          }
+        }
+        tableArray[0][i] = headContent.trim();
+        tableArray[1][i] = allign;
+      }
+
+      for (i = 0; i < rows.length; ++i) {
+        var r = tableArray.push([]) - 1,
+            cols = rows[i].getElementsByTagName('td');
+
+        for (ii = 0; ii < headings.length; ++ii) {
+          var cellContent = ' ';
+          if (typeof cols[ii] !== 'undefined') {
+            cellContent = parseTableCell(cols[ii]);
+          }
+          tableArray[r].push(cellContent);
+        }
+      }
+
+      var cellSpacesCount = 3;
+      for (i = 0; i < tableArray.length; ++i) {
+        for (ii = 0; ii < tableArray[i].length; ++ii) {
+          var strLen = tableArray[i][ii].length;
+          if (strLen > cellSpacesCount) {
+            cellSpacesCount = strLen;
+          }
+        }
+      }
+
+      for (i = 0; i < tableArray.length; ++i) {
+        for (ii = 0; ii < tableArray[i].length; ++ii) {
+          if (i === 1) {
+            if (tableArray[i][ii].slice(-1) === ':') {
+              tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(-1), cellSpacesCount - 1, '-') + ':';
+            } else {
+              tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
+            }
+          } else {
+            tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount);
+          }
+        }
+        txt += '| ' + tableArray[i].join(' | ') + ' |\n';
+      }
+
+      return txt.trim();
+    }
+
+    function parseTableCell (node) {
+      var txt = '';
+      if (!node.hasChildNodes()) {
+        return '';
+      }
+      var children = node.childNodes,
+          childrenLength = children.length;
+
+      for (var i = 0; i < childrenLength; ++i) {
+        txt += parseNode(children[i], true);
+      }
+      return txt.trim();
+    }
+
+    function clean (node) {
+      for (var n = 0; n < node.childNodes.length; ++n) {
+        var child = node.childNodes[n];
+        if (child.nodeType === 3) {
+          if (!/\S/.test(child.nodeValue)) {
+            node.removeChild(child);
+            --n;
+          } else {
+            child.nodeValue = child.nodeValue.split('\n').join(' ');
+            child.nodeValue = child.nodeValue.replace(/(\s)+/g, '$1');
+          }
+        } else if (child.nodeType === 1) {
+          clean(child);
+        }
+      }
+    }
+
+    // find all pre tags and replace contents with placeholder
+    // we need this so that we can remove all indentation from html
+    // to ease up parsing
+    function substitutePreCodeTags (doc) {
+
+      var pres = doc.querySelectorAll('pre'),
+          presPH = [];
+
+      for (var i = 0; i < pres.length; ++i) {
+
+        if (pres[i].childElementCount === 1 && pres[i].firstChild.tagName.toLowerCase() === 'code') {
+          var content = pres[i].firstChild.innerHTML,
+              language = pres[i].firstChild.getAttribute('data-language') || '';
+          presPH.push(content);
+          pres[i].outerHTML = '<precode language="' + language + '" precodenum="' + i.toString() + '"></precode>';
+        } else {
+          presPH.push(pres[i].innerHTML);
+          pres[i].innerHTML = '';
+          pres[i].setAttribute('prenum', i.toString());
+        }
+      }
+      return presPH;
+    }
+
+    var nodes = doc.childNodes,
+        mdDoc = '';
+
+    for (var i = 0; i < nodes.length; i++) {
+      mdDoc += parseNode(nodes[i]);
+    }
+
+    return mdDoc;
   };
 
   /**

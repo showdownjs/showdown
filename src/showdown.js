@@ -2,6 +2,14 @@
  * Created by Tivie on 06-01-2015.
  */
 
+// load dependencies
+if (typeof document === 'undefined' && typeof window === 'undefined') {
+  var jsdom = require('jsdom').jsdom,
+      jsdomObj = jsdom('', {}),
+      window = jsdomObj.defaultView, // jshint ignore:line
+      document = window.document; // jshint ignore:line
+}
+
 // Private properties
 var showdown = {},
     parsers = {},

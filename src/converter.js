@@ -298,7 +298,7 @@ showdown.Converter = function (converterOptions) {
     text = '\n\n' + text + '\n\n';
 
     // detab
-    text = showdown.subParser('detab')(text, options, globals);
+    text = showdown.subParser('makehtml.detab')(text, options, globals);
 
     /**
      * Strip any lines consisting only of spaces and tabs.
@@ -310,19 +310,19 @@ showdown.Converter = function (converterOptions) {
 
     //run languageExtensions
     showdown.helper.forEach(langExtensions, function (ext) {
-      text = showdown.subParser('runExtension')(ext, text, options, globals);
+      text = showdown.subParser('makehtml.runExtension')(ext, text, options, globals);
     });
 
     // run the sub parsers
-    text = showdown.subParser('metadata')(text, options, globals);
-    text = showdown.subParser('hashPreCodeTags')(text, options, globals);
-    text = showdown.subParser('githubCodeBlocks')(text, options, globals);
-    text = showdown.subParser('hashHTMLBlocks')(text, options, globals);
-    text = showdown.subParser('hashCodeTags')(text, options, globals);
-    text = showdown.subParser('stripLinkDefinitions')(text, options, globals);
-    text = showdown.subParser('blockGamut')(text, options, globals);
-    text = showdown.subParser('unhashHTMLSpans')(text, options, globals);
-    text = showdown.subParser('unescapeSpecialChars')(text, options, globals);
+    text = showdown.subParser('makehtml.metadata')(text, options, globals);
+    text = showdown.subParser('makehtml.hashPreCodeTags')(text, options, globals);
+    text = showdown.subParser('makehtml.githubCodeBlocks')(text, options, globals);
+    text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
+    text = showdown.subParser('makehtml.hashCodeTags')(text, options, globals);
+    text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);
+    text = showdown.subParser('makehtml.blockGamut')(text, options, globals);
+    text = showdown.subParser('makehtml.unhashHTMLSpans')(text, options, globals);
+    text = showdown.subParser('makehtml.unescapeSpecialChars')(text, options, globals);
 
     // attacklab: Restore dollar signs
     text = text.replace(/¨D/g, '$$');
@@ -331,11 +331,11 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/¨T/g, '¨');
 
     // render a complete html document instead of a partial if the option is enabled
-    text = showdown.subParser('completeHTMLDocument')(text, options, globals);
+    text = showdown.subParser('makehtml.completeHTMLDocument')(text, options, globals);
 
     // Run output modifiers
     showdown.helper.forEach(outputModifiers, function (ext) {
-      text = showdown.subParser('runExtension')(ext, text, options, globals);
+      text = showdown.subParser('makehtml.runExtension')(ext, text, options, globals);
     });
 
     // update metadata

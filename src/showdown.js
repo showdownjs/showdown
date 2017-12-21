@@ -3,7 +3,7 @@
  */
 
 // load dependencies
-if (typeof document === 'undefined' && typeof window === 'undefined') {
+if (typeof this.document === 'undefined' && typeof this.window === 'undefined') {
   var jsdom = require('jsdom').jsdom,
       jsdomObj = jsdom('', {}),
       window = jsdomObj.defaultView, // jshint ignore:line

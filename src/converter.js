@@ -243,7 +243,7 @@ showdown.Converter = function (converterOptions) {
   };
 
   /**
-   * Converts a markdown string into HTML
+   * Converts a markdown string into HTML string
    * @param {string} text
    * @returns {*}
    */
@@ -343,6 +343,11 @@ showdown.Converter = function (converterOptions) {
     return text;
   };
 
+  /**
+   * Converts an HTML string into a markdown string
+   * @param src
+   * @returns {string}
+   */
   this.makeMarkdown = function (src) {
 
     // replace \r\n with \n

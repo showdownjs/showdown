@@ -1,7 +1,7 @@
 /**
  * Created by Estevao on 14-07-2015.
  */
-var bootstrap = require('../bootstrap.js'),
+var bootstrap = require('./makehtml.bootstrap.js'),
     converter = new bootstrap.showdown.Converter({
       strikethrough:             true,
       literalMidWordUnderscores: true,
@@ -11,7 +11,7 @@ var bootstrap = require('../bootstrap.js'),
       tasklists:                 true  //extra
     }),
     assertion = bootstrap.assertion,
-    testsuite = bootstrap.getTestSuite('test/ghost/');
+    testsuite = bootstrap.getTestSuite('test/functional/cases/ghost/');
 
 //MD-Testsuite (borrowed from karlcow/markdown-testsuite)
 describe('makeHtml() ghost testsuite', function () {

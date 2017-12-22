@@ -1,10 +1,10 @@
 /**
  * Created by Estevao on 08-06-2015.
  */
-var bootstrap = require('../bootstrap.js'),
+var bootstrap = require('./makehtml.bootstrap.js'),
     converter = new bootstrap.showdown.Converter(),
     assertion = bootstrap.assertion,
-    testsuite = bootstrap.getTestSuite('test/issues/');
+    testsuite = bootstrap.getTestSuite('test/functional/cases/issues/');
 
 describe('makeHtml() issues testsuite', function () {
   'use strict';

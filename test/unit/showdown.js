@@ -1,7 +1,7 @@
 require('source-map-support').install();
 require('chai').should();
 var expect = require('chai').expect,
-    showdown = require('../bootstrap').showdown;
+    showdown = require('../../.build/showdown.js');
 
 describe('showdown.options', function () {
   'use strict';
@@ -17,7 +17,7 @@ describe('showdown.options', function () {
 
   describe('getDefaultOptions()', function () {
     it('should get default options', function () {
-      var opts = require('../optionswp').getDefaultOpts(true);
+      var opts = require('./optionswp.js').getDefaultOpts(true);
       expect(showdown.getDefaultOptions()).to.be.eql(opts);
     });
   });

@@ -1,7 +1,11 @@
-var bootstrap = require('../bootstrap.js'),
+/**
+ * Created by Estevao on 08-06-2015.
+ */
+
+var bootstrap = require('./makehtml.bootstrap.js'),
     converter = new bootstrap.showdown.Converter(),
     assertion = bootstrap.assertion,
-    testsuite = bootstrap.getTestSuite('test/cases/');
+    testsuite = bootstrap.getTestSuite('test/functional/cases/standard/');
 
 describe('makeHtml() standard testsuite', function () {
   'use strict';

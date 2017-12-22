@@ -1,7 +1,11 @@
-var bootstrap = require('../bootstrap.js'),
+/**
+ * Created by Estevao on 08-06-2015.
+ */
+
+var bootstrap = require('./makehtml.bootstrap.js'),
     converter = new bootstrap.showdown.Converter({noHeaderId: true}),
     assertion = bootstrap.assertion,
-    testsuite = bootstrap.getTestSuite('test/karlcow/');
+    testsuite = bootstrap.getTestSuite('test/functional/cases/karlcow/');
 
 //MD-Testsuite (borrowed from karlcow/markdown-testsuite)
 describe('makeHtml() karlcow testsuite', function () {

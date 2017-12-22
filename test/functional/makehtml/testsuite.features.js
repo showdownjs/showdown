@@ -1,23 +1,23 @@
 /**
  * Created by Estevao on 08-06-2015.
  */
-var bootstrap = require('../bootstrap.js'),
+var bootstrap = require('./makehtml.bootstrap.js'),
     showdown = bootstrap.showdown,
     assertion = bootstrap.assertion,
-    testsuite = bootstrap.getTestSuite('test/features/'),
-    tableSuite = bootstrap.getTestSuite('test/features/tables/'),
-    simplifiedAutoLinkSuite = bootstrap.getTestSuite('test/features/simplifiedAutoLink/'),
-    openLinksInNewWindowSuite = bootstrap.getTestSuite('test/features/openLinksInNewWindow/'),
-    disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/features/disableForced4SpacesIndentedSublists/'),
-    rawHeaderIdSuite = bootstrap.getTestSuite('test/features/rawHeaderId/'),
-    rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/features/rawPrefixHeaderId/'),
-    emojisSuite = bootstrap.getTestSuite('test/features/emojis/'),
-    underlineSuite = bootstrap.getTestSuite('test/features/underline/'),
-    literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/features/literalMidWordUnderscores/'),
-    literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/features/literalMidWordAsterisks/'),
-    completeHTMLOutputSuite = bootstrap.getTestSuite('test/features/completeHTMLOutput/'),
-    metadataSuite = bootstrap.getTestSuite('test/features/metadata/'),
-    splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/features/splitAdjacentBlockquotes/');
+    testsuite = bootstrap.getTestSuite('test/functional/cases/features/'),
+    tableSuite = bootstrap.getTestSuite('test/functional/cases/features/tables/'),
+    simplifiedAutoLinkSuite = bootstrap.getTestSuite('test/functional/cases/features/simplifiedAutoLink/'),
+    openLinksInNewWindowSuite = bootstrap.getTestSuite('test/functional/cases/features/openLinksInNewWindow/'),
+    disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/functional/cases/features/disableForced4SpacesIndentedSublists/'),
+    rawHeaderIdSuite = bootstrap.getTestSuite('test/functional/cases/features/rawHeaderId/'),
+    rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/functional/cases/features/rawPrefixHeaderId/'),
+    emojisSuite = bootstrap.getTestSuite('test/functional/cases/features/emojis/'),
+    underlineSuite = bootstrap.getTestSuite('test/functional/cases/features/underline/'),
+    literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/functional/cases/features/literalMidWordUnderscores/'),
+    literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/functional/cases/features/literalMidWordAsterisks/'),
+    completeHTMLOutputSuite = bootstrap.getTestSuite('test/functional/cases/features/completeHTMLOutput/'),
+    metadataSuite = bootstrap.getTestSuite('test/functional/cases/features/metadata/'),
+    splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/cases/features/splitAdjacentBlockquotes/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';

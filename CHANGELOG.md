@@ -1,3 +1,13 @@
+<a name="1.8.6"></a>
+## [1.8.6](https://github.com/showdownjs/showdown/compare/1.8.5...1.8.6) (2017-12-22)
+
+
+### Features
+
+* **splitAdjacentBlockquotes:** add option to split adjacent blockquote blocks ([da328f2](https://github.com/showdownjs/showdown/commit/da328f2)), closes [#477](https://github.com/showdownjs/showdown/issues/477)
+
+
+
 <a name="1.8.5"></a>
 # [1.8.5](https://github.com/showdownjs/showdown/compare/1.8.4...1.8.5) (2017-12-10)
 

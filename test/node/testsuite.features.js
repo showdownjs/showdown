@@ -16,7 +16,8 @@ var bootstrap = require('../bootstrap.js'),
     literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/features/literalMidWordUnderscores/'),
     literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/features/literalMidWordAsterisks/'),
     completeHTMLOutputSuite = bootstrap.getTestSuite('test/features/completeHTMLOutput/'),
-    metadataSuite = bootstrap.getTestSuite('test/features/metadata/');
+    metadataSuite = bootstrap.getTestSuite('test/features/metadata/'),
+    splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/features/splitAdjacentBlockquotes/');
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -261,6 +262,17 @@ describe('makeHtml() features testsuite', function () {
       } else {
         converter = new showdown.Converter({metadata: true});
       }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  /** test metadata option **/
+  describe('splitAdjacentBlockquotes option', function () {
+    var converter,
+        suite = splitAdjacentBlockquotesSuite;
+
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({splitAdjacentBlockquotes: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

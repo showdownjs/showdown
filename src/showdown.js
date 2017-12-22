@@ -33,7 +33,8 @@ var showdown = {},
         ghCompatibleHeaderId:                 true,
         ghMentions:                           true,
         backslashEscapesHTMLTags:             true,
-        emoji:                                true
+        emoji:                                true,
+        splitAdjacentBlockquotes:             true
       },
       original: {
         noHeaderId:                           true,

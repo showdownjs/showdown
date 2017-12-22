@@ -366,6 +366,8 @@ var defaultOptions = showdown.getDefaultOptions();
  * **metadata**: (boolean) [default false] Enable support for document metadata (defined at the top of the document
    between `«««` and `»»»` or between `---` and `---`).  (since v.1.8.5)
 
+ * **splitAdjacentBlockquotes**: (boolean) [default false] Split adjacent blockquote blocks.(since v.1.8.6)
+
 **NOTE**: Please note that until **version 1.6.0**, all of these options are ***DISABLED*** by default in the cli tool.
 
 

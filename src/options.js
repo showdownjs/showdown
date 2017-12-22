@@ -160,6 +160,11 @@ function getDefaultOpts (simple) {
       defaultValue: false,
       description: 'Enable support for document metadata (defined at the top of the document between `«««` and `»»»` or between `---` and `---`).',
       type: 'boolean'
+    },
+    splitAdjacentBlockquotes: {
+      defaultValue: false,
+      description: 'Split adjacent blockquote blocks',
+      type: 'boolean'
     }
   };
   if (simple === false) {

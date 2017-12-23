@@ -359,7 +359,7 @@ showdown.Converter = function (converterOptions) {
     // ex: <em>this is</em> <strong>sparta</strong>
     src = src.replace(/>[ \t]+</, '>¨NBSP;<');
 
-    var doc = document.createElement('div');
+    var doc = showdown.helper.document.createElement('div');
     doc.innerHTML = src;
 
     var preList = substitutePreCodeTags(doc);

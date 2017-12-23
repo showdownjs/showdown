@@ -196,15 +196,6 @@ function allOptionsOn () {
 /**
  * Created by Tivie on 06-01-2015.
  */
-
-// load dependencies
-if (typeof document === 'undefined' && typeof window === 'undefined') {
-  var jsdom = require('jsdom').jsdom,
-      jsdomObj = jsdom('', {}),
-      window = jsdomObj.defaultView, // jshint ignore:line
-      document = window.document; // jshint ignore:line
-}
-
 // Private properties
 var showdown = {},
     parsers = {},
@@ -589,6 +580,11 @@ showdown.validateExtension = function (ext) {
 if (!showdown.hasOwnProperty('helper')) {
   showdown.helper = {};
 }
+
+if (typeof this.document === 'undefined' && typeof this.window === 'undefined') {
+  this.window = require('jsdom').jsdom('', {}).defaultView; // jshint ignore:line
+}
+showdown.helper.document = this.window.document;
 
 /**
  * Check if var is string
@@ -4394,7 +4390,7 @@ showdown.Converter = function (converterOptions) {
     // ex: <em>this is</em> <strong>sparta</strong>
     src = src.replace(/>[ \t]+</, '>¨NBSP;<');
 
-    var doc = document.createElement('div');
+    var doc = showdown.helper.document.createElement('div');
     doc.innerHTML = src;
 
     var preList = substitutePreCodeTags(doc);

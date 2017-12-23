@@ -6,6 +6,11 @@ if (!showdown.hasOwnProperty('helper')) {
   showdown.helper = {};
 }
 
+if (typeof this.document === 'undefined' && typeof this.window === 'undefined') {
+  this.window = require('jsdom').jsdom('', {}).defaultView; // jshint ignore:line
+}
+showdown.helper.document = this.window.document;
+
 /**
  * Check if var is string
  * @static

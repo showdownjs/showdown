@@ -23,8 +23,9 @@ module.exports = function (grunt) {
           'src/options.js',
           'src/showdown.js',
           'src/helpers.js',
+          'src/subParsers/makehtml/*.js',
+          'src/subParsers/makemd/*.js',
           'src/converter.js',
-          'src/subParsers/*.js',
           'src/loader.js'
         ],
         dest: 'dist/<%= pkg.name %>.js'
@@ -110,8 +111,8 @@ module.exports = function (grunt) {
     },
 
     simplemocha: {
-      node: {
-        src: 'test/node/**/*.js',
+      functional: {
+        src: 'test/functional/**/*.js',
         options: {
           globals: ['should'],
           timeout: 3000,
@@ -119,39 +120,12 @@ module.exports = function (grunt) {
           reporter: 'spec'
         }
       },
-      karlcow: {
-        src: 'test/node/testsuite.karlcow.js',
+      unit: {
+        src: 'test/unit/**/*.js',
         options: {
           globals: ['should'],
           timeout: 3000,
-          ignoreLeaks: false,
-          reporter: 'spec'
-        }
-      },
-      issues: {
-        src: 'test/node/testsuite.issues.js',
-        options: {
-          globals: ['should'],
-          timeout: 3000,
-          ignoreLeaks: false,
-          reporter: 'spec'
-        }
-      },
-      standard: {
-        src: 'test/node/testsuite.standard.js',
-        options: {
-          globals: ['should'],
-          timeout: 3000,
-          ignoreLeaks: false,
-          reporter: 'spec'
-        }
-      },
-      features: {
-        src: 'test/node/testsuite.features.js',
-        options: {
-          globals: ['should'],
-          timeout: 3000,
-          ignoreLeaks: false,
+          ignoreLeaks: true,
           reporter: 'spec'
         }
       },
@@ -203,7 +177,7 @@ module.exports = function (grunt) {
    */
   grunt.registerTask('performancejs', function () {
     'use strict';
-    var perf = require('./test/node/performance.js');
+    var perf = require('./test/performance/performance.js');
     perf.runTests();
     perf.generateLogs();
   });
@@ -226,16 +200,13 @@ module.exports = function (grunt) {
     grunt.task.run(['lint', 'concat:test', 'simplemocha:single', 'clean']);
   });
 
-
   /**
-   * Test in Legacy Node
+   * Tasks
    */
-  grunt.registerTask('test-old', ['concat:test', 'simplemocha:node', 'clean']);
 
-  /**
-   * Tasks for new node versions
-   */
-  grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:node', 'clean']);
+  grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:unit', 'simplemocha:functional', 'clean']);
+  grunt.registerTask('test-functional', ['concat:test', 'simplemocha:functional', 'clean']);
+  grunt.registerTask('test-unit', ['concat:test', 'simplemocha:unit', 'clean']);
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);
   grunt.registerTask('prep-release', ['build', 'generate-changelog']);

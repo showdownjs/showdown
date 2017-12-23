@@ -1,6 +1,6 @@
 {
   "name": "showdown",
-  "version": "1.8.5",
+  "version": "2.0.0-alpha1",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
   "homepage": "http://showdownjs.com/",
@@ -39,26 +39,27 @@
     "showdown": "bin/showdown.js"
   },
   "devDependencies": {
-    "chai": "^4.0.2",
+    "chai": "4.1.x",
     "grunt": "^1.0.1",
-    "grunt-contrib-clean": "^1.0.0",
-    "grunt-contrib-concat": "^1.0.1",
-    "grunt-contrib-jshint": "^1.1.0",
-    "grunt-contrib-uglify": "^3.1.0",
-    "grunt-conventional-changelog": "^6.1.0",
-    "grunt-conventional-github-releaser": "^1.0.0",
-    "grunt-endline": "^0.6.1",
-    "grunt-eslint": "^19.0.0",
-    "grunt-simple-mocha": "^0.4.0",
-    "load-grunt-tasks": "^3.2.0",
-    "performance-now": "^2.0.0",
-    "quiet-grunt": "^0.2.3",
-    "semver": "^5.4.1",
-    "semver-sort": "0.0.4",
-    "sinon": "^4.0.0",
-    "source-map-support": "^0.5.0"
+    "grunt-contrib-clean": "1.1.x",
+    "grunt-contrib-concat": "1.0.x",
+    "grunt-contrib-jshint": "1.1.x",
+    "grunt-contrib-uglify": "3.2.x",
+    "grunt-conventional-changelog": "6.1.x",
+    "grunt-conventional-github-releaser": "1.0.x",
+    "grunt-endline": "0.6.x",
+    "grunt-eslint": "19.0.x",
+    "grunt-simple-mocha": "0.4.x",
+    "load-grunt-tasks": "3.5.x",
+    "performance-now": "2.0.x",
+    "quiet-grunt": "0.2.x",
+    "semver": "5.4.x",
+    "semver-sort": "0.0.x",
+    "sinon": "4.1.x",
+    "source-map-support": "0.5.x"
   },
   "dependencies": {
+    "jsdom": "^9.12.0",
     "yargs": "^10.0.3"
   }
 }

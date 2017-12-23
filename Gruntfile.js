@@ -23,8 +23,9 @@ module.exports = function (grunt) {
           'src/options.js',
           'src/showdown.js',
           'src/helpers.js',
+          'src/subParsers/makehtml/*.js',
+          'src/subParsers/makemd/*.js',
           'src/converter.js',
-          'src/subParsers/*.js',
           'src/loader.js'
         ],
         dest: 'dist/<%= pkg.name %>.js'

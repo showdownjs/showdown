@@ -1,1 +1,1 @@
-See my [About](/about/) page for details.
+See my [About](</about/>) page for details.

@@ -368,8 +368,8 @@ showdown.Converter = function (converterOptions) {
     clean(doc);
 
     // some stuff, like accidental reference links must now be escaped
-    doc.innerHTML = doc.innerHTML.replace(/\[[\S\t ]]/);
-
+    // TODO
+    // doc.innerHTML = doc.innerHTML.replace(/\[[\S\t ]]/);
 
     var nodes = doc.childNodes,
       mdDoc = '';
@@ -671,8 +671,8 @@ showdown.Converter = function (converterOptions) {
         for (var i = 0; i < childrenLength; ++i) {
           txt += parseNode(children[i]);
         }
-        txt += ']';
-        txt += '(' + node.getAttribute('href');
+        txt += '](';
+        txt += '<' + node.getAttribute('href') + '>';
         if (node.hasAttribute('title')) {
           txt += ' "' + node.getAttribute('title') + '"';
         }
@@ -684,8 +684,8 @@ showdown.Converter = function (converterOptions) {
     function parseImage (node) {
       var txt = '';
       if (node.hasAttribute('src')) {
-        txt += '![' + node.getAttribute('alt') + ']';
-        txt += '(' + node.getAttribute('src');
+        txt += '![' + node.getAttribute('alt') + '](';
+        txt += '<' + node.getAttribute('src') + '>';
         if (node.hasAttribute('width') && node.hasAttribute('height')) {
           txt += ' =' + node.getAttribute('width') + 'x' + node.getAttribute('height');
         }

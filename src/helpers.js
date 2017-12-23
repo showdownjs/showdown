@@ -376,6 +376,19 @@ showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
 };
 
 /**
+ * Unescape HTML entities
+ * @param txt
+ * @returns {string}
+ */
+showdown.helper.unescapeHTMLEntities = function (txt) {
+  return txt
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+};
+
+/**
  * POLYFILLS
  */
 // use this instead of builtin is undefined for IE8 compatibility

@@ -11,7 +11,7 @@ var bootstrap = require('./makehtml.bootstrap.js'),
       tasklists:                 true  //extra
     }),
     assertion = bootstrap.assertion,
-    testsuite = bootstrap.getTestSuite('test/functional/cases/ghost/');
+    testsuite = bootstrap.getTestSuite('test/functional/makehtml/cases/ghost/');
 
 //MD-Testsuite (borrowed from karlcow/markdown-testsuite)
 describe('makeHtml() ghost testsuite', function () {

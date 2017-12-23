@@ -367,12 +367,23 @@ showdown.Converter = function (converterOptions) {
     // remove all newlines and collapse spaces
     clean(doc);
 
+    // some stuff, like accidental reference links must now be escaped
+    doc.innerHTML = doc.innerHTML.replace(/\[[\S\t ]]/);
+
+
+    var nodes = doc.childNodes,
+      mdDoc = '';
+
+    for (var i = 0; i < nodes.length; i++) {
+      mdDoc += parseNode(nodes[i]);
+    }
+
+
     function parseNode (node, spansOnly) {
 
       spansOnly = spansOnly || false;
 
       var txt = '';
-      //indent = new Array((indentationLevel * 4) + 1).join(' ');
 
       // edge case of text without wrapper paragraph
       if (node.nodeType === 3) {
@@ -381,8 +392,7 @@ showdown.Converter = function (converterOptions) {
 
       // HTML comment
       if (node.nodeType === 8) {
-        // TODO parse comments
-        return '';
+        return '<!--' + node.data + '-->\n\n';
       }
 
       // process only node elements
@@ -478,7 +488,7 @@ showdown.Converter = function (converterOptions) {
           break;
 
         default:
-          txt = node.innerHTML;
+          txt = node.outerHTML + '\n\n';
       }
 
       return txt;
@@ -487,11 +497,17 @@ showdown.Converter = function (converterOptions) {
     function parseTxt (node) {
       var txt = node.nodeValue;
 
+      // multiple spaces are collapsed
+      txt = txt.replace(/ +/g, ' ');
+
       txt = txt.replace(/¨NBSP;/g, ' ');
+
+      // ", <, > and & should replace escaped html entities
+      txt = showdown.helper.unescapeHTMLEntities(txt);
 
       // escape markdown magic characters
       // emphasis, strong and strikethrough - can appear everywhere
-      // we also escape pipe (\) because of tables
+      // we also escape pipe (|) because of tables
       // and escape ` because of code blocks and spans
       txt = txt.replace(/([*_~|`])/g, '\\$1');
 
@@ -507,14 +523,16 @@ showdown.Converter = function (converterOptions) {
       // dot, because of ordered lists, only troublesome at the beginning of a line when preceded by an integer
       txt = txt.replace(/^( {0,3}\d+)\./gm, '$1\\.');
 
-      // + and -, at the beginning of a line becomes a list, so we need to escape them also
+      // +, * and -, at the beginning of a line becomes a list, so we need to escape them also (asterisk was already escaped)
       txt = txt.replace(/^( {0,3})([+-])/gm, '$1\\$2');
 
       // images and links, ] followed by ( is problematic, so we escape it
-      // same for reference style uris
-      // might be a bit overzealous, but we prefer to be safe
       txt = txt.replace(/]([\s]*)\(/g, '\\]$1\\(');
-      txt = txt.replace(/\[([\s\S]*)]:/g, '\\[$1\\]:');
+
+      // reference URIs must also be escaped
+      txt = txt.replace(/^ {0,3}\[([\S \t]*?)]:/gm, '\\[$1]:');
+
+
 
       return txt;
     }
@@ -526,7 +544,7 @@ showdown.Converter = function (converterOptions) {
       }
       var listItems       = node.childNodes,
           listItemsLenght = listItems.length,
-          listNum = 1;
+          listNum = node.getAttribute('start') || 1;
 
       for (var i = 0; i < listItemsLenght; ++i) {
         if (typeof listItems[i].tagName === 'undefined' || listItems[i].tagName.toLowerCase() !== 'li') {
@@ -654,7 +672,11 @@ showdown.Converter = function (converterOptions) {
           txt += parseNode(children[i]);
         }
         txt += ']';
-        txt += '(' + node.getAttribute('href') + ')';
+        txt += '(' + node.getAttribute('href');
+        if (node.hasAttribute('title')) {
+          txt += ' "' + node.getAttribute('title') + '"';
+        }
+        txt += ')';
       }
       return txt;
     }
@@ -827,8 +849,24 @@ showdown.Converter = function (converterOptions) {
       for (var i = 0; i < pres.length; ++i) {
 
         if (pres[i].childElementCount === 1 && pres[i].firstChild.tagName.toLowerCase() === 'code') {
-          var content = pres[i].firstChild.innerHTML,
+          var content = pres[i].firstChild.innerHTML.trim(),
               language = pres[i].firstChild.getAttribute('data-language') || '';
+
+          // if data-language attribute is not defined, then we look for class language-*
+          if (language === '') {
+            var classes = pres[i].firstChild.className.split(" ");
+            for (var c = 0; c < classes.length; ++c) {
+              var matches = classes[c].match(/^language-(.+)$/);
+              if (matches !== null) {
+                language = matches[1];
+                break;
+              }
+            }
+          }
+
+          // unescape html entities in content
+          content = showdown.helper.unescapeHTMLEntities(content);
+
           presPH.push(content);
           pres[i].outerHTML = '<precode language="' + language + '" precodenum="' + i.toString() + '"></precode>';
         } else {
@@ -838,13 +876,6 @@ showdown.Converter = function (converterOptions) {
         }
       }
       return presPH;
-    }
-
-    var nodes = doc.childNodes,
-        mdDoc = '';
-
-    for (var i = 0; i < nodes.length; i++) {
-      mdDoc += parseNode(nodes[i]);
     }
 
     return mdDoc;

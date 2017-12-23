@@ -5,7 +5,7 @@
 var bootstrap = require('./makehtml.bootstrap.js'),
     converter = new bootstrap.showdown.Converter(),
     assertion = bootstrap.assertion,
-    testsuite = bootstrap.getTestSuite('test/functional/cases/standard/');
+    testsuite = bootstrap.getTestSuite('test/functional/makehtml/cases/standard/');
 
 describe('makeHtml() standard testsuite', function () {
   'use strict';

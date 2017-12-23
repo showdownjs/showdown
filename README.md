@@ -307,7 +307,7 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **ghCodeBlocks**: (boolean) [default true] Enable support for GFM code block style.
 
- * **tasklists**:(boolean) [default false] Enable support for GFM takslists. Example:
+ * **tasklists**:(boolean) [default false] Enable support for GFM tasklists. Example:
  
    ```md
     - [x] This task is done

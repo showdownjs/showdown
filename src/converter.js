@@ -491,6 +491,9 @@ showdown.Converter = function (converterOptions) {
           txt = node.outerHTML + '\n\n';
       }
 
+      // common normalization
+
+
       return txt;
     }
 
@@ -500,6 +503,7 @@ showdown.Converter = function (converterOptions) {
       // multiple spaces are collapsed
       txt = txt.replace(/ +/g, ' ');
 
+      // replace the custom ¨NBSP; with a space
       txt = txt.replace(/¨NBSP;/g, ' ');
 
       // ", <, > and & should replace escaped html entities
@@ -723,6 +727,10 @@ showdown.Converter = function (converterOptions) {
           txt += parseNode(children[i]);
         }
       }
+
+      // some text normalization
+      txt = txt.trim();
+
       return txt;
     }
 

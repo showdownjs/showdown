@@ -15,6 +15,6 @@ And some HTML
 
 ```javascript
 function foo() {
-return 'bar';
+    return 'bar';
 }
 ```

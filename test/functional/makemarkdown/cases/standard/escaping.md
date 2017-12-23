@@ -1,6 +1,6 @@
 \[a false reference]: must be escaped
 
- \- a list item
+\- a list item
 
 \*
 
@@ -28,6 +28,6 @@ but. this should not
 
 or this.
 
-four ate the beginning of line are removed
+4 spaces at the beginning of line are removed
 
 multiple spaces are colapsed to 1

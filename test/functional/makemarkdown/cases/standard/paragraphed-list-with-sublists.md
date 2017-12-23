@@ -1,13 +1,13 @@
- - foo
- 
+- foo
+
     - bazinga
-    
+
     - yeah
- 
- - bar
- 
+
+- bar
+
     1. damn
-    
+
     2. so many paragraphs
- 
- - baz
+
+- baz

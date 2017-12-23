@@ -56,21 +56,9 @@
     testCase.expected = testCase.expected.replace(/(\r\n)|\n|\r/g, '\n');
     testCase.actual = testCase.actual.replace(/(\r\n)|\n|\r/g, '\n');
 
-    // Ignore all leading/trailing whitespace
-    testCase.expected = testCase.expected.split('\n').map(function (x) {
-      return x.trim();
-    }).join('\n');
-    testCase.actual = testCase.actual.split('\n').map(function (x) {
-      return x.trim();
-    }).join('\n');
-
     // Remove extra lines
-    testCase.expected = testCase.expected.trim();
-    testCase.actual = testCase.actual.trim();
-
-    // Normalize line returns
-    testCase.expected = testCase.expected.replace(/(\r\n)|\n|\r/g, '\n');
-    testCase.actual = testCase.actual.replace(/(\r\n)|\n|\r/g, '\n');
+    testCase.expected = testCase.expected.replace(/^\n+/, '').replace(/\n+$/, '');
+    testCase.actual = testCase.actual.replace(/^\n+/, '').replace(/\n+$/, '');
 
     return testCase;
   }

@@ -381,6 +381,8 @@ showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
  * @returns {string}
  */
 showdown.helper.unescapeHTMLEntities = function (txt) {
+  'use strict';
+
   return txt
     .replace(/&quot;/g, '"')
     .replace(/&lt;/g, '<')

@@ -372,7 +372,7 @@ showdown.Converter = function (converterOptions) {
     // doc.innerHTML = doc.innerHTML.replace(/\[[\S\t ]]/);
 
     var nodes = doc.childNodes,
-      mdDoc = '';
+        mdDoc = '';
 
     for (var i = 0; i < nodes.length; i++) {
       mdDoc += parseNode(nodes[i]);
@@ -535,8 +535,6 @@ showdown.Converter = function (converterOptions) {
 
       // reference URIs must also be escaped
       txt = txt.replace(/^ {0,3}\[([\S \t]*?)]:/gm, '\\[$1]:');
-
-
 
       return txt;
     }
@@ -862,7 +860,7 @@ showdown.Converter = function (converterOptions) {
 
           // if data-language attribute is not defined, then we look for class language-*
           if (language === '') {
-            var classes = pres[i].firstChild.className.split(" ");
+            var classes = pres[i].firstChild.className.split(' ');
             for (var c = 0; c < classes.length; ++c) {
               var matches = classes[c].match(/^language-(.+)$/);
               if (matches !== null) {

@@ -1,4 +1,4 @@
-;/*! showdown v 1.8.5 - 16-12-2017 */
+;/*! showdown v 2.0.0-alpha1 - 23-12-2017 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -162,6 +162,11 @@ function getDefaultOpts (simple) {
       defaultValue: false,
       description: 'Enable support for document metadata (defined at the top of the document between `«««` and `»»»` or between `---` and `---`).',
       type: 'boolean'
+    },
+    splitAdjacentBlockquotes: {
+      defaultValue: false,
+      description: 'Split adjacent blockquote blocks',
+      type: 'boolean'
     }
   };
   if (simple === false) {
@@ -223,7 +228,8 @@ var showdown = {},
         ghCompatibleHeaderId:                 true,
         ghMentions:                           true,
         backslashEscapesHTMLTags:             true,
-        emoji:                                true
+        emoji:                                true,
+        splitAdjacentBlockquotes:             true
       },
       original: {
         noHeaderId:                           true,
@@ -951,6 +957,21 @@ showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
     }
     return String(str) + padString.slice(0,targetLength);
   }
+};
+
+/**
+ * Unescape HTML entities
+ * @param txt
+ * @returns {string}
+ */
+showdown.helper.unescapeHTMLEntities = function (txt) {
+  'use strict';
+
+  return txt
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
 };
 
 /**
@@ -2382,12 +2403,19 @@ showdown.subParser('makehtml.blockQuotes', function (text, options, globals) {
 
   text = globals.converter._dispatch('makehtml.blockQuotes.before', text, options, globals);
 
-  text = text.replace(/((^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+)/gm, function (wholeMatch, m1) {
-    var bq = m1;
+  // add a couple extra lines after the text and endtext mark
+  text = text + '\n\n';
 
+  var rgx = /(^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+/gm;
+
+  if (options.splitAdjacentBlockquotes) {
+    rgx = /^ {0,3}>[\s\S]*?(?:\n\n)/gm;
+  }
+
+  text = text.replace(rgx, function (bq) {
     // attacklab: hack around Konqueror 3.5.4 bug:
     // "----------bug".replace(/^-/g,"") == "bug"
-    bq = bq.replace(/^[ \t]*>[ \t]?/gm, '¨0'); // trim one level of quoting
+    bq = bq.replace(/^[ \t]*>[ \t]?/gm, ''); // trim one level of quoting
 
     // attacklab: clean up hack
     bq = bq.replace(/¨0/g, '');
@@ -4250,7 +4278,7 @@ showdown.Converter = function (converterOptions) {
   };
 
   /**
-   * Converts a markdown string into HTML
+   * Converts a markdown string into HTML string
    * @param {string} text
    * @returns {*}
    */
@@ -4350,6 +4378,11 @@ showdown.Converter = function (converterOptions) {
     return text;
   };
 
+  /**
+   * Converts an HTML string into a markdown string
+   * @param src
+   * @returns {string}
+   */
   this.makeMarkdown = function (src) {
 
     // replace \r\n with \n
@@ -4369,12 +4402,23 @@ showdown.Converter = function (converterOptions) {
     // remove all newlines and collapse spaces
     clean(doc);
 
+    // some stuff, like accidental reference links must now be escaped
+    // TODO
+    // doc.innerHTML = doc.innerHTML.replace(/\[[\S\t ]]/);
+
+    var nodes = doc.childNodes,
+        mdDoc = '';
+
+    for (var i = 0; i < nodes.length; i++) {
+      mdDoc += parseNode(nodes[i]);
+    }
+
+
     function parseNode (node, spansOnly) {
 
       spansOnly = spansOnly || false;
 
       var txt = '';
-      //indent = new Array((indentationLevel * 4) + 1).join(' ');
 
       // edge case of text without wrapper paragraph
       if (node.nodeType === 3) {
@@ -4383,8 +4427,7 @@ showdown.Converter = function (converterOptions) {
 
       // HTML comment
       if (node.nodeType === 8) {
-        // TODO parse comments
-        return '';
+        return '<!--' + node.data + '-->\n\n';
       }
 
       // process only node elements
@@ -4480,8 +4523,11 @@ showdown.Converter = function (converterOptions) {
           break;
 
         default:
-          txt = node.innerHTML;
+          txt = node.outerHTML + '\n\n';
       }
+
+      // common normalization
+
 
       return txt;
     }
@@ -4489,11 +4535,18 @@ showdown.Converter = function (converterOptions) {
     function parseTxt (node) {
       var txt = node.nodeValue;
 
+      // multiple spaces are collapsed
+      txt = txt.replace(/ +/g, ' ');
+
+      // replace the custom ¨NBSP; with a space
       txt = txt.replace(/¨NBSP;/g, ' ');
+
+      // ", <, > and & should replace escaped html entities
+      txt = showdown.helper.unescapeHTMLEntities(txt);
 
       // escape markdown magic characters
       // emphasis, strong and strikethrough - can appear everywhere
-      // we also escape pipe (\) because of tables
+      // we also escape pipe (|) because of tables
       // and escape ` because of code blocks and spans
       txt = txt.replace(/([*_~|`])/g, '\\$1');
 
@@ -4509,14 +4562,14 @@ showdown.Converter = function (converterOptions) {
       // dot, because of ordered lists, only troublesome at the beginning of a line when preceded by an integer
       txt = txt.replace(/^( {0,3}\d+)\./gm, '$1\\.');
 
-      // + and -, at the beginning of a line becomes a list, so we need to escape them also
+      // +, * and -, at the beginning of a line becomes a list, so we need to escape them also (asterisk was already escaped)
       txt = txt.replace(/^( {0,3})([+-])/gm, '$1\\$2');
 
       // images and links, ] followed by ( is problematic, so we escape it
-      // same for reference style uris
-      // might be a bit overzealous, but we prefer to be safe
       txt = txt.replace(/]([\s]*)\(/g, '\\]$1\\(');
-      txt = txt.replace(/\[([\s\S]*)]:/g, '\\[$1\\]:');
+
+      // reference URIs must also be escaped
+      txt = txt.replace(/^ {0,3}\[([\S \t]*?)]:/gm, '\\[$1]:');
 
       return txt;
     }
@@ -4528,7 +4581,7 @@ showdown.Converter = function (converterOptions) {
       }
       var listItems       = node.childNodes,
           listItemsLenght = listItems.length,
-          listNum = 1;
+          listNum = node.getAttribute('start') || 1;
 
       for (var i = 0; i < listItemsLenght; ++i) {
         if (typeof listItems[i].tagName === 'undefined' || listItems[i].tagName.toLowerCase() !== 'li') {
@@ -4655,8 +4708,12 @@ showdown.Converter = function (converterOptions) {
         for (var i = 0; i < childrenLength; ++i) {
           txt += parseNode(children[i]);
         }
-        txt += ']';
-        txt += '(' + node.getAttribute('href') + ')';
+        txt += '](';
+        txt += '<' + node.getAttribute('href') + '>';
+        if (node.hasAttribute('title')) {
+          txt += ' "' + node.getAttribute('title') + '"';
+        }
+        txt += ')';
       }
       return txt;
     }
@@ -4664,8 +4721,8 @@ showdown.Converter = function (converterOptions) {
     function parseImage (node) {
       var txt = '';
       if (node.hasAttribute('src')) {
-        txt += '![' + node.getAttribute('alt') + ']';
-        txt += '(' + node.getAttribute('src');
+        txt += '![' + node.getAttribute('alt') + '](';
+        txt += '<' + node.getAttribute('src') + '>';
         if (node.hasAttribute('width') && node.hasAttribute('height')) {
           txt += ' =' + node.getAttribute('width') + 'x' + node.getAttribute('height');
         }
@@ -4703,6 +4760,10 @@ showdown.Converter = function (converterOptions) {
           txt += parseNode(children[i]);
         }
       }
+
+      // some text normalization
+      txt = txt.trim();
+
       return txt;
     }
 
@@ -4829,8 +4890,24 @@ showdown.Converter = function (converterOptions) {
       for (var i = 0; i < pres.length; ++i) {
 
         if (pres[i].childElementCount === 1 && pres[i].firstChild.tagName.toLowerCase() === 'code') {
-          var content = pres[i].firstChild.innerHTML,
+          var content = pres[i].firstChild.innerHTML.trim(),
               language = pres[i].firstChild.getAttribute('data-language') || '';
+
+          // if data-language attribute is not defined, then we look for class language-*
+          if (language === '') {
+            var classes = pres[i].firstChild.className.split(' ');
+            for (var c = 0; c < classes.length; ++c) {
+              var matches = classes[c].match(/^language-(.+)$/);
+              if (matches !== null) {
+                language = matches[1];
+                break;
+              }
+            }
+          }
+
+          // unescape html entities in content
+          content = showdown.helper.unescapeHTMLEntities(content);
+
           presPH.push(content);
           pres[i].outerHTML = '<precode language="' + language + '" precodenum="' + i.toString() + '"></precode>';
         } else {
@@ -4840,13 +4917,6 @@ showdown.Converter = function (converterOptions) {
         }
       }
       return presPH;
-    }
-
-    var nodes = doc.childNodes,
-        mdDoc = '';
-
-    for (var i = 0; i < nodes.length; i++) {
-      mdDoc += parseNode(nodes[i]);
     }
 
     return mdDoc;

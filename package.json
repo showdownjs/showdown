@@ -47,7 +47,7 @@
     "grunt-contrib-uglify": "3.2.x",
     "grunt-conventional-changelog": "6.1.x",
     "grunt-conventional-github-releaser": "1.0.x",
-    "grunt-endline": "0.6.x",
+    "grunt-endline": "~0.7.0",
     "grunt-eslint": "19.0.x",
     "grunt-simple-mocha": "0.4.x",
     "load-grunt-tasks": "3.5.x",

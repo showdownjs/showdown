@@ -55,11 +55,11 @@
     "quiet-grunt": "0.2.x",
     "semver": "5.4.x",
     "semver-sort": "0.0.x",
-    "sinon": "~4.2.0",
+    "sinon": "4.2.0",
     "source-map-support": "0.5.x"
   },
   "dependencies": {
     "jsdom": "^9.12.0",
-    "yargs": "^10.0.3"
+    "yargs": "^11.0.0"
   }
 }

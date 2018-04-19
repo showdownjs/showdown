@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0-alpha1 - 23-12-2017 */
+;/*! showdown v 2.0.0-alpha1 - 19-04-2018 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -4318,8 +4318,8 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/\r\n/g, '\n'); // DOS to Unix
     text = text.replace(/\r/g, '\n'); // Mac to Unix
 
-    // Stardardize line spaces (nbsp causes trouble in older browsers and some regex flavors)
-    text = text.replace(/\u00A0/g, ' ');
+    // Stardardize line spaces
+    text = text.replace(/\u00A0/g, '&nbsp;');
 
     if (options.smartIndentationFix) {
       text = rTrimInputText(text);

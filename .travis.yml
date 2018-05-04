@@ -5,10 +5,10 @@ node_js:
   - "7"
 
 before_install:
-  - 'if [ "$TRAVIS_NODE_VERSION" != "0.10" -a "$TRAVIS_NODE_VERSION" != "0.12" ]; then npm update npm -g; fi'
+  - npm update npm -g
   - npm install -g grunt-cli
 
-#travis build  speed up
+# travis build  speed up
 sudo: false
 cache:
   directories:

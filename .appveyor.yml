@@ -24,10 +24,6 @@ install:
   # install node
   # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
-  - ps: >-
-      if ($env:nodejs_version -eq "0.12" -or $env:nodejs_version -eq "0.10") {
-        $env:PATH="$env:APPDATA\npm;$env:PATH"
-      }
   # install grunt-cli globally
   - npm install -g grunt-cli
   # install modules
@@ -36,14 +32,7 @@ install:
 test_script:
   # Output useful info for debugging
   - node --version && npm --version
-  - ps: >-
-      if ($env:nodejs_version -eq "0.12" -or $env:nodejs_version -eq "0.10") {
-        echo ----- Running tests in LEGACY mode -----
-        grunt test-old
-      } else {
-        echo ----- Running tests in NORMAL mode -----
-        grunt test
-      }
+  - ps: grunt test
 
 # Don't actually build.
 build: off

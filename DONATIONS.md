@@ -1,4 +1,4 @@
-We would like to thank everyone that contributed to this library. If you find our library useful and wish to donate as well, you can do so [through Pledgie](https://pledgie.com/campaigns/34908) or directly [through paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated.
+We would like to thank everyone that contributed to this library. If you find our library useful and wish to donate as well, you can do so directly [through paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated.
 
 
 # Donors
@@ -19,3 +19,8 @@ We would like to thank everyone that contributed to this library. If you find ou
 - [**Learn on demand Systems**](http://www.learnondemandsystems.com/) (1000$) 
 
 - **ivanhjc** (5$)
+
+- **Sam Huffman** (15$)
+
+    > Thanks for the great work on showdown.js! I've been looking for a good solution to serve wiki-like text to a browser and render as
+    HTML but nearly gave up after mixed success with wikitext. Your library gets me very close to where I want to be.

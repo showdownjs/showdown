@@ -1,11 +1,10 @@
 language: node_js
 node_js:
-  - "4"
   - "6"
-  - "7"
+  - "8"
+  - "10"
 
 before_install:
-  - npm update npm -g
   - npm install -g grunt-cli
 
 # travis build  speed up

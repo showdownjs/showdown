@@ -122,7 +122,9 @@ var converter = new showdown.Converter(),
 
 Both examples should output...
 
+```html
     <h1 id="hellomarkdown">hello, markdown!</h1>
+```
 
 ## Options
 
@@ -248,7 +250,7 @@ var defaultOptions = showdown.getDefaultOptions();
    some text www.google.com
    ```
    will be parsed as 
-   ````
+   ```html
    <p>some text <a href="www.google.com">www.google.com</a>
    ```
  

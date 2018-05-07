@@ -27,11 +27,11 @@ Check a live Demo here http://demo.showdownjs.com/
  - [docular](https://github.com/Vertafore/docular)
  - [and some others...](https://www.npmjs.com/browse/depended/showdown)
 
-## Donate [![Click here to lend your support to: ShowdownJS website and testing platform and make a donation at pledgie.com](https://pledgie.com/campaigns/35166.png?skin_name=chrome)](https://pledgie.com/campaigns/35166)
+## Donate [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
 
 As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
 
-If you like our work and find our library useful, please donate [through Pledgie](https://pledgie.com/campaigns/35166) or directly [through paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help us continue to develop this awesome library.
+If you like our work and find our library useful, please donate ~~[through Pledgie](https://pledgie.com/campaigns/35166) or~~ directly [through paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help us continue to develop this awesome library.
 
 ## Installation
 

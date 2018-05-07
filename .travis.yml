@@ -7,7 +7,7 @@ node_js:
 before_install:
   - npm install -g grunt-cli
 
-#travis build  speed up
+# travis build  speed up
 sudo: false
 cache:
   directories:

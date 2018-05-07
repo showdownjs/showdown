@@ -26,7 +26,6 @@ install:
   # install node
   # Get the latest stable version of Node.js or io.js
   - ps: Install-Product node $env:nodejs_version
-
   # install grunt-cli globally
   - npm install -g grunt-cli
   # install modules
@@ -35,6 +34,7 @@ install:
 test_script:
   # Output useful info for debugging
   - node --version && npm --version
+  - ps: grunt test
 
 # Don't actually build.
 build: off

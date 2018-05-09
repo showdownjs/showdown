@@ -17,7 +17,8 @@ environment:
       platform: x64
     - nodejs_version: "10"
       platform: x64
-
+cache:
+  - node_modules
 install:
   # Use version based on tag
   - ps: $env:package_version = (Get-Content -Raw -Path package.json | ConvertFrom-Json).version

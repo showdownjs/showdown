@@ -5,7 +5,11 @@ node_js:
   - "10"
 
 before_install:
+  - npm i -g npm@latest
   - npm install -g grunt-cli
+
+install:
+  - npm ci
 
 # travis build  speed up
 sudo: false

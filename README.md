@@ -367,6 +367,12 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **metadata**: (boolean) [default false] Enable support for document metadata (defined at the top of the document
    between `«««` and `»»»` or between `---` and `---`).  (since v.1.8.5)
+   
+   ```js
+   var conv = new showdown.Converter({metadata: true});
+   var html = conv.makeHtml(someMd);
+   var metadata = conv.getMetadata(); // returns an object with the document metadata
+   ```
 
  * **splitAdjacentBlockquotes**: (boolean) [default false] Split adjacent blockquote blocks.(since v.1.8.6)
 

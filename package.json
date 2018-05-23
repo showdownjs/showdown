@@ -59,7 +59,7 @@
     "source-map-support": "0.5.x"
   },
   "dependencies": {
-    "jsdom": "^10.0.0",
+    "jsdom": "^11.11.0",
     "yargs": "^11.0.0"
   }
 }

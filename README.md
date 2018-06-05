@@ -106,7 +106,7 @@ Check our [wiki pages][wiki] for examples and a more in-depth documentation.
 ```js
 var showdown  = require('showdown'),
     converter = new showdown.Converter(),
-    text      = '#hello, markdown!',
+    text      = '# hello, markdown!',
     html      = converter.makeHtml(text);
 ```
 
@@ -114,7 +114,7 @@ var showdown  = require('showdown'),
 
 ```js
 var converter = new showdown.Converter(),
-    text      = '#hello, markdown!',
+    text      = '# hello, markdown!',
     html      = converter.makeHtml(text);
 ```
 
@@ -328,7 +328,7 @@ var defaultOptions = showdown.getDefaultOptions();
    needing 2 spaces at the end of the line **(since v1.5.1)**
  
    ```md
-   a line
+   a line  
    wrapped in two
    ```
     

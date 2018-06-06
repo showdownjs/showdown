@@ -55,7 +55,7 @@
     "quiet-grunt": "0.2.x",
     "semver": "5.4.x",
     "semver-sort": "0.0.x",
-    "sinon": "5.0.x",
+    "sinon": "~5.1.0",
     "source-map-support": "0.5.x"
   },
   "dependencies": {

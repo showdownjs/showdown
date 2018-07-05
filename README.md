@@ -523,7 +523,7 @@ Showdown is powered by:<br/>
 [changelog]: https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
 [wiki]: https://github.com/showdownjs/showdown/wiki
 [cli-wiki]: https://github.com/showdownjs/showdown/wiki/CLI-tool
-[definitely-typed]: https://github.com/borisyankov/DefinitelyTyped/tree/master/showdown
+[definitely-typed]: https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/showdown
 [xss-wiki]: https://github.com/showdownjs/showdown/wiki/Markdown's-XSS-Vulnerability-(and-how-to-mitigate-it)
 [ext-wiki]: https://github.com/showdownjs/showdown/wiki/extensions
 [coding-rules]: https://github.com/showdownjs/code-style/blob/master/README.md

@@ -180,6 +180,8 @@ showdown.subParser = function (name, func) {
         throw Error('SubParser named ' + name + ' not registered!');
       }
     }
+  } else {
+    throw Error('showdown.subParser function first argument must be a string (the name of the subparser)');
   }
 };
 

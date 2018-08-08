@@ -13,6 +13,14 @@ And some HTML
 <div>HTML!</div>
 ```
 
+And some CSS with spaces before the language declaration
+
+```    css
+body {
+    font-size: 1.5em;
+}
+```
+
 Use more than 3 backticks
 
 `````

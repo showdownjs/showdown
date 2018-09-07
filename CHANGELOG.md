@@ -1,3 +1,68 @@
+<a name="2.0.0-alpha1"></a>
+# [2.0.0-alpha1](https://github.com/showdownjs/showdown/compare/1.8.5...2.0.0-alpha1) (2018-09-08)
+
+
+### Bug Fixes
+
+* **package:** update yargs to version 11.0.0 ([#491](https://github.com/showdownjs/showdown/issues/491)) ([6376d40](https://github.com/showdownjs/showdown/commit/6376d40))
+* compress showdown emoji ([55f22de](https://github.com/showdownjs/showdown/commit/55f22de))
+* replaces \u00A0 with &nbsp; ([f20dc75](https://github.com/showdownjs/showdown/commit/f20dc75)), closes [#521](https://github.com/showdownjs/showdown/issues/521)
+
+
+### Code Refactoring
+
+* **subParsers:** change name and directory of subparsers ([3db9200](https://github.com/showdownjs/showdown/commit/3db9200))
+
+
+### Features
+
+* **makeMarkdown:** convert HTML to MD ([358947b](https://github.com/showdownjs/showdown/commit/358947b))
+* **splitAdjacentBlockquotes:** add option to split adjacent blockquote blocks ([ea3db5f](https://github.com/showdownjs/showdown/commit/ea3db5f)), closes [#477](https://github.com/showdownjs/showdown/issues/477)
+
+
+### BREAKING CHANGES
+
+* **subParsers:** makeHtml subparsers names changed, by prepending 'makehtml.' to them.
+Example: 'anchors', subparser is now named 'makehtml.anchors'.
+
+Event names were also changed to reflect this.
+Example: 'anchors.before' is now named 'makehtml.anchors.before'.
+
+**To migrate:**
+
+If you have a listener extension, replace the old event name with the new one. Example:
+
+Replace this
+
+```js
+showdown.extension('myext', function() {
+  return [{
+    type: 'listener',
+    listeners: {
+      'anchors.before': function (event, text, converter, options, globals) {
+        //... some code
+        return text;
+      }
+  }];
+});
+```
+
+with this
+```js
+showdown.extension('myext', function() {
+  return [{
+    type: 'listener',
+    listeners: {
+      'makehtml.anchors.before': function (event, text, converter, options, globals) {
+        //... some code
+        return text;
+      }
+  }];
+});
+```
+
+
+
 <a name="1.8.5"></a>
 # [1.8.5](https://github.com/showdownjs/showdown/compare/1.8.4...1.8.5) (2017-12-10)
 

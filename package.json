@@ -41,7 +41,7 @@
   "devDependencies": {
     "chai": "4.1.x",
     "grunt": "^1.0.3",
-    "grunt-contrib-clean": "1.1.x",
+    "grunt-contrib-clean": "~2.0.0",
     "grunt-contrib-concat": "1.0.x",
     "grunt-contrib-jshint": "1.1.x",
     "grunt-contrib-uglify": "~3.3.0",

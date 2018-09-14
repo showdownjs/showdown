@@ -2793,7 +2793,7 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
   text = globals.converter._dispatch('makehtml.encodeBackslashEscapes.before', text, options, globals).getText();
 
   text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
-  text = text.replace(/\\([`*_{}\[\]()>#+.!~=|-])/g, showdown.helper.escapeCharactersCallback);
+  text = text.replace(/\\([`*_{}\[\]()>#+.!~=|:-])/g, showdown.helper.escapeCharactersCallback);
 
   text = globals.converter._dispatch('makehtml.encodeBackslashEscapes.after', text, options, globals).getText();
   return text;
@@ -3420,6 +3420,7 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
   }
 
   // Now parse asterisks
+  /*
   if (options.literalMidWordAsterisks) {
     text = text.replace(/([^*]|^)\B\*\*\*(\S[\s\S]+?)\*\*\*\B(?!\*)/g, function (wm, lead, txt) {
       return parseInside (txt, lead + '<strong><em>', '</em></strong>');
@@ -3431,18 +3432,18 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
       return parseInside (txt, lead + '<em>', '</em>');
     });
   } else {
-    text = text.replace(/\*\*\*(\S[\s\S]*?)\*\*\*/g, function (wm, m) {
-      return (/\S$/.test(m)) ? parseInside (m, '<strong><em>', '</em></strong>') : wm;
-    });
-    text = text.replace(/\*\*(\S[\s\S]*?)\*\*/g, function (wm, m) {
-      return (/\S$/.test(m)) ? parseInside (m, '<strong>', '</strong>') : wm;
-    });
-    text = text.replace(/\*([^\s*][\s\S]*?)\*/g, function (wm, m) {
-      // !/^\*[^*]/.test(m) - test if it doesn't start with ** (since it seems redundant, we removed it)
-      return (/\S$/.test(m)) ? parseInside (m, '<em>', '</em>') : wm;
-    });
-  }
-
+  */
+  text = text.replace(/\*\*\*(\S[\s\S]*?)\*\*\*/g, function (wm, m) {
+    return (/\S$/.test(m)) ? parseInside (m, '<strong><em>', '</em></strong>') : wm;
+  });
+  text = text.replace(/\*\*(\S[\s\S]*?)\*\*/g, function (wm, m) {
+    return (/\S$/.test(m)) ? parseInside (m, '<strong>', '</strong>') : wm;
+  });
+  text = text.replace(/\*([^\s*][\s\S]*?)\*/g, function (wm, m) {
+    // !/^\*[^*]/.test(m) - test if it doesn't start with ** (since it seems redundant, we removed it)
+    return (/\S$/.test(m)) ? parseInside (m, '<em>', '</em>') : wm;
+  });
+  //}
 
   text = globals.converter._dispatch('makehtml.italicsAndBold.after', text, options, globals).getText();
   return text;

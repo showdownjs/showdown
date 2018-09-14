@@ -14,7 +14,7 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
   text = globals.converter._dispatch('makehtml.encodeBackslashEscapes.before', text, options, globals).getText();
 
   text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
-  text = text.replace(/\\([`*_{}\[\]()>#+.!~=|-])/g, showdown.helper.escapeCharactersCallback);
+  text = text.replace(/\\([`*_{}\[\]()>#+.!~=|:-])/g, showdown.helper.escapeCharactersCallback);
 
   text = globals.converter._dispatch('makehtml.encodeBackslashEscapes.after', text, options, globals).getText();
   return text;

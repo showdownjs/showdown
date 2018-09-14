@@ -2347,7 +2347,7 @@ showdown.subParser('makehtml.anchors', function (text, options, globals) {
 
   // Lastly handle GithubMentions if option is enabled
   if (options.ghMentions) {
-    text = text.replace(/(^|\s)(\\)?(@([a-z\d\-]+))(?=[.!?;,[\]()]|\s|$)/gmi, function (wm, st, escape, mentions, username) {
+    text = text.replace(/(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gmi, function (wm, st, escape, mentions, username) {
       if (escape === '\\') {
         return st + mentions;
       }
@@ -2361,6 +2361,10 @@ showdown.subParser('makehtml.anchors', function (text, options, globals) {
       if (options.openLinksInNewWindow) {
         target = ' target="¨E95Eblank"';
       }
+
+      // lnk = showdown.helper.escapeCharacters(lnk, '*_', false); // replaced line to improve performance
+      lnk = lnk.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
+
       return st + '<a href="' + lnk + '"' + target + '>' + mentions + '</a>';
     });
   }

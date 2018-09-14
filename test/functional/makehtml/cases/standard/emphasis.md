@@ -72,3 +72,5 @@ foo__bar__baz
 this is **<a href="//google.com">imbued link with strong</a>**
 
 this is __<a href="//google.com">imbued link with strong</a>__
+
+this link has underscore [some_link](http://www.google.com/some_link)

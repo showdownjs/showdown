@@ -4,7 +4,7 @@
  */
 showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.escapeSpecialCharsWithinTagAttributes.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.escapeSpecialCharsWithinTagAttributes.before', text, options, globals).getText();
 
   // Build a regex to find HTML tags.
   var tags     = /<\/?[a-z\d_:-]+(?:[\s]+[\s\S]+?)?>/gi,
@@ -21,6 +21,6 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
       .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
   });
 
-  text = globals.converter._dispatch('makehtml.escapeSpecialCharsWithinTagAttributes.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.escapeSpecialCharsWithinTagAttributes.after', text, options, globals).getText();
   return text;
 });

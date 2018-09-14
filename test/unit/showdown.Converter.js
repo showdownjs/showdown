@@ -126,19 +126,19 @@ describe('showdown.Converter', function () {
 
   describe('events', function () {
     var events = [
-      'anchors',
-      'autoLinks',
-      'blockGamut',
-      'blockQuotes',
-      'codeBlocks',
-      'codeSpans',
-      'githubCodeBlocks',
-      'headers',
-      'images',
-      'italicsAndBold',
-      'lists',
-      'paragraph',
-      'spanGamut'
+      'makehtml.anchors',
+      'makehtml.autoLinks',
+      'makehtml.blockGamut',
+      'makehtml.blockQuotes',
+      'makehtml.codeBlocks',
+      'makehtml.codeSpans',
+      'makehtml.githubCodeBlocks',
+      'makehtml.headers',
+      'makehtml.images',
+      'makehtml.italicsAndBold',
+      'makehtml.lists',
+      'makehtml.paragraph',
+      'makehtml.spanGamut'
       //'strikeThrough',
       //'tables'
     ];
@@ -151,8 +151,10 @@ describe('showdown.Converter', function () {
     function runListener (name) {
       it('should listen to ' + name, function () {
         var converter = new showdown.Converter();
-        converter.listen(name, function (evtName, text) {
-          evtName.should.equal(name);
+        converter.listen(name, function (event) {
+          var evtName = event.getName();
+          var text = event.getCapturedText();
+          evtName.should.equal(name.toLowerCase());
           text.should.match(/^[\s\S]*foo[\s\S]*$/);
           return text;
         })

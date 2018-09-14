@@ -175,7 +175,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
   }
 
   /** Start of list parsing **/
-  text = globals.converter._dispatch('lists.before', text, options, globals);
+  text = globals.converter._dispatch('lists.before', text, options, globals).getText();
   // add sentinel to hack around khtml/safari bug:
   // http://bugs.webkit.org/show_bug.cgi?id=11231
   text += '¨0';
@@ -198,6 +198,6 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
 
   // strip sentinel
   text = text.replace(/¨0/, '');
-  text = globals.converter._dispatch('makehtml.lists.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.lists.after', text, options, globals).getText();
   return text;
 });

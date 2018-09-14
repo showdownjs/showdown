@@ -8,7 +8,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.completeHTMLDocument.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.completeHTMLDocument.before', text, options, globals).getText();
 
   var doctype = 'html',
       doctypeParsed = '<!DOCTYPE HTML>\n',
@@ -57,6 +57,6 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
 
   text = doctypeParsed + '<html' + lang + '>\n<head>\n' + title + charset + metadata + '</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
 
-  text = globals.converter._dispatch('makehtml.completeHTMLDocument.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.completeHTMLDocument.after', text, options, globals).getText();
   return text;
 });

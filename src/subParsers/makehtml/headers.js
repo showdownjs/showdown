@@ -1,7 +1,7 @@
 showdown.subParser('makehtml.headers', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.headers.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.headers.before', text, options, globals).getText();
 
   var headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
 
@@ -121,6 +121,6 @@ showdown.subParser('makehtml.headers', function (text, options, globals) {
     return title;
   }
 
-  text = globals.converter._dispatch('makehtml.headers.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.headers.after', text, options, globals).getText();
   return text;
 });

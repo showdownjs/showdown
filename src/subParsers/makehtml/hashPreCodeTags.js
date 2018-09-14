@@ -3,7 +3,7 @@
  */
 showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashPreCodeTags.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashPreCodeTags.before', text, options, globals).getText();
 
   var repFunc = function (wholeMatch, match, left, right) {
     // encode html entities
@@ -14,6 +14,6 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
   // Hash <pre><code>
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^ {0,3}</code>\\s*</pre>', 'gim');
 
-  text = globals.converter._dispatch('makehtml.hashPreCodeTags.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashPreCodeTags.after', text, options, globals).getText();
   return text;
 });

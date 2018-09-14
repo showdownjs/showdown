@@ -4,7 +4,7 @@
 showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.codeBlocks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.codeBlocks.before', text, options, globals).getText();
 
   // sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '¨0';
@@ -33,6 +33,6 @@ showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
   // strip sentinel
   text = text.replace(/¨0/, '');
 
-  text = globals.converter._dispatch('makehtml.codeBlocks.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.codeBlocks.after', text, options, globals).getText();
   return text;
 });

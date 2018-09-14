@@ -1,6 +1,6 @@
 showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.before', text, options, globals).getText();
 
   var blockTags = [
         'pre',
@@ -93,6 +93,6 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
   text = text.replace(/(?:\n\n)( {0,3}(?:<([?%])[^\r]*?\2>)[ \t]*(?=\n{2,}))/g,
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
-  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.after', text, options, globals).getText();
   return text;
 });

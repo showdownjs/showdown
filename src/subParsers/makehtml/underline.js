@@ -5,7 +5,7 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.underline.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.underline.before', text, options, globals).getText();
 
   if (options.literalMidWordUnderscores) {
     text = text.replace(/\b_?__(\S[\s\S]*)___?\b/g, function (wm, txt) {
@@ -20,7 +20,7 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
   // escape remaining underscores to prevent them being parsed by italic and bold
   text = text.replace(/(_)/g, showdown.helper.escapeCharactersCallback);
 
-  text = globals.converter._dispatch('makehtml.underline.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.underline.after', text, options, globals).getText();
 
   return text;
 });

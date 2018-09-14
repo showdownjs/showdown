@@ -3,7 +3,7 @@
  */
 showdown.subParser('makehtml.outdent', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.outdent.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.outdent.before', text, options, globals).getText();
 
   // attacklab: hack around Konqueror 3.5.4 bug:
   // "----------bug".replace(/^-/g,"") == "bug"
@@ -12,6 +12,6 @@ showdown.subParser('makehtml.outdent', function (text, options, globals) {
   // attacklab: clean up hack
   text = text.replace(/¨0/g, '');
 
-  text = globals.converter._dispatch('makehtml.outdent.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.outdent.after', text, options, globals).getText();
   return text;
 });

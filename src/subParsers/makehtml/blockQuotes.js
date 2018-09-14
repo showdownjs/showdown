@@ -1,7 +1,7 @@
 showdown.subParser('makehtml.blockQuotes', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.blockQuotes.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.blockQuotes.before', text, options, globals).getText();
 
   // add a couple extra lines after the text and endtext mark
   text = text + '\n\n';
@@ -37,6 +37,6 @@ showdown.subParser('makehtml.blockQuotes', function (text, options, globals) {
     return showdown.subParser('makehtml.hashBlock')('<blockquote>\n' + bq + '\n</blockquote>', options, globals);
   });
 
-  text = globals.converter._dispatch('makehtml.blockQuotes.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.blockQuotes.after', text, options, globals).getText();
   return text;
 });

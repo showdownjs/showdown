@@ -3,7 +3,7 @@
  */
 showdown.subParser('makehtml.detab', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.detab.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.detab.before', text, options, globals).getText();
 
   // expand first n-1 tabs
   text = text.replace(/\t(?=\t)/g, '    '); // g_tab_width
@@ -28,6 +28,6 @@ showdown.subParser('makehtml.detab', function (text, options, globals) {
   text = text.replace(/¨A/g, '    ');  // g_tab_width
   text = text.replace(/¨B/g, '');
 
-  text = globals.converter._dispatch('makehtml.detab.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.detab.after', text, options, globals).getText();
   return text;
 });

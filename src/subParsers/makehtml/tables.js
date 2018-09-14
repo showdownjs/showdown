@@ -70,6 +70,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
         tableLines[i] = tableLines[i].replace(/\|[ \t]*$/, '');
       }
       // parse code spans first, but we only support one line code spans
+
       tableLines[i] = showdown.subParser('makehtml.codeSpans')(tableLines[i], options, globals);
     }
 
@@ -125,7 +126,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
     return buildTable(headers, cells);
   }
 
-  text = globals.converter._dispatch('makehtml.tables.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.tables.before', text, options, globals).getText();
 
   // find escaped pipe characters
   text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
@@ -136,7 +137,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
   // parse one column tables
   text = text.replace(singeColTblRgx, parseTable);
 
-  text = globals.converter._dispatch('makehtml.tables.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.tables.after', text, options, globals).getText();
 
   return text;
 });

@@ -3,7 +3,7 @@
  */
 showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashHTMLSpans.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashHTMLSpans.before', text, options, globals).getText();
 
   function hashHTMLSpan (html) {
     return '¨C' + (globals.gHtmlSpans.push(html) - 1) + 'C';
@@ -31,7 +31,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
 
   /*showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');*/
 
-  text = globals.converter._dispatch('makehtml.hashHTMLSpans.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashHTMLSpans.after', text, options, globals).getText();
   return text;
 });
 
@@ -40,7 +40,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
  */
 showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.before', text, options, globals).getText();
 
   for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
     var repText = globals.gHtmlSpans[i],
@@ -59,6 +59,6 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
     text = text.replace('¨C' + i + 'C', repText);
   }
 
-  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.after', text, options, globals).getText();
   return text;
 });

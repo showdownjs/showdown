@@ -1,7 +1,7 @@
 showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.italicsAndBold.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.italicsAndBold.before', text, options, globals).getText();
 
   // it's faster to have 3 separate regexes for each case than have just one
   // because of backtracing, in some cases, it could lead to an exponential effect
@@ -65,6 +65,6 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
   }
 
 
-  text = globals.converter._dispatch('makehtml.italicsAndBold.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.italicsAndBold.after', text, options, globals).getText();
   return text;
 });

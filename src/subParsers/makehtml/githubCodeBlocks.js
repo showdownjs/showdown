@@ -16,7 +16,7 @@ showdown.subParser('makehtml.githubCodeBlocks', function (text, options, globals
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.githubCodeBlocks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.githubCodeBlocks.before', text, options, globals).getText();
 
   text += '¨0';
 
@@ -42,5 +42,5 @@ showdown.subParser('makehtml.githubCodeBlocks', function (text, options, globals
   // attacklab: strip sentinel
   text = text.replace(/¨0/, '');
 
-  return globals.converter._dispatch('makehtml.githubCodeBlocks.after', text, options, globals);
+  return globals.converter._dispatch('makehtml.githubCodeBlocks.after', text, options, globals).getText();
 });

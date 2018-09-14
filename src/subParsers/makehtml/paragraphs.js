@@ -4,7 +4,7 @@
 showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.paragraphs.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.paragraphs.before', text, options, globals).getText();
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
@@ -66,5 +66,5 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
-  return globals.converter._dispatch('makehtml.paragraphs.after', text, options, globals);
+  return globals.converter._dispatch('makehtml.paragraphs.after', text, options, globals).getText();
 });

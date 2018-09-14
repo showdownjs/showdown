@@ -47,12 +47,12 @@ var simpleURLRegex  = /([*~_]+|\b)(((https?|ftp|dict):\/\/|www\.)[^'">\s]+?\.[^'
 showdown.subParser('makehtml.autoLinks', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.autoLinks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.autoLinks.before', text, options, globals).getText();
 
   text = text.replace(delimUrlRegex, replaceLink(options));
   text = text.replace(delimMailRegex, replaceMail(options, globals));
 
-  text = globals.converter._dispatch('makehtml.autoLinks.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.autoLinks.after', text, options, globals).getText();
 
   return text;
 });
@@ -64,7 +64,7 @@ showdown.subParser('makehtml.simplifiedAutoLinks', function (text, options, glob
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.simplifiedAutoLinks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.simplifiedAutoLinks.before', text, options, globals).getText();
 
   if (options.excludeTrailingPunctuationFromURLs) {
     text = text.replace(simpleURLRegex2, replaceLink(options));
@@ -73,7 +73,7 @@ showdown.subParser('makehtml.simplifiedAutoLinks', function (text, options, glob
   }
   text = text.replace(simpleMailRegex, replaceMail(options, globals));
 
-  text = globals.converter._dispatch('makehtml.simplifiedAutoLinks.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.simplifiedAutoLinks.after', text, options, globals).getText();
 
   return text;
 });

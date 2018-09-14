@@ -26,7 +26,7 @@
 showdown.subParser('makehtml.codeSpans', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.codeSpans.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.codeSpans.before', text, options, globals).getText();
 
   if (typeof(text) === 'undefined') {
     text = '';
@@ -43,6 +43,6 @@ showdown.subParser('makehtml.codeSpans', function (text, options, globals) {
     }
   );
 
-  text = globals.converter._dispatch('makehtml.codeSpans.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.codeSpans.after', text, options, globals).getText();
   return text;
 });

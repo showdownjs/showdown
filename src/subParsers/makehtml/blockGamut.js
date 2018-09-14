@@ -5,7 +5,7 @@
 showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.blockGamut.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.blockGamut.before', text, options, globals).getText();
 
   // we parse blockquotes first so that we can have headings and hrs
   // inside blockquotes
@@ -26,7 +26,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
   text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
 
-  text = globals.converter._dispatch('makehtml.blockGamut.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.blockGamut.after', text, options, globals).getText();
 
   return text;
 });

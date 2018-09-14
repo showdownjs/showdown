@@ -6,7 +6,7 @@
 showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.encodeCode.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.encodeCode.before', text, options, globals).getText();
 
   // Encode all ampersands; HTML entities are not
   // entities within a Markdown code span.
@@ -18,6 +18,6 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   // Now, escape characters that are magic in Markdown:
     .replace(/([*_{}\[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
 
-  text = globals.converter._dispatch('makehtml.encodeCode.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.encodeCode.after', text, options, globals).getText();
   return text;
 });

@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0-alpha1 - 07-07-2018 */
+;/*! showdown v 2.0.0-alpha1 - 14-09-2018 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -971,6 +971,69 @@ showdown.helper.unescapeHTMLEntities = function (txt) {
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&amp;/g, '&');
+};
+
+/**
+ * Showdown's Event Object
+ * @param {string} name Name of the event
+ * @param {{}} params optional. params of the event
+ * @constructor
+ */
+showdown.helper.Event = function (name, text, params) {
+  'use strict';
+
+  /**
+   * Get the name of the event
+   * @returns {string}
+   */
+  this.getName = function () {
+    return name;
+  };
+
+  this.getEventName = function () {
+    return name;
+  };
+
+  var regexp = params.regexp || null;
+  var matches = params.matches || {};
+  var options = params.options || {};
+  var converter = params.converter || null;
+  var globals = params.globals || {};
+
+  this._stopExecution = false;
+
+  this.parsedText = params.parsedText || null;
+
+  this.getRegexp = function () {
+    return regexp;
+  };
+  this.getOptions = function () {
+    return options;
+  };
+  this.getConverter = function () {
+    return converter;
+  };
+  this.getGlobals = function () {
+    return globals;
+  };
+  this.getCapturedText = function () {
+    return text;
+  };
+  this.getText = function () {
+    return text;
+  };
+  this.setText = function (newText) {
+    text = newText;
+  };
+  this.getMatches = function () {
+    return matches;
+  };
+  this.setMatches = function (newMatches) {
+    matches = newMatches;
+  };
+  this.preventDefault = function (bool) {
+    this._stopExecution = !bool;
+  };
 };
 
 /**
@@ -2181,7 +2244,7 @@ showdown.helper.emojis = {
   'zzz':'\ud83d\udca4',
 
   /* special emojis :P */
-  'octocat':  '<img width="20" height="20" align="absmiddle" src="data:image/png;base64,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">',
+  'octocat':  '<img width="20" height="20" align="absmiddle" src="https://assets-cdn.github.com/images/icons/emoji/octocat.png">',
   'showdown': '<img width="20" height="20" align="absmiddle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC">'
 };
 
@@ -2191,74 +2254,96 @@ showdown.helper.emojis = {
 showdown.subParser('makehtml.anchors', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.anchors.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.anchors.before', text, options, globals).getText();
 
-  var writeAnchorTag = function (wholeMatch, linkText, linkId, url, m5, m6, title) {
-    if (showdown.helper.isUndefined(title)) {
-      title = '';
-    }
-    linkId = linkId.toLowerCase();
+  var writeAnchorTag = function (rgx) {
 
-    // Special case for explicit empty url
-    if (wholeMatch.search(/\(<?\s*>? ?(['"].*['"])?\)$/m) > -1) {
-      url = '';
-    } else if (!url) {
-      if (!linkId) {
-        // lower-case and turn embedded newlines into spaces
-        linkId = linkText.toLowerCase().replace(/ ?\n/g, ' ');
-      }
-      url = '#' + linkId;
-
-      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
-        url = globals.gUrls[linkId];
-        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
-          title = globals.gTitles[linkId];
+    return function (wholeMatch1, linkText1, linkId1, url1, m5, m6, title1) {
+      var evt = globals.converter._dispatch('makehtml.anchors.capture_begin', wholeMatch1, options, globals, {
+        regexp: rgx,
+        matches: {
+          wholeMatch: wholeMatch1,
+          linkText: linkText1,
+          linkId: linkId1,
+          url: url1,
+          title: title1
         }
-      } else {
-        return wholeMatch;
+      });
+
+      var wholeMatch = evt.getMatches().wholeMatch;
+      var linkText = evt.getMatches().linkText;
+      var linkId = evt.getMatches().linkId;
+      var url = evt.getMatches().url;
+      var title = evt.getMatches().title;
+
+      if (showdown.helper.isUndefined(title)) {
+        title = '';
       }
-    }
+      linkId = linkId.toLowerCase();
 
-    //url = showdown.helper.escapeCharacters(url, '*_', false); // replaced line to improve performance
-    url = url.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
+      // Special case for explicit empty url
+      if (wholeMatch.search(/\(<?\s*>? ?(['"].*['"])?\)$/m) > -1) {
+        url = '';
+      } else if (!url) {
+        if (!linkId) {
+          // lower-case and turn embedded newlines into spaces
+          linkId = linkText.toLowerCase().replace(/ ?\n/g, ' ');
+        }
+        url = '#' + linkId;
 
-    var result = '<a href="' + url + '"';
+        if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
+          url = globals.gUrls[linkId];
+          if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
+            title = globals.gTitles[linkId];
+          }
+        } else {
+          return wholeMatch;
+        }
+      }
 
-    if (title !== '' && title !== null) {
-      title = title.replace(/"/g, '&quot;');
-      //title = showdown.helper.escapeCharacters(title, '*_', false); // replaced line to improve performance
-      title = title.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
-      result += ' title="' + title + '"';
-    }
+      //url = showdown.helper.escapeCharacters(url, '*_', false); // replaced line to improve performance
+      url = url.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
 
-    // optionLinksInNewWindow only applies
-    // to external links. Hash links (#) open in same page
-    if (options.openLinksInNewWindow && !/^#/.test(url)) {
-      // escaped _
-      result += ' target="¨E95Eblank"';
-    }
+      var result = '<a href="' + url + '"';
 
-    result += '>' + linkText + '</a>';
+      if (title !== '' && title !== null) {
+        title = title.replace(/"/g, '&quot;');
+        //title = showdown.helper.escapeCharacters(title, '*_', false); // replaced line to improve performance
+        title = title.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
+        result += ' title="' + title + '"';
+      }
 
-    return result;
+      // optionLinksInNewWindow only applies
+      // to external links. Hash links (#) open in same page
+      if (options.openLinksInNewWindow && !/^#/.test(url)) {
+        // escaped _
+        result += ' target="¨E95Eblank"';
+      }
+
+      result += '>' + linkText + '</a>';
+
+      return result;
+    };
   };
 
+  var referenceRegex = /\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]()()()()/g;
   // First, handle reference-style links: [link text] [id]
-  text = text.replace(/\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]()()()()/g, writeAnchorTag);
+  text = text.replace(referenceRegex, writeAnchorTag(referenceRegex));
 
   // Next, inline-style links: [link text](url "optional title")
   // cases with crazy urls like ./image/cat1).png
-  text = text.replace(/\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g,
-    writeAnchorTag);
+  var inlineRegexCrazy = /\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g;
+  text = text.replace(inlineRegexCrazy, writeAnchorTag(inlineRegexCrazy));
 
   // normal cases
-  text = text.replace(/\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g,
-                      writeAnchorTag);
+  var inlineRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g;
+  text = text.replace(inlineRegex, writeAnchorTag(inlineRegex));
 
   // handle reference-style shortcuts: [link text]
   // These must come last in case you've also got [link test][1]
   // or [link test](/foo)
-  text = text.replace(/\[([^\[\]]+)]()()()()()/g, writeAnchorTag);
+  var referenceShortcutRegex = /\[([^\[\]]+)]()()()()()/g;
+  text = text.replace(referenceShortcutRegex, writeAnchorTag(referenceShortcutRegex));
 
   // Lastly handle GithubMentions if option is enabled
   if (options.ghMentions) {
@@ -2280,7 +2365,7 @@ showdown.subParser('makehtml.anchors', function (text, options, globals) {
     });
   }
 
-  text = globals.converter._dispatch('makehtml.anchors.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.anchors.after', text, options, globals).getText();
   return text;
 });
 
@@ -2333,12 +2418,12 @@ var simpleURLRegex  = /([*~_]+|\b)(((https?|ftp|dict):\/\/|www\.)[^'">\s]+?\.[^'
 showdown.subParser('makehtml.autoLinks', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.autoLinks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.autoLinks.before', text, options, globals).getText();
 
   text = text.replace(delimUrlRegex, replaceLink(options));
   text = text.replace(delimMailRegex, replaceMail(options, globals));
 
-  text = globals.converter._dispatch('makehtml.autoLinks.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.autoLinks.after', text, options, globals).getText();
 
   return text;
 });
@@ -2350,7 +2435,7 @@ showdown.subParser('makehtml.simplifiedAutoLinks', function (text, options, glob
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.simplifiedAutoLinks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.simplifiedAutoLinks.before', text, options, globals).getText();
 
   if (options.excludeTrailingPunctuationFromURLs) {
     text = text.replace(simpleURLRegex2, replaceLink(options));
@@ -2359,7 +2444,7 @@ showdown.subParser('makehtml.simplifiedAutoLinks', function (text, options, glob
   }
   text = text.replace(simpleMailRegex, replaceMail(options, globals));
 
-  text = globals.converter._dispatch('makehtml.simplifiedAutoLinks.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.simplifiedAutoLinks.after', text, options, globals).getText();
 
   return text;
 });
@@ -2371,7 +2456,7 @@ showdown.subParser('makehtml.simplifiedAutoLinks', function (text, options, glob
 showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.blockGamut.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.blockGamut.before', text, options, globals).getText();
 
   // we parse blockquotes first so that we can have headings and hrs
   // inside blockquotes
@@ -2392,7 +2477,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
   text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
 
-  text = globals.converter._dispatch('makehtml.blockGamut.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.blockGamut.after', text, options, globals).getText();
 
   return text;
 });
@@ -2400,7 +2485,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
 showdown.subParser('makehtml.blockQuotes', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.blockQuotes.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.blockQuotes.before', text, options, globals).getText();
 
   // add a couple extra lines after the text and endtext mark
   text = text + '\n\n';
@@ -2436,7 +2521,7 @@ showdown.subParser('makehtml.blockQuotes', function (text, options, globals) {
     return showdown.subParser('makehtml.hashBlock')('<blockquote>\n' + bq + '\n</blockquote>', options, globals);
   });
 
-  text = globals.converter._dispatch('makehtml.blockQuotes.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.blockQuotes.after', text, options, globals).getText();
   return text;
 });
 
@@ -2446,7 +2531,7 @@ showdown.subParser('makehtml.blockQuotes', function (text, options, globals) {
 showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.codeBlocks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.codeBlocks.before', text, options, globals).getText();
 
   // sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '¨0';
@@ -2475,7 +2560,7 @@ showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
   // strip sentinel
   text = text.replace(/¨0/, '');
 
-  text = globals.converter._dispatch('makehtml.codeBlocks.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.codeBlocks.after', text, options, globals).getText();
   return text;
 });
 
@@ -2507,7 +2592,7 @@ showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
 showdown.subParser('makehtml.codeSpans', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.codeSpans.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.codeSpans.before', text, options, globals).getText();
 
   if (typeof(text) === 'undefined') {
     text = '';
@@ -2524,7 +2609,7 @@ showdown.subParser('makehtml.codeSpans', function (text, options, globals) {
     }
   );
 
-  text = globals.converter._dispatch('makehtml.codeSpans.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.codeSpans.after', text, options, globals).getText();
   return text;
 });
 
@@ -2538,7 +2623,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.completeHTMLDocument.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.completeHTMLDocument.before', text, options, globals).getText();
 
   var doctype = 'html',
       doctypeParsed = '<!DOCTYPE HTML>\n',
@@ -2587,7 +2672,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
 
   text = doctypeParsed + '<html' + lang + '>\n<head>\n' + title + charset + metadata + '</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
 
-  text = globals.converter._dispatch('makehtml.completeHTMLDocument.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.completeHTMLDocument.after', text, options, globals).getText();
   return text;
 });
 
@@ -2596,7 +2681,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
  */
 showdown.subParser('makehtml.detab', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.detab.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.detab.before', text, options, globals).getText();
 
   // expand first n-1 tabs
   text = text.replace(/\t(?=\t)/g, '    '); // g_tab_width
@@ -2621,18 +2706,18 @@ showdown.subParser('makehtml.detab', function (text, options, globals) {
   text = text.replace(/¨A/g, '    ');  // g_tab_width
   text = text.replace(/¨B/g, '');
 
-  text = globals.converter._dispatch('makehtml.detab.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.detab.after', text, options, globals).getText();
   return text;
 });
 
 showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.ellipsis.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.ellipsis.before', text, options, globals).getText();
 
   text = text.replace(/\.\.\./g, '…');
 
-  text = globals.converter._dispatch('makehtml.ellipsis.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.ellipsis.after', text, options, globals).getText();
 
   return text;
 });
@@ -2648,7 +2733,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.emoji.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.emoji.before', text, options, globals).getText();
 
   var emojiRgx = /:([\S]+?):/g;
 
@@ -2659,7 +2744,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     return wm;
   });
 
-  text = globals.converter._dispatch('makehtml.emoji.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.emoji.after', text, options, globals).getText();
 
   return text;
 });
@@ -2669,7 +2754,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
  */
 showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.encodeAmpsAndAngles.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.encodeAmpsAndAngles.before', text, options, globals).getText();
 
   // Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
   // http://bumppo.net/projects/amputator/
@@ -2684,7 +2769,7 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
   // Encode >
   text = text.replace(/>/g, '&gt;');
 
-  text = globals.converter._dispatch('makehtml.encodeAmpsAndAngles.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.encodeAmpsAndAngles.after', text, options, globals).getText();
   return text;
 });
 
@@ -2701,12 +2786,12 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
  */
 showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.encodeBackslashEscapes.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.encodeBackslashEscapes.before', text, options, globals).getText();
 
   text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
   text = text.replace(/\\([`*_{}\[\]()>#+.!~=|-])/g, showdown.helper.escapeCharactersCallback);
 
-  text = globals.converter._dispatch('makehtml.encodeBackslashEscapes.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.encodeBackslashEscapes.after', text, options, globals).getText();
   return text;
 });
 
@@ -2718,7 +2803,7 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
 showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.encodeCode.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.encodeCode.before', text, options, globals).getText();
 
   // Encode all ampersands; HTML entities are not
   // entities within a Markdown code span.
@@ -2730,7 +2815,7 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   // Now, escape characters that are magic in Markdown:
     .replace(/([*_{}\[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
 
-  text = globals.converter._dispatch('makehtml.encodeCode.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.encodeCode.after', text, options, globals).getText();
   return text;
 });
 
@@ -2740,7 +2825,7 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
  */
 showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.escapeSpecialCharsWithinTagAttributes.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.escapeSpecialCharsWithinTagAttributes.before', text, options, globals).getText();
 
   // Build a regex to find HTML tags.
   var tags     = /<\/?[a-z\d_:-]+(?:[\s]+[\s\S]+?)?>/gi,
@@ -2757,7 +2842,7 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
       .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
   });
 
-  text = globals.converter._dispatch('makehtml.escapeSpecialCharsWithinTagAttributes.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.escapeSpecialCharsWithinTagAttributes.after', text, options, globals).getText();
   return text;
 });
 
@@ -2779,7 +2864,7 @@ showdown.subParser('makehtml.githubCodeBlocks', function (text, options, globals
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.githubCodeBlocks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.githubCodeBlocks.before', text, options, globals).getText();
 
   text += '¨0';
 
@@ -2805,15 +2890,15 @@ showdown.subParser('makehtml.githubCodeBlocks', function (text, options, globals
   // attacklab: strip sentinel
   text = text.replace(/¨0/, '');
 
-  return globals.converter._dispatch('makehtml.githubCodeBlocks.after', text, options, globals);
+  return globals.converter._dispatch('makehtml.githubCodeBlocks.after', text, options, globals).getText();
 });
 
 showdown.subParser('makehtml.hashBlock', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashBlock.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashBlock.before', text, options, globals).getText();
   text = text.replace(/(^\n+|\n+$)/g, '');
   text = '\n\n¨K' + (globals.gHtmlBlocks.push(text) - 1) + 'K\n\n';
-  text = globals.converter._dispatch('makehtml.hashBlock.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashBlock.after', text, options, globals).getText();
   return text;
 });
 
@@ -2822,7 +2907,7 @@ showdown.subParser('makehtml.hashBlock', function (text, options, globals) {
  */
 showdown.subParser('makehtml.hashCodeTags', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashCodeTags.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashCodeTags.before', text, options, globals).getText();
 
   var repFunc = function (wholeMatch, match, left, right) {
     var codeblock = left + showdown.subParser('makehtml.encodeCode')(match, options, globals) + right;
@@ -2832,7 +2917,7 @@ showdown.subParser('makehtml.hashCodeTags', function (text, options, globals) {
   // Hash naked <code>
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '<code\\b[^>]*>', '</code>', 'gim');
 
-  text = globals.converter._dispatch('makehtml.hashCodeTags.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashCodeTags.after', text, options, globals).getText();
   return text;
 });
 
@@ -2858,7 +2943,7 @@ showdown.subParser('makehtml.hashElement', function (text, options, globals) {
 
 showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.before', text, options, globals).getText();
 
   var blockTags = [
         'pre',
@@ -2951,7 +3036,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
   text = text.replace(/(?:\n\n)( {0,3}(?:<([?%])[^\r]*?\2>)[ \t]*(?=\n{2,}))/g,
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
-  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.after', text, options, globals).getText();
   return text;
 });
 
@@ -2960,7 +3045,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
  */
 showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashHTMLSpans.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashHTMLSpans.before', text, options, globals).getText();
 
   function hashHTMLSpan (html) {
     return '¨C' + (globals.gHtmlSpans.push(html) - 1) + 'C';
@@ -2988,7 +3073,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
 
   /*showdown.helper.matchRecursiveRegExp(text, '<code\\b[^>]*>', '</code>', 'gi');*/
 
-  text = globals.converter._dispatch('makehtml.hashHTMLSpans.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashHTMLSpans.after', text, options, globals).getText();
   return text;
 });
 
@@ -2997,7 +3082,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
  */
 showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.before', text, options, globals).getText();
 
   for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
     var repText = globals.gHtmlSpans[i],
@@ -3016,7 +3101,7 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
     text = text.replace('¨C' + i + 'C', repText);
   }
 
-  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.after', text, options, globals).getText();
   return text;
 });
 
@@ -3025,7 +3110,7 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
  */
 showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashPreCodeTags.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashPreCodeTags.before', text, options, globals).getText();
 
   var repFunc = function (wholeMatch, match, left, right) {
     // encode html entities
@@ -3036,14 +3121,14 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
   // Hash <pre><code>
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^ {0,3}</code>\\s*</pre>', 'gim');
 
-  text = globals.converter._dispatch('makehtml.hashPreCodeTags.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.hashPreCodeTags.after', text, options, globals).getText();
   return text;
 });
 
 showdown.subParser('makehtml.headers', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.headers.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.headers.before', text, options, globals).getText();
 
   var headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
 
@@ -3163,7 +3248,7 @@ showdown.subParser('makehtml.headers', function (text, options, globals) {
     return title;
   }
 
-  text = globals.converter._dispatch('makehtml.headers.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.headers.after', text, options, globals).getText();
   return text;
 });
 
@@ -3172,14 +3257,14 @@ showdown.subParser('makehtml.headers', function (text, options, globals) {
  */
 showdown.subParser('makehtml.horizontalRule', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.horizontalRule.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.horizontalRule.before', text, options, globals).getText();
 
   var key = showdown.subParser('makehtml.hashBlock')('<hr />', options, globals);
   text = text.replace(/^ {0,2}( ?-){3,}[ \t]*$/gm, key);
   text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, key);
   text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, key);
 
-  text = globals.converter._dispatch('makehtml.horizontalRule.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.horizontalRule.after', text, options, globals).getText();
   return text;
 });
 
@@ -3189,7 +3274,7 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
 showdown.subParser('makehtml.images', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.images.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.images.before', text, options, globals).getText();
 
   var inlineRegExp      = /!\[([^\]]*?)][ \t]*()\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
       crazyRegExp       = /!\[([^\]]*?)][ \t]*()\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(?:(["'])([^"]*?)\6))?[ \t]?\)/g,
@@ -3284,14 +3369,14 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
   // handle reference-style shortcuts: ![img text]
   text = text.replace(refShortcutRegExp, writeImageTag);
 
-  text = globals.converter._dispatch('makehtml.images.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.images.after', text, options, globals).getText();
   return text;
 });
 
 showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.italicsAndBold.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.italicsAndBold.before', text, options, globals).getText();
 
   // it's faster to have 3 separate regexes for each case than have just one
   // because of backtracing, in some cases, it could lead to an exponential effect
@@ -3355,7 +3440,7 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
   }
 
 
-  text = globals.converter._dispatch('makehtml.italicsAndBold.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.italicsAndBold.after', text, options, globals).getText();
   return text;
 });
 
@@ -3536,7 +3621,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
   }
 
   /** Start of list parsing **/
-  text = globals.converter._dispatch('lists.before', text, options, globals);
+  text = globals.converter._dispatch('lists.before', text, options, globals).getText();
   // add sentinel to hack around khtml/safari bug:
   // http://bugs.webkit.org/show_bug.cgi?id=11231
   text += '¨0';
@@ -3559,7 +3644,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
 
   // strip sentinel
   text = text.replace(/¨0/, '');
-  text = globals.converter._dispatch('makehtml.lists.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.lists.after', text, options, globals).getText();
   return text;
 });
 
@@ -3573,7 +3658,7 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.metadata.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.metadata.before', text, options, globals).getText();
 
   function parseMetadataContents (content) {
     // raw is raw so it's not changed in any way
@@ -3609,7 +3694,7 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
 
   text = text.replace(/¨M/g, '');
 
-  text = globals.converter._dispatch('makehtml.metadata.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.metadata.after', text, options, globals).getText();
   return text;
 });
 
@@ -3618,7 +3703,7 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
  */
 showdown.subParser('makehtml.outdent', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.outdent.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.outdent.before', text, options, globals).getText();
 
   // attacklab: hack around Konqueror 3.5.4 bug:
   // "----------bug".replace(/^-/g,"") == "bug"
@@ -3627,7 +3712,7 @@ showdown.subParser('makehtml.outdent', function (text, options, globals) {
   // attacklab: clean up hack
   text = text.replace(/¨0/g, '');
 
-  text = globals.converter._dispatch('makehtml.outdent.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.outdent.after', text, options, globals).getText();
   return text;
 });
 
@@ -3637,7 +3722,7 @@ showdown.subParser('makehtml.outdent', function (text, options, globals) {
 showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.paragraphs.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.paragraphs.before', text, options, globals).getText();
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
@@ -3699,7 +3784,7 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
-  return globals.converter._dispatch('makehtml.paragraphs.after', text, options, globals);
+  return globals.converter._dispatch('makehtml.paragraphs.after', text, options, globals).getText();
 });
 
 /**
@@ -3730,7 +3815,7 @@ showdown.subParser('makehtml.runExtension', function (ext, text, options, global
 showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('smakehtml.panGamut.before', text, options, globals);
+  text = globals.converter._dispatch('smakehtml.panGamut.before', text, options, globals).getText();
   text = showdown.subParser('makehtml.codeSpans')(text, options, globals);
   text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('makehtml.encodeBackslashEscapes')(text, options, globals);
@@ -3769,7 +3854,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
     text = text.replace(/  +\n/g, '<br />\n');
   }
 
-  text = globals.converter._dispatch('makehtml.spanGamut.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.spanGamut.after', text, options, globals).getText();
   return text;
 });
 
@@ -3784,9 +3869,9 @@ showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
   }
 
   if (options.strikethrough) {
-    text = globals.converter._dispatch('makehtml.strikethrough.before', text, options, globals);
+    text = globals.converter._dispatch('makehtml.strikethrough.before', text, options, globals).getText();
     text = text.replace(/(?:~){2}([\s\S]+?)(?:~){2}/g, function (wm, txt) { return parseInside(txt); });
-    text = globals.converter._dispatch('makehtml.strikethrough.after', text, options, globals);
+    text = globals.converter._dispatch('makehtml.strikethrough.after', text, options, globals).getText();
   }
 
   return text;
@@ -3918,6 +4003,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
         tableLines[i] = tableLines[i].replace(/\|[ \t]*$/, '');
       }
       // parse code spans first, but we only support one line code spans
+
       tableLines[i] = showdown.subParser('makehtml.codeSpans')(tableLines[i], options, globals);
     }
 
@@ -3973,7 +4059,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
     return buildTable(headers, cells);
   }
 
-  text = globals.converter._dispatch('makehtml.tables.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.tables.before', text, options, globals).getText();
 
   // find escaped pipe characters
   text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
@@ -3984,7 +4070,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
   // parse one column tables
   text = text.replace(singeColTblRgx, parseTable);
 
-  text = globals.converter._dispatch('makehtml.tables.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.tables.after', text, options, globals).getText();
 
   return text;
 });
@@ -3996,7 +4082,7 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.underline.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.underline.before', text, options, globals).getText();
 
   if (options.literalMidWordUnderscores) {
     text = text.replace(/\b_?__(\S[\s\S]*)___?\b/g, function (wm, txt) {
@@ -4011,7 +4097,7 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
   // escape remaining underscores to prevent them being parsed by italic and bold
   text = text.replace(/(_)/g, showdown.helper.escapeCharactersCallback);
 
-  text = globals.converter._dispatch('makehtml.underline.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.underline.after', text, options, globals).getText();
 
   return text;
 });
@@ -4021,14 +4107,14 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
  */
 showdown.subParser('makehtml.unescapeSpecialChars', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.unescapeSpecialChars.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.unescapeSpecialChars.before', text, options, globals).getText();
 
   text = text.replace(/¨E(\d+)E/g, function (wholeMatch, m1) {
     var charCodeToReplace = parseInt(m1);
     return String.fromCharCode(charCodeToReplace);
   });
 
-  text = globals.converter._dispatch('makehtml.unescapeSpecialChars.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.unescapeSpecialChars.after', text, options, globals).getText();
   return text;
 });
 
@@ -4715,7 +4801,7 @@ showdown.Converter = function (converterOptions) {
     if (typeof callback !== 'function') {
       throw Error('Invalid argument in converter.listen() method: callback must be a function, but ' + typeof callback + ' given');
     }
-
+    name = name.toLowerCase();
     if (!listeners.hasOwnProperty(name)) {
       listeners[name] = [];
     }
@@ -4729,24 +4815,33 @@ showdown.Converter = function (converterOptions) {
   }
 
   /**
-   * Dispatch an event
-   * @private
+   *
    * @param {string} evtName Event name
    * @param {string} text Text
    * @param {{}} options Converter Options
-   * @param {{}} globals
-   * @returns {string}
+   * @param {{}} globals Converter globals
+   * @param {{}} pParams extra params for event
+   * @returns showdown.helper.Event
+   * @private
    */
-  this._dispatch = function dispatch (evtName, text, options, globals) {
+  this._dispatch = function dispatch (evtName, text, options, globals, pParams) {
+    evtName = evtName.toLowerCase();
+    var params = pParams || {};
+    params.converter = this;
+    params.text = text;
+    params.options = options;
+    params.globals = globals;
+    var event = new showdown.helper.Event(evtName, text, params);
+
     if (listeners.hasOwnProperty(evtName)) {
       for (var ei = 0; ei < listeners[evtName].length; ++ei) {
-        var nText = listeners[evtName][ei](evtName, text, this, options, globals);
+        var nText = listeners[evtName][ei](event);
         if (nText && typeof nText !== 'undefined') {
-          text = nText;
+          event.setText(nText);
         }
       }
     }
-    return text;
+    return event;
   };
 
   /**

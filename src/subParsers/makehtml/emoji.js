@@ -9,7 +9,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.emoji.before', text, options, globals);
+  text = globals.converter._dispatch('makehtml.emoji.before', text, options, globals).getText();
 
   var emojiRgx = /:([\S]+?):/g;
 
@@ -20,7 +20,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     return wm;
   });
 
-  text = globals.converter._dispatch('makehtml.emoji.after', text, options, globals);
+  text = globals.converter._dispatch('makehtml.emoji.after', text, options, globals).getText();
 
   return text;
 });

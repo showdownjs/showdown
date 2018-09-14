@@ -197,7 +197,7 @@ showdown.Converter = function (converterOptions) {
     if (typeof callback !== 'function') {
       throw Error('Invalid argument in converter.listen() method: callback must be a function, but ' + typeof callback + ' given');
     }
-
+    name = name.toLowerCase();
     if (!listeners.hasOwnProperty(name)) {
       listeners[name] = [];
     }
@@ -211,24 +211,33 @@ showdown.Converter = function (converterOptions) {
   }
 
   /**
-   * Dispatch an event
-   * @private
+   *
    * @param {string} evtName Event name
    * @param {string} text Text
    * @param {{}} options Converter Options
-   * @param {{}} globals
-   * @returns {string}
+   * @param {{}} globals Converter globals
+   * @param {{}} pParams extra params for event
+   * @returns showdown.helper.Event
+   * @private
    */
-  this._dispatch = function dispatch (evtName, text, options, globals) {
+  this._dispatch = function dispatch (evtName, text, options, globals, pParams) {
+    evtName = evtName.toLowerCase();
+    var params = pParams || {};
+    params.converter = this;
+    params.text = text;
+    params.options = options;
+    params.globals = globals;
+    var event = new showdown.helper.Event(evtName, text, params);
+
     if (listeners.hasOwnProperty(evtName)) {
       for (var ei = 0; ei < listeners[evtName].length; ++ei) {
-        var nText = listeners[evtName][ei](evtName, text, this, options, globals);
+        var nText = listeners[evtName][ei](event);
         if (nText && typeof nText !== 'undefined') {
-          text = nText;
+          event.setText(nText);
         }
       }
     }
-    return text;
+    return event;
   };
 
   /**

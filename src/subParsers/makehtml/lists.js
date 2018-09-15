@@ -46,6 +46,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
     // Since version 1.5, nesting sublists requires 4 spaces (or 1 tab) indentation,
     // which is a syntax breaking change
     // activating this option reverts to old behavior
+    // This will be removed in version 2.0
     if (options.disableForced4SpacesIndentedSublists) {
       rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )?])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0|\2([*+-]|\d+[.])[ \t]+))/gm;
     }
@@ -81,13 +82,25 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
         return '¨A' + wm2;
       });
 
+      // SPECIAL CASE: an heading followed by a paragraph of text that is not separated by a double newline
+      // or/nor indented. ex:
+      //
+      // - # foo
+      // bar is great
+      //
+      // While this does now follow the spec per se, not allowing for this might cause confusion since
+      // header blocks don't need double newlines after
+      if (/^#+.+\n.+/.test(item)) {
+        item = item.replace(/^(#+.+)$/m, '$1\n');
+      }
+
       // m1 - Leading line or
-      // Has a double return (multi paragraph) or
-      // Has sublist
+      // Has a double return (multi paragraph)
       if (m1 || (item.search(/\n{2,}/) > -1)) {
         item = showdown.subParser('makehtml.githubCodeBlocks')(item, options, globals);
         item = showdown.subParser('makehtml.blockGamut')(item, options, globals);
       } else {
+
         // Recursion for sub-lists:
         item = showdown.subParser('makehtml.lists')(item, options, globals);
         item = item.replace(/\n$/, ''); // chomp(item)
@@ -95,6 +108,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
 
         // Colapse double linebreaks
         item = item.replace(/\n\n+/g, '\n\n');
+
         if (isParagraphed) {
           item = showdown.subParser('makehtml.paragraphs')(item, options, globals);
         } else {
@@ -174,26 +188,25 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
     return result;
   }
 
-  /** Start of list parsing **/
+  // Start of list parsing
+  var subListRgx = /^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
+  var mainListRgx = /(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
+
   text = globals.converter._dispatch('lists.before', text, options, globals).getText();
   // add sentinel to hack around khtml/safari bug:
   // http://bugs.webkit.org/show_bug.cgi?id=11231
   text += '¨0';
 
   if (globals.gListLevel) {
-    text = text.replace(/^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
-      function (wholeMatch, list, m2) {
-        var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
-        return parseConsecutiveLists(list, listType, true);
-      }
-    );
+    text = text.replace(subListRgx, function (wholeMatch, list, m2) {
+      var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+      return parseConsecutiveLists(list, listType, true);
+    });
   } else {
-    text = text.replace(/(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm,
-      function (wholeMatch, m1, list, m3) {
-        var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
-        return parseConsecutiveLists(list, listType, false);
-      }
-    );
+    text = text.replace(mainListRgx, function (wholeMatch, m1, list, m3) {
+      var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
+      return parseConsecutiveLists(list, listType, false);
+    });
   }
 
   // strip sentinel

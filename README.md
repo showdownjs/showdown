@@ -33,6 +33,11 @@ As you know, ShowdownJS is a free library and it will remain free forever. Howev
 
 If you like our work and find our library useful, please donate ~~[through Pledgie](https://pledgie.com/campaigns/35166) or~~ directly [through paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help us continue to develop this awesome library.
 
+## License
+
+ShowdownJS v 2.0 is release under the MIT version.
+Previous versions are release under GPL 2.0
+
 ## Installation
 
 ### Download tarball

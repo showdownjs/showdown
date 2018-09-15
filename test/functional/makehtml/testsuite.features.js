@@ -14,7 +14,7 @@ var bootstrap = require('./makehtml.bootstrap.js'),
     emojisSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/emojis/'),
     underlineSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/underline/'),
     literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/literalMidWordUnderscores/'),
-    literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/literalMidWordAsterisks/'),
+    //literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/literalMidWordAsterisks/'),
     completeHTMLOutputSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/completeHTMLOutput/'),
     metadataSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/metadata/'),
     splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/splitAdjacentBlockquotes/');
@@ -75,8 +75,6 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({encodeEmails: false, simplifiedAutoLink: true});
       } else if (testsuite[i].name === '#331.allow-escaping-of-tilde') {
         converter = new showdown.Converter({strikethrough: true});
-      } else if (testsuite[i].name === 'enable-literalMidWordAsterisks') {
-        converter = new showdown.Converter({literalMidWordAsterisks: true});
       } else if (testsuite[i].name === 'prefixHeaderId-simple') {
         converter = new showdown.Converter({prefixHeaderId: true});
       } else if (testsuite[i].name === 'prefixHeaderId-string') {
@@ -95,8 +93,6 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({backslashEscapesHTMLTags: true});
       } else if (testsuite[i].name === '#379.openLinksInNewWindow-breaks-em-markdup') {
         converter = new showdown.Converter({openLinksInNewWindow: true});
-      } else if (testsuite[i].name === '#398.literalMidWordAsterisks-treats-non-word-characters-as-characters') {
-        converter = new showdown.Converter({literalMidWordAsterisks: true});
       } else {
         converter = new showdown.Converter();
       }
@@ -226,6 +222,7 @@ describe('makeHtml() features testsuite', function () {
   });
 
   /** test literalMidWordAsterisks option **/
+  /*
   describe('literalMidWordAsterisks option', function () {
     var converter,
         suite = literalMidWordAsterisksSuite;
@@ -234,7 +231,7 @@ describe('makeHtml() features testsuite', function () {
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });
-
+  */
 
   /** test completeHTMLDocument option **/
   describe('completeHTMLDocument option', function () {

@@ -20,7 +20,7 @@ showdown.subParser('makehtml.githubCodeBlocks', function (text, options, globals
 
   text += '¨0';
 
-  text = text.replace(/(?:^|\n)(```+|~~~+)(?: *)([^\s`~]*)\n([\s\S]*?)\n\1/g, function (wholeMatch, delim, language, codeblock) {
+  text = text.replace(/(?:^|\n)(?: {0,3})(```+|~~~+)(?: *)([^\s`~]*)\n([\s\S]*?)\n(?: {0,3})\1/g, function (wholeMatch, delim, language, codeblock) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
 
     // First parse the github code block

@@ -1,0 +1,79 @@
+<!-- SHOULD PASS -->
+<p><a href="http://foo.com/blah_blah">http://foo.com/blah_blah</a></p>
+<p><a href="http://foo.com/blah_blah/">http://foo.com/blah_blah/</a></p>
+<p><a href="http://foo.com/blah_blah_(wikipedia)">http://foo.com/blah_blah_(wikipedia)</a></p>
+<p><a href="http://foo.com/blah_blah_(wikipedia)_(again)">http://foo.com/blah_blah_(wikipedia)_(again)</a></p>
+<p><a href="http://www.example.com/wpstyle/?p=364">http://www.example.com/wpstyle/?p=364</a></p>
+<p><a href="https://www.example.com/foo/?bar=baz&inga=42&quux">https://www.example.com/foo/?bar=baz&inga=42&quux</a></p>
+<p><a href="http://✪df.ws/123">http://✪df.ws/123</a></p>
+<p><a href="http://userid:password@example.com:8080">http://userid:password@example.com:8080</a></p>
+<p><a href="http://userid:password@example.com:8080/">http://userid:password@example.com:8080/</a></p>
+<p><a href="http://userid@example.com">http://userid@example.com</a></p>
+<p><a href="http://userid@example.com/">http://userid@example.com/</a></p>
+<p><a href="http://userid@example.com:8080">http://userid@example.com:8080</a></p>
+<p><a href="http://userid@example.com:8080/">http://userid@example.com:8080/</a></p>
+<p><a href="http://userid:password@example.com">http://userid:password@example.com</a></p>
+<p><a href="http://userid:password@example.com/">http://userid:password@example.com/</a></p>
+<p><a href="http://142.42.1.1/">http://142.42.1.1/</a></p>
+<p><a href="http://142.42.1.1:8080/">http://142.42.1.1:8080/</a></p>
+<p><a href="http://➡.ws/䨹">http://➡.ws/䨹</a></p>
+<p><a href="http://⌘.ws">http://⌘.ws</a></p>
+<p><a href="http://⌘.ws/">http://⌘.ws/</a></p>
+<p><a href="http://foo.com/blah_(wikipedia)#cite-1">http://foo.com/blah_(wikipedia)#cite-1</a></p>
+<p><a href="http://foo.com/blah_(wikipedia)_blah#cite-1">http://foo.com/blah_(wikipedia)_blah#cite-1</a></p>
+<p><a href="http://foo.com/unicode_(✪)_in_parens">http://foo.com/unicode_(✪)_in_parens</a></p>
+<p><a href="http://foo.com/(something)?after=parens">http://foo.com/(something)?after=parens</a></p>
+<p><a href="http://☺.damowmow.com/">http://☺.damowmow.com/</a></p>
+<p><a href="http://code.google.com/events/#&product=browser">http://code.google.com/events/#&product=browser</a></p>
+<p><a href="http://j.mp">http://j.mp</a></p>
+<p><a href="ftp://foo.bar/baz">ftp://foo.bar/baz</a></p>
+<p><a href="http://foo.bar/?q=Test%20URL-encoded%20stuff">http://foo.bar/?q=Test%20URL-encoded%20stuff</a></p>
+<p><a href="http://مثال.إختبار">http://مثال.إختبار</a></p>
+<p><a href="http://例子.测试">http://例子.测试</a></p>
+<p><a href="http://उदाहरण.परीक्षा">http://उदाहरण.परीक्षा</a></p>
+<p><a href="http://1337.net">http://1337.net</a></p>
+<p><a href="http://a.b-c.de">http://a.b-c.de</a></p>
+<p><a href="http://223.255.255.254">http://223.255.255.254</a></p>
+<p><a href="https://foo_bar.example.com/">https://foo_bar.example.com/</a></p>
+<!-- WEIRD BUT SHOULD ALSO PASS -->
+<p><a href="http://www.foo.bar./">http://www.foo.bar./</a></p>
+<p><a href="http://a.b--c.de/">http://a.b--c.de/</a></p>
+<!-- SHOULD PARTIALLY PASS -->
+<p><a href="http://foo.bar/foo(bar)baz">http://foo.bar/foo(bar)baz</a> quux</p>
+<p><a href="http://foo.bar?q=Spaces">http://foo.bar?q=Spaces</a> should be encoded</p>
+<!-- THESE ARE INVALID IPS BUT WE WILL LET THEM PASS -->
+<p><a href="http://10.1.1.1">http://10.1.1.1</a></p>
+<p><a href="http://10.1.1.254">http://10.1.1.254</a></p>
+<p><a href="http://0.0.0.0">http://0.0.0.0</a></p>
+<p><a href="http://10.1.1.0">http://10.1.1.0</a></p>
+<p><a href="http://10.1.1.255">http://10.1.1.255</a></p>
+<p><a href="http://224.1.1.1">http://224.1.1.1</a></p>
+<p><a href="http://1.1.1.1.1">http://1.1.1.1.1</a></p>
+<p><a href="http://123.123.123">http://123.123.123</a></p>
+<!-- SHOULD FAIL -->
+<p>http://</p>
+<p>http://.</p>
+<p>http://..</p>
+<p>http://../</p>
+<p>http://?</p>
+<p>http://??</p>
+<p>http://??/</p>
+<p>http://#</p>
+<p>http://##</p>
+<p>http://##/</p>
+<p>//</p>
+<p>//a</p>
+<p>///a</p>
+<p>///</p>
+<p>http:///a</p>
+<p>foo.com</p>
+<p>rdar://1234</p>
+<p>h://test</p>
+<p>http:// shouldfail.com</p>
+<p>:// should fail</p>
+<p>http://-error-.invalid/</p>
+<p>http://-a.b.co</p>
+<p>http://a.b-.co</p>
+<p>http://3628126748</p>
+<p>http://.www.foo.bar/</p>
+<p>http://.www.foo.bar./</p>

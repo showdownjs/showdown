@@ -43,7 +43,7 @@
     "grunt": "^1.0.3",
     "grunt-contrib-clean": "1.1.x",
     "grunt-contrib-concat": "1.0.x",
-    "grunt-contrib-jshint": "1.1.x",
+    "grunt-contrib-jshint": "~2.0.0",
     "grunt-contrib-uglify": "~3.3.0",
     "grunt-conventional-changelog": "6.1.x",
     "grunt-conventional-github-releaser": "1.0.x",

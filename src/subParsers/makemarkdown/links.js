@@ -1,4 +1,4 @@
-showdown.subParser('makeMarkdown.anchors', function (node, globals) {
+showdown.subParser('makeMarkdown.links', function (node, globals) {
   'use strict';
 
   var txt = '';

@@ -1,15 +1,15 @@
 /**
  * Turn Markdown link shortcuts into XHTML <a> tags.
  */
-showdown.subParser('makehtml.anchors', function (text, options, globals) {
+showdown.subParser('makehtml.links', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.anchors.before', text, options, globals).getText();
+  text = globals.converter._dispatch('makehtml.links.before', text, options, globals).getText();
 
   var writeAnchorTag = function (rgx) {
 
     return function (wholeMatch1, linkText1, linkId1, url1, m5, m6, title1) {
-      var evt = globals.converter._dispatch('makehtml.anchors.capture_begin', wholeMatch1, options, globals, {
+      var evt = globals.converter._dispatch('makehtml.links.capturestart', wholeMatch1, options, globals, {
         regexp: rgx,
         matches: {
           wholeMatch: wholeMatch1,
@@ -51,7 +51,7 @@ showdown.subParser('makehtml.anchors', function (text, options, globals) {
         }
       }
 
-      //url = showdown.helper.escapeCharacters(url, '*_', false); // replaced line to improve performance
+      //url = showdown.helper.escapeCharacters(url, '*_:~', false); // replaced line to improve performance
       url = url.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
 
       var result = '<a href="' + url + '"';
@@ -119,6 +119,6 @@ showdown.subParser('makehtml.anchors', function (text, options, globals) {
     });
   }
 
-  text = globals.converter._dispatch('makehtml.anchors.after', text, options, globals).getText();
+  text = globals.converter._dispatch('makehtml.links.after', text, options, globals).getText();
   return text;
 });

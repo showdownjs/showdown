@@ -102,7 +102,7 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
       break;
 
     case 'a':
-      txt = showdown.subParser('makeMarkdown.anchors')(node, globals);
+      txt = showdown.subParser('makeMarkdown.links')(node, globals);
       break;
 
     case 'img':

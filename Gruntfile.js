@@ -209,6 +209,7 @@ module.exports = function (grunt) {
   grunt.registerTask('test-unit', ['concat:test', 'simplemocha:unit', 'clean']);
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);
+  grunt.registerTask('build-without-test', ['concat:dist', 'uglify', 'endline']);
   grunt.registerTask('prep-release', ['build', 'generate-changelog']);
 
   // Default task(s).

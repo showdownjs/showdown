@@ -10,13 +10,13 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('makehtml.encodeBackslashEscapes')(text, options, globals);
 
-  // Process anchor and image tags. Images must come first,
-  // because ![foo][f] looks like an anchor.
+  // Process link and image tags. Images must come first,
+  // because ![foo][f] looks like a link.
   text = showdown.subParser('makehtml.images')(text, options, globals);
-  text = showdown.subParser('makehtml.anchors')(text, options, globals);
+  text = showdown.subParser('makehtml.links')(text, options, globals);
 
   // Make links out of things like `<http://example.com/>`
-  // Must come after anchors, because you can use < and >
+  // Must come after links, because you can use < and >
   // delimiters in inline links like [this](<url>).
   text = showdown.subParser('makehtml.autoLinks')(text, options, globals);
   text = showdown.subParser('makehtml.simplifiedAutoLinks')(text, options, globals);

@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0-alpha1 - 15-09-2018 */
+;/*! showdown v 2.0.0-alpha1 - 23-09-2018 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -976,11 +976,18 @@ showdown.helper.unescapeHTMLEntities = function (txt) {
 /**
  * Showdown's Event Object
  * @param {string} name Name of the event
+ * @param {string} text Text
  * @param {{}} params optional. params of the event
  * @constructor
  */
 showdown.helper.Event = function (name, text, params) {
   'use strict';
+
+  var regexp = params.regexp || null;
+  var matches = params.matches || {};
+  var options = params.options || {};
+  var converter = params.converter || null;
+  var globals = params.globals || {};
 
   /**
    * Get the name of the event
@@ -994,12 +1001,6 @@ showdown.helper.Event = function (name, text, params) {
     return name;
   };
 
-  var regexp = params.regexp || null;
-  var matches = params.matches || {};
-  var options = params.options || {};
-  var converter = params.converter || null;
-  var globals = params.globals || {};
-
   this._stopExecution = false;
 
   this.parsedText = params.parsedText || null;
@@ -1007,30 +1008,39 @@ showdown.helper.Event = function (name, text, params) {
   this.getRegexp = function () {
     return regexp;
   };
+
   this.getOptions = function () {
     return options;
   };
+
   this.getConverter = function () {
     return converter;
   };
+
   this.getGlobals = function () {
     return globals;
   };
+
   this.getCapturedText = function () {
     return text;
   };
+
   this.getText = function () {
     return text;
   };
+
   this.setText = function (newText) {
     text = newText;
   };
+
   this.getMatches = function () {
     return matches;
   };
+
   this.setMatches = function (newMatches) {
     matches = newMatches;
   };
+
   this.preventDefault = function (bool) {
     this._stopExecution = !bool;
   };
@@ -2248,131 +2258,6 @@ showdown.helper.emojis = {
   'showdown': '<img width="20" height="20" align="absmiddle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC">'
 };
 
-/**
- * Turn Markdown link shortcuts into XHTML <a> tags.
- */
-showdown.subParser('makehtml.anchors', function (text, options, globals) {
-  'use strict';
-
-  text = globals.converter._dispatch('makehtml.anchors.before', text, options, globals).getText();
-
-  var writeAnchorTag = function (rgx) {
-
-    return function (wholeMatch1, linkText1, linkId1, url1, m5, m6, title1) {
-      var evt = globals.converter._dispatch('makehtml.anchors.capture_begin', wholeMatch1, options, globals, {
-        regexp: rgx,
-        matches: {
-          wholeMatch: wholeMatch1,
-          linkText: linkText1,
-          linkId: linkId1,
-          url: url1,
-          title: title1
-        }
-      });
-
-      var wholeMatch = evt.getMatches().wholeMatch;
-      var linkText = evt.getMatches().linkText;
-      var linkId = evt.getMatches().linkId;
-      var url = evt.getMatches().url;
-      var title = evt.getMatches().title;
-
-      if (showdown.helper.isUndefined(title)) {
-        title = '';
-      }
-      linkId = linkId.toLowerCase();
-
-      // Special case for explicit empty url
-      if (wholeMatch.search(/\(<?\s*>? ?(['"].*['"])?\)$/m) > -1) {
-        url = '';
-      } else if (!url) {
-        if (!linkId) {
-          // lower-case and turn embedded newlines into spaces
-          linkId = linkText.toLowerCase().replace(/ ?\n/g, ' ');
-        }
-        url = '#' + linkId;
-
-        if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
-          url = globals.gUrls[linkId];
-          if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
-            title = globals.gTitles[linkId];
-          }
-        } else {
-          return wholeMatch;
-        }
-      }
-
-      //url = showdown.helper.escapeCharacters(url, '*_', false); // replaced line to improve performance
-      url = url.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
-
-      var result = '<a href="' + url + '"';
-
-      if (title !== '' && title !== null) {
-        title = title.replace(/"/g, '&quot;');
-        //title = showdown.helper.escapeCharacters(title, '*_', false); // replaced line to improve performance
-        title = title.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
-        result += ' title="' + title + '"';
-      }
-
-      // optionLinksInNewWindow only applies
-      // to external links. Hash links (#) open in same page
-      if (options.openLinksInNewWindow && !/^#/.test(url)) {
-        // escaped _
-        result += ' target="¨E95Eblank"';
-      }
-
-      result += '>' + linkText + '</a>';
-
-      return result;
-    };
-  };
-
-  var referenceRegex = /\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]()()()()/g;
-  // First, handle reference-style links: [link text] [id]
-  text = text.replace(referenceRegex, writeAnchorTag(referenceRegex));
-
-  // Next, inline-style links: [link text](url "optional title")
-  // cases with crazy urls like ./image/cat1).png
-  var inlineRegexCrazy = /\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g;
-  text = text.replace(inlineRegexCrazy, writeAnchorTag(inlineRegexCrazy));
-
-  // normal cases
-  var inlineRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g;
-  text = text.replace(inlineRegex, writeAnchorTag(inlineRegex));
-
-  // handle reference-style shortcuts: [link text]
-  // These must come last in case you've also got [link test][1]
-  // or [link test](/foo)
-  var referenceShortcutRegex = /\[([^\[\]]+)]()()()()()/g;
-  text = text.replace(referenceShortcutRegex, writeAnchorTag(referenceShortcutRegex));
-
-  // Lastly handle GithubMentions if option is enabled
-  if (options.ghMentions) {
-    text = text.replace(/(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gmi, function (wm, st, escape, mentions, username) {
-      if (escape === '\\') {
-        return st + mentions;
-      }
-
-      //check if options.ghMentionsLink is a string
-      if (!showdown.helper.isString(options.ghMentionsLink)) {
-        throw new Error('ghMentionsLink option must be a string');
-      }
-      var lnk = options.ghMentionsLink.replace(/\{u}/g, username),
-          target = '';
-      if (options.openLinksInNewWindow) {
-        target = ' target="¨E95Eblank"';
-      }
-
-      // lnk = showdown.helper.escapeCharacters(lnk, '*_', false); // replaced line to improve performance
-      lnk = lnk.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
-
-      return st + '<a href="' + lnk + '"' + target + '>' + mentions + '</a>';
-    });
-  }
-
-  text = globals.converter._dispatch('makehtml.anchors.after', text, options, globals).getText();
-  return text;
-});
-
 // url allowed chars [a-z\d_.~:/?#[]@!$&'()*+,;=-]
 
 var simpleURLRegex  = /([*~_]+|\b)(((https?|ftp|dict):\/\/|www\.)[^'">\s]+?\.[^'">\s]+?)()(\1)?(?=\s|$)(?!["<>])/gi,
@@ -3445,6 +3330,131 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
 });
 
 /**
+ * Turn Markdown link shortcuts into XHTML <a> tags.
+ */
+showdown.subParser('makehtml.links', function (text, options, globals) {
+  'use strict';
+
+  text = globals.converter._dispatch('makehtml.links.before', text, options, globals).getText();
+
+  var writeAnchorTag = function (rgx) {
+
+    return function (wholeMatch1, linkText1, linkId1, url1, m5, m6, title1) {
+      var evt = globals.converter._dispatch('makehtml.links.capturestart', wholeMatch1, options, globals, {
+        regexp: rgx,
+        matches: {
+          wholeMatch: wholeMatch1,
+          linkText: linkText1,
+          linkId: linkId1,
+          url: url1,
+          title: title1
+        }
+      });
+
+      var wholeMatch = evt.getMatches().wholeMatch;
+      var linkText = evt.getMatches().linkText;
+      var linkId = evt.getMatches().linkId;
+      var url = evt.getMatches().url;
+      var title = evt.getMatches().title;
+
+      if (showdown.helper.isUndefined(title)) {
+        title = '';
+      }
+      linkId = linkId.toLowerCase();
+
+      // Special case for explicit empty url
+      if (wholeMatch.search(/\(<?\s*>? ?(['"].*['"])?\)$/m) > -1) {
+        url = '';
+      } else if (!url) {
+        if (!linkId) {
+          // lower-case and turn embedded newlines into spaces
+          linkId = linkText.toLowerCase().replace(/ ?\n/g, ' ');
+        }
+        url = '#' + linkId;
+
+        if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
+          url = globals.gUrls[linkId];
+          if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
+            title = globals.gTitles[linkId];
+          }
+        } else {
+          return wholeMatch;
+        }
+      }
+
+      //url = showdown.helper.escapeCharacters(url, '*_:~', false); // replaced line to improve performance
+      url = url.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
+
+      var result = '<a href="' + url + '"';
+
+      if (title !== '' && title !== null) {
+        title = title.replace(/"/g, '&quot;');
+        //title = showdown.helper.escapeCharacters(title, '*_', false); // replaced line to improve performance
+        title = title.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
+        result += ' title="' + title + '"';
+      }
+
+      // optionLinksInNewWindow only applies
+      // to external links. Hash links (#) open in same page
+      if (options.openLinksInNewWindow && !/^#/.test(url)) {
+        // escaped _
+        result += ' target="¨E95Eblank"';
+      }
+
+      result += '>' + linkText + '</a>';
+
+      return result;
+    };
+  };
+
+  var referenceRegex = /\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]()()()()/g;
+  // First, handle reference-style links: [link text] [id]
+  text = text.replace(referenceRegex, writeAnchorTag(referenceRegex));
+
+  // Next, inline-style links: [link text](url "optional title")
+  // cases with crazy urls like ./image/cat1).png
+  var inlineRegexCrazy = /\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g;
+  text = text.replace(inlineRegexCrazy, writeAnchorTag(inlineRegexCrazy));
+
+  // normal cases
+  var inlineRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]()[ \t]*\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g;
+  text = text.replace(inlineRegex, writeAnchorTag(inlineRegex));
+
+  // handle reference-style shortcuts: [link text]
+  // These must come last in case you've also got [link test][1]
+  // or [link test](/foo)
+  var referenceShortcutRegex = /\[([^\[\]]+)]()()()()()/g;
+  text = text.replace(referenceShortcutRegex, writeAnchorTag(referenceShortcutRegex));
+
+  // Lastly handle GithubMentions if option is enabled
+  if (options.ghMentions) {
+    text = text.replace(/(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gmi, function (wm, st, escape, mentions, username) {
+      if (escape === '\\') {
+        return st + mentions;
+      }
+
+      //check if options.ghMentionsLink is a string
+      if (!showdown.helper.isString(options.ghMentionsLink)) {
+        throw new Error('ghMentionsLink option must be a string');
+      }
+      var lnk = options.ghMentionsLink.replace(/\{u}/g, username),
+          target = '';
+      if (options.openLinksInNewWindow) {
+        target = ' target="¨E95Eblank"';
+      }
+
+      // lnk = showdown.helper.escapeCharacters(lnk, '*_', false); // replaced line to improve performance
+      lnk = lnk.replace(showdown.helper.regexes.asteriskDashAndColon, showdown.helper.escapeCharactersCallback);
+
+      return st + '<a href="' + lnk + '"' + target + '>' + mentions + '</a>';
+    });
+  }
+
+  text = globals.converter._dispatch('makehtml.links.after', text, options, globals).getText();
+  return text;
+});
+
+/**
  * Form HTML ordered (numbered) and unordered (bulleted) lists.
  */
 showdown.subParser('makehtml.lists', function (text, options, globals) {
@@ -3833,13 +3843,13 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('makehtml.encodeBackslashEscapes')(text, options, globals);
 
-  // Process anchor and image tags. Images must come first,
-  // because ![foo][f] looks like an anchor.
+  // Process link and image tags. Images must come first,
+  // because ![foo][f] looks like a link.
   text = showdown.subParser('makehtml.images')(text, options, globals);
-  text = showdown.subParser('makehtml.anchors')(text, options, globals);
+  text = showdown.subParser('makehtml.links')(text, options, globals);
 
   // Make links out of things like `<http://example.com/>`
-  // Must come after anchors, because you can use < and >
+  // Must come after links, because you can use < and >
   // delimiters in inline links like [this](<url>).
   text = showdown.subParser('makehtml.autoLinks')(text, options, globals);
   text = showdown.subParser('makehtml.simplifiedAutoLinks')(text, options, globals);
@@ -4131,27 +4141,6 @@ showdown.subParser('makehtml.unescapeSpecialChars', function (text, options, glo
   return text;
 });
 
-showdown.subParser('makeMarkdown.anchors', function (node, globals) {
-  'use strict';
-
-  var txt = '';
-  if (node.hasChildNodes() && node.hasAttribute('href')) {
-    var children = node.childNodes,
-        childrenLength = children.length;
-    txt = '[';
-    for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
-    }
-    txt += '](';
-    txt += '<' + node.getAttribute('href') + '>';
-    if (node.hasAttribute('title')) {
-      txt += ' "' + node.getAttribute('title') + '"';
-    }
-    txt += ')';
-  }
-  return txt;
-});
-
 showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
   'use strict';
 
@@ -4240,6 +4229,27 @@ showdown.subParser('makeMarkdown.image', function (node) {
       txt += ' =' + node.getAttribute('width') + 'x' + node.getAttribute('height');
     }
 
+    if (node.hasAttribute('title')) {
+      txt += ' "' + node.getAttribute('title') + '"';
+    }
+    txt += ')';
+  }
+  return txt;
+});
+
+showdown.subParser('makeMarkdown.links', function (node, globals) {
+  'use strict';
+
+  var txt = '';
+  if (node.hasChildNodes() && node.hasAttribute('href')) {
+    var children = node.childNodes,
+        childrenLength = children.length;
+    txt = '[';
+    for (var i = 0; i < childrenLength; ++i) {
+      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    }
+    txt += '](';
+    txt += '<' + node.getAttribute('href') + '>';
     if (node.hasAttribute('title')) {
       txt += ' "' + node.getAttribute('title') + '"';
     }
@@ -4410,7 +4420,7 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
       break;
 
     case 'a':
-      txt = showdown.subParser('makeMarkdown.anchors')(node, globals);
+      txt = showdown.subParser('makeMarkdown.links')(node, globals);
       break;
 
     case 'img':

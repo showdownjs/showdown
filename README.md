@@ -229,14 +229,6 @@ var defaultOptions = showdown.getDefaultOptions();
  * **rawHeaderId**: (boolean) [default false] Remove only spaces, ' and " from generated header ids (including prefixes),
     replacing them with dashes (-). WARNING: This might result in malformed ids **(since v1.7.3)**
  
- * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
-   Examples:
-   ```
-   ![foo](foo.jpg =100x80)     simple, assumes units are in px
-   ![bar](bar.jpg =100x*)      sets the height to "auto"
-   ![baz](baz.jpg =80%x5em)  Image with width of 80% and height of 5em
-   ```
- 
  * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that
 
     ```md
@@ -247,6 +239,14 @@ var defaultOptions = showdown.getDefaultOptions();
     ```html
     <h3>foo</h3>
     ```
+
+ * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
+   Examples:
+   ```
+   ![foo](foo.jpg =100x80)     simple, assumes units are in px
+   ![bar](bar.jpg =100x*)      sets the height to "auto"
+   ![baz](baz.jpg =80%x5em)  Image with width of 80% and height of 5em
+   ```
 
  * **simplifiedAutoLink**: (boolean) [default false] Turning this option on will enable automatic linking to urls.
    This means that:
@@ -283,18 +283,8 @@ var defaultOptions = showdown.getDefaultOptions();
    <p>some text with__underscores__in middle</p>
    ```
 
- * **literalMidWordAsterisks**: (boolean) [default false] Turning this on will stop showdown from interpreting asterisks
-   in the middle of words as `<em>` and `<strong>` and instead treat them as literal asterisks.
-
-   Example:
-
-   ```md
-   some text with**underscores**in middle
-   ```
-   will be parsed as
-   ```html
-   <p>some text with**underscores**in middle</p>
-   ```
+ * ~~**literalMidWordAsterisks**: (boolean) [default false] Turning this on will stop showdown from interpreting asterisks
+   in the middle of words as `<em>` and `<strong>` and instead treat them as literal asterisks.~~
    
  * **strikethrough**: (boolean) [default false] Enable support for strikethrough syntax.
    `~~strikethrough~~` as `<del>strikethrough</del>`
@@ -329,7 +319,7 @@ var defaultOptions = showdown.getDefaultOptions();
    by 4 spaces for them to be nested, effectively reverting to the old behavior where 2 or 3 spaces were enough.
    **(since v1.5.0)**
  
- * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as <br> like GitHub does, without
+ * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as <br>, without
    needing 2 spaces at the end of the line **(since v1.5.1)**
  
    ```md

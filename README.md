@@ -259,16 +259,8 @@ var defaultOptions = showdown.getDefaultOptions();
    <p>some text <a href="www.google.com">www.google.com</a>
    ```
  
- * **excludeTrailingPunctuationFromURLs**: (boolean) [default false] This option excludes trailing punctuation from autolinking urls.
-   Punctuation excluded: `. !  ? ( )`. Only applies if **simplifiedAutoLink** option is set to `true`.
-   
-   ```md
-   check this link www.google.com!
-   ```
-   will be parsed as
-   ```html
-   <p>check this link <a href="www.google.com">www.google.com</a>!</p>
-   ```
+ * ~~**excludeTrailingPunctuationFromURLs**: (boolean) [default false] This option excludes trailing punctuation from autolinking urls.
+   Punctuation excluded: `. !  ? ( )`. Only applies if **simplifiedAutoLink** option is set to `true`.~~
    
  * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting
    underscores in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores.

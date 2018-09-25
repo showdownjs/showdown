@@ -22,7 +22,7 @@
 
     This option is weird, hard to maintain and really... makes little sense.
 
-- [ ] **excludeTrailingPunctuationFromURLs** (removal)
+- [X] **excludeTrailingPunctuationFromURLs** (removal)
 
     This option will be removed and will be the default behavior from now on.
 
@@ -89,15 +89,14 @@
     HTML and OTP extensions will be dropped in favor of Listener Extensions. We might even give them a new name
     
 ## Subparsers
-- [ ] **Anchors**: Revamp the anchors subparser so it calls strikethrough, bold, italic and underline directly
-- [ ] **autoLinks**: Fix some lingering bugs and issues with autolinks
-
+- [X] **Anchors**: Revamp the anchors subparser so it calls strikethrough, bold, italic and underline directly
+- [X] **autoLinks**: Fix some lingering bugs and issues with autolinks
 
 ## Priority Bugs
-- [ ] **#355**: *simplifiedAutoLink URLs inside parenthesis followed by another character are not parsed correctly*
+- [X] **#355**: *simplifiedAutoLink URLs inside parenthesis followed by another character are not parsed correctly*
+- [X] **#534**: *Multiple parentheses () in url link is not parsed correctly*
 - [ ] **#367**: *sublists rendering with 2 spaces* - related to disableForced4SpacesIndentedSublists option...
 - [ ] **#537**: *master branch doesn't work in a web worker*
-
 
 ## CLI
 - [ ] Refactor the CLI
@@ -114,6 +113,7 @@
 - [ ] **#486**: *A backslash at the end of the line is a hard line break*
 - [ ] **#548**: *anchors and images of subParser are errors when they are specific strings*
 - [ ] **#549**: *Strange parsing issue with `<pre><code>`*
+- [ ] Rethink the global variable
 
 ## NEW Features
 

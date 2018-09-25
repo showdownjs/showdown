@@ -25,3 +25,13 @@
 ![empty](< > "title")
 
 [empty](< > "title")
+
+[empty]()
+
+[empty]("title")
+
+[]()
+
+[](<>)
+
+[]("title")

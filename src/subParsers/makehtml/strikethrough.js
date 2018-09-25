@@ -1,16 +1,9 @@
 showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
   'use strict';
 
-  function parseInside (txt) {
-    if (options.simplifiedAutoLink) {
-      txt = showdown.subParser('makehtml.simplifiedAutoLinks')(txt, options, globals);
-    }
-    return '<del>' + txt + '</del>';
-  }
-
   if (options.strikethrough) {
     text = globals.converter._dispatch('makehtml.strikethrough.before', text, options, globals).getText();
-    text = text.replace(/(?:~){2}([\s\S]+?)(?:~){2}/g, function (wm, txt) { return parseInside(txt); });
+    text = text.replace(/(?:~){2}([\s\S]+?)(?:~){2}/g, function (wm, txt) { return '<del>' + txt + '</del>'; });
     text = globals.converter._dispatch('makehtml.strikethrough.after', text, options, globals).getText();
   }
 

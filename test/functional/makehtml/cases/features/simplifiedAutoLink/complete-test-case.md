@@ -58,11 +58,11 @@ ftp://foo.bar/baz
 
 http://foo.bar/?q=Test%20URL-encoded%20stuff
 
-http://مثال.إختبار
+<!-- http://مثال.إختبار -->
 
-http://例子.测试
+<!-- http://例子.测试 -->
 
-http://उदाहरण.परीक्षा
+<!-- http://उदाहरण.परीक्षा -->
 
 http://1337.net
 
@@ -71,7 +71,6 @@ http://a.b-c.de
 http://223.255.255.254
 
 https://foo_bar.example.com/
-
 
 <!-- WEIRD BUT SHOULD ALSO PASS -->
 
@@ -84,6 +83,10 @@ http://a.b--c.de/
 http://foo.bar/foo(bar)baz quux
 
 http://foo.bar?q=Spaces should be encoded
+
+http://.www.foo.bar/
+
+http://.www.foo.bar./
 
 <!-- THESE ARE INVALID IPS BUT WE WILL LET THEM PASS -->
 http://10.1.1.1
@@ -149,10 +152,4 @@ http://-error-.invalid/
 
 http://-a.b.co
 
-http://a.b-.co
-
 http://3628126748
-
-http://.www.foo.bar/
-
-http://.www.foo.bar./

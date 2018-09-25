@@ -5,7 +5,8 @@
 showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('smakehtml.panGamut.before', text, options, globals).getText();
+  text = globals.converter._dispatch('makehtml.span.before', text, options, globals).getText();
+
   text = showdown.subParser('makehtml.codeSpans')(text, options, globals);
   text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('makehtml.encodeBackslashEscapes')(text, options, globals);
@@ -13,13 +14,13 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   // Process link and image tags. Images must come first,
   // because ![foo][f] looks like a link.
   text = showdown.subParser('makehtml.images')(text, options, globals);
-  text = showdown.subParser('makehtml.links')(text, options, globals);
 
-  // Make links out of things like `<http://example.com/>`
-  // Must come after links, because you can use < and >
-  // delimiters in inline links like [this](<url>).
-  text = showdown.subParser('makehtml.autoLinks')(text, options, globals);
-  text = showdown.subParser('makehtml.simplifiedAutoLinks')(text, options, globals);
+  text = globals.converter._dispatch('smakehtml.links.before', text, options, globals).getText();
+  text = showdown.subParser('makehtml.links')(text, options, globals);
+  text = globals.converter._dispatch('smakehtml.links.after', text, options, globals).getText();
+
+  //text = showdown.subParser('makehtml.autoLinks')(text, options, globals);
+  //text = showdown.subParser('makehtml.simplifiedAutoLinks')(text, options, globals);
   text = showdown.subParser('makehtml.emoji')(text, options, globals);
   text = showdown.subParser('makehtml.underline')(text, options, globals);
   text = showdown.subParser('makehtml.italicsAndBold')(text, options, globals);

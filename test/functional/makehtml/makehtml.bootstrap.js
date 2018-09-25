@@ -16,6 +16,11 @@
       .map(map(dir));
   }
 
+  function getJsonTestSuite (file) {
+    var json = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return mapJson(json, file);
+  }
+
   function filter () {
     return function (file) {
       var ext = file.slice(-3);
@@ -25,7 +30,8 @@
 
   function map (dir) {
     return function (file) {
-      var name = file.replace('.md', ''),
+      var oFile = 'file://' + process.cwd().replace(/\\/g, '/') + dir + file,
+          name = file.replace('.md', ''),
           htmlPath = dir + name + '.html',
           html = fs.readFileSync(htmlPath, 'utf8'),
           mdPath = dir + name + '.md',
@@ -34,10 +40,32 @@
       return {
         name:     name,
         input:    md,
-        expected: html
+        expected: html,
+        file: oFile
       };
     };
   }
+
+  function mapJson (jsonArray, file) {
+    var tcObj = {};
+    for (var i = 0; i < jsonArray.length; ++i) {
+      var section = jsonArray[i].section;
+      var name = jsonArray[i].section + '_' + jsonArray[i].example;
+      var md = jsonArray[i].markdown;
+      var html = jsonArray[i].html;
+      if (!tcObj.hasOwnProperty(section)) {
+        tcObj[section] = [];
+      }
+      tcObj[section].push({
+        name: name,
+        input: md,
+        expected: html,
+        file: process.cwd().replace(/\\/g, '/') + file
+      });
+    }
+    return tcObj;
+  }
+
 
   function assertion (testCase, converter) {
     return function () {
@@ -45,7 +73,7 @@
       testCase = normalize(testCase);
 
       // Compare
-      testCase.actual.should.equal(testCase.expected);
+      testCase.actual.should.equal(testCase.expected, testCase.file);
     };
   }
 
@@ -81,6 +109,7 @@
 
   module.exports = {
     getTestSuite: getTestSuite,
+    getJsonTestSuite: getJsonTestSuite,
     assertion: assertion,
     normalize: normalize,
     showdown: require('../../../.build/showdown.js')

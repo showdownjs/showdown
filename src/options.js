@@ -51,11 +51,6 @@ function getDefaultOpts (simple) {
       describe: 'Turn on/off GFM autolink style',
       type: 'boolean'
     },
-    excludeTrailingPunctuationFromURLs: {
-      defaultValue: false,
-      describe: 'Excludes trailing punctuation from links generated with autoLinking',
-      type: 'boolean'
-    },
     literalMidWordUnderscores: {
       defaultValue: false,
       describe: 'Parse midword underscores as literal underscores',

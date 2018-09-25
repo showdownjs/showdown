@@ -396,14 +396,25 @@ showdown.helper.unescapeHTMLEntities = function (txt) {
     .replace(/&amp;/g, '&');
 };
 
+showdown.helper._hashHTMLSpan = function (html, globals) {
+  return '¨C' + (globals.gHtmlSpans.push(html) - 1) + 'C';
+};
+
 /**
  * Showdown's Event Object
  * @param {string} name Name of the event
+ * @param {string} text Text
  * @param {{}} params optional. params of the event
  * @constructor
  */
 showdown.helper.Event = function (name, text, params) {
   'use strict';
+
+  var regexp = params.regexp || null;
+  var matches = params.matches || {};
+  var options = params.options || {};
+  var converter = params.converter || null;
+  var globals = params.globals || {};
 
   /**
    * Get the name of the event
@@ -417,12 +428,6 @@ showdown.helper.Event = function (name, text, params) {
     return name;
   };
 
-  var regexp = params.regexp || null;
-  var matches = params.matches || {};
-  var options = params.options || {};
-  var converter = params.converter || null;
-  var globals = params.globals || {};
-
   this._stopExecution = false;
 
   this.parsedText = params.parsedText || null;
@@ -430,30 +435,39 @@ showdown.helper.Event = function (name, text, params) {
   this.getRegexp = function () {
     return regexp;
   };
+
   this.getOptions = function () {
     return options;
   };
+
   this.getConverter = function () {
     return converter;
   };
+
   this.getGlobals = function () {
     return globals;
   };
+
   this.getCapturedText = function () {
     return text;
   };
+
   this.getText = function () {
     return text;
   };
+
   this.setText = function (newText) {
     text = newText;
   };
+
   this.getMatches = function () {
     return matches;
   };
+
   this.setMatches = function (newMatches) {
     matches = newMatches;
   };
+
   this.preventDefault = function (bool) {
     this._stopExecution = !bool;
   };
@@ -485,7 +499,8 @@ if (typeof(console) === 'undefined') {
  * We declare some common regexes to improve performance
  */
 showdown.helper.regexes = {
-  asteriskDashAndColon: /([*_:~])/g
+  asteriskDashTildeAndColon: /([*_:~])/g,
+  asteriskDashAndTilde:      /([*_~])/g
 };
 
 /**

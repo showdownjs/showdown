@@ -62,7 +62,7 @@ describe('makeHtml() features testsuite', function () {
       } else if (testsuite[i].name === 'simpleLineBreaks-handle-html-pre') {
         converter = new showdown.Converter({simpleLineBreaks: true});
       } else if (testsuite[i].name === 'excludeTrailingPunctuationFromURLs-option') {
-        converter = new showdown.Converter({simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true});
+        converter = new showdown.Converter({simplifiedAutoLink: true});
       } else if (testsuite[i].name === 'requireSpaceBeforeHeadingText') {
         converter = new showdown.Converter({requireSpaceBeforeHeadingText: true});
       } else if (testsuite[i].name === '#320.github-compatible-generated-header-id') {
@@ -88,11 +88,13 @@ describe('makeHtml() features testsuite', function () {
       } else if (testsuite[i].name === 'customizedHeaderId-simple') {
         converter = new showdown.Converter({customizedHeaderId: true});
       } else if (testsuite[i].name === '#378.simplifiedAutoLinks-with-excludeTrailingPunctuationFromURLs') {
-        converter = new showdown.Converter({simplifiedAutoLink: true, excludeTrailingPunctuationFromURLs: true});
+        converter = new showdown.Converter({simplifiedAutoLink: true});
       } else if (testsuite[i].name === '#374.escape-html-tags') {
         converter = new showdown.Converter({backslashEscapesHTMLTags: true});
       } else if (testsuite[i].name === '#379.openLinksInNewWindow-breaks-em-markdup') {
         converter = new showdown.Converter({openLinksInNewWindow: true});
+      } else if (testsuite[i].name === '#355.simplifiedAutoLink-URLs-inside-parenthesis-followed-by-another-character-are-not-parsed-correctly') {
+        converter = new showdown.Converter({simplifiedAutoLink: true});
       } else {
         converter = new showdown.Converter();
       }

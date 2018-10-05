@@ -3,6 +3,17 @@ We would like to thank everyone that contributed to this library. If you find ou
 
 # Donors
 
+- [**Learn on demand Systems**](http://www.learnondemandsystems.com/) (1000$)
+
+- **Nothing AG** (25€)
+
+    > Thank you for developing Showdown :)
+
+- **Sam Huffman** (15$)
+
+    > Thanks for the great work on showdown.js! I've been looking for a good solution to serve wiki-like text to a browser and render as
+    HTML but nearly gave up after mixed success with wikitext. Your library gets me very close to where I want to be.
+
 - **Maya Lekova** (10$)
 
     > Great work with the showdown library! I just used it and it worked exactly the way I expected 
@@ -12,19 +23,8 @@ We would like to thank everyone that contributed to this library. If you find ou
 
 - **Lin Wang** (10$)
 
-- **Juan Marcelo Russo** (1$)
-
 - **Walter Schnell** (10$)
-
-- [**Learn on demand Systems**](http://www.learnondemandsystems.com/) (1000$) 
 
 - **ivanhjc** (5$)
 
-- **Sam Huffman** (15$)
-
-    > Thanks for the great work on showdown.js! I've been looking for a good solution to serve wiki-like text to a browser and render as
-    HTML but nearly gave up after mixed success with wikitext. Your library gets me very close to where I want to be.
-    
-- **Nothing AG** (25€)
-
-    > Thank you for developing Showdown :)
+- **Juan Marcelo Russo** (1$)

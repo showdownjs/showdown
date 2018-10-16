@@ -75,7 +75,7 @@ showdown.subParser('anchors', function (text, options, globals) {
 
   // Lastly handle GithubMentions if option is enabled
   if (options.ghMentions) {
-    text = text.replace(/(^|\s)(\\)?(@([a-z\d\-]+))(?=[.!?;,[\]()]|\s|$)/gmi, function (wm, st, escape, mentions, username) {
+    text = text.replace(/(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d.-]+?[a-z\d]+)*))/gmi, function (wm, st, escape, mentions, username) {
       if (escape === '\\') {
         return st + mentions;
       }

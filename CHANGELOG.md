@@ -1,3 +1,20 @@
+<a name="1.8.7"></a>
+## [1.8.7](https://github.com/showdownjs/showdown/compare/1.8.6...1.8.7) (2018-10-16)
+
+
+### Bug Fixes
+
+* **emojis:** fix emoji excessive size ([4aca41c](https://github.com/showdownjs/showdown/commit/4aca41c))
+* **gfm-codeblocks:** 
+    * add support for spaces before language declaration ([24bf7b1](https://github.com/showdownjs/showdown/commit/24bf7b1)), closes [#569](https://github.com/showdownjs/showdown/issues/569)
+    * leading space no longer breaks gfm codeblocks ([828c32f](https://github.com/showdownjs/showdown/commit/828c32f)), closes [#523](https://github.com/showdownjs/showdown/issues/523)
+* **images:** fix js error when using image references ([980e702](https://github.com/showdownjs/showdown/commit/980e702)), closes [#585](https://github.com/showdownjs/showdown/issues/585)
+* **literalMidWordAsterisks:** now parses single characters enclosed by * correctly ([fe70e45](https://github.com/showdownjs/showdown/commit/fe70e45)), closes [#478](https://github.com/showdownjs/showdown/issues/478)
+* **mentions:** allow for usernames with dot, underscore and dash ([dfeb1e2](https://github.com/showdownjs/showdown/commit/dfeb1e2)), closes [#574](https://github.com/showdownjs/showdown/issues/574)
+* **nbsp:** fix replacing of nbsp with regular spaces ([8bc1f42](https://github.com/showdownjs/showdown/commit/8bc1f42))
+
+
+
 <a name="1.8.6"></a>
 ## [1.8.6](https://github.com/showdownjs/showdown/compare/1.8.5...1.8.6) (2017-12-22)
 

@@ -24,13 +24,14 @@
     </article>
 </template>
 <script>
-  $.when(blogPosts.getList()).then(function(list) {
-    var articleWrapper = $('#articles-wrapper');
-    for (var i = 0; i < list.length; ++i) {
-      var article = Mustache.render($('#blog-list-article-tpl').html(), list[i]);
-      articleWrapper.prepend(article);
+    function loadBlogPosts(list) {
+      var articleWrapper = $('#articles-wrapper');
+      for (var i = 0; i < list.length; ++i) {
+        var article = Mustache.render($('#blog-list-article-tpl').html(), list[i]);
+        articleWrapper.prepend(article);
+      }
+      router.updatePageLinks();
     }
-    router.updatePageLinks();
-  });
+  $.when(blogPosts.getList()).then(loadBlogPosts);
 </script>
 

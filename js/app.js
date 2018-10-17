@@ -15,57 +15,34 @@ $(document).ready(function() {
   blogPosts = new BlogPosts();
 
   function BlogPosts () {
-    var posts = [];
-    var indexedList = {};
-
     var getList = this.getList = function() {
       var dfd = jQuery.Deferred();
-      if (posts.length !== 0) {
-        dfd.resolve(posts);
-      } else {
-        $.getJSON('blog/posts.json', function(data) {
-          for (var i = 0; i < data.length; ++i) {
-            data[i].metadata.summary = converter.makeHtml(data[i].metadata.summary);
-          }
-          dfd.resolve(data);
-        });
-      }
+      $.getJSON('blog/posts.json', function(data) {
+        for (var i = 0; i < data.length; ++i) {
+          data[i].metadata.summary = converter.makeHtml(data[i].metadata.summary);
+        }
+        dfd.resolve(data);
+      });
       return dfd.promise();
     };
 
     this.getPostByCanonical = function(canonical) {
       var dfd = jQuery.Deferred();
-      var idx = null;
-
-      if (typeof indexedList[canonical] !== 'undefined') {
-        idx = indexedList[canonical];
-      }
-
       $.when(getList()).then(function(list) {
-        if (idx !== null) {
-          
-          dfd.resolve(list[idx]);
-        } else {
-          for (var i = 0; i < list.length; ++i) {
-            console.log(idx, list[i]);
-            if (list[i].canonical === canonical) {
-              var promise = $.ajax({
-                url: list[i].url,
-                dataType: "text"
-              });
-              promise.done((function (index, listItem) {
-                return function (md) {
-                  listItem.post = converter.makeHtml(md);
-                  posts[index] = listItem;
-                  
-                  indexedList[canonical] = index;
-                  dfd.resolve(listItem);
-                };
-              })(i, list[i]));
-              return;
-            }
+        for (var i = 0; i < list.length; ++i) {
+          if (list[i].canonical === canonical) {
+            var promise = $.ajax({
+              url: list[i].url,
+              dataType: "text"
+            });
+            promise.done((function (index, listItem) {
+              return function (md) {
+                listItem.post = converter.makeHtml(md);
+                dfd.resolve(listItem);
+              };
+            })(i, list[i]));
+            return;
           }
-          dfd.resolve(null);
         }
       });
       return dfd.promise();
@@ -104,28 +81,28 @@ $(document).ready(function() {
     return dfd.promise();
   }
 
-  function loadPage(url) {
+  function loadPage(url, params) {
     var $page = $('#page');
     return $page.load(url, function () {
+      if (params && params.page === 'blog-article') {
+        $.when(blogPosts.getPostByCanonical(params.canonical)).then(function(post) {
+          var article = Mustache.render($('#blog-article-tpl').html(), post);
+          $('#blog-post-container').html(article);
+
+          $('pre code').each(function(i, block) {
+            hljs.highlightBlock(block);
+            hljs.lineNumbersBlock(block);
+          });
+          router.updatePageLinks();
+        });
+      }
+      
       $page.find('pre>code').each(function(i, block) {
         hljs.highlightBlock(block);
         hljs.lineNumbersBlock(block);
         router.updatePageLinks();
       });
     });
-  }
-
-  function injectParams(params) {
-    if (typeof params !== 'undefined') {
-      // pass params to page
-      for (var param in params) {
-        if (params.hasOwnProperty(param)) {
-          var $pageParams = $('#page-params');
-          $pageParams.html();
-          $pageParams.append('<data id="param-' + param + '" value="'+ params[param] +'" hidden style="display: none;"></data>');
-        }
-      }
-    }
   }
 
   function changeActiveLink(name) {
@@ -141,26 +118,26 @@ $(document).ready(function() {
   );
 
   router
-    .on('/releases', function () {
+    .on('/releases', function (params) {
       changeActiveLink('releases');
-      return loadPage('html/releases.html');
+      return loadPage('html/releases.html', params);
     })
-    .on('/documentation', function () {
+    .on('/documentation', function (params) {
       changeActiveLink('documentation');
-      return loadPage('html/documentation.html');
+      return loadPage('html/documentation.html', params);
     })
     .on('/blog/:canonical', function (params) {
+      params.page = 'blog-article';
       changeActiveLink('blog');
-      injectParams(params);
       return loadPage('html/blog-article.html', params);
     })
-    .on('/blog', function () {
+    .on('/blog', function (params) {
       changeActiveLink('blog');
-      return loadPage('html/blog.html');
+      return loadPage('html/blog.html', params);
     })
-    .on('*', function () {
+    .on('*', function (params) {
       changeActiveLink('home');
-      return loadPage('html/main.html');
+      return loadPage('html/main.html', params);
     })
     .resolve();
 

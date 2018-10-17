@@ -23,16 +23,3 @@
         </section>
     </article>
 </template>
-<script>
-(function () {
-  var canonical = $('#param-canonical').attr('value');
-  $.when(blogPosts.getPostByCanonical(canonical)).then(function(post) {
-    var article = Mustache.render($('#blog-article-tpl').html(), post);
-    $('#blog-post-container').html(article);
-    router.updatePageLinks();
-    $('pre code').each(function(i, block) {
-      hljs.highlightBlock(block);
-    });
-  });
-})();
-</script>

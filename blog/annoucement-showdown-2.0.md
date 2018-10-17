@@ -60,6 +60,5 @@ development efforts will be put into it.
 This means **Showdown 1.x will now enter maintenance mode, that is, no new features
 will be added** and only important bugfixes will be committed.
 
-We expect to release a stable version of Showdown 2.0 somewhere around June 2018,
-but an alpha-version might be released a lot sooner. ***So, if you are as excited as
-we are, stay tuned for more information***.
+We expect to release an alpha version of Showdown 2.0 somewhere around ~~August 2018,~~
+the fall of 2018. ***So, if you are as excited as we are, stay tuned for more information***.

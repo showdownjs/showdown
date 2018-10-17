@@ -12,5 +12,33 @@
       "image": "blog/img/2017.12.12.jpg",
       "summary": "Showdown version 1.0.0 was released almost 3 years ago, back in May 2015. Since then, it has seen a lot of improvements, with a boost to performance and a significant number of features now included in the core of the library. However, do to backwards compatibility constrains, we are still supporting a lot of legacy features, that prevent us from moving the software forward.\n\nWith that in mind, **it is time to start thinking about Showdown version 2.0.** For the next major release of Showdown we have planned a range of **significant changes and additions**."
     }
+  },
+  {
+    "id": 2,
+    "canonical": "rewriting-the-parser-challenges-and-opportunities",
+    "url": "blog/rewriting-the-parser-challenges-and-opportunities.md",
+    "metadata": {
+      "title": "Rewriting the parser: Challenges and opportunities",
+      "author": "Estevão Soares dos Santos",
+      "author_avatar": "img/avatars/tivie.jpg",
+      "date": "2018-09-25",
+      "language": "en",
+      "image": "blog/img/2018.09.25.jpg",
+      "summary": "There comes a time when tough (and exciting) choices need to be made. With a version 2.0 in the oven (and the exciting reverse parser already completed), it seemed an excellent opportunity for doing something that I wished for a long time: rewriting showdown's parser from scratch. But maybe that challenge was a lot more tough than I first anticipated!"
+    }
+  },
+  {
+    "id": 3,
+    "canonical": "showdown-1.8.7-released",
+    "url": "blog/showdown-1.8.7-released.md",
+    "metadata": {
+      "title": "Showdown 1.8.7 released",
+      "author": "Estevão Soares dos Santos",
+      "author_avatar": "img/avatars/tivie.jpg",
+      "date": "2018-10-16",
+      "language": "en",
+      "image": "blog/img/2018.10.06.jpg",
+      "summary": "While everyone's waiting for the new Showdown 2.0, we released version 1.8.7 with some improvements and several bugfixes"
+    }
   }
 ]

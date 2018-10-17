@@ -24,7 +24,7 @@ $(document).ready(function() {
         dfd.resolve(posts);
       } else {
         $.getJSON('blog/posts.json', function(data) {
-          for (var i = data.length - 1; i >= 0; --i) {
+          for (var i = 0; i < data.length; ++i) {
             data[i].metadata.summary = converter.makeHtml(data[i].metadata.summary);
           }
           dfd.resolve(data);
@@ -43,9 +43,11 @@ $(document).ready(function() {
 
       $.when(getList()).then(function(list) {
         if (idx !== null) {
+          
           dfd.resolve(list[idx]);
         } else {
           for (var i = 0; i < list.length; ++i) {
+            console.log(idx, list[i]);
             if (list[i].canonical === canonical) {
               var promise = $.ajax({
                 url: list[i].url,
@@ -55,6 +57,7 @@ $(document).ready(function() {
                 return function (md) {
                   listItem.post = converter.makeHtml(md);
                   posts[index] = listItem;
+                  
                   indexedList[canonical] = index;
                   dfd.resolve(listItem);
                 };
@@ -120,7 +123,6 @@ $(document).ready(function() {
           var $pageParams = $('#page-params');
           $pageParams.html();
           $pageParams.append('<data id="param-' + param + '" value="'+ params[param] +'" hidden style="display: none;"></data>');
-          console.log(params[param]);
         }
       }
     }

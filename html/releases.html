@@ -43,7 +43,6 @@
         .html(data[i].tag_name)
         .on('click', (function (trg) {
           return function () {
-            console.log(trg);
             event.preventDefault();
             $('html, body').animate({
               scrollTop: $(trg).offset().top

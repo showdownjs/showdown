@@ -28,7 +28,7 @@
     var articleWrapper = $('#articles-wrapper');
     for (var i = 0; i < list.length; ++i) {
       var article = Mustache.render($('#blog-list-article-tpl').html(), list[i]);
-      articleWrapper.append(article);
+      articleWrapper.prepend(article);
     }
     router.updatePageLinks();
   });

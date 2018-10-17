@@ -24,7 +24,7 @@ $(document).ready(function() {
         dfd.resolve(posts);
       } else {
         $.getJSON('blog/posts.json', function(data) {
-          for (var i = 0; i < data.length; ++i) {
+          for (var i = data.length - 1; i >= 0; --i) {
             data[i].metadata.summary = converter.makeHtml(data[i].metadata.summary);
           }
           dfd.resolve(data);

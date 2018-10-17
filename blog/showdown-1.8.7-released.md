@@ -4,7 +4,7 @@ author: Estevão Soares dos Santos,
 author_avatar: img/avatars/tivie.jpg,
 date: 2018-10-16,
 language: en,
-image: img/blog/2018.10.06.jpg,
+image: img/blog/2018.10.16.jpg,
 summary: While everyone's waiting for the new Showdown 2.0, I released version 1.8.7 with some improvements and several bugfixes.
 »»»
 

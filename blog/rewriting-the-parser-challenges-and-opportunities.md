@@ -106,7 +106,8 @@ Some key features include:
     
   - **Extensions are a lot more powerful now**
   
-    You can pretty much change every aspect  
+    The extension system is being completely redone and will tie in really really well with the new parser and 
+    **Reverse Converter**.
     
   - **Faster (it seems)**
     

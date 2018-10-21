@@ -1,5 +1,8 @@
 /**
- * Turn Markdown link shortcuts into XHTML <a> tags.
+ * Turn Markdown horizontal rule shortcuts into <hr /> tags.
+ *
+ * Any 3 or more unindented consecutive hyphens, asterisks or underscores with or without a space beetween them
+ * in a single line is considered a horizontal rule
  */
 showdown.subParser('makehtml.horizontalRule', function (text, options, globals) {
   'use strict';

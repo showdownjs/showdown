@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0-alpha1 - 25-09-2018 */
+;/*! showdown v 2.0.0-alpha1 - 21-10-2018 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -3189,10 +3189,10 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
 
   // Parse underscores
   if (options.literalMidWordUnderscores) {
-    text = text.replace(/\b___(\S[\s\S]*)___\b/g, function (wm, txt) {
+    text = text.replace(/\b___(\S[\s\S]*?)___\b/g, function (wm, txt) {
       return parseInside (txt, '<strong><em>', '</em></strong>');
     });
-    text = text.replace(/\b__(\S[\s\S]*)__\b/g, function (wm, txt) {
+    text = text.replace(/\b__(\S[\s\S]*?)__\b/g, function (wm, txt) {
       return parseInside (txt, '<strong>', '</strong>');
     });
     text = text.replace(/\b_(\S[\s\S]*?)_\b/g, function (wm, txt) {

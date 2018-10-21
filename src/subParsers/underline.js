@@ -8,11 +8,17 @@ showdown.subParser('underline', function (text, options, globals) {
   text = globals.converter._dispatch('underline.before', text, options, globals);
 
   if (options.literalMidWordUnderscores) {
-    text = text.replace(/\b_?__(\S[\s\S]*)___?\b/g, function (wm, txt) {
+    text = text.replace(/\b___(\S[\s\S]*?)___\b/g, function (wm, txt) {
+      return '<u>' + txt + '</u>';
+    });
+    text = text.replace(/\b__(\S[\s\S]*?)__\b/g, function (wm, txt) {
       return '<u>' + txt + '</u>';
     });
   } else {
-    text = text.replace(/_?__(\S[\s\S]*?)___?/g, function (wm, m) {
+    text = text.replace(/___(\S[\s\S]*?)___/g, function (wm, m) {
+      return (/\S$/.test(m)) ? '<u>' + m + '</u>' : wm;
+    });
+    text = text.replace(/__(\S[\s\S]*?)__/g, function (wm, m) {
       return (/\S$/.test(m)) ? '<u>' + m + '</u>' : wm;
     });
   }

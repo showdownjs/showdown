@@ -2979,7 +2979,7 @@ showdown.subParser('codeSpans', function (text, options, globals) {
 });
 
 /**
- * Turn Markdown link shortcuts into XHTML <a> tags.
+ * Create a full HTML document from the processed markdown
  */
 showdown.subParser('completeHTMLDocument', function (text, options, globals) {
   'use strict';

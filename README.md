@@ -312,7 +312,7 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **ghCodeBlocks**: (boolean) [default true] Enable support for GFM code block style.
 
- * **tasklists**:(boolean) [default false] Enable support for GFM takslists. Example:
+ * **tasklists**: (boolean) [default false] Enable support for GFM tasklists. Example:
  
    ```md
     - [x] This task is done
@@ -436,11 +436,12 @@ You can also find a boilerplate, to create your own extensions in [this reposito
 
 ### Client-side Extension Usage
 
-```js
-<script src="showdown.js" />
-<script src="twitter-extension.js" />
-
+```html
+<script src="showdown.js"></script>
+<script src="twitter-extension.js"></script>
+<script>
 var converter = new showdown.Converter({ extensions: ['twitter'] });
+</script>
 ```
 
 ### Server-side Extension Usage

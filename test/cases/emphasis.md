@@ -72,3 +72,18 @@ foo__bar__baz
 this is **<a href="//google.com">imbued link with strong</a>**
 
 this is __<a href="//google.com">imbued link with strong</a>__
+
+this link has underscore [some_link](http://www.google.com/some_link)
+
+___multiple___ italics and bolds with underscores in a ___paragraph___
+
+***multiple*** italics and bolds with asterisks in a ***paragraph***
+
+__multiple__ bolds with underscores in a __paragraph__
+
+**multiple** bolds with asterisks in a **paragraph**
+
+_multiple_ italics with underscores in a _paragraph_
+
+_multiple_ italics with asterisks in a _paragraph_
+

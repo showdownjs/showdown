@@ -15,3 +15,9 @@ strippers, _hitler_, and stalin
 strippers, __hitler__, and stalin
 
 strippers, ___hitler___, and stalin
+
+___multiple___ italics and bolds in a ___paragraph___
+
+__multiple__ bolds in a __paragraph__
+
+_multiple_ italics in a _paragraph_

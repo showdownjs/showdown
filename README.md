@@ -31,7 +31,7 @@ Check a live Demo here http://demo.showdownjs.com/
 
 As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
 
-If you like our work and find our library useful, please donate ~~[through Pledgie](https://pledgie.com/campaigns/35166) or~~ directly [through paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help us continue to develop this awesome library.
+If you like our work and find our library useful, please donate thourgh [patreon](https://www.patreon.com/showdownjs) or directly through [paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
 
 ## Installation
 

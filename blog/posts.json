@@ -40,5 +40,19 @@
       "image": "blog/img/2018.10.16.jpg",
       "summary": "While everyone's waiting for the new Showdown 2.0, we released version 1.8.7 with some improvements and several bugfixes"
     }
+  },
+  {
+    "id": 4,
+    "canonical": "patreon-launch",
+    "url": "blog/patreon-launch.md",
+    "metadata": {
+      "title": "We Just Launched Patreon!",
+      "author": "Estevão Soares dos Santos",
+      "author_avatar": "img/avatars/tivie.jpg",
+      "date": "2018-11-03",
+      "language": "en",
+      "image": "blog/img/2018.11.03.jpg",
+      "summary": "I'm very happy to say that Patreon is Up! Check out the cool rewards I have planned for you. And there is also a surprise announcement regarding a new release..."
+    }
   }
 ]

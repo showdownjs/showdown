@@ -31,7 +31,6 @@ Previous versions are release under GPL 2.0
 ## Who uses Showdown (or a fork)
 
  - [GoogleCloudPlatform](https://github.com/GoogleCloudPlatform)
- - [Ghost](https://ghost.org/)
  - [Meteor](https://www.meteor.com/)
  - [Stackexchange](http://stackexchange.com/) - forked as [PageDown](https://code.google.com/p/pagedown/)
  - [docular](https://github.com/Vertafore/docular)

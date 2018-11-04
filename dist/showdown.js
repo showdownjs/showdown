@@ -1,4 +1,4 @@
-;/*! showdown v 1.8.7 - 09-11-2018 */
+;/*! showdown v 1.8.7 - 10-11-2018 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -3088,8 +3088,9 @@ showdown.subParser('ellipsis', function (text, options, globals) {
 });
 
 /**
- * These are all the transformations that occur *within* block-level
- * tags like paragraphs, headers, and list items.
+ * Turn emoji codes into emojis
+ *
+ * List of supported emojis: https://github.com/showdownjs/showdown/wiki/Emojis
  */
 showdown.subParser('emoji', function (text, options, globals) {
   'use strict';

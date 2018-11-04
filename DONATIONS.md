@@ -1,7 +1,7 @@
 We would like to thank everyone that contributed to this library. If you find our library useful and wish to donate as well, you can do so [through patreon](https://www.patreon.com/showdownjs) or directly [through paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated.
 
 
-# Donors
+# One Time Donors
 
 - [**Learn on demand Systems**](http://www.learnondemandsystems.com/) (1000$)
 

@@ -17,6 +17,16 @@ Showdown can be used client side (in the browser) or server side (with NodeJs).
 
 Check a live Demo here http://demo.showdownjs.com/
 
+## [![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?u=11141581)
+
+As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
+
+If you like our work and find our library useful, please donate through [patreon](https://www.patreon.com/showdownjs) or directly through [paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
+
+## License
+
+ShowdownJS v 2.0 is release under the MIT version.
+Previous versions are release under GPL 2.0
 
 ## Who uses Showdown (or a fork)
 
@@ -27,17 +37,6 @@ Check a live Demo here http://demo.showdownjs.com/
  - [docular](https://github.com/Vertafore/docular)
  - [md-page](https://github.com/oscarmorrison/md-page)
  - [and some others...](https://www.npmjs.com/browse/depended/showdown)
-
-## Donate [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
-
-As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
-
-If you like our work and find our library useful, please donate through [patreon](https://www.patreon.com/showdownjs) or directly through [paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
-
-## License
-
-ShowdownJS v 2.0 is release under the MIT version.
-Previous versions are release under GPL 2.0
 
 ## Installation
 

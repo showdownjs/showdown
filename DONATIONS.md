@@ -27,4 +27,8 @@ We would like to thank everyone that contributed to this library. If you find ou
 
 - **ivanhjc** (5$)
 
+- **Asbjørn Ulsberg** (5$)
+
+    > Thanks for the ShowdownJS support!
+
 - **Juan Marcelo Russo** (1$)

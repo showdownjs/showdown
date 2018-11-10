@@ -1,3 +1,18 @@
+<a name="1.9.0"></a>
+# [1.9.0](https://github.com/showdownjs/showdown/compare/1.8.7...1.9.0) (2018-11-10)
+
+
+### Bug Fixes
+
+* **italicsAndBold:** Make italicsAndBold lazy ([#608](https://github.com/showdownjs/showdown/issues/608)) ([5c0d67e](https://github.com/showdownjs/showdown/commit/5c0d67e)), closes [#544](https://github.com/showdownjs/showdown/issues/544)
+
+
+### Features
+
+* **converter.makeMarkdown:** add an HTML to MD converter ([e4b0e69](https://github.com/showdownjs/showdown/commit/e4b0e69)), closes [#388](https://github.com/showdownjs/showdown/issues/388) [#233](https://github.com/showdownjs/showdown/issues/233)
+
+
+
 <a name="1.8.7"></a>
 ## [1.8.7](https://github.com/showdownjs/showdown/compare/1.8.6...1.8.7) (2018-10-16)
 

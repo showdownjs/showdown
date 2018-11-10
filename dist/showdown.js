@@ -1,4 +1,4 @@
-;/*! showdown v 1.8.7 - 10-11-2018 */
+;/*! showdown v 1.9.0 - 10-11-2018 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.

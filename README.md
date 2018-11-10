@@ -106,6 +106,7 @@ Check our [wiki pages][wiki] for examples and a more in-depth documentation.
 
 ### Node
 
+**Markdown to HTML**
 ```js
 var showdown  = require('showdown'),
     converter = new showdown.Converter(),
@@ -113,12 +114,21 @@ var showdown  = require('showdown'),
     html      = converter.makeHtml(text);
 ```
 
+**HTML to Markdown**
+```js
+var showdown  = require('showdown'),
+    converter = new showdown.Converter(),
+    html      = '<a href="https://patreon.com/showdownjs">Please Support us!</a>',
+    md        = converter.makeMarkdown(text);
+```
+
+
 ### Browser
 
 ```js
 var converter = new showdown.Converter(),
-    text      = '# hello, markdown!',
-    html      = converter.makeHtml(text);
+    html      = converter.makeHtml('# hello, markdown!'),
+    md        = converter.makeMd('<a href="https://patreon.com/showdownjs">Please Support us!</a>');
 ```
 
 ### Output 
@@ -127,6 +137,10 @@ Both examples should output...
 
 ```html
     <h1 id="hellomarkdown">hello, markdown!</h1>
+```
+
+```md
+[Please Support us!](https://patreon.com/showdownjs)
 ```
 
 ## Options

@@ -4,12 +4,12 @@
 
 ### Bug Fixes
 
-* **italicsAndBold:** Make italicsAndBold lazy ([#608](https://github.com/showdownjs/showdown/issues/608)) ([5c0d67e](https://github.com/showdownjs/showdown/commit/5c0d67e)), closes [#544](https://github.com/showdownjs/showdown/issues/544)
-
+* **italicsAndBold:** fix issue with consecutive spans ([#608](https://github.com/showdownjs/showdown/issues/608)) ([5c0d67e](https://github.com/showdownjs/showdown/commit/5c0d67e)), closes [#544](https://github.com/showdownjs/showdown/issues/544)
+* **underline**: fix issue with consecutive spans ([81edc70](https://github.com/showdownjs/showdown/commit/81edc70))
 
 ### Features
 
-* **converter.makeMarkdown:** add an HTML to MD converter ([e4b0e69](https://github.com/showdownjs/showdown/commit/e4b0e69)), closes [#388](https://github.com/showdownjs/showdown/issues/388) [#233](https://github.com/showdownjs/showdown/issues/233)
+* **converter.makeMarkdown:** [EXPERIMENTAL] add an HTML to MD converter ([e4b0e69](https://github.com/showdownjs/showdown/commit/e4b0e69)), closes [#388](https://github.com/showdownjs/showdown/issues/388) [#233](https://github.com/showdownjs/showdown/issues/233)
 
 
 

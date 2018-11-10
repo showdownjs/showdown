@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "chai": "^4.0.2",
-    "grunt": "^1.0.1",
+    "grunt": "^1.0.3",
     "grunt-contrib-clean": "^1.0.0",
     "grunt-contrib-concat": "^1.0.1",
     "grunt-contrib-jshint": "^1.1.0",
@@ -50,6 +50,7 @@
     "grunt-endline": "^0.6.1",
     "grunt-eslint": "^19.0.0",
     "grunt-simple-mocha": "^0.4.0",
+    "jsdom": "^13.0.0",
     "load-grunt-tasks": "^3.2.0",
     "performance-now": "^2.0.0",
     "quiet-grunt": "^0.2.3",

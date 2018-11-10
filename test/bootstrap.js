@@ -9,11 +9,19 @@
   require('source-map-support').install();
   require('chai').should();
   var fs = require('fs');
+  var jsdom = require('jsdom');
+  var document = new jsdom.JSDOM('', {}).window.document; // jshint ignore:line
 
   function getTestSuite (dir) {
     return fs.readdirSync(dir)
       .filter(filter())
       .map(map(dir));
+  }
+
+  function getHtmlToMdTestSuite (dir) {
+    return fs.readdirSync(dir)
+      .filter(filter())
+      .map(map2(dir));
   }
 
   function filter () {
@@ -39,9 +47,27 @@
     };
   }
 
-  function assertion (testCase, converter) {
+  function map2 (dir) {
+    return function (file) {
+      var name = file.replace('.md', ''),
+          htmlPath = dir + name + '.html',
+          html = fs.readFileSync(htmlPath, 'utf8'),
+          mdPath = dir + name + '.md',
+          md = fs.readFileSync(mdPath, 'utf8');
+
+      return {
+        name:     name,
+        input:    html,
+        expected: md
+      };
+    };
+  }
+
+  function assertion (testCase, converter, type) {
     return function () {
-      testCase.actual = converter.makeHtml(testCase.input);
+      //var conv = (type === 'makeMd') ? converter.makeMd : converter.makeHtml;
+
+      testCase.actual = (type === 'makeMd') ? converter.makeMd(testCase.input, document) : converter.makeHtml(testCase.input);
       testCase = normalize(testCase);
 
       // Compare
@@ -81,6 +107,7 @@
 
   module.exports = {
     getTestSuite: getTestSuite,
+    getHtmlToMdTestSuite: getHtmlToMdTestSuite,
     assertion: assertion,
     normalize: normalize,
     showdown: require('../.build/showdown.js')

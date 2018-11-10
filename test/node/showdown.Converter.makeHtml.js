@@ -10,27 +10,6 @@ describe('showdown.Converter', function () {
 
   var showdown = require('../bootstrap').showdown;
 
-  describe('Converter.options extensions', function () {
-    var runCount;
-    showdown.extension('testext', function () {
-      return [{
-        type: 'output',
-        filter: function (text) {
-          runCount = runCount + 1;
-          return text;
-        }
-      }];
-    });
-
-    var converter = new showdown.Converter({extensions: ['testext']});
-
-    it('output extensions should run once', function () {
-      runCount = 0;
-      converter.makeHtml('# testext');
-      runCount.should.equal(1);
-    });
-  });
-
   describe('makeHtml() with option omitExtraWLInCodeBlocks', function () {
     var converter = new showdown.Converter({omitExtraWLInCodeBlocks: true}),
         text = 'var foo = bar;',

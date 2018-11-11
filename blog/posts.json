@@ -54,5 +54,19 @@
       "image": "blog/img/2018.11.03.jpg",
       "summary": "I'm very happy to say that Patreon is Up! Check out the cool rewards I have planned for you. And there is also a surprise announcement regarding a new release..."
     }
+  },
+  {
+    "id": 5,
+    "canonical": "showdown-1.9.0-released",
+    "url": "blog/showdown-1.9.0-released.md",
+    "metadata": {
+      "title": "Showdown 1.9.0 Released",
+      "author": "Estevão Soares dos Santos",
+      "author_avatar": "img/avatars/tivie.jpg",
+      "date": "2018-11-10",
+      "language": "en",
+      "image": "blog/img/2018.10.16.jpg",
+      "summary": "We are very happy to announce the release of version 1.9.0, with a new and exciting feature: the Markdown to HTML converter!"
+    }
   }
 ]

@@ -46,6 +46,11 @@ function getDefaultOpts (simple) {
       describe: 'Turn on/off image dimension parsing',
       type: 'boolean'
     },
+    extractImageCaptions: {
+      defaultValue: false,
+      describe: 'Extract image alt tag as a caption for the image',
+      type: 'boolean'
+    },
     simplifiedAutoLink: {
       defaultValue: false,
       describe: 'Turn on/off GFM autolink style',

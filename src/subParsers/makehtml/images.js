@@ -59,7 +59,13 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
       .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     //url = showdown.helper.escapeCharacters(url, '*_', false);
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-    var result = '<img src="' + url + '" alt="' + altText + '"';
+    var result = '';
+
+    if (options.extractImageCaptions && altText) {
+      result += '<figure>';
+    }
+
+    result += '<img src="' + url + '" alt="' + altText + '"';
 
     if (title && showdown.helper.isString(title)) {
       title = title
@@ -78,6 +84,11 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
     }
 
     result += ' />';
+
+    if (options.extractImageCaptions && altText) {
+      result += '<figcaption>' + altText + '</figcaption>';
+      result += '</figure>';
+    }
 
     return result;
   }

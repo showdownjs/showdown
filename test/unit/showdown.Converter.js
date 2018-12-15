@@ -122,6 +122,14 @@ describe('showdown.Converter', function () {
       converter.getAllExtensions().language.should.contain(extObjMock);
       showdown.resetExtensions();
     });
+
+    it('removeExtension() should remove an added extension', function () {
+      var converter = new showdown.Converter();
+      converter.addExtension(extObjMock);
+
+      converter.removeExtension(extObjMock);
+      converter.getAllExtensions().language.should.not.contain(extObjMock);
+    });
   });
 
   describe('events', function () {

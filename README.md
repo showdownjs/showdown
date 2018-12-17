@@ -404,6 +404,10 @@ If you're using TypeScript you maybe want to use the types from [DefinitelyTyped
 
 Integration with SystemJS can be obtained via the third party ["system-md" plugin](https://github.com/guybedford/system-md).
 
+## Integration with VueJS
+
+To use ShowdownJS as a Vue component quickly, you can check [vue-showdown](https://vue-showdown.js.org/).
+
 ## XSS vulnerability
 
 Showdown doesn't sanitize the input. This is by design since markdown relies on it to allow certain features to be correctly parsed into HTML.

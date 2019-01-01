@@ -109,6 +109,10 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
       txt = showdown.subParser('makeMarkdown.image')(node, globals);
       break;
 
+    case 'br':
+      txt = showdown.subParser('makeMarkdown.break')(node, globals);
+      break;
+
     default:
       txt = node.outerHTML + '\n\n';
   }

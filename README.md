@@ -310,7 +310,7 @@ var defaultOptions = showdown.getDefaultOptions();
    by 4 spaces for them to be nested, effectively reverting to the old behavior where 2 or 3 spaces were enough.
    **(since v1.5.0)**
  
- * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as <br>, without
+ * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as `<br>`, without
    needing 2 spaces at the end of the line **(since v1.5.1)**
  
    ```md

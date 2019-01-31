@@ -61,9 +61,9 @@ The NuGet Packages can be [found here](https://www.nuget.org/packages/showdownjs
 
 You can also use one of several CDNs available: 
 
-* github CDN
+* jsDelivr
 
-        https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
+        https://cdn.jsdelivr.net/npm/showdown@<version tag>/dist/showdown.min.js
 
 * cdnjs
 

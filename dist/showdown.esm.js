@@ -1,5 +1,5 @@
 ;/*! showdown v 2.0.0-alpha1 - 08-03-2019 */
-(function(){
+var Showdown = (function(){
 /**
  * Created by Tivie on 13-07-2015.
  */
@@ -5439,23 +5439,8 @@ showdown.Converter = function (converterOptions) {
   };
 };
 
-var root = this;
+return showdown;
 
-// AMD Loader
-if (typeof define === 'function' && define.amd) {
-  define(function () {
-    'use strict';
-    return showdown;
-  });
-
-// CommonJS/nodeJS Loader
-} else if (typeof module !== 'undefined' && module.exports) {
-  module.exports = showdown;
-
-// Regular Browser loader
-} else {
-  root.showdown = showdown;
-}
 }).call(this);
 
-//# sourceMappingURL=showdown.js.map
+export default Showdown;

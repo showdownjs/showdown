@@ -39,6 +39,25 @@ module.exports = function (grunt) {
       }
     },
 
+    concat_esm: {
+      options: {
+        sourceMap: false,
+        banner: ';/*! <%= pkg.name %> v <%= pkg.version %> - <%= grunt.template.today("dd-mm-yyyy") %> */\nvar Showdown = (function(){\n',
+        footer: '\nreturn showdown;\n\n}).call(this);\n\nexport default Showdown;\n'
+      },
+      dist: {
+        src: [
+          'src/options.js',
+          'src/showdown.js',
+          'src/helpers.js',
+          'src/subParsers/makehtml/*.js',
+          'src/subParsers/makemarkdown/*.js',
+          'src/converter.js'
+        ],
+        dest: 'dist/<%= pkg.name %>.esm.js'
+      }
+    },
+
     clean: ['.build/'],
 
     uglify: {
@@ -148,6 +167,8 @@ module.exports = function (grunt) {
    */
   grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.renameTask('concat', 'concat_esm');
+  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-simple-mocha');
   grunt.loadNpmTasks('grunt-endline');
@@ -210,7 +231,8 @@ module.exports = function (grunt) {
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);
   grunt.registerTask('build-without-test', ['concat:dist', 'uglify', 'endline']);
-  grunt.registerTask('prep-release', ['build', 'generate-changelog']);
+  grunt.registerTask('build-esm', ['concat_esm:dist']);
+  grunt.registerTask('prep-release', ['build', 'build-esm', 'generate-changelog']);
 
   // Default task(s).
   grunt.registerTask('default', ['test']);

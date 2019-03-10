@@ -117,7 +117,7 @@
     // to external links. Hash links (#) open in same page
     if (options.openLinksInNewWindow && !/^#/.test(url)) {
       // escaped _
-      target = ' rel="noreferrer" target="¨E95Eblank"';
+      target = ' rel="noopener noreferrer" target="¨E95Eblank"';
     }
 
     // Text can be a markdown element, so we run through the appropriate parsers

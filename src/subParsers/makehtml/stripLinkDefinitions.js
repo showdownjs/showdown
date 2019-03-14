@@ -18,6 +18,8 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
       // remove newlines
       globals.gUrls[linkId] = url.replace(/\s/g, '');
     } else {
+      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+
       globals.gUrls[linkId] = showdown.subParser('makehtml.encodeAmpsAndAngles')(url, options, globals);  // Link IDs are case-insensitive
     }
 

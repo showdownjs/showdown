@@ -160,7 +160,12 @@ function getDefaultOpts (simple) {
       defaultValue: false,
       description: 'Split adjacent blockquote blocks',
       type: 'boolean'
-    }
+    },
+    relativePathBaseUrl: {
+      defaultValue: false,
+      describe: 'Prepends a base URL to relative paths',
+      type: 'string'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

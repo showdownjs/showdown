@@ -26,7 +26,7 @@ If you like our work and find our library useful, please donate through [patreon
 ## License
 
 ShowdownJS v 2.0 is release under the MIT version.
-Previous versions are release under GPL 2.0
+Previous versions are release under BSD.
 
 ## Who uses Showdown (or a fork)
 

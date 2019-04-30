@@ -3,9 +3,40 @@ showdown.subParser('makeMarkdown.table', function (node, globals) {
 
   var txt = '',
       tableArray = [[], []],
-      headings   = node.querySelectorAll('thead>tr>th'),
-      rows       = node.querySelectorAll('tbody>tr'),
-      i, ii;
+      headings,
+      rows = [],
+      i, ii,
+      allRows;
+
+  if (node.querySelectorAll('thead').length !== 0 && node.querySelectorAll('tbody').length !== 0) {
+    // thead and tbody exists
+    headings = node.querySelectorAll('thead>tr>th');
+    rows = node.querySelectorAll('tbody>tr');
+  } else if (node.querySelectorAll('thead').length !== 0) {
+    // only thead exists
+    headings = node.querySelectorAll('thead>tr>th');
+    if (headings.length === 0) {
+      // try to find headlings with td inside
+      headings = node.querySelectorAll('thead>tr>td');
+    }
+  } else if (node.querySelectorAll('tbody').length !== 0) {
+    // only tbody exists
+    allRows = node.querySelectorAll('tbody>tr');
+    // first row becomes heading
+    headings = allRows[0].querySelectorAll('td');
+    for (i = 1; i < allRows.length; ++i) {
+      rows.push(allRows[i]);
+    }
+  } else {
+    // neither thead nor tbody exist
+    allRows = node.querySelectorAll('tr');
+    // first row becomes heading
+    headings = allRows[0].querySelectorAll('td');
+    for (i = 1; i < allRows.length; ++i) {
+      rows.push(allRows[i]);
+    }
+  }
+
   for (i = 0; i < headings.length; ++i) {
     var headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], globals),
         allign = '---';

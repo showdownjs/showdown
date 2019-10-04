@@ -1,4 +1,4 @@
-;/*! showdown v 1.9.1 - 02-11-2019 */
+;/*! showdown v 1.9.1 - 31-01-2022 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -151,6 +151,11 @@ function getDefaultOpts (simple) {
     underline: {
       defaultValue: false,
       description: 'Enable support for underline. Syntax is double or triple underscores: `__underline word__`. With this option enabled, underscores no longer parses into `<em>` and `<strong>`',
+      type: 'boolean'
+    },
+    ellipsis: {
+      defaultValue: true,
+      description: 'Replaces three dots with the ellipsis unicode character',
       type: 'boolean'
     },
     completeHTMLDocument: {
@@ -970,7 +975,7 @@ showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
  * POLYFILLS
  */
 // use this instead of builtin is undefined for IE8 compatibility
-if (typeof console === 'undefined') {
+if (typeof (console) === 'undefined') {
   console = {
     warn: function (msg) {
       'use strict';
@@ -2573,7 +2578,7 @@ showdown.Converter = function (converterOptions) {
       for (var n = 0; n < node.childNodes.length; ++n) {
         var child = node.childNodes[n];
         if (child.nodeType === 3) {
-          if (!/\S/.test(child.nodeValue)) {
+          if (!/\S/.test(child.nodeValue) && !/^[ ]+$/.test(child.nodeValue)) {
             node.removeChild(child);
             --n;
           } else {
@@ -3105,7 +3110,7 @@ showdown.subParser('codeSpans', function (text, options, globals) {
 
   text = globals.converter._dispatch('codeSpans.before', text, options, globals);
 
-  if (typeof text === 'undefined') {
+  if (typeof (text) === 'undefined') {
     text = '';
   }
   text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
@@ -3224,6 +3229,10 @@ showdown.subParser('detab', function (text, options, globals) {
 showdown.subParser('ellipsis', function (text, options, globals) {
   'use strict';
 
+  if (!options.ellipsis) {
+    return text;
+  }
+
   text = globals.converter._dispatch('ellipsis.before', text, options, globals);
 
   text = text.replace(/\.\.\./g, '…');
@@ -3301,7 +3310,7 @@ showdown.subParser('encodeBackslashEscapes', function (text, options, globals) {
   text = globals.converter._dispatch('encodeBackslashEscapes.before', text, options, globals);
 
   text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
-  text = text.replace(/\\([`*_{}\[\]()>#+.!~=|-])/g, showdown.helper.escapeCharactersCallback);
+  text = text.replace(/\\([`*_{}\[\]()>#+.!~=|:-])/g, showdown.helper.escapeCharactersCallback);
 
   text = globals.converter._dispatch('encodeBackslashEscapes.after', text, options, globals);
   return text;
@@ -4397,14 +4406,19 @@ showdown.subParser('strikethrough', function (text, options, globals) {
 showdown.subParser('stripLinkDefinitions', function (text, options, globals) {
   'use strict';
 
-  var regex       = /^ {0,3}\[(.+)]:[ \t]*\n?[ \t]*<?([^>\s]+)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=¨0))/gm,
-      base64Regex = /^ {0,3}\[(.+)]:[ \t]*\n?[ \t]*<?(data:.+?\/.+?;base64,[A-Za-z0-9+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n\n|(?=¨0)|(?=\n\[))/gm;
+  var regex       = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?([^>\s]+)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=¨0))/gm,
+      base64Regex = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?(data:.+?\/.+?;base64,[A-Za-z0-9+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n\n|(?=¨0)|(?=\n\[))/gm;
 
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '¨0';
 
   var replaceFunc = function (wholeMatch, linkId, url, width, height, blankLines, title) {
+
+    // if there aren't two instances of linkId it must not be a reference link so back out
     linkId = linkId.toLowerCase();
+    if (text.toLowerCase().split(linkId).length - 1 < 2) {
+      return wholeMatch;
+    }
     if (url.match(/^data:.+?\/.+?;base64,/)) {
       // remove newlines
       globals.gUrls[linkId] = url.replace(/\s/g, '');

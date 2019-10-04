@@ -380,6 +380,8 @@ var defaultOptions = showdown.getDefaultOptions();
  * **underline**: (boolean) [default false] ***EXPERIMENTAL FEATURE*** Enable support for underline.
    Syntax is **double** or **triple** **underscores** ex: `__underlined word__`. With this option enabled, underscores are no longer parses into `<em>` and `<strong>`.
 
+ * **ellipsis**: (boolean) [default true] Replaces three dots with the ellipsis unicode character.
+
  * **completeHTMLDocument**: (boolean) [default false] Outputs a complete html document,
    including `<html>`, `<head>` and `<body>` tags' instead of an HTML fragment. (since v.1.8.5)
 

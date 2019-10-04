@@ -13,6 +13,7 @@ var bootstrap = require('../bootstrap.js'),
     rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/features/rawPrefixHeaderId/'),
     emojisSuite = bootstrap.getTestSuite('test/features/emojis/'),
     underlineSuite = bootstrap.getTestSuite('test/features/underline/'),
+    ellipsisSuite = bootstrap.getTestSuite('test/features/ellipsis/'),
     literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/features/literalMidWordUnderscores/'),
     literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/features/literalMidWordAsterisks/'),
     completeHTMLOutputSuite = bootstrap.getTestSuite('test/features/completeHTMLOutput/'),
@@ -211,6 +212,16 @@ describe('makeHtml() features testsuite', function () {
       } else {
         converter = new showdown.Converter({underline: true});
       }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  /** test ellipsis option **/
+  describe('ellipsis option', function () {
+    var converter,
+        suite = ellipsisSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({ellipsis: false});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

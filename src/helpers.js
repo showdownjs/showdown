@@ -316,11 +316,48 @@ showdown.helper.splitAtIndex = function (str, index) {
   return [str.substring(0, index), str.substring(index)];
 };
 
+
+/**
+ * MurmurHash3's mixing function
+ * https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
+ *
+ * @param {string} string
+ * @returns {Number}
+ */
+/*jshint bitwise: false*/
+function xmur3 (str) {
+  for (var i = 0, h = 1779033703 ^ str.length; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = h << 13 | h >>> 19;
+  }
+  return function () {
+    h = Math.imul(h ^ h >>> 16, 2246822507);
+    h = Math.imul(h ^ h >>> 13, 3266489909);
+    return (h ^= h >>> 16) >>> 0;
+  };
+}
+
+/**
+ * Random Number Generator
+ * https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
+ *
+ * @param {Number} seed
+ * @returns {Number}
+ */
+/*jshint bitwise: false*/
+function mulberry32 (a) {
+  return function () {
+    var t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
 /**
  * Obfuscate an e-mail address through the use of Character Entities,
  * transforming ASCII characters into their equivalent decimal or hex entities.
  *
- * Since it has a random component, subsequent calls to this function produce different results
  *
  * @param {string} mail
  * @returns {string}
@@ -339,12 +376,15 @@ showdown.helper.encodeEmailAddress = function (mail) {
     }
   ];
 
+  // RNG seeded with mail, so that we can get determined results for each email.
+  var rand = mulberry32(xmur3(mail));
+
   mail = mail.replace(/./g, function (ch) {
     if (ch === '@') {
       // this *must* be encoded. I insist.
-      ch = encode[Math.floor(Math.random() * 2)](ch);
+      ch = encode[Math.floor(rand() * 2)](ch);
     } else {
-      var r = Math.random();
+      var r = rand();
       // roughly 10% raw, 45% hex, 45% dec
       ch = (
         r > 0.9 ? encode[2](ch) : r > 0.45 ? encode[1](ch) : encode[0](ch)

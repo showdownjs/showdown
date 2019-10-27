@@ -35,6 +35,7 @@ Previous versions are release under BSD.
  - [Stackexchange](http://stackexchange.com/) - forked as [PageDown](https://code.google.com/p/pagedown/)
  - [docular](https://github.com/Vertafore/docular)
  - [md-page](https://github.com/oscarmorrison/md-page)
+ - [QCObjects](https://qcobjects.dev)
  - [and some others...](https://www.npmjs.com/browse/depended/showdown)
 
 ## Installation

@@ -69,6 +69,10 @@ You can also use one of several CDNs available:
 
         https://cdnjs.cloudflare.com/ajax/libs/showdown/<version tag>/showdown.min.js
 
+* unpkg
+       
+        https://unpkg.com/showdown/dist/showdown.min.js
+
 *Note*: replace `<version tag>` with an actual full length version you're interested in e.g. `1.9.0`
 ## Browser Compatibility
 

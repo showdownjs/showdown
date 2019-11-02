@@ -26,7 +26,7 @@ If you like our work and find our library useful, please donate through [patreon
 ## License
 
 ShowdownJS v 2.0 is release under the MIT version.
-Previous versions are release under GPL 2.0
+Previous versions are release under BSD.
 
 ## Who uses Showdown (or a fork)
 
@@ -61,9 +61,9 @@ The NuGet Packages can be [found here](https://www.nuget.org/packages/showdownjs
 
 You can also use one of several CDNs available: 
 
-* github CDN
+* jsDelivr
 
-        https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
+        https://cdn.jsdelivr.net/npm/showdown@<version tag>/dist/showdown.min.js
 
 * cdnjs
 
@@ -310,7 +310,7 @@ var defaultOptions = showdown.getDefaultOptions();
    by 4 spaces for them to be nested, effectively reverting to the old behavior where 2 or 3 spaces were enough.
    **(since v1.5.0)**
  
- * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as <br>, without
+ * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as `<br>`, without
    needing 2 spaces at the end of the line **(since v1.5.1)**
  
    ```md
@@ -403,6 +403,10 @@ If you're using TypeScript you maybe want to use the types from [DefinitelyTyped
 ## Integration with SystemJS/JSPM
 
 Integration with SystemJS can be obtained via the third party ["system-md" plugin](https://github.com/guybedford/system-md).
+
+## Integration with VueJS
+
+To use ShowdownJS as a Vue component quickly, you can check [vue-showdown](https://vue-showdown.js.org/).
 
 ## XSS vulnerability
 

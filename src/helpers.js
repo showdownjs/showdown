@@ -394,7 +394,7 @@ showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
  * POLYFILLS
  */
 // use this instead of builtin is undefined for IE8 compatibility
-if (typeof(console) === 'undefined') {
+if (typeof console === 'undefined') {
   console = {
     warn: function (msg) {
       'use strict';

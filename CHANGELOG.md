@@ -1,3 +1,13 @@
+<a name="1.9.1"></a>
+## [1.9.1](https://github.com/showdownjs/showdown/compare/1.9.0...1.9.1) (2019-11-02)
+
+
+### Bug Fixes
+
+* **openLinksInNewWindow:** add rel="noopener noreferrer" to links ([1cd281f](https://github.com/showdownjs/showdown/commit/1cd281f)), closes [#670](https://github.com/showdownjs/showdown/issues/670)
+
+
+
 <a name="1.9.0"></a>
 # [1.9.0](https://github.com/showdownjs/showdown/compare/1.8.7...1.9.0) (2018-11-10)
 

@@ -18,7 +18,9 @@ var bootstrap = require('./makehtml.bootstrap.js'),
     //literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/literalMidWordAsterisks/'),
     completeHTMLOutputSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/completeHTMLOutput/'),
     metadataSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/metadata/'),
-    splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/splitAdjacentBlockquotes/');
+    splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/splitAdjacentBlockquotes/'),
+    https = require('https'),
+    expect = require('chai').expect;
 
 describe('makeHtml() features testsuite', function () {
   'use strict';
@@ -190,7 +192,31 @@ describe('makeHtml() features testsuite', function () {
   /** test emojis support **/
   describe('emojis support', function () {
     var converter,
-        suite = emojisSuite;
+        suite = emojisSuite,
+        imgSrcRegexp = /<img[^>]+src=("https:\/\/[^"]+"|'https?:\/\/[^']+')/g;
+
+    function testImageUrlExists (imgUrl) {
+      // Strip the quotes
+      imgUrl = imgUrl.substr(0, imgUrl.length - 1).substr(1);
+      return function (done) {
+        https.get(imgUrl, function (res) {
+          expect(res.statusCode).to.equal(200);
+          // Make sure we get some data and that it's a png
+          expect(parseInt(res.headers['content-length'], 10)).to.be.above(0);
+          expect(res.headers['content-type']).to.equal('image/png');
+
+          // Discard the data (but fetch it)
+          res.on('data', function () {});
+
+          res.on('end', function () {
+            done();
+          });
+        }).on('error', function (e) {
+          throw e;
+        });
+      };
+    }
+
     for (var i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'simplifiedautolinks') {
         converter = new showdown.Converter({emoji: true, simplifiedAutoLink: true});
@@ -199,6 +225,11 @@ describe('makeHtml() features testsuite', function () {
       }
 
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+
+      var imgUrl = imgSrcRegexp.exec(suite[i].expected);
+      if (imgUrl) {
+        it('should use a working emoji URL', testImageUrlExists(imgUrl[1]));
+      }
     }
   });
 

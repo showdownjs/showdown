@@ -19,6 +19,7 @@ var bootstrap = require('./makehtml.bootstrap.js'),
     completeHTMLOutputSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/completeHTMLOutput/'),
     metadataSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/metadata/'),
     splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/splitAdjacentBlockquotes/'),
+    http = require('http'),
     https = require('https'),
     expect = require('chai').expect;
 
@@ -193,13 +194,13 @@ describe('makeHtml() features testsuite', function () {
   describe('emojis support', function () {
     var converter,
         suite = emojisSuite,
-        imgSrcRegexp = /<img[^>]+src=("https:\/\/[^"]+"|'https?:\/\/[^']+')/g;
+        imgSrcRegexp = /<img[^>]+src=("https?:\/\/[^"]+"|'https?:\/\/[^']+')/g;
 
     function testImageUrlExists (imgUrl) {
       // Strip the quotes
       imgUrl = imgUrl.substr(0, imgUrl.length - 1).substr(1);
       return function (done) {
-        https.get(imgUrl, function (res) {
+        (imgUrl.startsWith('http://') ? http : https).get(imgUrl, function (res) {
           expect(res.statusCode).to.equal(200);
           // Make sure we get some data and that it's a png
           expect(parseInt(res.headers['content-length'], 10)).to.be.above(0);

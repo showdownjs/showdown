@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0-alpha1 - 24-10-2018 */
+;/*! showdown v 2.0.0-alpha1 - 09-06-2020 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -108,6 +108,11 @@ function getDefaultOpts (simple) {
       description: 'Parses simple line breaks as <br> (GFM Style)',
       type: 'boolean'
     },
+    preserveNewLines: {
+      defaultValue: false,
+      description: 'Preserves multiple newlines',
+      type: 'boolean'
+    },
     requireSpaceBeforeHeadingText: {
       defaultValue: false,
       description: 'Makes adding a space between `#` and the header text mandatory (GFM Style)',
@@ -209,6 +214,7 @@ var showdown = {},
         tasklists:                            true,
         disableForced4SpacesIndentedSublists: true,
         simpleLineBreaks:                     true,
+        preserveNewLines:                     false,
         requireSpaceBeforeHeadingText:        true,
         ghCompatibleHeaderId:                 true,
         ghMentions:                           true,
@@ -232,6 +238,7 @@ var showdown = {},
         tasklists:                            true,
         smoothLivePreview:                    true,
         simpleLineBreaks:                     true,
+        preserveNewLines:                     false,
         requireSpaceBeforeHeadingText:        true,
         ghMentions:                           false,
         encodeEmails:                         true
@@ -2530,8 +2537,9 @@ showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
 });
 
 /**
- * These are all the transformations that occur *within* block-level
- * tags like paragraphs, headers, and list items.
+ * Turn emoji codes into emojis
+ *
+ * List of supported emojis: https://github.com/showdownjs/showdown/wiki/Emojis
  */
 showdown.subParser('makehtml.emoji', function (text, options, globals) {
   'use strict';
@@ -3363,7 +3371,7 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
     // to external links. Hash links (#) open in same page
     if (options.openLinksInNewWindow && !/^#/.test(url)) {
       // escaped _
-      target = ' target="¨E95Eblank"';
+      target = ' rel="noopener noreferrer" target="¨E95Eblank"';
     }
 
     // Text can be a markdown element, so we run through the appropriate parsers
@@ -4081,11 +4089,23 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
     // GFM style hard breaks
     // only add line breaks if the text does not contain a block (special case for lists)
     if (!/\n\n¨K/.test(text)) {
-      text = text.replace(/\n+/g, '<br />\n');
+
+      // Preserving multiple newlines
+      if(options.preserveNewLines){
+        text = text.replace(/\n/g, '<br />\n');
+      } else{
+        text = text.replace(/\n+/g, '<br />\n');
+      }
     }
   } else {
     // Vanilla hard breaks
-    text = text.replace(/  +\n/g, '<br />\n');
+    
+    // Preserving multiple newlines
+    if(options.preserveNewLines){
+      text = text.replace(/  \n/g, '<br />\n');
+    }else{
+      text = text.replace(/  +\n/g, '<br />\n');
+    }
   }
 
   text = globals.converter._dispatch('makehtml.spanGamut.after', text, options, globals).getText();
@@ -4374,6 +4394,12 @@ showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
   return txt;
 });
 
+showdown.subParser('makeMarkdown.break', function () {
+  'use strict';
+
+  return '  \n';
+});
+
 showdown.subParser('makeMarkdown.codeBlock', function (node, globals) {
   'use strict';
 
@@ -4635,6 +4661,10 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
 
     case 'img':
       txt = showdown.subParser('makeMarkdown.image')(node, globals);
+      break;
+
+    case 'br':
+      txt = showdown.subParser('makeMarkdown.break')(node, globals);
       break;
 
     default:

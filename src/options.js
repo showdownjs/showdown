@@ -106,6 +106,11 @@ function getDefaultOpts (simple) {
       description: 'Parses simple line breaks as <br> (GFM Style)',
       type: 'boolean'
     },
+    preserveAllNewLines: {
+      defaultValue: false,
+      description: 'Preserves multiple newlines',
+      type: 'boolean'
+    },
     requireSpaceBeforeHeadingText: {
       defaultValue: false,
       description: 'Makes adding a space between `#` and the header text mandatory (GFM Style)',

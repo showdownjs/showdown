@@ -1,6 +1,6 @@
 {
-  "name": "showdown",
-  "version": "1.9.1",
+  "name": "devextreme-showdown",
+  "version": "1.0.1",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
   "homepage": "http://showdownjs.com/",
@@ -27,8 +27,8 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/showdownjs/showdown.git",
-    "web": "https://github.com/showdownjs/showdown"
+    "url": "https://github.com/DevExpress/showdown.git",
+    "web": "https://github.com/DevExpress/showdown"
   },
   "license": "BSD-3-Clause",
   "main": "./dist/showdown.js",
@@ -60,6 +60,6 @@
     "source-map-support": "^0.5.0"
   },
   "dependencies": {
-    "yargs": "^14.2"
+    "yargs": "^17.2.1"
   }
 }

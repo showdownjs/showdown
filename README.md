@@ -1,40 +1,18 @@
-![Showdown][sd-logo]
+![DevExtreme Showdown][sd-logo]
 
-[![Build Status: Linux](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown)
-[![Build Status: Windows](https://ci.appveyor.com/api/projects/status/github/showdownjs/showdown?branch=master&svg=true)](https://ci.appveyor.com/project/tivie/showdown/branch/master)
-[![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown)
-[![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
-[![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Greenkeeper badge](https://badges.greenkeeper.io/showdownjs/showdown.svg)](https://greenkeeper.io/)
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
+[![npm version](https://badge.fury.io/js/devextreme-showdown.svg)](http://badge.fury.io/js/devextreme-showdown)
 
 ------
 
 Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber.
 Showdown can be used client side (in the browser) or server side (with NodeJs).
 
-## Live DEMO
 
-Check a live Demo here http://demo.showdownjs.com/
-
-## [![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?u=11141581)
-
-As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
-
-If you like our work and find our library useful, please donate through [patreon](https://www.patreon.com/showdownjs) or directly through [paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
+**This fork was created to fix the [CVE-2020-7774](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2020-7774) vulnerability and keep dependencies up to date**
 
 ## License
 
-Showdown 1.x is released under GPL 2.0
-
-## Who uses Showdown (or a fork)
-
- - [GoogleCloudPlatform](https://github.com/GoogleCloudPlatform)
- - [Meteor](https://www.meteor.com/)
- - [Stackexchange](http://stackexchange.com/) - forked as [PageDown](https://code.google.com/p/pagedown/)
- - [docular](https://github.com/Vertafore/docular)
- - [md-page](https://github.com/oscarmorrison/md-page)
- - [and some others...](https://www.npmjs.com/browse/depended/showdown)
+DevExtreme Showdown is released under the BSD-3-Clause license.
 
 ## Installation
 
@@ -42,93 +20,41 @@ Showdown 1.x is released under GPL 2.0
 
 You can download the latest release tarball directly from [releases][releases]
 
-### Bower
-
-    bower install showdown
-
 ### npm (server-side)
 
-    npm install showdown
-
-### NuGet package
-
-    PM> Install-Package showdownjs
-
-The NuGet Packages can be [found here](https://www.nuget.org/packages/showdownjs/).
+    npm install devextreme-showdown
 
 ### CDN
 
 You can also use one of several CDNs available: 
 
-* github CDN
+* jsDelivr
 
-        https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
+        https://cdn.jsdelivr.net/npm/devextreme-showdown@<version tag>/dist/showdown.min.js
 
-* cdnjs
+* unpkg
+       
+        https://unpkg.com/devextreme-showdown/dist/showdown.min.js
 
-        https://cdnjs.cloudflare.com/ajax/libs/showdown/<version tag>/showdown.min.js
-
-
-## Browser Compatibility
-
-Showdown has been tested successfully with:
-
-  * Firefox 1.5 and 2.0
-  * Chrome 12.0
-  * Internet Explorer 6 and 7
-  * Safari 2.0.4
-  * Opera 8.54 and 9.10
-  * Netscape 8.1.2
-  * Konqueror 3.5.4
-
-In theory, Showdown will work in any browser that supports ECMA 262 3rd Edition (JavaScript 1.5).
-The converter itself might even work in things that aren't web browsers, like Acrobat.  No promises.
-
-
-## Node compatibility
-
-Showdown has been tested with node 6, 8 and 10. However, it should work with previous versions, such as node 0.12.
-
-
-## Legacy version
-
-If you're looking for showdown v<1.0.0, you can find it in the [**legacy branch**][legacy-branch].
-
-## Changelog
-
-You can check the full [changelog][changelog]
-
-## Extended documentation
-Check our [wiki pages][wiki] for examples and a more in-depth documentation.
-
+*Note*: Replace `<version tag>` with an actual version you're interested in, for instance `1.0.0`.
 
 ## Quick Example
 
 ### Node
 
-**Markdown to HTML**
 ```js
-var showdown  = require('showdown'),
+var showdown  = require('devextreme-showdown'),
     converter = new showdown.Converter(),
     text      = '# hello, markdown!',
     html      = converter.makeHtml(text);
 ```
 
-**HTML to Markdown**
-```js
-var showdown  = require('showdown'),
-    converter = new showdown.Converter(),
-    html      = '<a href="https://patreon.com/showdownjs">Please Support us!</a>',
-    md        = converter.makeMarkdown(text);
-```
-
-
 ### Browser
 
 ```js
 var converter = new showdown.Converter(),
-    html      = converter.makeHtml('# hello, markdown!'),
-    md        = converter.makeMd('<a href="https://patreon.com/showdownjs">Please Support us!</a>');
+    text      = '# hello, markdown!',
+    html      = converter.makeHtml(text);
 ```
 
 ### Output 
@@ -137,10 +63,6 @@ Both examples should output...
 
 ```html
     <h1 id="hellomarkdown">hello, markdown!</h1>
-```
-
-```md
-[Please Support us!](https://patreon.com/showdownjs)
 ```
 
 ## Options
@@ -241,14 +163,6 @@ var defaultOptions = showdown.getDefaultOptions();
  * **rawHeaderId**: (boolean) [default false] Remove only spaces, ' and " from generated header ids (including prefixes),
     replacing them with dashes (-). WARNING: This might result in malformed ids **(since v1.7.3)**
  
- * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
-   Examples:
-   ```
-   ![foo](foo.jpg =100x80)     simple, assumes units are in px
-   ![bar](bar.jpg =100x*)      sets the height to "auto"
-   ![baz](baz.jpg =80%x5em)  Image with width of 80% and height of 5em
-   ```
- 
  * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that
 
     ```md
@@ -259,6 +173,14 @@ var defaultOptions = showdown.getDefaultOptions();
     ```html
     <h3>foo</h3>
     ```
+
+ * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
+   Examples:
+   ```
+   ![foo](foo.jpg =100x80)     simple, assumes units are in px
+   ![bar](bar.jpg =100x*)      sets the height to "auto"
+   ![baz](baz.jpg =80%x5em)  Image with width of 80% and height of 5em
+   ```
 
  * **simplifiedAutoLink**: (boolean) [default false] Turning this option on will enable automatic linking to urls.
    This means that:
@@ -271,16 +193,8 @@ var defaultOptions = showdown.getDefaultOptions();
    <p>some text <a href="www.google.com">www.google.com</a>
    ```
  
- * **excludeTrailingPunctuationFromURLs**: (boolean) [default false] This option excludes trailing punctuation from autolinking urls.
-   Punctuation excluded: `. !  ? ( )`. Only applies if **simplifiedAutoLink** option is set to `true`.
-   
-   ```md
-   check this link www.google.com!
-   ```
-   will be parsed as
-   ```html
-   <p>check this link <a href="www.google.com">www.google.com</a>!</p>
-   ```
+ * ~~**excludeTrailingPunctuationFromURLs**: (boolean) [default false] This option excludes trailing punctuation from autolinking urls.
+   Punctuation excluded: `. !  ? ( )`. Only applies if **simplifiedAutoLink** option is set to `true`.~~
    
  * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting
    underscores in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores.
@@ -295,18 +209,8 @@ var defaultOptions = showdown.getDefaultOptions();
    <p>some text with__underscores__in middle</p>
    ```
 
- * **literalMidWordAsterisks**: (boolean) [default false] Turning this on will stop showdown from interpreting asterisks
-   in the middle of words as `<em>` and `<strong>` and instead treat them as literal asterisks.
-
-   Example:
-
-   ```md
-   some text with**underscores**in middle
-   ```
-   will be parsed as
-   ```html
-   <p>some text with**underscores**in middle</p>
-   ```
+ * ~~**literalMidWordAsterisks**: (boolean) [default false] Turning this on will stop showdown from interpreting asterisks
+   in the middle of words as `<em>` and `<strong>` and instead treat them as literal asterisks.~~
    
  * **strikethrough**: (boolean) [default false] Enable support for strikethrough syntax.
    `~~strikethrough~~` as `<del>strikethrough</del>`
@@ -341,7 +245,7 @@ var defaultOptions = showdown.getDefaultOptions();
    by 4 spaces for them to be nested, effectively reverting to the old behavior where 2 or 3 spaces were enough.
    **(since v1.5.0)**
  
- * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as <br> like GitHub does, without
+ * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as `<br>`, without
    needing 2 spaces at the end of the line **(since v1.5.1)**
  
    ```md
@@ -435,6 +339,10 @@ If you're using TypeScript you maybe want to use the types from [DefinitelyTyped
 
 Integration with SystemJS can be obtained via the third party ["system-md" plugin](https://github.com/guybedford/system-md).
 
+## Integration with VueJS
+
+To use ShowdownJS as a Vue component quickly, you can check [vue-showdown](https://vue-showdown.js.org/).
+
 ## XSS vulnerability
 
 Showdown doesn't sanitize the input. This is by design since markdown relies on it to allow certain features to be correctly parsed into HTML.
@@ -450,18 +358,17 @@ You can also find a boilerplate, to create your own extensions in [this reposito
 
 ### Client-side Extension Usage
 
-```html
-<script src="showdown.js"></script>
-<script src="twitter-extension.js"></script>
-<script>
+```js
+<script src="showdown.js" />
+<script src="twitter-extension.js" />
+
 var converter = new showdown.Converter({ extensions: ['twitter'] });
-</script>
 ```
 
 ### Server-side Extension Usage
 
 ```js
-var showdown    = require('showdown'),
+var showdown    = require('devextreme-showdown'),
     myExtension = require('myExtension'),
     converter = new showdown.Converter({ extensions: ['myExtension'] });
 ```
@@ -480,52 +387,6 @@ Once installed the tests can be run from the project root using:
 New test cases can easily be added.  Create a markdown file (ending in `.md`) which contains the markdown to test.
 Create a `.html` file of the exact same name.  It will automatically be tested when the tests are executed with `mocha`.
 
-## Contributing
-
-If you wish to contribute please read the following quick guide.
-
-### Want a Feature?
-You can request a new feature by submitting an issue. If you would like to implement a new feature feel free to issue a
-Pull Request.
-
-
-### Pull requests (PRs)
-PRs are awesome. However, before you submit your pull request consider the following guidelines:
-
- - Search GitHub for an open or closed Pull Request that relates to your submission. You don't want to duplicate effort.
- - When issuing PRs that change code, make your changes in a new git branch based on master:
-
-   ```bash
-   git checkout -b my-fix-branch master
-   ```
-
- - Documentation (i.e: README.md) changes can be made directly against master.
- - Run the full test suite before submitting and make sure all tests pass (obviously =P).
- - Try to follow our [**coding style rules**][coding-rules].
-   Breaking them prevents the PR to pass the tests.
- - Refrain from fixing multiple issues in the same pull request. It's preferable to open multiple small PRs instead of one
-   hard to review big one.
- - If the PR introduces a new feature or fixes an issue, please add the appropriate test case.
- - We use commit notes to generate the changelog. It's extremely helpful if your commit messages adhere to the
- [**AngularJS Git Commit Guidelines**][ng-commit-guide].
- - If we suggest changes then:
-     - Make the required updates.
-     - Re-run the Angular test suite to ensure tests are still passing.
-     - Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
-
-     ```bash
-     git rebase master -i
-     git push origin my-fix-branch -f
-     ```
- - After your pull request is merged, you can safely delete your branch.
-
-If you have time to contribute to this project, we feel obliged that you get credit for it.
-These rules enable us to review your PR faster and will give you appropriate credit in your GitHub profile.
-We thank you in advance for your contribution!
-
-### Joining the team
-We're looking for members to help maintaining Showdown.
-Please see [this issue](https://github.com/showdownjs/showdown/issues/114) to express interest or comment on this note.
 
 ## Credits
 Full credit list at https://github.com/showdownjs/showdown/blob/master/CREDITS.md

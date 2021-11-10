@@ -1,9 +1,11 @@
 Credits
 =======
+  - Showdown v2
+    * [Estevão Santos](https://github.com/tivie)
+    * [SyntaxRules](https://github.com/SyntaxRules)
   - Showdown v1
     * [Estevão Santos](https://github.com/tivie)
     * [Pascal Deschênes](https://github.com/pdeschen)
-
   - Showdown v0
     * [Corey Innis](http://github.com/coreyti):<br/>
       Original GitHub project maintainer

@@ -66,3 +66,8 @@ the end
 </hgroup>
 
 <output name="result"></output>
+
+<details>
+  <summary>Summarise me</summary>
+  <p>Explain the details</p>
+</details>

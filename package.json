@@ -30,7 +30,7 @@
     "url": "https://github.com/showdownjs/showdown.git",
     "web": "https://github.com/showdownjs/showdown"
   },
-  "license": "BSD-3-Clause",
+  "license": "MIT",
   "main": "./dist/showdown.js",
   "scripts": {
     "test": "grunt test"

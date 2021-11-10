@@ -504,8 +504,8 @@ showdown.helper.Event = function (name, text, params) {
 /**
  * POLYFILLS
  */
-// use this instead if builtin is undefined for IE8 compatibility
-if (typeof(console) === 'undefined') {
+// use this instead of builtin is undefined for IE8 compatibility
+if (typeof (console) === 'undefined') {
   console = {
     warn: function (msg) {
       'use strict';

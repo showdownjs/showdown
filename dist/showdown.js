@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0-alpha1 - 24-10-2018 */
+;/*! showdown v 2.0.0-alpha1 - 04-10-2019 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -146,6 +146,11 @@ function getDefaultOpts (simple) {
     underline: {
       defaultValue: false,
       description: 'Enable support for underline. Syntax is double or triple underscores: `__underline word__`. With this option enabled, underscores no longer parses into `<em>` and `<strong>`',
+      type: 'boolean'
+    },
+    ellipsis: {
+      defaultValue: true,
+      description: 'Replaces three dots with the ellipsis unicode character',
       type: 'boolean'
     },
     completeHTMLDocument: {
@@ -2520,6 +2525,10 @@ showdown.subParser('makehtml.detab', function (text, options, globals) {
 showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
   'use strict';
 
+  if (!options.ellipsis) {
+    return text;
+  }
+
   text = globals.converter._dispatch('makehtml.ellipsis.before', text, options, globals).getText();
 
   text = text.replace(/\.\.\./g, '…');
@@ -2530,8 +2539,9 @@ showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
 });
 
 /**
- * These are all the transformations that occur *within* block-level
- * tags like paragraphs, headers, and list items.
+ * Turn emoji codes into emojis
+ *
+ * List of supported emojis: https://github.com/showdownjs/showdown/wiki/Emojis
  */
 showdown.subParser('makehtml.emoji', function (text, options, globals) {
   'use strict';
@@ -4374,6 +4384,12 @@ showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
   return txt;
 });
 
+showdown.subParser('makeMarkdown.break', function () {
+  'use strict';
+
+  return '  \n';
+});
+
 showdown.subParser('makeMarkdown.codeBlock', function (node, globals) {
   'use strict';
 
@@ -4635,6 +4651,10 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
 
     case 'img':
       txt = showdown.subParser('makeMarkdown.image')(node, globals);
+      break;
+
+    case 'br':
+      txt = showdown.subParser('makeMarkdown.break')(node, globals);
       break;
 
     default:

@@ -13,6 +13,7 @@ var bootstrap = require('./makehtml.bootstrap.js'),
     rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/rawPrefixHeaderId/'),
     emojisSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/emojis/'),
     underlineSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/underline/'),
+    ellipsisSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/ellipsis/'),
     literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/literalMidWordUnderscores/'),
     //literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/literalMidWordAsterisks/'),
     completeHTMLOutputSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/completeHTMLOutput/'),
@@ -95,6 +96,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({openLinksInNewWindow: true});
       } else if (testsuite[i].name === '#355.simplifiedAutoLink-URLs-inside-parenthesis-followed-by-another-character-are-not-parsed-correctly') {
         converter = new showdown.Converter({simplifiedAutoLink: true});
+      } else if (testsuite[i].name === 'relativePathBaseUrl') {
+        converter = new showdown.Converter({relativePathBaseUrl: 'http://my.site.com/'});
       } else {
         converter = new showdown.Converter();
       }
@@ -209,6 +212,16 @@ describe('makeHtml() features testsuite', function () {
       } else {
         converter = new showdown.Converter({underline: true});
       }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  /** test ellipsis option **/
+  describe('ellipsis option', function () {
+    var converter,
+        suite = ellipsisSuite;
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({ellipsis: false});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

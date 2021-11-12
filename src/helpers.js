@@ -401,6 +401,34 @@ showdown.helper._hashHTMLSpan = function (html, globals) {
 };
 
 /**
+ * Prepends a base URL to relative paths.
+ *
+ * @param {string} baseUrl the base URL to prepend to a relative path
+ * @param {string} url the path to modify, which may be relative
+ * @returns {string} the full URL
+ */
+showdown.helper.applyBaseUrl = function (baseUrl, url) {
+  // Only prepend if given a base URL and the path is not absolute.
+  if (baseUrl && !this.isAbsolutePath(url)) {
+    var urlResolve = require('url').resolve;
+    url = urlResolve(baseUrl, url);
+  }
+
+  return url;
+};
+
+/**
+ * Checks if the given path is absolute.
+ *
+ * @param {string} path the path to test for absolution
+ * @returns {boolean} `true` if the given path is absolute, else `false`
+ */
+showdown.helper.isAbsolutePath = function (path) {
+  // Absolute paths begin with '[protocol:]//' or '#' (anchors)
+  return /(^([a-z]+:)?\/\/)|(^#)/i.test(path);
+};
+
+/**
  * Showdown's Event Object
  * @param {string} name Name of the event
  * @param {string} text Text
@@ -477,7 +505,7 @@ showdown.helper.Event = function (name, text, params) {
  * POLYFILLS
  */
 // use this instead of builtin is undefined for IE8 compatibility
-if (typeof(console) === 'undefined') {
+if (typeof (console) === 'undefined') {
   console = {
     warn: function (msg) {
       'use strict';

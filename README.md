@@ -1,7 +1,7 @@
 ![Showdown][sd-logo]
 
-![Build Status: Linux](https://github.com/showdownjs/showdown/actions/workflows/node.js.yml/badge.svg)
-[![Build Status: Windows](https://ci.appveyor.com/api/projects/status/github/showdownjs/showdown?branch=master&svg=true)](https://ci.appveyor.com/project/tivie/showdown/branch/master)
+![Build Status: Linux](https://github.com/showdownjs/showdown/actions/workflows/node.linux.yml/badge.svg)
+![Build Status: Windows](https://github.com/showdownjs/showdown/actions/workflows/node.win.yml/badge.svg)
 [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown)
 [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
 [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)

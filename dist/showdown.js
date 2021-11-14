@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0-alpha1 - 04-10-2019 */
+;/*! showdown v 2.0.0-alpha1 - 14-11-2021 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -167,7 +167,12 @@ function getDefaultOpts (simple) {
       defaultValue: false,
       description: 'Split adjacent blockquote blocks',
       type: 'boolean'
-    }
+    },
+    relativePathBaseUrl: {
+      defaultValue: false,
+      describe: 'Prepends a base URL to relative paths',
+      type: 'string'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));
@@ -976,6 +981,34 @@ showdown.helper._hashHTMLSpan = function (html, globals) {
 };
 
 /**
+ * Prepends a base URL to relative paths.
+ *
+ * @param {string} baseUrl the base URL to prepend to a relative path
+ * @param {string} url the path to modify, which may be relative
+ * @returns {string} the full URL
+ */
+showdown.helper.applyBaseUrl = function (baseUrl, url) {
+  // Only prepend if given a base URL and the path is not absolute.
+  if (baseUrl && !this.isAbsolutePath(url)) {
+    var urlResolve = require('url').resolve;
+    url = urlResolve(baseUrl, url);
+  }
+
+  return url;
+};
+
+/**
+ * Checks if the given path is absolute.
+ *
+ * @param {string} path the path to test for absolution
+ * @returns {boolean} `true` if the given path is absolute, else `false`
+ */
+showdown.helper.isAbsolutePath = function (path) {
+  // Absolute paths begin with '[protocol:]//' or '#' (anchors)
+  return /(^([a-z]+:)?\/\/)|(^#)/i.test(path);
+};
+
+/**
  * Showdown's Event Object
  * @param {string} name Name of the event
  * @param {string} text Text
@@ -1052,7 +1085,7 @@ showdown.helper.Event = function (name, text, params) {
  * POLYFILLS
  */
 // use this instead of builtin is undefined for IE8 compatibility
-if (typeof(console) === 'undefined') {
+if (typeof (console) === 'undefined') {
   console = {
     warn: function (msg) {
       'use strict';
@@ -2406,7 +2439,7 @@ showdown.subParser('makehtml.codeSpans', function (text, options, globals) {
 
   text = globals.converter._dispatch('makehtml.codeSpans.before', text, options, globals).getText();
 
-  if (typeof(text) === 'undefined') {
+  if (typeof (text) === 'undefined') {
     text = '';
   }
   text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
@@ -2796,6 +2829,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
         'hgroup',
         'output',
         'video',
+        'details',
         'p'
       ],
       repFunc = function (wholeMatch, match, left, right) {
@@ -2830,7 +2864,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
 
       //2. Split the text in that position
       var subTexts = showdown.helper.splitAtIndex(text, opTagPos),
-      //3. Match recursively
+          //3. Match recursively
           newSubText1 = showdown.helper.replaceRecursiveRegExp(subTexts[1], repFunc, patLeft, patRight, 'im');
 
       // prevent an infinite loop
@@ -2943,13 +2977,13 @@ showdown.subParser('makehtml.headers', function (text, options, globals) {
 
   var headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart),
 
-  // Set text-style headers:
-  //	Header 1
-  //	========
-  //
-  //	Header 2
-  //	--------
-  //
+      // Set text-style headers:
+      //	Header 1
+      //	========
+      //
+      //	Header 2
+      //	--------
+      //
       setextRegexH1 = (options.smoothLivePreview) ? /^(.+)[ \t]*\n={2,}[ \t]*\n+/gm : /^(.+)[ \t]*\n=+[ \t]*\n+/gm,
       setextRegexH2 = (options.smoothLivePreview) ? /^(.+)[ \t]*\n-{2,}[ \t]*\n+/gm : /^(.+)[ \t]*\n-+[ \t]*\n+/gm;
 
@@ -3101,6 +3135,12 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
     return writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title);
   }
 
+  function writeImageTagBaseUrl (wholeMatch, altText, linkId, url, width, height, m5, title) {
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+
+    return writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title);
+  }
+
   function writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title) {
 
     var gUrls   = globals.gUrls,
@@ -3175,10 +3215,10 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
   text = text.replace(base64RegExp, writeImageTagBase64);
 
   // cases with crazy urls like ./image/cat1).png
-  text = text.replace(crazyRegExp, writeImageTag);
+  text = text.replace(crazyRegExp, writeImageTagBaseUrl);
 
   // normal cases
-  text = text.replace(inlineRegExp, writeImageTag);
+  text = text.replace(inlineRegExp, writeImageTagBaseUrl);
 
   // handle reference-style shortcuts: ![img text]
   text = text.replace(refShortcutRegExp, writeImageTag);
@@ -3279,13 +3319,22 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
    * @param {{}} globals
    * @returns {Function}
    */
-  function replaceAnchorTag (rgx, evtRootName, options, globals, emptyCase) {
+  function replaceAnchorTagReference (rgx, evtRootName, options, globals, emptyCase) {
     emptyCase = !!emptyCase;
     return function (wholeMatch, text, id, url, m5, m6, title) {
       // bail we we find 2 newlines somewhere
       if (/\n\n/.test(wholeMatch)) {
         return wholeMatch;
       }
+
+      var evt = createEvent(rgx, evtRootName + '.captureStart', wholeMatch, text, id, url, title, options, globals);
+      return writeAnchorTag(evt, options, globals, emptyCase);
+    };
+  }
+
+  function replaceAnchorTagBaseUrl (rgx, evtRootName, options, globals, emptyCase) {
+    return function (wholeMatch, text, id, url, m5, m6, title) {
+      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
 
       var evt = createEvent(rgx, evtRootName + '.captureStart', wholeMatch, text, id, url, title, options, globals);
       return writeAnchorTag(evt, options, globals, emptyCase);
@@ -3373,7 +3422,7 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
     // to external links. Hash links (#) open in same page
     if (options.openLinksInNewWindow && !/^#/.test(url)) {
       // escaped _
-      target = ' target="¨E95Eblank"';
+      target = ' rel="noopener noreferrer" target="¨E95Eblank"';
     }
 
     // Text can be a markdown element, so we run through the appropriate parsers
@@ -3448,21 +3497,21 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
 
     // 1. Look for empty cases: []() and [empty]() and []("title")
     var rgxEmpty = /\[(.*?)]()()()()\(<? ?>? ?(?:["'](.*)["'])?\)/g;
-    text = text.replace(rgxEmpty, replaceAnchorTag(rgxEmpty, evtRootName, options, globals, true));
+    text = text.replace(rgxEmpty, replaceAnchorTagBaseUrl(rgxEmpty, evtRootName, options, globals, true));
 
     // 2. Look for cases with crazy urls like ./image/cat1).png
     var rgxCrazy = /\[((?:\[[^\]]*]|[^\[\]])*)]()\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g;
-    text = text.replace(rgxCrazy, replaceAnchorTag(rgxCrazy, evtRootName, options, globals));
+    text = text.replace(rgxCrazy, replaceAnchorTagBaseUrl(rgxCrazy, evtRootName, options, globals));
 
     // 3. inline links with no title or titles wrapped in ' or ":
     // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
     //var rgx2 = /\[[ ]*[\s]?[ ]*([^\n\[\]]*?)[ ]*[\s]?[ ]*] ?()\(<?[ ]*[\s]?[ ]*([^\s'"]*)>?(?:[ ]*[\n]?[ ]*()(['"])(.*?)\5)?[ ]*[\s]?[ ]*\)/; // this regex is too slow!!!
     var rgx2 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)?)>?\s*(?:()(['"])(.*?)\5)? *\)/g;
-    text = text.replace(rgx2, replaceAnchorTag(rgx2, evtRootName, options, globals));
+    text = text.replace(rgx2, replaceAnchorTagBaseUrl(rgx2, evtRootName, options, globals));
 
     // 4. inline links with titles wrapped in (): [foo](bar.com (title))
     var rgx3 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)?)>?\s+()()\((.*?)\) *\)/g;
-    text = text.replace(rgx3, replaceAnchorTag(rgx3, evtRootName, options, globals));
+    text = text.replace(rgx3, replaceAnchorTagBaseUrl(rgx3, evtRootName, options, globals));
 
     text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
 
@@ -3478,7 +3527,7 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
     text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
 
     var rgx = /\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]()()()()/g;
-    text = text.replace(rgx, replaceAnchorTag(rgx, evtRootName, options, globals));
+    text = text.replace(rgx, replaceAnchorTagReference(rgx, evtRootName, options, globals));
 
     text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
 
@@ -3494,7 +3543,7 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
     text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
 
     var rgx = /\[([^\[\]]+)]()()()()()/g;
-    text = text.replace(rgx, replaceAnchorTag(rgx, evtRootName, options, globals));
+    text = text.replace(rgx, replaceAnchorTagReference(rgx, evtRootName, options, globals));
 
     text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
 
@@ -4134,6 +4183,8 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
       // remove newlines
       globals.gUrls[linkId] = url.replace(/\s/g, '');
     } else {
+      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+
       globals.gUrls[linkId] = showdown.subParser('makehtml.encodeAmpsAndAngles')(url, options, globals);  // Link IDs are case-insensitive
     }
 
@@ -4176,7 +4227,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
   }
 
   var tableRgx       = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|¨0)/gm,
-    //singeColTblRgx = /^ {0,3}\|.+\|\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n(?: {0,3}\|.+\|\n)+(?:\n\n|¨0)/gm;
+      //singeColTblRgx = /^ {0,3}\|.+\|\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n(?: {0,3}\|.+\|\n)+(?:\n\n|¨0)/gm;
       singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
 
   function parseStyles (sLine) {
@@ -4902,10 +4953,10 @@ showdown.Converter = function (converterOptions) {
        */
       setConvFlavor = setFlavor,
 
-    /**
-     * Metadata of the document
-     * @type {{parsed: {}, raw: string, format: string}}
-     */
+      /**
+       * Metadata of the document
+       * @type {{parsed: {}, raw: string, format: string}}
+       */
       metadata = {
         parsed: {},
         raw: '',
@@ -4964,7 +5015,7 @@ showdown.Converter = function (converterOptions) {
           'Please inform the developer that the extension should be updated!');
         legacyExtensionLoading(showdown.extensions[ext], ext);
         return;
-      // END LEGACY SUPPORT CODE
+        // END LEGACY SUPPORT CODE
 
       } else if (!showdown.helper.isUndefined(extensions[ext])) {
         ext = extensions[ext];
@@ -5250,7 +5301,7 @@ showdown.Converter = function (converterOptions) {
       for (var n = 0; n < node.childNodes.length; ++n) {
         var child = node.childNodes[n];
         if (child.nodeType === 3) {
-          if (!/\S/.test(child.nodeValue)) {
+          if (!/\S/.test(child.nodeValue) && !/^[ ]+$/.test(child.nodeValue)) {
             node.removeChild(child);
             --n;
           } else {

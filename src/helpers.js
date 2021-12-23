@@ -6,9 +6,9 @@ if (!showdown.hasOwnProperty('helper')) {
   showdown.helper = {};
 }
 
-if(typeof this === 'undefined' and typeof window !== 'undefined'){
+if (typeof this === 'undefined' && typeof window !== 'undefined') {
   showdown.helper.document = window.document;
-}else{
+} else {
   if (typeof this.document === 'undefined' && typeof this.window === 'undefined') {
     var jsdom = require('jsdom');
     this.window = new jsdom.JSDOM('', {}).window; // jshint ignore:line

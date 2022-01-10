@@ -1,3 +1,15 @@
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/showdownjs/showdown/compare/1.9.1...2.0.0) (2022-01-10)
+
+
+### Bug Fixes
+
+* **Update yargs dependency:** Update the yargs dependency to fix an [ansi-regex vulnerability](https://github.com/advisories/GHSA-93q8-gq69-wqmw) ([ae61bea](https://github.com/showdownjs/showdown/pull/882/commits/ae61bea60fcf99496b03b1fe10585c042dcf034d)), closes [#866](https://github.com/showdownjs/showdown/issues/866).
+
+### Breaking Changes
+
+* **Drop support for Node v6 and Node v8:** With even v10 past official end-of-life, testing against node v6 and Node v8 was [removed](https://github.com/showdownjs/showdown/pull/882/commits/4a040fa0111fe673880ea02c9afc7d08e725dc8c).  If you are still using such an old version of Node, please update that.  If you are not, this should not be a breaking change for you.
+
 <a name="1.9.1"></a>
 ## [1.9.1](https://github.com/showdownjs/showdown/compare/1.9.0...1.9.1) (2019-11-02)
 

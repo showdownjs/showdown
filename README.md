@@ -93,12 +93,15 @@ The converter itself might even work in things that aren't web browsers, like Ac
 
 ## Node compatibility
 
-Showdown has been tested with node 6, 8 and 10. However, it should work with previous versions, such as node 0.12.
+Showdown supports node versions in the "Current", "Active" and "Maintenance" phases. Currently this includes Node 12.x, 14.x, 16.x and 17.x. See the [node release roadmap for more details](12.x, 14.x, 16.x, 17.x). 
 
+Other versions of node may likely work, but they are not tested regularly.
 
-## Legacy version
+## Pervious versions
 
 If you're looking for showdown v<1.0.0, you can find it in the [**legacy branch**][legacy-branch].
+
+If you are looking for showdown 1.* you can find it in the [version_1.x][version_1.x] branch.
 
 ## Changelog
 

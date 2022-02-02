@@ -1,3 +1,21 @@
+<a name="2.0.0-alpha"></a>
+# [2.0.0-alpha](https://github.com/showdownjs/showdown/compare/1.9.1...2.0.0-alpha) (2022-02-02)
+
+### Breaking Changes
+* Supported Node Versions were set to match the [node release schedule](https://nodejs.org/en/about/releases/) which at the time of writing includes Node 12.x, 14.x, 16.x and 17.x
+* The `yargs` dependecy was updated to `^17.2.1` to mitigate a security issue.
+* The Showdown Licesnse has been changed from  BSD-3-Clause to MIT
+
+### Bug Fixes
+
+* allow escaping of colons ([25c4420](https://github.com/showdownjs/showdown/commit/25c4420))
+* reduce npm package size  ([35730b7](https://github.com/showdownjs/showdown/commit/35730b7)), closes [#619](https://github.com/showdownjs/showdown/issues/619)
+
+### Features
+
+* - Added `ellipsis` option to configure if the ellipsis unicode character is used or not. ( Thanks @VladimirV99 )
+
+
 <a name="1.9.1"></a>
 ## [1.9.1](https://github.com/showdownjs/showdown/compare/1.9.0...1.9.1) (2019-11-02)
 

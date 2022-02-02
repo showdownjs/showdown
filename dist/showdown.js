@@ -1,4 +1,4 @@
-;/*! showdown v 1.9.1 - 31-01-2022 */
+;/*! showdown v 2.0.0-alpha - 01-02-2022 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -2717,12 +2717,12 @@ showdown.Converter = function (converterOptions) {
       var ext = extension[a];
       for (var i = 0; i < langExtensions.length; ++i) {
         if (langExtensions[i] === ext) {
-          langExtensions[i].splice(i, 1);
+          langExtensions.splice(i, 1);
         }
       }
-      for (var ii = 0; ii < outputModifiers.length; ++i) {
+      for (var ii = 0; ii < outputModifiers.length; ++ii) {
         if (outputModifiers[ii] === ext) {
-          outputModifiers[ii].splice(i, 1);
+          outputModifiers.splice(ii, 1);
         }
       }
     }

@@ -19,3 +19,5 @@
 [link](example.jpg)
 
 [link](example.io)
+
+[百度](http://baidu.com "百度")

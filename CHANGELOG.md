@@ -1,5 +1,5 @@
-<a name="2.0.0-alpha"></a>
-# [2.0.0-alpha](https://github.com/showdownjs/showdown/compare/1.9.1...2.0.0-alpha) (2022-02-02)
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/showdownjs/showdown/compare/1.9.1...2.0.0) (2022-02-15)
 
 ### Breaking Changes
 * Supported Node Versions were set to match the [node release schedule](https://nodejs.org/en/about/releases/) which at the time of writing includes Node 12.x, 14.x, 16.x and 17.x
@@ -13,7 +13,8 @@
 
 ### Features
 
-* - Added `ellipsis` option to configure if the ellipsis unicode character is used or not. ( Thanks @VladimirV99 )
+* Added `ellipsis` option to configure if the ellipsis unicode character is used or not. ( Thanks @VladimirV99 )
+* Added a default security policy. Please report security issues to the issues tab on GitHub.
 
 
 <a name="1.9.1"></a>

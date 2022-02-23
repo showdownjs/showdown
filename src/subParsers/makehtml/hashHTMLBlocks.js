@@ -36,6 +36,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
         'hgroup',
         'output',
         'video',
+        'details',
         'p'
       ],
       repFunc = function (wholeMatch, match, left, right) {

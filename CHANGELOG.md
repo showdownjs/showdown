@@ -1,4 +1,31 @@
+<a name="2.0.0"></a>
+# [2.0.0](https://github.com/showdownjs/showdown/compare/1.9.1...2.0.0) (2022-02-15)
 
+### Breaking Changes
+* Supported Node Versions were set to match the [node release schedule](https://nodejs.org/en/about/releases/) which at the time of writing includes Node 12.x, 14.x, 16.x and 17.x
+* The `yargs` dependecy was updated to `^17.2.1` to mitigate a security issue.
+* The Showdown Licesnse has been changed from  BSD-3-Clause to MIT
+
+### Bug Fixes
+
+* allow escaping of colons ([25c4420](https://github.com/showdownjs/showdown/commit/25c4420))
+* reduce npm package size  ([35730b7](https://github.com/showdownjs/showdown/commit/35730b7)), closes [#619](https://github.com/showdownjs/showdown/issues/619)
+
+### Features
+
+* Added `ellipsis` option to configure if the ellipsis unicode character is used or not. ( Thanks @VladimirV99 )
+* Added a default security policy. Please report security issues to the issues tab on GitHub.
+
+
+<a name="1.9.1"></a>
+## [1.9.1](https://github.com/showdownjs/showdown/compare/1.9.0...1.9.1) (2019-11-02)
+
+
+### Bug Fixes
+
+* **openLinksInNewWindow:** add rel="noopener noreferrer" to links ([1cd281f](https://github.com/showdownjs/showdown/commit/1cd281f)), closes [#670](https://github.com/showdownjs/showdown/issues/670)
+
+<a name="1.0.0"></a>
 # [1.9.0](https://github.com/showdownjs/showdown/compare/1.8.7...1.9.0) (2018-11-10)
 
 Version 1.9.0 introduces a new feature, the Markdown to HTML converter. This feature is still experimental and is a partial backport of the new Reverse Converter planned for version 2.0.

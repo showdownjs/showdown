@@ -28,7 +28,7 @@ showdown.subParser('makehtml.codeSpans', function (text, options, globals) {
 
   text = globals.converter._dispatch('makehtml.codeSpans.before', text, options, globals).getText();
 
-  if (typeof(text) === 'undefined') {
+  if (typeof (text) === 'undefined') {
     text = '';
   }
   text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,

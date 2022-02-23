@@ -64,8 +64,7 @@ module.exports = function (grunt) {
 
     jshint: {
       options: {
-        jshintrc: '.jshintrc',
-        reporterOutput: ''
+        jshintrc: '.jshintrc'
       },
       files: [
         'Gruntfile.js',
@@ -76,7 +75,7 @@ module.exports = function (grunt) {
 
     eslint: {
       options: {
-        config: '.eslintrc.json'
+        useEslintrc: true
       },
       target: [
         'Gruntfile.js',

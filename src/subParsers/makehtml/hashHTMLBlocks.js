@@ -90,7 +90,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
   }, '^ {0,3}<!--', '-->', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)
-  text = text.replace(/(?:\n\n)( {0,3}(?:<([?%])[^\r]*?\2>)[ \t]*(?=\n{2,}))/g,
+  text = text.replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g,
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
   text = globals.converter._dispatch('makehtml.hashHTMLBlocks.after', text, options, globals).getText();

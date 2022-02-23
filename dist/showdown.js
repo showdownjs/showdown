@@ -703,7 +703,7 @@ showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
  * @param {string} text
  * @param {string} charsToEscape
  * @param {boolean} afterBackslash
- * @returns {XML|string|void|*}
+ * @returns {string|void|*}
  */
 showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash) {
   'use strict';
@@ -869,7 +869,7 @@ showdown.helper.regexIndexOf = function (str, regex, fromIndex) {
   if (!showdown.helper.isString(str)) {
     throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
   }
-  if (regex instanceof RegExp === false) {
+  if (!(regex instanceof RegExp)) {
     throw 'InvalidArgumentError: second parameter of showdown.helper.regexIndexOf function must be an instance of RegExp';
   }
   var indexOf = str.substring(fromIndex || 0).search(regex);
@@ -2850,7 +2850,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
   }, '^ {0,3}<!--', '-->', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)
-  text = text.replace(/(?:\n\n)( {0,3}(?:<([?%])[^\r]*?\2>)[ \t]*(?=\n{2,}))/g,
+  text = text.replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g,
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
   text = globals.converter._dispatch('makehtml.hashHTMLBlocks.after', text, options, globals).getText();
@@ -2982,7 +2982,7 @@ showdown.subParser('makehtml.headers', function (text, options, globals) {
   text = text.replace(atxStyle, function (wholeMatch, m1, m2) {
     var hText = m2;
     if (options.customizedHeaderId) {
-      hText = m2.replace(/\s?\{([^{]+?)}\s*$/, '');
+      hText = m2.replace(/\s?{([^{]+?)}\s*$/, '');
     }
 
     var span = showdown.subParser('makehtml.spanGamut')(hText, options, globals),
@@ -2999,7 +2999,7 @@ showdown.subParser('makehtml.headers', function (text, options, globals) {
 
     // It is separate from other options to allow combining prefix and customized
     if (options.customizedHeaderId) {
-      var match = m.match(/\{([^{]+?)}\s*$/);
+      var match = m.match(/{([^{]+?)}\s*$/);
       if (match && match[1]) {
         m = match[1];
       }
@@ -4175,9 +4175,9 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
     return text;
   }
 
-  var tableRgx       = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*(?:[-=]){2,}[\s\S]+?(?:\n\n|¨0)/gm,
+  var tableRgx       = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*[-=]{2,}[\s\S]+?(?:\n\n|¨0)/gm,
       //singeColTblRgx = /^ {0,3}\|.+\|\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n(?: {0,3}\|.+\|\n)+(?:\n\n|¨0)/gm;
-      singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
+      singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
 
   function parseStyles (sLine) {
     if (/^:[ \t]*--*$/.test(sLine)) {

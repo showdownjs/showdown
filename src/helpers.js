@@ -128,7 +128,7 @@ showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
  * @param {string} text
  * @param {string} charsToEscape
  * @param {boolean} afterBackslash
- * @returns {XML|string|void|*}
+ * @returns {string|void|*}
  */
 showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash) {
   'use strict';
@@ -294,7 +294,7 @@ showdown.helper.regexIndexOf = function (str, regex, fromIndex) {
   if (!showdown.helper.isString(str)) {
     throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
   }
-  if (regex instanceof RegExp === false) {
+  if (!(regex instanceof RegExp)) {
     throw 'InvalidArgumentError: second parameter of showdown.helper.regexIndexOf function must be an instance of RegExp';
   }
   var indexOf = str.substring(fromIndex || 0).search(regex);

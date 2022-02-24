@@ -72,7 +72,7 @@ for (var opt in showdownOptions) {
   }
 }
 
-function run () {
+function run (cb) {
   'use strict';
   var argv = yargs.argv,
       readMode = (!argv.i || argv.i === '') ? 'stdin' : 'file',
@@ -83,14 +83,13 @@ function run () {
        * @type {Messenger}
        */
       messenger = new Messenger(msgMode, argv.q, argv.m),
-      read = (readMode === 'stdin') ? readFromStdIn : readFromFile,
       write = (writeMode === 'stdout') ? writeToStdOut : writeToFile,
       enc = argv.encoding || 'utf8',
       flavor =  argv.p,
       append = argv.a || false,
       options = parseOptions(flavor),
       converter = new showdown.Converter(options),
-      md, html;
+      html;
 
   // Load extensions
   if (argv.e) {
@@ -109,16 +108,22 @@ function run () {
   messenger.printMsg('...');
   // read the input
   messenger.printMsg('Reading data from ' + readMode + '...');
-  md = read(enc);
 
-  // process the input
-  messenger.printMsg('Parsing markdown...');
-  html = converter.makeHtml(md);
+  readFrom(argv.i, enc, function (err, md) {
+    if (err) {
+      return cb(err);
+    }
 
-  // write the output
-  messenger.printMsg('Writing data to ' + writeMode + '...');
-  write(html, append);
-  messenger.okExit();
+    // process the input
+    messenger.printMsg('Parsing markdown...');
+    html = converter.makeHtml(md);
+
+    // write the output
+    messenger.printMsg('Writing data to ' + writeMode + '...');
+    write(html, append);
+    messenger.okExit();
+    cb();
+  });
 
   function parseOptions (flavor) {
     var options = {},
@@ -156,22 +161,22 @@ function run () {
     return options;
   }
 
-  function readFromStdIn () {
-    try {
-      var size = fs.fstatSync(process.stdin.fd).size;
-      return size > 0 ? fs.readSync(process.stdin.fd, size)[0] : '';
-    } catch (e) {
-      var err = new Error('Could not read from stdin, reason: ' + e.message);
-      messenger.errorExit(err);
+  function readFrom (src, enc, cb) {
+    var stream = process.stdin;
+    if (src && src.length) {
+      stream = fs.createReadStream(src, {encoding: enc});
+    } else {
+      process.stdin.setEncoding(enc);
+      process.stdin.resume();
     }
-  }
-
-  function readFromFile (encoding) {
-    try {
-      return fs.readFileSync(argv.i, encoding);
-    } catch (err) {
-      messenger.errorExit(err);
-    }
+    var data = '';
+    stream.on('data', function (chunk) {
+      data += chunk.toString();
+    });
+    stream.on('end',function () {
+      cb(null, data);
+    });
+    stream.on('error', cb);
   }
 
   function writeToStdOut (html) {

@@ -1,7 +1,7 @@
 ![Showdown][sd-logo]
 
-[![Build Status: Linux](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown)
-[![Build Status: Windows](https://ci.appveyor.com/api/projects/status/github/showdownjs/showdown?branch=master&svg=true)](https://ci.appveyor.com/project/tivie/showdown/branch/master)
+![Build Status: Linux](https://github.com/showdownjs/showdown/actions/workflows/node.linux.yml/badge.svg)
+![Build Status: Windows](https://github.com/showdownjs/showdown/actions/workflows/node.win.yml/badge.svg)
 [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown)
 [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
 [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -93,7 +93,7 @@ The converter itself might even work in things that aren't web browsers, like Ac
 
 ## Node compatibility
 
-Showdown has been tested with node 0.8 and 0.10. However, it should work with previous versions, such as node 0.6.
+Showdown is intended to work on any supported node.js version (see the [node.js releases schedule](https://nodejs.org/en/about/releases/). The code may work with previous versions of node.js, but no accomidations are made to ensure it does. 
 
 
 ## Legacy version
@@ -352,6 +352,8 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **underline**: (boolean) [default false] ***EXPERIMENTAL FEATURE*** Enable support for underline.
    Syntax is **double** or **triple** **underscores** ex: `__underlined word__`. With this option enabled, underscores are no longer parses into `<em>` and `<strong>`.
+
+ * **ellipsis**: (boolean) [default true] Replaces three dots with the ellipsis unicode character.
 
  * **completeHTMLDocument**: (boolean) [default false] Outputs a complete html document,
    including `<html>`, `<head>` and `<body>` tags' instead of an HTML fragment. (since v.1.8.5)

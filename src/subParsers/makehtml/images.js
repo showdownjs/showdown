@@ -17,6 +17,12 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
     return writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title);
   }
 
+  function writeImageTagBaseUrl (wholeMatch, altText, linkId, url, width, height, m5, title) {
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+
+    return writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title);
+  }
+
   function writeImageTag (wholeMatch, altText, linkId, url, width, height, m5, title) {
 
     var gUrls   = globals.gUrls,
@@ -91,10 +97,10 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
   text = text.replace(base64RegExp, writeImageTagBase64);
 
   // cases with crazy urls like ./image/cat1).png
-  text = text.replace(crazyRegExp, writeImageTag);
+  text = text.replace(crazyRegExp, writeImageTagBaseUrl);
 
   // normal cases
-  text = text.replace(inlineRegExp, writeImageTag);
+  text = text.replace(inlineRegExp, writeImageTagBaseUrl);
 
   // handle reference-style shortcuts: ![img text]
   text = text.replace(refShortcutRegExp, writeImageTag);

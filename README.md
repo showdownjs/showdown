@@ -1,7 +1,7 @@
 ![Showdown][sd-logo]
 
-[![Build Status: Linux](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown)
-[![Build Status: Windows](https://ci.appveyor.com/api/projects/status/github/showdownjs/showdown?branch=master&svg=true)](https://ci.appveyor.com/project/tivie/showdown/branch/master)
+![Build Status: Linux](https://github.com/showdownjs/showdown/actions/workflows/node.linux.yml/badge.svg)
+![Build Status: Windows](https://github.com/showdownjs/showdown/actions/workflows/node.win.yml/badge.svg)
 [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown)
 [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
 [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -26,7 +26,7 @@ If you like our work and find our library useful, please donate through [patreon
 ## License
 
 ShowdownJS v 2.0 is release under the MIT version.
-Previous versions are release under GPL 2.0
+Previous versions are release under BSD.
 
 ## Who uses Showdown (or a fork)
 
@@ -35,6 +35,7 @@ Previous versions are release under GPL 2.0
  - [Stackexchange](http://stackexchange.com/) - forked as [PageDown](https://code.google.com/p/pagedown/)
  - [docular](https://github.com/Vertafore/docular)
  - [md-page](https://github.com/oscarmorrison/md-page)
+ - [QCObjects](https://qcobjects.dev)
  - [and some others...](https://www.npmjs.com/browse/depended/showdown)
 
 ## Installation
@@ -61,15 +62,19 @@ The NuGet Packages can be [found here](https://www.nuget.org/packages/showdownjs
 
 You can also use one of several CDNs available: 
 
-* github CDN
+* jsDelivr
 
-        https://cdn.rawgit.com/showdownjs/showdown/<version tag>/dist/showdown.min.js
+        https://cdn.jsdelivr.net/npm/showdown@<version tag>/dist/showdown.min.js
 
 * cdnjs
 
         https://cdnjs.cloudflare.com/ajax/libs/showdown/<version tag>/showdown.min.js
 
+* unpkg
+       
+        https://unpkg.com/showdown/dist/showdown.min.js
 
+*Note*: replace `<version tag>` with an actual full length version you're interested in e.g. `1.9.0`
 ## Browser Compatibility
 
 Showdown has been tested successfully with:
@@ -88,7 +93,7 @@ The converter itself might even work in things that aren't web browsers, like Ac
 
 ## Node compatibility
 
-Showdown has been tested with node 0.8 and 0.10. However, it should work with previous versions, such as node 0.6.
+Showdown is intended to work on any supported node.js version (see the [node.js releases schedule](https://nodejs.org/en/about/releases/). The code may work with previous versions of node.js, but no accomidations are made to ensure it does. 
 
 
 ## Legacy version
@@ -310,7 +315,7 @@ var defaultOptions = showdown.getDefaultOptions();
    by 4 spaces for them to be nested, effectively reverting to the old behavior where 2 or 3 spaces were enough.
    **(since v1.5.0)**
  
- * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as <br>, without
+ * **simpleLineBreaks**: (boolean) [default false] Parses line breaks as `<br>`, without
    needing 2 spaces at the end of the line **(since v1.5.1)**
  
    ```md
@@ -347,6 +352,8 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **underline**: (boolean) [default false] ***EXPERIMENTAL FEATURE*** Enable support for underline.
    Syntax is **double** or **triple** **underscores** ex: `__underlined word__`. With this option enabled, underscores are no longer parses into `<em>` and `<strong>`.
+
+ * **ellipsis**: (boolean) [default true] Replaces three dots with the ellipsis unicode character.
 
  * **completeHTMLDocument**: (boolean) [default false] Outputs a complete html document,
    including `<html>`, `<head>` and `<body>` tags' instead of an HTML fragment. (since v.1.8.5)
@@ -403,6 +410,10 @@ If you're using TypeScript you maybe want to use the types from [DefinitelyTyped
 ## Integration with SystemJS/JSPM
 
 Integration with SystemJS can be obtained via the third party ["system-md" plugin](https://github.com/guybedford/system-md).
+
+## Integration with VueJS
+
+To use ShowdownJS as a Vue component quickly, you can check [vue-showdown](https://vue-showdown.js.org/).
 
 ## XSS vulnerability
 

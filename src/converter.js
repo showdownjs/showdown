@@ -45,10 +45,10 @@ showdown.Converter = function (converterOptions) {
        */
       setConvFlavor = setFlavor,
 
-    /**
-     * Metadata of the document
-     * @type {{parsed: {}, raw: string, format: string}}
-     */
+      /**
+       * Metadata of the document
+       * @type {{parsed: {}, raw: string, format: string}}
+       */
       metadata = {
         parsed: {},
         raw: '',
@@ -107,7 +107,7 @@ showdown.Converter = function (converterOptions) {
           'Please inform the developer that the extension should be updated!');
         legacyExtensionLoading(showdown.extensions[ext], ext);
         return;
-      // END LEGACY SUPPORT CODE
+        // END LEGACY SUPPORT CODE
 
       } else if (!showdown.helper.isUndefined(extensions[ext])) {
         ext = extensions[ext];
@@ -393,7 +393,7 @@ showdown.Converter = function (converterOptions) {
       for (var n = 0; n < node.childNodes.length; ++n) {
         var child = node.childNodes[n];
         if (child.nodeType === 3) {
-          if (!/\S/.test(child.nodeValue)) {
+          if (!/\S/.test(child.nodeValue) && !/^[ ]+$/.test(child.nodeValue)) {
             node.removeChild(child);
             --n;
           } else {
@@ -532,12 +532,12 @@ showdown.Converter = function (converterOptions) {
       var ext = extension[a];
       for (var i = 0; i < langExtensions.length; ++i) {
         if (langExtensions[i] === ext) {
-          langExtensions[i].splice(i, 1);
+          langExtensions.splice(i, 1);
         }
       }
-      for (var ii = 0; ii < outputModifiers.length; ++i) {
+      for (var ii = 0; ii < outputModifiers.length; ++ii) {
         if (outputModifiers[ii] === ext) {
-          outputModifiers[ii].splice(i, 1);
+          outputModifiers.splice(ii, 1);
         }
       }
     }

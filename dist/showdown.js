@@ -1,5 +1,6 @@
-;/*! showdown v 2.0.0-alpha1 - 23-02-2022 */
+;/*! showdown v 2.0.0-alpha1 - 04-10-2019 */
 (function(){
+
 /**
  * Created by Tivie on 13-07-2015.
  */
@@ -4592,6 +4593,11 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
       .replace(/&/g, '&amp;')
       // double quotes
       .replace(/"/g, '&quot;');
+
+    // Restore dollar signs and tremas
+    content = content
+      .replace(/¨D/g, '$$')
+      .replace(/¨T/g, '¨');
 
     content = content.replace(/\n {4}/g, ' ');
     content.replace(/^([\S ]+): +([\s\S]+?)$/gm, function (wm, key, value) {

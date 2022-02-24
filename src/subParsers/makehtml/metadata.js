@@ -22,6 +22,11 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
       // double quotes
       .replace(/"/g, '&quot;');
 
+    // Restore dollar signs and tremas
+    content = content
+      .replace(/¨D/g, '$$')
+      .replace(/¨T/g, '¨');
+
     content = content.replace(/\n {4}/g, ' ');
     content.replace(/^([\S ]+): +([\s\S]+?)$/gm, function (wm, key, value) {
       globals.metadata.parsed[key] = value;

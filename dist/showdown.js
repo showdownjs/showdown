@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0-alpha1 - 04-10-2019 */
+;/*! showdown v 2.0.0-alpha1 - 13-02-2021 */
 (function(){
 
 /**
@@ -5154,6 +5154,25 @@ showdown.subParser('makeMarkdown.image', function (node) {
   return txt;
 });
 
+showdown.subParser('makeMarkdown.input', function (node, globals) {
+  'use strict';
+
+  var txt = '';
+  if (node.getAttribute('checked') !== null) {
+    txt += '[x]';
+  } else {
+    txt += '[ ]';
+  }
+  if (node.hasChildNodes()) {
+    var children = node.childNodes,
+        childrenLength = children.length;
+    for (var i = 0; i < childrenLength; ++i) {
+      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    }
+  }
+  return txt;
+});
+
 showdown.subParser('makeMarkdown.links', function (node, globals) {
   'use strict';
 
@@ -5346,6 +5365,10 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
 
     case 'br':
       txt = showdown.subParser('makeMarkdown.break')(node, globals);
+      break;
+
+    case 'input':
+      txt = showdown.subParser('makeMarkdown.input')(node, globals);
       break;
 
     default:

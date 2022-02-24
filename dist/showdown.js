@@ -1,6 +1,5 @@
-;/*! showdown v 2.0.0-alpha1 - 13-02-2021 */
+;/*! showdown v 2.0.0-alpha1 - 24-02-2022 */
 (function(){
-
 /**
  * Created by Tivie on 13-07-2015.
  */
@@ -5163,12 +5162,10 @@ showdown.subParser('makeMarkdown.input', function (node, globals) {
   } else {
     txt += '[ ]';
   }
-  if (node.hasChildNodes()) {
-    var children = node.childNodes,
-        childrenLength = children.length;
-    for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
-    }
+  var children = node.childNodes,
+      childrenLength = children.length;
+  for (var i = 0; i < childrenLength; ++i) {
+    txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
   }
   return txt;
 });

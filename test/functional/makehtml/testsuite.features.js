@@ -19,6 +19,7 @@ var bootstrap = require('./makehtml.bootstrap.js'),
     completeHTMLOutputSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/completeHTMLOutput/'),
     metadataSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/metadata/'),
     splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/splitAdjacentBlockquotes/'),
+    moreStyling = bootstrap.getTestSuite('test/functional/makehtml/cases/features/moreStyling/'),
     http = require('http'),
     https = require('https'),
     expect = require('chai').expect;
@@ -320,4 +321,16 @@ describe('makeHtml() features testsuite', function () {
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });
+
+  /** test moreStyling option **/
+  describe('moreStyling option', function () {
+    var converter,
+        suite = moreStyling;
+
+    for (var i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({moreStyling: true, tasklists: true});
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
 });

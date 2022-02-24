@@ -40,7 +40,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
     // attacklab: add sentinel to emulate \z
     listStr += '¨0';
 
-    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
+    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[([xX ])])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
         isParagraphed = (/\n[ \t]*\n(?!¨0)/.test(listStr));
 
     // Since version 1.5, nesting sublists requires 4 spaces (or 1 tab) indentation,
@@ -48,7 +48,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
     // activating this option reverts to old behavior
     // This will be removed in version 2.0
     if (options.disableForced4SpacesIndentedSublists) {
-      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0|\2([*+-]|\d+[.])[ \t]+))/gm;
+      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[([xX ])])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0|\2([*+-]|\d+[.])[ \t]+))/gm;
     }
 
     listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
@@ -59,8 +59,13 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
 
       // Support for github tasklists
       if (taskbtn && options.tasklists) {
-        bulletStyle = ' class="task-list-item" style="list-style-type: none;"';
-        item = item.replace(/^[ \t]*\[(x|X| )?]/m, function () {
+
+        // Style used for tasklist bullets
+        bulletStyle = ' class="task-list-item';
+        if (options.moreStyling) {bulletStyle +=  checked ? ' task-list-item-complete' : '';}
+        bulletStyle += '" style="list-style-type: none;"';
+
+        item = item.replace(/^[ \t]*\[([xX ])?]/m, function () {
           var otp = '<input type="checkbox" disabled style="margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;"';
           if (checked) {
             otp += ' checked';

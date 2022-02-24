@@ -5,7 +5,6 @@
 [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown)
 [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
 [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Greenkeeper badge](https://badges.greenkeeper.io/showdownjs/showdown.svg)](https://greenkeeper.io/)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
 
 ------
@@ -17,11 +16,9 @@ Showdown can be used client side (in the browser) or server side (with NodeJs).
 
 Check a live Demo here http://demo.showdownjs.com/
 
-## [![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?u=11141581)
-
 As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
 
-If you like our work and find our library useful, please donate through [patreon](https://www.patreon.com/showdownjs) or directly through [paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
+If you like our work and find our library useful, please donate through [paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
 
 ## License
 
@@ -368,6 +365,10 @@ var defaultOptions = showdown.getDefaultOptions();
    ```
 
  * **splitAdjacentBlockquotes**: (boolean) [default false] Split adjacent blockquote blocks.(since v.1.8.6)
+
+ * **moreStyling**: (boolean) [default false] Adds some useful classes for css styling. (since v2.0.1)
+    
+    - Tasklists: Adds the class `task-list-item-complete` to completed tasks items in GFM tasklists.
 
 **NOTE**: Please note that until **version 1.6.0**, all of these options are ***DISABLED*** by default in the cli tool.
 

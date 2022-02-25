@@ -166,6 +166,11 @@ function getDefaultOpts (simple) {
       description: 'Split adjacent blockquote blocks',
       type: 'boolean'
     },
+    moreStyling: {
+      defaultValue: false,
+      describe: 'Adds some useful styling css classes in the generated html',
+      type: 'boolean'
+    },
     relativePathBaseUrl: {
       defaultValue: false,
       describe: 'Prepends a base URL to relative paths',

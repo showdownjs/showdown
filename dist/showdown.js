@@ -168,6 +168,11 @@ function getDefaultOpts (simple) {
       description: 'Split adjacent blockquote blocks',
       type: 'boolean'
     },
+    moreStyling: {
+      defaultValue: false,
+      describe: 'Adds some useful styling css classes in the generated html',
+      type: 'boolean'
+    },
     relativePathBaseUrl: {
       defaultValue: false,
       describe: 'Prepends a base URL to relative paths',
@@ -3347,8 +3352,12 @@ showdown.subParser('makehtml.githubCodeBlocks', function (text, options, globals
 
   text += '¨0';
 
-  text = text.replace(/(?:^|\n)(?: {0,3})(```+|~~~+)(?: *)([^\s`~]*)\n([\s\S]*?)\n(?: {0,3})\1/g, function (wholeMatch, delim, language, codeblock) {
+  text = text.replace(/(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1/g, function (wholeMatch, delim, language, codeblock) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
+
+    // if the language has spaces followed by some other chars, according to the spec we should just ignore everything
+    // after the first space
+    language = language.trim().split(' ')[0];
 
     // First parse the github code block
     codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
@@ -4394,7 +4403,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
     // attacklab: add sentinel to emulate \z
     listStr += '¨0';
 
-    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
+    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[([xX ])])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
         isParagraphed = (/\n[ \t]*\n(?!¨0)/.test(listStr));
 
     // Since version 1.5, nesting sublists requires 4 spaces (or 1 tab) indentation,
@@ -4402,7 +4411,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
     // activating this option reverts to old behavior
     // This will be removed in version 2.0
     if (options.disableForced4SpacesIndentedSublists) {
-      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[(x|X| )])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0|\2([*+-]|\d+[.])[ \t]+))/gm;
+      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[([xX ])])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0|\2([*+-]|\d+[.])[ \t]+))/gm;
     }
 
     listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
@@ -4413,8 +4422,13 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
 
       // Support for github tasklists
       if (taskbtn && options.tasklists) {
-        bulletStyle = ' class="task-list-item" style="list-style-type: none;"';
-        item = item.replace(/^[ \t]*\[(x|X| )?]/m, function () {
+
+        // Style used for tasklist bullets
+        bulletStyle = ' class="task-list-item';
+        if (options.moreStyling) {bulletStyle +=  checked ? ' task-list-item-complete' : '';}
+        bulletStyle += '" style="list-style-type: none;"';
+
+        item = item.replace(/^[ \t]*\[([xX ])?]/m, function () {
           var otp = '<input type="checkbox" disabled style="margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;"';
           if (checked) {
             otp += ' checked';

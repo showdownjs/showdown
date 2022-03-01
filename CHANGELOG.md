@@ -1,3 +1,10 @@
+<a name="2.0.1"></a>
+# [2.0.1](https://github.com/showdownjs/showdown/compare/2.0.0...2.0.1) (2022-03-01)
+
+### Bug Fixes
+
+* Fix cli not working due to missing cli directory in npm package ([32a1aaa](https://github.com/showdownjs/showdown/commit/32a1aaa)), closes [#893](https://github.com/showdownjs/showdown/issues/893)
+
 <a name="2.0.0"></a>
 # [2.0.0](https://github.com/showdownjs/showdown/compare/1.9.1...2.0.0) (2022-02-15)
 

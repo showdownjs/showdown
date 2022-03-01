@@ -38,10 +38,6 @@
   "bin": {
     "showdown": "bin/showdown.js"
   },
-  "files": [
-    "bin",
-    "dist"
-  ],
   "devDependencies": {
     "chai": "^4.3.4",
     "grunt": "^1.4.1",

@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0-alpha1 - 25-02-2022 */
+;/*! showdown v 2.0.0-alpha1 - 01-03-2022 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -5546,7 +5546,7 @@ showdown.subParser('makeMarkdown.table', function (node, globals) {
     for (ii = 0; ii < tableArray[i].length; ++ii) {
       if (i === 1) {
         if (tableArray[i][ii].slice(-1) === ':') {
-          tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(-1), cellSpacesCount - 1, '-') + ':';
+          tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(0, -1), cellSpacesCount - 1, '-') + ':';
         } else {
           tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
         }
@@ -5838,7 +5838,7 @@ showdown.Converter = function (converterOptions) {
    * @param {string} text Text
    * @param {{}} options Converter Options
    * @param {{}} globals Converter globals
-   * @param {{}} pParams extra params for event
+   * @param {{}} [pParams] extra params for event
    * @returns showdown.helper.Event
    * @private
    */

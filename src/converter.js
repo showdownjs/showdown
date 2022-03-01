@@ -216,7 +216,7 @@ showdown.Converter = function (converterOptions) {
    * @param {string} text Text
    * @param {{}} options Converter Options
    * @param {{}} globals Converter globals
-   * @param {{}} pParams extra params for event
+   * @param {{}} [pParams] extra params for event
    * @returns showdown.helper.Event
    * @private
    */

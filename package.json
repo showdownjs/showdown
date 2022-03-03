@@ -38,8 +38,13 @@
   "bin": {
     "showdown": "bin/showdown.js"
   },
+  "files": [
+    "bin",
+    "dist"
+  ],
   "devDependencies": {
-    "chai": "^4.3.4",
+    "chai": "*",
+    "chai-match": "*",
     "grunt": "^1.4.1",
     "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-concat": "^2.0.0",
@@ -56,10 +61,10 @@
     "quiet-grunt": "^0.2.0",
     "semver": "^7.3.0",
     "semver-sort": "^0.0.4",
-    "sinon": "^12.0.1",
+    "sinon": "*",
     "source-map-support": "^0.5.20"
   },
   "dependencies": {
-    "yargs": "^17.2.1"
+    "commander": "^9.0.0"
   }
 }

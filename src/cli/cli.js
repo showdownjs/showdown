@@ -2,19 +2,22 @@
  * Created by tivie
  */
 var fs = require('fs'),
+    path = require('path'),
     json = JSON.parse(fs.readFileSync('package.json', 'utf8')),
     version = json.version,
     Command = require('commander').Command,
     program = new Command(),
+    path1 = path.resolve(__dirname + '/../dist/showdown.js'),
+    path2 = path.resolve(__dirname + '/../../.build/showdown.js'),
     showdown;
 
 // require shodown. We use conditional loading for each use case
-if (fs.existsSync('../dist/showdown.js')) {
+if (fs.existsSync(path1)) {
   // production. File lives in bin directory
-  showdown = require('../dist/showdown');
-} else if (fs.existsSync('../../.build/showdown.js')) {
+  showdown = require(path1);
+} else if (fs.existsSync(path2)) {
   // testing envo, uses the concatenated stuff for testing
-  showdown = require('../../.build/showdown.js');
+  showdown = require(path2);
 } else {
   // cold testing (manual) of cli.js in the src file. We load the dist file
   showdown = require('../../dist/showdown');

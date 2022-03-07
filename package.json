@@ -58,8 +58,6 @@
     "load-grunt-tasks": "^5.1.0",
     "performance-now": "^2.1.0",
     "quiet-grunt": "^0.2.0",
-    "semver": "^7.3.0",
-    "semver-sort": "^1.0.0",
     "sinon": "*",
     "source-map-support": "^0.5.21"
   },

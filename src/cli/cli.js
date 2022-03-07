@@ -11,7 +11,7 @@ var fs = require('fs'),
 // require shodown. We use conditional loading for each use case
 if (fs.existsSync('../dist/showdown.js')) {
   // production. File lives in bin directory
-  showdown = require('../dist/showdown');
+  showdown = require('../dist/showdown.js');
 } else if (fs.existsSync('../../.build/showdown.js')) {
   // testing envo, uses the concatenated stuff for testing
   showdown = require('../../.build/showdown.js');

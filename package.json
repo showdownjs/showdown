@@ -1,6 +1,6 @@
 {
   "name": "showdown",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
   "homepage": "http://showdownjs.com/",
@@ -29,6 +29,10 @@
     "type": "git",
     "url": "https://github.com/showdownjs/showdown.git",
     "web": "https://github.com/showdownjs/showdown"
+  },
+  "funding": {
+    "type" : "individual",
+    "url" : "http://example.com/donate"
   },
   "license": "MIT",
   "main": "./dist/showdown.js",

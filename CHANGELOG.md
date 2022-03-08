@@ -1,3 +1,13 @@
+<a name="2.0.3"></a>
+## [2.0.3](https://github.com/showdownjs/showdown/compare/2.0.2...2.0.3) (2022-03-08)
+
+
+### Bug Fixes
+
+* **cli:** fix cli to work with yargs ([f8c4bd2](https://github.com/showdownjs/showdown/commit/f8c4bd2)), closes [#893](https://github.com/showdownjs/showdown/issues/893)
+
+
+
 <a name="2.0.2"></a>
 ## [2.0.2](https://github.com/showdownjs/showdown/compare/2.0.1...2.0.2) (2022-03-03)
 

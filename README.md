@@ -1,7 +1,6 @@
 ![Showdown][sd-logo]
 
 ![Build Status: Linux](https://github.com/showdownjs/showdown/actions/workflows/node.js.yml/badge.svg)
-[![Build Status: Windows](https://ci.appveyor.com/api/projects/status/github/showdownjs/showdown?branch=master&svg=true)](https://ci.appveyor.com/project/tivie/showdown/branch/master)
 [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown)
 [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
 [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -17,11 +16,12 @@ Showdown can be used client side (in the browser) or server side (with NodeJs).
 
 Check a live Demo here http://demo.showdownjs.com/
 
-## [![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?u=11141581)
+## Funding
 
 As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
 
-If you like our work and find our library useful, please donate through [patreon](https://www.patreon.com/showdownjs) or directly through [paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
+If you like our work and find our library useful, please donate through [paypal](https://www.paypal.me/tiviesantos)!!
+Your contribution will be greatly appreciated and help us continue to develop this awesome library.
 
 ## License
 

@@ -32,7 +32,7 @@
   },
   "funding": {
     "type" : "individual",
-    "url" : "http://example.com/donate"
+    "url" : "https://www.paypal.me/tiviesantos"
   },
   "license": "MIT",
   "main": "./dist/showdown.js",

@@ -25,6 +25,10 @@
     "Pascal Deschênes",
     "Estevão Santos"
   ],
+  "funding": {
+    "type" : "individual",
+    "url" : "https://www.paypal.me/tiviesantos"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/showdownjs/showdown.git",

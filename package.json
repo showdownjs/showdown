@@ -26,8 +26,8 @@
     "Estevão Santos"
   ],
   "funding": {
-    "type" : "individual",
-    "url" : "https://www.paypal.me/tiviesantos"
+    "type": "individual",
+    "url": "https://www.paypal.me/tiviesantos"
   },
   "repository": {
     "type": "git",
@@ -63,10 +63,11 @@
     "performance-now": "^2.1.0",
     "quiet-grunt": "^0.2.0",
     "sinon": "*",
-    "source-map-support": "^0.5.21"
+    "source-map-support": "^0.5.21",
+    "semver-sort": "^1.0.0"
   },
   "dependencies": {
-    "jsdom": "^19.0.0",
-    "commander": "^9.0.0"
+    "commander": "^9.0.0",
+    "jsdom": "^19.0.0"
   }
 }

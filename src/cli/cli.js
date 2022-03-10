@@ -157,13 +157,16 @@ function parseShowdownOptions (configOptions, defaultOptions) {
  */
 function readFromStdIn (encoding) {
   'use strict';
+  /*
+  // aparently checking the size of stdin is unreliable so we just won't test
   var size = fs.fstatSync(process.stdin.fd).size;
   if (size <= 0) {
     throw new Error('Could not read from stdin, reason: stdin is empty');
   }
+  */
   encoding = encoding || 'utf8';
   try {
-    return size > 0 ? fs.readFileSync(process.stdin.fd, encoding).toString() : '';
+    return fs.readFileSync(process.stdin.fd, encoding).toString();
   } catch (e) {
     throw new Error('Could not read from stdin, reason: ' + e.message);
   }

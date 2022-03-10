@@ -1,5 +1,6 @@
 require('source-map-support').install();
 require('chai').should();
+require('sinon');
 var expect = require('chai').expect,
     showdown = require('../../.build/showdown.js');
 

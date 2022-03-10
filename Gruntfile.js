@@ -144,7 +144,6 @@ module.exports = function (grunt) {
         }
       },
       single: {
-        src: 'test/node/**/*.js',
         options: {
           globals: ['should'],
           timeout: 3000,
@@ -153,7 +152,7 @@ module.exports = function (grunt) {
         }
       },
       cli: {
-        src: 'test/node/testsuite.cli.js',
+        src: 'test/unit/cli.js',
         options: {
           globals: ['should'],
           timeout: 3000,
@@ -208,14 +207,12 @@ module.exports = function (grunt) {
   /**
    * Run a single test
    */
-  grunt.registerTask('single-test', function (grep) {
+  grunt.registerTask('single-test', function (file) {
     'use strict';
     grunt.config.merge({
       simplemocha: {
         single: {
-          options: {
-            grep: grep
-          }
+          src: file
         }
       }
     });
@@ -230,6 +227,7 @@ module.exports = function (grunt) {
   grunt.registerTask('test-functional', ['concat:test', 'simplemocha:functional', 'clean']);
   grunt.registerTask('test-unit', ['concat:test', 'simplemocha:unit', 'clean']);
   grunt.registerTask('test-cli', ['clean', 'lint', 'concat:test', 'simplemocha:cli', 'clean']);
+
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'concat:cli', 'uglify:dist', 'uglify:cli', 'endline']);
   grunt.registerTask('build-without-test', ['concat:dist', 'uglify', 'endline']);

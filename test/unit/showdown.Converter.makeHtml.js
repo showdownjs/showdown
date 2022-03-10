@@ -1,14 +1,13 @@
 /**
  * Created by Estevao on 15-01-2015.
  */
+require('source-map-support').install();
+require('chai').should();
+require('sinon');
+var showdown = require('../../.build/showdown.js');
 
 describe('showdown.Converter', function () {
   'use strict';
-
-  require('source-map-support').install();
-  require('chai').should();
-
-  var showdown = require('../../.build/showdown.js');
 
   describe('Converter.options extensions', function () {
     var runCount;

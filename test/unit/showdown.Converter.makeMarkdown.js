@@ -1,15 +1,14 @@
 /**
  * Created by Estevao on 15-01-2015.
  */
+require('source-map-support').install();
+require('chai').should();
+require('sinon');
+var showdown = require('../../.build/showdown.js');
 
 describe('showdown.Converter', function () {
   'use strict';
 
-  require('source-map-support').install();
-  require('chai').should();
-  var jsdom = require('jsdom'),
-      document = new jsdom.JSDOM('', {}).window.document, // jshint ignore:line
-      showdown = require('../../.build/showdown.js');
 
   describe('makeMarkdown()', function () {
     var converter = new showdown.Converter();
@@ -18,7 +17,7 @@ describe('showdown.Converter', function () {
       var html = '<a href="/somefoo.html">a link</a>\n';
       var md   = '[a link](</somefoo.html>)';
 
-      converter.makeMarkdown(html, document).should.equal(md);
+      converter.makeMarkdown(html).should.equal(md);
     });
 
   });

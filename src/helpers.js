@@ -363,12 +363,16 @@ showdown.helper.encodeEmailAddress = function (mail) {
 /**
  * String.prototype.repeat polyfill
  *
- * @param str
- * @param count
+ * @param {string} str
+ * @param {int} count
  * @returns {string}
  */
-function repeat (str, count) {
+showdown.helper.repeat = function (str, count) {
   'use strict';
+  // use built-in method if it's available
+  if (!showdown.helper.isUndefined(String.prototype.repeat)) {
+    return str.repeat(count);
+  }
   str = '' + str;
   if (count < 0) {
     throw new RangeError('repeat count must be non-negative');
@@ -396,7 +400,7 @@ function repeat (str, count) {
   }
   str += str.substring(0, maxCount - str.length);
   return str;
-}
+};
 
 /**
  * String.prototype.padEnd polyfill
@@ -418,7 +422,7 @@ showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
   } else {
     targetLength = targetLength - str.length;
     if (targetLength > padString.length) {
-      padString += repeat(padString, targetLength / padString.length); //append to original to ensure we are longer than needed
+      padString += showdown.helper.repeat(padString, targetLength / padString.length); //append to original to ensure we are longer than needed
     }
     return String(str) + padString.slice(0,targetLength);
   }

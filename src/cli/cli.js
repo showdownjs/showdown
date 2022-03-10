@@ -282,7 +282,7 @@ function makehtmlCommand (options, cmd) {
         converter.addExtension(ext, options.extensions[i]);
         messenger.printMsg(options.extensions[i] + ' loaded...');
       } catch (e) {
-        messenger.printError('Could not load extension ' + options.extensions[i] + '. Reason:');
+        messenger.printError('ERROR: Could not load extension ' + options.extensions[i] + '. Reason:');
         messenger.errorExit(e);
       }
     }

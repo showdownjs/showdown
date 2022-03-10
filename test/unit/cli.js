@@ -180,10 +180,11 @@ describe('showdown cli', function () {
       });
 
       it('should display errors', function () {
-        var proc = spawnCLI('makehtml', ['-q', '-i']);
-        //proc.status.should.equal(1);
+        var proc = spawnCLI('makehtml', ['-q', '-i', '-e', 'foo'], {input: 'f'});
+        proc.status.should.equal(1);
         expect(proc.output).to.be.null; // jshint ignore:line
         proc.stdout.should.equal('');
+        console.log(proc.stderr);
         proc.stderr.should.match(/^ERROR:/);
       });
 

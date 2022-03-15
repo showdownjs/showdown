@@ -1,0 +1,19 @@
+site_name: Showdown documentation
+site_description: Showdown is a JavaScript Markdown to HTML converter
+
+theme:
+  name: material
+  logo: http://showdownjs.com/apple-touch-icon.png
+  favicon: http://showdownjs.com/apple-touch-icon.png
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    primary: red
+    accent: cyan
+
+repo_url: https://github.com/showdownjs/showdown
+repo_name: showdownjs/showdown
+site_dir: public
+
+nav:
+  - Home: index.md

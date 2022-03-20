@@ -1,3 +1,17 @@
+////
+// makehtml/lists.js
+// Copyright (c) 2022 ShowdownJS
+//
+// Transforms MD lists into `<ul>` or `<ol>` html list
+//
+// Markdown supports ordered (numbered) and unordered (bulleted) lists.
+// Unordered lists use asterisks, pluses, and hyphens - interchangably - as list markers
+// Ordered lists use numbers followed by periods.
+//
+// ***Author:***
+// - Estevão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
 /**
  * Form HTML ordered (numbered) and unordered (bulleted) lists.
  */

@@ -21,6 +21,7 @@
    * @param {string} evtRootName
    * @param {{}} options
    * @param {{}} globals
+   * @param {boolean} emptyCase
    * @returns {Function}
    */
   function replaceAnchorTagReference (rgx, evtRootName, options, globals, emptyCase) {

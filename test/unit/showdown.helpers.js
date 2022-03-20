@@ -1,11 +1,14 @@
 /**
- * Created by Estevao on 27/01/2017.
+ * Created by Tivie on 27/01/2017.
  */
+require('source-map-support').install();
+require('chai').should();
+require('sinon');
+var showdown = require('../../.build/showdown.js');
 /*jshint expr: true*/
 /*jshint -W053 */
 /*jshint -W010 */
 /*jshint -W009 */
-var showdown = require('../../.build/showdown.js');
 
 describe('encodeEmailAddress()', function () {
   'use strict';
@@ -245,3 +248,12 @@ describe('matchRecursiveRegExp()', function () {
 
 });
 
+describe('repeat()', function () {
+  'use strict';
+  it('work produce the same output as String.prototype.repeat()', function () {
+    var str = 'foo',
+        expected = str.repeat(100),
+        actual = showdown.helper.repeat(str, 100);
+    expected.should.equal(actual);
+  });
+});

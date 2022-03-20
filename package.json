@@ -1,6 +1,6 @@
 {
   "name": "showdown",
-  "version": "2.0.0-alpha1",
+  "version": "2.0.0",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
   "homepage": "http://showdownjs.com/",
@@ -25,6 +25,10 @@
     "Pascal Deschênes",
     "Estevão Santos"
   ],
+  "funding": {
+    "type": "individual",
+    "url": "https://www.paypal.me/tiviesantos"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/showdownjs/showdown.git",
@@ -38,8 +42,13 @@
   "bin": {
     "showdown": "bin/showdown.js"
   },
+  "files": [
+    "bin",
+    "dist"
+  ],
   "devDependencies": {
-    "chai": "^4.3.4",
+    "chai": "*",
+    "chai-match": "*",
     "grunt": "^1.4.1",
     "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-concat": "^2.0.0",
@@ -53,13 +62,12 @@
     "load-grunt-tasks": "^5.1.0",
     "performance-now": "^2.1.0",
     "quiet-grunt": "^0.2.0",
-    "semver": "^7.3.0",
-    "semver-sort": "^1.0.0",
-    "sinon": "^12.0.1",
-    "source-map-support": "^0.5.21"
+    "sinon": "*",
+    "source-map-support": "^0.5.21",
+    "semver-sort": "^1.0.0"
   },
   "dependencies": {
-    "jsdom": "^19.0.0",
-    "yargs": "^17.2.1"
+    "commander": "^9.0.0",
+    "jsdom": "^19.0.0"
   }
 }

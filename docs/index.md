@@ -18,22 +18,21 @@ Showdown can be used on the client-side (in the browser) or server-side (with No
 
 <http://demo.showdownjs.com/>
 
-ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
-
-If you like our work and find it useful, please donate through [PayPal](https://www.paypal.me/tiviesantos).
-
-Your contributions are greatly appreciated and will help us with the development of this awesome library.
-
 ## Who uses Showdown (or a fork)
 
+* [Antmarky](https://github.com/bandantonio/antmarky)
 * [GoogleCloudPlatform](https://github.com/GoogleCloudPlatform)
 * [Meteor](https://www.meteor.com/)
 * [StackExchange](http://stackexchange.com/) - forked as [PageDown](https://code.google.com/p/pagedown/)
 * [docular](https://github.com/Vertafore/docular)
 * [md-page](https://github.com/oscarmorrison/md-page)
 * [QCObjects](https://qcobjects.dev)
-* [Antmarky](https://github.com/bandantonio/antmarky)
 * [and some others](https://www.npmjs.com/browse/depended/showdown)
+
+## Installation
+
+To install Showdown, follow the instructions from the [Installation guide](installation.md).
+
 
 ## License
 
@@ -42,9 +41,6 @@ ShowdownJS v 2.0 is release under the MIT version.
 Previous versions are release under BSD.
 
 [sd-logo]: https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png
-[legacy-branch]: https://github.com/showdownjs/showdown/tree/legacy
-[releases]: https://github.com/showdownjs/showdown/releases
-[changelog]: https://github.com/showdownjs/showdown/blob/master/CHANGELOG.md
 [wiki]: https://github.com/showdownjs/showdown/wiki
 [cli-wiki]: https://github.com/showdownjs/showdown/wiki/CLI-tool
 [definitely-typed]: https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/showdown

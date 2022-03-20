@@ -10,10 +10,23 @@ theme:
   palette:
     primary: red
     accent: cyan
+  features:
+    - navigation.tabs
+
+markdown_extensions:
+  - admonition
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
 
 repo_url: https://github.com/showdownjs/showdown
 repo_name: showdownjs/showdown
 site_dir: public
 
 nav:
-  - Home: index.md
+  - Home:
+    - Introduction: index.md
+    - Donations: donations.md
+  - Installation:
+    - Installation: installation.md
+    - Compatibility: compatibility.md

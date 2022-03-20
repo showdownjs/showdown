@@ -9,21 +9,21 @@
 
 ------
 
-Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber.
-Showdown can be used client side (in the browser) or server side (with NodeJs).
+Showdown is a JavaScript Markdown to HTML converter, based on the original works by John Gruber.
+Showdown can be used client side (in the browser) or server side (with Node.js).
 
 ## Live DEMO
 
-Check a live Demo here http://demo.showdownjs.com/
+Check out a live demo here: http://demo.showdownjs.com/
 
 As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
 
-If you like our work and find our library useful, please donate through [paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
+If you like our work and find our library useful, please donate through [PayPal](https://www.paypal.me/tiviesantos)! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
 
 ## License
 
-ShowdownJS v 2.0 is release under the MIT version.
-Previous versions are release under BSD.
+ShowdownJS v 2.0 is released under the MIT license.
+Previous versions are released under BSD.
 
 ## Who uses Showdown (or a fork)
 
@@ -39,7 +39,7 @@ Previous versions are release under BSD.
 
 ### Download tarball
 
-You can download the latest release tarball directly from [releases][releases]
+You can download the latest release tarball directly from [releases][releases].
 
 ### Bower
 
@@ -53,7 +53,7 @@ You can download the latest release tarball directly from [releases][releases]
 
     PM> Install-Package showdownjs
 
-The NuGet Packages can be [found here](https://www.nuget.org/packages/showdownjs/).
+The NuGet Packages can be found [here](https://www.nuget.org/packages/showdownjs/).
 
 ### CDN
 
@@ -90,7 +90,7 @@ The converter itself might even work in things that aren't web browsers, like Ac
 
 ## Node compatibility
 
-Showdown is intended to work on any supported node.js version (see the [node.js releases schedule](https://nodejs.org/en/about/releases/). The code may work with previous versions of node.js, but no accomidations are made to ensure it does. 
+Showdown is intended to work on any supported Node.js version (see the [Node.js releases schedule](https://nodejs.org/en/about/releases/). The code may work with previous versions of Node.js, but no accomidations are made to ensure it does. 
 
 
 ## Legacy version
@@ -448,7 +448,7 @@ var showdown    = require('showdown'),
 
 ## Tests
 
-A suite of tests is available which require node.js.  Once node is installed, run the following command from
+A suite of tests is available which require Node.js.  Once Node is installed, run the following command from
 the project root to install the dependencies:
 
     npm install

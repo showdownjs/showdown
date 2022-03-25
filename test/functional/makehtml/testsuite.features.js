@@ -100,6 +100,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({openLinksInNewWindow: true});
       } else if (testsuite[i].name === '#355.simplifiedAutoLink-URLs-inside-parenthesis-followed-by-another-character-are-not-parsed-correctly') {
         converter = new showdown.Converter({simplifiedAutoLink: true});
+      } else if (testsuite[i].name === '#709.allow-whitespaces-after-end-in-metadata') {
+        converter = new showdown.Converter({metadata: true});
       } else if (testsuite[i].name === 'relativePathBaseUrl') {
         converter = new showdown.Converter({relativePathBaseUrl: 'http://my.site.com/'});
       } else {

@@ -8,6 +8,8 @@ on:
       - 'mkdocs.yml'
       - 'docs/**'
       - '.github/workflows/docs.yml'
+    paths-ignore:
+      - 'README.md'
 
 jobs:
   build_docs:
@@ -19,7 +21,8 @@ jobs:
       - name: Trigger external build
         env:
           TOKEN: ${{ secrets.DOCS_DEPLOY_KEY }}
-          EVENT: build_docs
+          COMMIT: ${{ github.event.head_commit.id }}
+          COMMITTER: ${{ github.event.head_commit.author.username }}
           OWNER: showdownjs
           REPO: showdownjs.github.io
         run: |
@@ -27,4 +30,4 @@ jobs:
           -H "Authorization: token ${TOKEN}" \
           -H "Accept: application/vnd.github.v3+json" \
           https://api.github.com/repos/${OWNER}/${REPO}/dispatches \
-          -d '{ "event_type": "'"${EVENT}"'", "client_payload": { "source": "showdown" } }'
+          -d '{ "event_type": "e: \"'"${COMMIT}"'\" by '"${COMMITTER}"'", "client_payload": { "source": "showdown" } }'

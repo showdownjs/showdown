@@ -199,7 +199,7 @@ describe('makeHtml() features testsuite', function () {
 
     function testImageUrlExists (imgUrl) {
       // Strip the quotes
-      imgUrl = imgUrl.substr(0, imgUrl.length - 1).substr(1);
+      imgUrl = imgUrl.slice(1, -1);
       return function (done) {
         (imgUrl.startsWith('http://') ? http : https).get(imgUrl, function (res) {
           expect(res.statusCode).to.equal(200);

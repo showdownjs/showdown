@@ -15,6 +15,9 @@ theme:
 
 markdown_extensions:
   - admonition
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true 
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
@@ -27,6 +30,6 @@ nav:
   - Home:
     - Introduction: index.md
     - Donations: donations.md
-  - Installation:
-    - Installation: installation.md
+  - Quickstart:
+    - Quickstart: quickstart.md
     - Compatibility: compatibility.md

@@ -7,9 +7,6 @@ theme:
   favicon: http://showdownjs.com/apple-touch-icon.png
   icon:
     repo: fontawesome/brands/github
-  palette:
-    primary: red
-    accent: cyan
   features:
     - navigation.tabs
 
@@ -19,6 +16,9 @@ markdown_extensions:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
 
+extra_css:
+  - assets/extra.css 
+  
 repo_url: https://github.com/showdownjs/showdown
 repo_name: showdownjs/showdown
 site_dir: public

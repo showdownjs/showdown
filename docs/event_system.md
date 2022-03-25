@@ -24,7 +24,7 @@ Each subparser raises several events sequentially:
     |----------|-----------|------------|--------------------------------------------------------------------|
     | input    | string    | read       | The full text that was passed to the subparser                     |
     | output   | string    | write      | The full text with modification that will be passed along the chain|
-    | regex    | null      |            |                                                                    |
+    | regexp   | null      |            |                                                                    |
     | matches  | null      |            |                                                                    |
     
     Usually you would want to use this event if you wish to change the input to the subparser
@@ -42,7 +42,7 @@ Each subparser raises several events sequentially:
      |----------|-----------|------------|--------------------------------------------------------------------|
      | input    | string    | read       | The captured text                                                  |
      | output   | string    | write      | The text that will be passed to the subparser/other listeners      |
-     | regex    | RegExp    | readonly   | Regular Expression used to capture groups                          |
+     | regexp   | RegExp    | readonly   | Regular Expression used to capture groups                          |
      | matches  | object    | read/write | Matches groups. Changes to this object are reflected in the output |
      
      Usually you would want to use this event if you wish to modify a certain subparser behavior.
@@ -60,7 +60,7 @@ Each subparser raises several events sequentially:
     |------------|-----------|------------|--------------------------------------------------------------------------------|
     | input      | string    | read       | The captured text                                                              |
     | output     | string    | write      | The text that will be passed to the subparser/other listeners                  |
-    | regex      | RegExp    | readonly   | Regular Expression used to capture groups                                      |
+    | regexp     | RegExp    | readonly   | Regular Expression used to capture groups                                      |
     | matches    | object    | read/write | Keypairs of matches groups. Changes to this object are reflected in the output |
     | attributes | object    | read/write | Attributes to add to the HTML output                                           |
  
@@ -76,7 +76,7 @@ Each subparser raises several events sequentially:
     |----------|------------|------------|--------------------------------------------------------------------|
     | input    | string     | read       | The captured text                                                  |
     | output   | string     | write      | The text that will be passed to the subparser/other listeners      |
-    | regex    | null       |            |                                                                    |
+    | regexp   | null       |            |                                                                    |
     | matches  | null       |            |                                                                    |
  
     Usually you would want to use this event if you wish change the subparser output before it is hashed
@@ -93,7 +93,7 @@ Each subparser raises several events sequentially:
     |----------|-----------|------------|--------------------------------------------------------------------|
     | input    | string    | read       | The partial/full text with the subparser modifications             |
     | output   | string    | write      | The text that will be passed to other subparsers                   |
-    | regex    | null      |            |                                                                    |
+    | regexp   | null      |            |                                                                    |
     | matches  | null      |            |                                                                    |
      
     Usually you would want to use this event if you wish change the subparser hashed output
@@ -115,7 +115,7 @@ These events are always guaranteed to be called, regardless of options or circum
     |----------|-----------|------------|--------------------------------------------------------------------|
     | input    | string    | read       | The full text that was passed to the subparser                     |
     | output   | string    | write      | The full text with modification that will be passed along the chain|
-    | regex    | null      |            |                                                                    |
+    | regexp   | null      |            |                                                                    |
     | matches  | null      |            |                                                                    |
     
  2. **.after**.{subparserName}: *always runs*;
@@ -128,7 +128,7 @@ These events are always guaranteed to be called, regardless of options or circum
     |----------|-----------|------------|--------------------------------------------------------------------|
     | input    | string    | read       | The partial/full text with the subparser modifications             |
     | output   | string    | write      | The text that will be passed to other subparsers                   |
-    | regex    | null      |            |                                                                    |
+    | regexp   | null      |            |                                                                    |
     | matches  | null      |            |                                                                    |
 
  

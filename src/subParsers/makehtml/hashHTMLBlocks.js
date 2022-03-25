@@ -36,6 +36,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
         'hgroup',
         'output',
         'video',
+        'details',
         'p'
       ],
       repFunc = function (wholeMatch, match, left, right) {
@@ -70,7 +71,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
 
       //2. Split the text in that position
       var subTexts = showdown.helper.splitAtIndex(text, opTagPos),
-      //3. Match recursively
+          //3. Match recursively
           newSubText1 = showdown.helper.replaceRecursiveRegExp(subTexts[1], repFunc, patLeft, patRight, 'im');
 
       // prevent an infinite loop
@@ -90,7 +91,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
   }, '^ {0,3}<!--', '-->', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)
-  text = text.replace(/(?:\n\n)( {0,3}(?:<([?%])[^\r]*?\2>)[ \t]*(?=\n{2,}))/g,
+  text = text.replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g,
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
   text = globals.converter._dispatch('makehtml.hashHTMLBlocks.after', text, options, globals).getText();

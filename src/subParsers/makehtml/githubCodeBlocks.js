@@ -20,8 +20,12 @@ showdown.subParser('makehtml.githubCodeBlocks', function (text, options, globals
 
   text += '¨0';
 
-  text = text.replace(/(?:^|\n)(?: {0,3})(```+|~~~+)(?: *)([^\s`~]*)\n([\s\S]*?)\n(?: {0,3})\1/g, function (wholeMatch, delim, language, codeblock) {
+  text = text.replace(/(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1/g, function (wholeMatch, delim, language, codeblock) {
     var end = (options.omitExtraWLInCodeBlocks) ? '' : '\n';
+
+    // if the language has spaces followed by some other chars, according to the spec we should just ignore everything
+    // after the first space
+    language = language.trim().split(' ')[0];
 
     // First parse the github code block
     codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);

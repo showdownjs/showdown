@@ -13,12 +13,12 @@ module.exports = function (grunt) {
     pkg: grunt.file.readJSON('package.json'),
 
     concat: {
-      options: {
-        sourceMap: true,
-        banner: ';/*! <%= pkg.name %> v <%= pkg.version %> - <%= grunt.template.today("dd-mm-yyyy") %> */\n(function(){\n',
-        footer: '}).call(this);\n'
-      },
       dist: {
+        options: {
+          sourceMap: true,
+          banner: ';/*! <%= pkg.name %> v <%= pkg.version %> - <%= grunt.template.today("dd-mm-yyyy") %> */\n(function(){\n',
+          footer: '}).call(this);\n'
+        },
         src: [
           'src/options.js',
           'src/showdown.js',
@@ -29,6 +29,12 @@ module.exports = function (grunt) {
           'src/loader.js'
         ],
         dest: 'dist/<%= pkg.name %>.js'
+      },
+      cli: {
+        src: [
+          'src/cli/cli.js'
+        ],
+        dest: 'bin/showdown.js'
       },
       test: {
         src: '<%= concat.dist.src %>',
@@ -42,13 +48,22 @@ module.exports = function (grunt) {
     clean: ['.build/'],
 
     uglify: {
-      options: {
-        sourceMap: true,
-        banner: '/*! <%= pkg.name %> v <%= pkg.version %> - <%= grunt.template.today("dd-mm-yyyy") %> */'
-      },
       dist: {
+        options: {
+          sourceMap: true,
+          banner: '/*! <%= pkg.name %> v <%= pkg.version %> - <%= grunt.template.today("dd-mm-yyyy") %> */'
+        },
         files: {
           'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
+        }
+      },
+      cli: {
+        options: {
+          sourceMap: false,
+          banner: '#!/usr/bin/env node'
+        },
+        files: {
+          'bin/showdown.js': ['<%= concat.cli.dest %>']
         }
       }
     },
@@ -64,8 +79,7 @@ module.exports = function (grunt) {
 
     jshint: {
       options: {
-        jshintrc: '.jshintrc',
-        reporterOutput: ''
+        jshintrc: '.jshintrc'
       },
       files: [
         'Gruntfile.js',
@@ -76,7 +90,7 @@ module.exports = function (grunt) {
 
     eslint: {
       options: {
-        config: '.eslintrc.json'
+        overrideConfigFile: '.eslintrc.json'
       },
       target: [
         'Gruntfile.js',
@@ -130,7 +144,15 @@ module.exports = function (grunt) {
         }
       },
       single: {
-        src: 'test/node/**/*.js',
+        options: {
+          globals: ['should'],
+          timeout: 3000,
+          ignoreLeaks: false,
+          reporter: 'spec'
+        }
+      },
+      cli: {
+        src: 'test/unit/cli.js',
         options: {
           globals: ['should'],
           timeout: 3000,
@@ -185,14 +207,12 @@ module.exports = function (grunt) {
   /**
    * Run a single test
    */
-  grunt.registerTask('single-test', function (grep) {
+  grunt.registerTask('single-test', function (file) {
     'use strict';
     grunt.config.merge({
       simplemocha: {
         single: {
-          options: {
-            grep: grep
-          }
+          src: file
         }
       }
     });
@@ -203,14 +223,15 @@ module.exports = function (grunt) {
   /**
    * Tasks
    */
-
   grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'simplemocha:unit', 'simplemocha:functional', 'clean']);
   grunt.registerTask('test-functional', ['concat:test', 'simplemocha:functional', 'clean']);
   grunt.registerTask('test-unit', ['concat:test', 'simplemocha:unit', 'clean']);
+  grunt.registerTask('test-cli', ['clean', 'lint', 'concat:test', 'simplemocha:cli', 'clean']);
+
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
-  grunt.registerTask('build', ['test', 'concat:dist', 'uglify', 'endline']);
+  grunt.registerTask('build', ['test', 'concat:dist', 'concat:cli', 'uglify:dist', 'uglify:cli', 'endline']);
   grunt.registerTask('build-without-test', ['concat:dist', 'uglify', 'endline']);
-  grunt.registerTask('prep-release', ['build', 'generate-changelog']);
+  grunt.registerTask('prep-release', ['build', 'performance', 'generate-changelog']);
 
   // Default task(s).
   grunt.registerTask('default', ['test']);

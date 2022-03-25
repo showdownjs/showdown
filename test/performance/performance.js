@@ -49,10 +49,7 @@ function runTests () {
       showdown.subParser('makehtml.hashHTMLBlocks')(testMDFile, options, globals);
     })
     .add('anchors', function () {
-      showdown.subParser('makehtml.anchors')(testMDFile, options, globals);
-    })
-    .add('autoLinks', function () {
-      showdown.subParser('makehtml.autoLinks')(testMDFile, options, globals);
+      showdown.subParser('makehtml.links')(testMDFile, options, globals);
     })
     .add('blockQuotes', function () {
       showdown.subParser('makehtml.blockQuotes')(testMDFile, options, globals);

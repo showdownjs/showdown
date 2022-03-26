@@ -1,7 +1,9 @@
 require('source-map-support').install();
 require('chai').should();
+require('sinon');
 var expect = require('chai').expect,
     showdown = require('../../.build/showdown.js');
+
 
 describe('showdown.options', function () {
   'use strict';
@@ -34,21 +36,37 @@ describe('showdown.extension()', function () {
         return extObjMock;
       };
 
-  describe('should register', function () {
-    it('an extension object', function () {
+  describe('file loading', function () {
+
+    beforeEach(function () {
+      this.extension = require('../mocks/mock-extension');
+    });
+
+    it('should register an extension from a file', function () {
+      showdown.extension('mockextension').should.be.an('array');
+      showdown.extension('mockextension').should.eql([this.extension]);
+    });
+
+    afterEach(function () {
+      showdown.resetExtensions();
+    });
+
+  });
+
+
+  describe('objects', function () {
+    it('should register an extension object', function () {
       showdown.extension('foo', extObjMock);
       showdown.extension('foo').should.eql([extObjMock]);
-      showdown.resetExtensions();
     });
 
-    it('an extension function', function () {
-      showdown.extension('foo', extObjFunc);
-      showdown.extension('foo').should.eql([extObjMock]);
-      showdown.resetExtensions();
+    it('should register an extension function', function () {
+      showdown.extension('bar', extObjFunc);
+      showdown.extension('bar').should.eql([extObjMock]);
     });
 
-    it('a listener extension', function () {
-      showdown.extension('foo', {
+    it('should register a listener extension', function () {
+      showdown.extension('baz', {
         type: 'listener',
         listeners: {
           foo: function (name, txt) {
@@ -56,19 +74,16 @@ describe('showdown.extension()', function () {
           }
         }
       });
-      showdown.resetExtensions();
     });
-  });
 
-  describe('should refuse to register', function () {
-    it('a generic object', function () {
+    it('should refuse to register a generic object', function () {
       var fn = function () {
         showdown.extension('foo', {});
       };
       expect(fn).to.throw();
     });
 
-    it('an extension with invalid type', function () {
+    it('should refuse to register an extension with invalid type', function () {
       var fn = function () {
         showdown.extension('foo', {
           type: 'foo'
@@ -77,7 +92,7 @@ describe('showdown.extension()', function () {
       expect(fn).to.throw(/type .+? is not recognized\. Valid values: "lang\/language", "output\/html" or "listener"/);
     });
 
-    it('an extension without regex or filter', function () {
+    it('should refuse to register an extension without regex or filter', function () {
       var fn = function () {
         showdown.extension('foo', {
           type: 'lang'
@@ -86,7 +101,7 @@ describe('showdown.extension()', function () {
       expect(fn).to.throw(/extensions must define either a "regex" property or a "filter" method/);
     });
 
-    it('a listener extension without a listeners property', function () {
+    it('should refuse to register a listener extension without a listeners property', function () {
       var fn = function () {
         showdown.extension('foo', {
           type: 'listener'
@@ -94,7 +109,13 @@ describe('showdown.extension()', function () {
       };
       expect(fn).to.throw(/Extensions of type "listener" must have a property called "listeners"/);
     });
+
+    afterEach(function () {
+      showdown.resetExtensions();
+    });
+
   });
+
 });
 
 describe('showdown.getAllExtensions()', function () {

@@ -1,4 +1,4 @@
-# ROADMAP TO VERSION 2.0
+# ROADMAP TO VERSION 3.0
 
 
 ## Options
@@ -47,7 +47,7 @@
     
     - Drop support for 2 space indentation (and make a lot of users confused since GFM, CommonMark and others allow this)
     - Create a new list subparser that can be turned on with an option, like gfmListStyle
-      (but postpones even more the alpha 2.0 release since the list subparser is probably the hardest thing to rewrite)
+      (but postpones even more the alpha 3.0 release since the list subparser is probably the hardest thing to rewrite)
     
     Tough choices...
 

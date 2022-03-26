@@ -156,10 +156,11 @@ showdown.subParser('makeMarkdown.table',
       for (ii = 0; ii < tableArray[i].length; ++ii) {
         if (i === 1) {
           if (tableArray[i][ii].slice(-1) === ':') {
-            tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(-1), cellSpacesCount - 1, '-') + ':';
+            tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(0, -1), cellSpacesCount - 1, '-') + ':';
           } else {
             tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
           }
+
         } else {
           tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount);
         }

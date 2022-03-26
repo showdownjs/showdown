@@ -1,32 +1,29 @@
 ![Showdown][sd-logo]
 
-[![Build Status: Linux](https://travis-ci.org/showdownjs/showdown.svg?branch=master)](https://travis-ci.org/showdownjs/showdown)
-[![Build Status: Windows](https://ci.appveyor.com/api/projects/status/github/showdownjs/showdown?branch=master&svg=true)](https://ci.appveyor.com/project/tivie/showdown/branch/master)
+![Build Status: Linux](https://github.com/showdownjs/showdown/actions/workflows/node.linux.yml/badge.svg)
+![Build Status: Windows](https://github.com/showdownjs/showdown/actions/workflows/node.win.yml/badge.svg)
 [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown)
 [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
 [![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Greenkeeper badge](https://badges.greenkeeper.io/showdownjs/showdown.svg)](https://greenkeeper.io/)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
 
 ------
 
-Showdown is a Javascript Markdown to HTML converter, based on the original works by John Gruber.
-Showdown can be used client side (in the browser) or server side (with NodeJs).
+Showdown is a JavaScript Markdown to HTML converter, based on the original works by John Gruber.
+Showdown can be used client side (in the browser) or server side (with Node.js).
 
 ## Live DEMO
 
-Check a live Demo here http://demo.showdownjs.com/
-
-## [![Patreon](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/bePatron?u=11141581)
+Check out a live demo here: http://demo.showdownjs.com/
 
 As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
 
-If you like our work and find our library useful, please donate through [patreon](https://www.patreon.com/showdownjs) or directly through [paypal](https://www.paypal.me/tiviesantos)!! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
+If you like our work and find our library useful, please donate through [PayPal](https://www.paypal.me/tiviesantos)! Your contribution will be greatly appreciated and help me continue to develop this awesome library.
 
 ## License
 
-ShowdownJS v 2.0 is release under the MIT version.
-Previous versions are release under BSD.
+ShowdownJS v 2.0 is released under the MIT license.
+Previous versions are released under BSD.
 
 ## Who uses Showdown (or a fork)
 
@@ -35,13 +32,14 @@ Previous versions are release under BSD.
  - [Stackexchange](http://stackexchange.com/) - forked as [PageDown](https://code.google.com/p/pagedown/)
  - [docular](https://github.com/Vertafore/docular)
  - [md-page](https://github.com/oscarmorrison/md-page)
+ - [QCObjects](https://qcobjects.dev)
  - [and some others...](https://www.npmjs.com/browse/depended/showdown)
 
 ## Installation
 
 ### Download tarball
 
-You can download the latest release tarball directly from [releases][releases]
+You can download the latest release tarball directly from [releases][releases].
 
 ### Bower
 
@@ -55,7 +53,7 @@ You can download the latest release tarball directly from [releases][releases]
 
     PM> Install-Package showdownjs
 
-The NuGet Packages can be [found here](https://www.nuget.org/packages/showdownjs/).
+The NuGet Packages can be found [here](https://www.nuget.org/packages/showdownjs/).
 
 ### CDN
 
@@ -69,7 +67,11 @@ You can also use one of several CDNs available:
 
         https://cdnjs.cloudflare.com/ajax/libs/showdown/<version tag>/showdown.min.js
 
+* unpkg
+       
+        https://unpkg.com/showdown/dist/showdown.min.js
 
+*Note*: replace `<version tag>` with an actual full length version you're interested in e.g. `1.9.0`
 ## Browser Compatibility
 
 Showdown has been tested successfully with:
@@ -88,7 +90,7 @@ The converter itself might even work in things that aren't web browsers, like Ac
 
 ## Node compatibility
 
-Showdown has been tested with node 0.8 and 0.10. However, it should work with previous versions, such as node 0.6.
+Showdown is intended to work on any supported Node.js version (see the [Node.js releases schedule](https://nodejs.org/en/about/releases/). The code may work with previous versions of Node.js, but no accomidations are made to ensure it does. 
 
 
 ## Legacy version
@@ -348,6 +350,8 @@ var defaultOptions = showdown.getDefaultOptions();
  * **underline**: (boolean) [default false] ***EXPERIMENTAL FEATURE*** Enable support for underline.
    Syntax is **double** or **triple** **underscores** ex: `__underlined word__`. With this option enabled, underscores are no longer parses into `<em>` and `<strong>`.
 
+ * **ellipsis**: (boolean) [default true] Replaces three dots with the ellipsis unicode character.
+
  * **completeHTMLDocument**: (boolean) [default false] Outputs a complete html document,
    including `<html>`, `<head>` and `<body>` tags' instead of an HTML fragment. (since v.1.8.5)
 
@@ -361,6 +365,10 @@ var defaultOptions = showdown.getDefaultOptions();
    ```
 
  * **splitAdjacentBlockquotes**: (boolean) [default false] Split adjacent blockquote blocks.(since v.1.8.6)
+
+ * **moreStyling**: (boolean) [default false] Adds some useful classes for css styling. (since v2.0.1)
+    
+    - Tasklists: Adds the class `task-list-item-complete` to completed tasks items in GFM tasklists.
 
 **NOTE**: Please note that until **version 1.6.0**, all of these options are ***DISABLED*** by default in the cli tool.
 
@@ -440,7 +448,7 @@ var showdown    = require('showdown'),
 
 ## Tests
 
-A suite of tests is available which require node.js.  Once node is installed, run the following command from
+A suite of tests is available which require Node.js.  Once Node is installed, run the following command from
 the project root to install the dependencies:
 
     npm install

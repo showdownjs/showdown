@@ -912,9 +912,10 @@ showdown.helper.splitAtIndex = function (str, index) {
  * Since it has a random component, subsequent calls to this function produce different results
  *
  * @param {string} mail
+ * @param {string} seed
  * @returns {string}
  */
-showdown.helper.encodeEmailAddress = function (mail) {
+showdown.helper.encodeEmailAddress = function (mail, seed) {
   'use strict';
   var encode = [
     function (ch) {

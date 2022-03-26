@@ -14,10 +14,15 @@ describe('encodeEmailAddress()', function () {
   'use strict';
   var encoder = showdown.helper.encodeEmailAddress,
       email = 'foobar@example.com',
-      encodedEmail = encoder(email);
+      encodedEmail = encoder(email),
+      encodedEmail2 = encoder(email);
 
   it('should encode email', function () {
     encodedEmail.should.not.equal(email);
+  });
+
+  it('should encode email determinated', function () {
+    encodedEmail.should.equal(encodedEmail2);
   });
 
   it('should decode to original email', function () {

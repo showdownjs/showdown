@@ -22,6 +22,11 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
       // double quotes
       .replace(/"/g, '&quot;');
 
+    // Restore dollar signs and tremas
+    content = content
+      .replace(/¨D/g, '$$')
+      .replace(/¨T/g, '¨');
+
     content = content.replace(/\n {4}/g, ' ');
     content.replace(/^([\S ]+): +([\s\S]+?)$/gm, function (wm, key, value) {
       globals.metadata.parsed[key] = value;
@@ -29,12 +34,12 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
     });
   }
 
-  text = text.replace(/^\s*«««+(\S*?)\n([\s\S]+?)\n»»»+\n/, function (wholematch, format, content) {
+  text = text.replace(/^\s*«««+\s*(\S*?)\n([\s\S]+?)\n»»»+\s*\n/, function (wholematch, format, content) {
     parseMetadataContents(content);
     return '¨M';
   });
 
-  text = text.replace(/^\s*---+(\S*?)\n([\s\S]+?)\n---+\n/, function (wholematch, format, content) {
+  text = text.replace(/^\s*---+\s*(\S*?)\n([\s\S]+?)\n---+\s*\n/, function (wholematch, format, content) {
     if (format) {
       globals.metadata.format = format;
     }

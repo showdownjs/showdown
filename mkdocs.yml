@@ -1,0 +1,35 @@
+site_name: Showdown documentation
+site_description: Showdown is a JavaScript Markdown to HTML converter
+
+theme:
+  name: material
+  logo: http://showdownjs.com/apple-touch-icon.png
+  favicon: http://showdownjs.com/apple-touch-icon.png
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.tabs
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true 
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+extra_css:
+  - assets/extra.css 
+  
+repo_url: https://github.com/showdownjs/showdown
+repo_name: showdownjs/showdown
+site_dir: public
+
+nav:
+  - Home:
+    - Introduction: index.md
+    - Donations: donations.md
+  - Quickstart:
+    - Quickstart: quickstart.md
+    - Compatibility: compatibility.md

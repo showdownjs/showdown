@@ -23,13 +23,22 @@
    * @param {{}} globals
    * @returns {Function}
    */
-  function replaceAnchorTag (rgx, evtRootName, options, globals, emptyCase) {
+  function replaceAnchorTagReference (rgx, evtRootName, options, globals, emptyCase) {
     emptyCase = !!emptyCase;
     return function (wholeMatch, text, id, url, m5, m6, title) {
       // bail we we find 2 newlines somewhere
       if (/\n\n/.test(wholeMatch)) {
         return wholeMatch;
       }
+
+      var evt = createEvent(rgx, evtRootName + '.captureStart', wholeMatch, text, id, url, title, options, globals);
+      return writeAnchorTag(evt, options, globals, emptyCase);
+    };
+  }
+
+  function replaceAnchorTagBaseUrl (rgx, evtRootName, options, globals, emptyCase) {
+    return function (wholeMatch, text, id, url, m5, m6, title) {
+      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
 
       var evt = createEvent(rgx, evtRootName + '.captureStart', wholeMatch, text, id, url, title, options, globals);
       return writeAnchorTag(evt, options, globals, emptyCase);
@@ -117,7 +126,7 @@
     // to external links. Hash links (#) open in same page
     if (options.openLinksInNewWindow && !/^#/.test(url)) {
       // escaped _
-      target = ' target="¨E95Eblank"';
+      target = ' rel="noopener noreferrer" target="¨E95Eblank"';
     }
 
     // Text can be a markdown element, so we run through the appropriate parsers
@@ -192,21 +201,21 @@
 
     // 1. Look for empty cases: []() and [empty]() and []("title")
     var rgxEmpty = /\[(.*?)]()()()()\(<? ?>? ?(?:["'](.*)["'])?\)/g;
-    text = text.replace(rgxEmpty, replaceAnchorTag(rgxEmpty, evtRootName, options, globals, true));
+    text = text.replace(rgxEmpty, replaceAnchorTagBaseUrl(rgxEmpty, evtRootName, options, globals, true));
 
     // 2. Look for cases with crazy urls like ./image/cat1).png
     var rgxCrazy = /\[((?:\[[^\]]*]|[^\[\]])*)]()\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g;
-    text = text.replace(rgxCrazy, replaceAnchorTag(rgxCrazy, evtRootName, options, globals));
+    text = text.replace(rgxCrazy, replaceAnchorTagBaseUrl(rgxCrazy, evtRootName, options, globals));
 
     // 3. inline links with no title or titles wrapped in ' or ":
     // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
     //var rgx2 = /\[[ ]*[\s]?[ ]*([^\n\[\]]*?)[ ]*[\s]?[ ]*] ?()\(<?[ ]*[\s]?[ ]*([^\s'"]*)>?(?:[ ]*[\n]?[ ]*()(['"])(.*?)\5)?[ ]*[\s]?[ ]*\)/; // this regex is too slow!!!
     var rgx2 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)?)>?\s*(?:()(['"])(.*?)\5)? *\)/g;
-    text = text.replace(rgx2, replaceAnchorTag(rgx2, evtRootName, options, globals));
+    text = text.replace(rgx2, replaceAnchorTagBaseUrl(rgx2, evtRootName, options, globals));
 
     // 4. inline links with titles wrapped in (): [foo](bar.com (title))
     var rgx3 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)?)>?\s+()()\((.*?)\) *\)/g;
-    text = text.replace(rgx3, replaceAnchorTag(rgx3, evtRootName, options, globals));
+    text = text.replace(rgx3, replaceAnchorTagBaseUrl(rgx3, evtRootName, options, globals));
 
     text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
 
@@ -222,7 +231,7 @@
     text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
 
     var rgx = /\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]()()()()/g;
-    text = text.replace(rgx, replaceAnchorTag(rgx, evtRootName, options, globals));
+    text = text.replace(rgx, replaceAnchorTagReference(rgx, evtRootName, options, globals));
 
     text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
 
@@ -238,7 +247,7 @@
     text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
 
     var rgx = /\[([^\[\]]+)]()()()()()/g;
-    text = text.replace(rgx, replaceAnchorTag(rgx, evtRootName, options, globals));
+    text = text.replace(rgx, replaceAnchorTagReference(rgx, evtRootName, options, globals));
 
     text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
 

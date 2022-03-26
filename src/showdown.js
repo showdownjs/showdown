@@ -187,7 +187,7 @@ showdown.subParser = function (name, func) {
  * Gets or registers an extension
  * @static
  * @param {string} name
- * @param {object|function=} ext
+ * @param {object|object[]|function=} ext
  * @returns {*}
  */
 showdown.extension = function (name, ext) {

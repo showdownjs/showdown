@@ -358,9 +358,9 @@ showdown.helper.encodeEmailAddress = function (mail) {
 
 /**
  *
- * @param str
- * @param targetLength
- * @param padString
+ * @param {string} str
+ * @param {int} targetLength
+ * @param {string} [padString]
  * @returns {string}
  */
 showdown.helper.padEnd = function padEnd (str, targetLength, padString) {

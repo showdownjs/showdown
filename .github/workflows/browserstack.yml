@@ -30,14 +30,17 @@ jobs:
       - name: '🚚 Upgrade NPM'
         run: npm install -g npm
 
+      - name: '🚚 install grunt-cli'
+        run: npm install -g grunt-cli
+
       - name: 'Use Node.js 17.x'
         uses: actions/setup-node@v2
         with:
           node-version: 17.x
           cache: 'npm'
 
-      - name: 'install grunt-cli'
-        run: npm install -g grunt-cli
+      - name: 'Install dependencies for CI'
+        run: npm ci
 
       - name: 'Concatenate src files for testing'
         run: grunt concat:test

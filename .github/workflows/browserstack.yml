@@ -30,12 +30,6 @@ jobs:
       - name: '🚚 Upgrade NPM'
         run: npm install -g npm
 
-      - name: '🚚 install grunt-cli'
-        run: npm install -g grunt-cli --force
-
-      - name: '🚚 install karma globally'
-        run: npm install -g karma --force
-
       - name: 'Use Node.js 17.x'
         uses: actions/setup-node@v2
         with:
@@ -46,10 +40,10 @@ jobs:
         run: npm ci
 
       - name: 'Concatenate src files for testing'
-        run: grunt concat:test
+        run: npx grunt concat:test
 
       - name: 'Running test on BrowserStack with Karma'
-        run: karma start karma.browserstack.js
+        run: npx karma start karma.browserstack.js
 
       - name: 'BrowserStackLocal Stop'  # Terminating the BrowserStackLocal tunnel connection
         uses: browserstack/github-actions/setup-local@master

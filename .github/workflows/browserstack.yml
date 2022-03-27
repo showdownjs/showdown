@@ -33,6 +33,9 @@ jobs:
       - name: '🚚 install grunt-cli'
         run: npm install -g grunt-cli --force
 
+      - name: '🚚 install karma globally'
+        run: npm install -g karma --force
+
       - name: 'Use Node.js 17.x'
         uses: actions/setup-node@v2
         with:

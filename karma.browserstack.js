@@ -4,9 +4,9 @@ module.exports = function (config) {
     browserStack: {
       username: process.env.BROWSERSTACK_USERNAME,
       accessKey: process.env.BROWSERSTACK_ACCESSKEY,
-      project: 'showdown',
-      //build: require('./package.json').version,
-      name: 'Unit Testing'
+      project: process.env.BROWSERSTACK_PROJECT_NAME || 'showdown',
+      build: process.env.BROWSERSTACK_BUILD_NAME || require('./package.json').version,
+      name: process.env.COMMIT_MSG || 'Unit Testing'
     },
 
     // define browsers

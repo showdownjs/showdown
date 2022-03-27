@@ -3,7 +3,9 @@ module.exports = function (config) {
     // global config of your BrowserStack account
     browserStack: {
       username: process.env.BROWSERSTACK_USERNAME,
-      accessKey: process.env.BROWSERSTACK_ACCESSKEY
+      accessKey: process.env.BROWSERSTACK_ACCESSKEY,
+      project: 'showdown',
+      build: require('./package.json').version
     },
 
     // define browsers

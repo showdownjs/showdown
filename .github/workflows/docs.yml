@@ -8,8 +8,6 @@ on:
       - 'mkdocs.yml'
       - 'docs/**'
       - '.github/workflows/docs.yml'
-    paths-ignore:
-      - 'README.md'
 
 jobs:
   build_docs:

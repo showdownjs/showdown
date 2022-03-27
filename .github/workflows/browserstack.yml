@@ -10,38 +10,40 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: 'BrowserStack Env Setup'  # Invokes the setup-env action
-        uses: browserstack/github-actions/setup-env@master
-        with:
-          username:  ${{ secrets.BROWSERSTACK_USERNAME }}
-          access-key: ${{ secrets.BROWSERSTACK_ACCESSKEY }}
-          project-name: 'showdown'
-
-      - name: 'BrowserStack Local Tunnel Setup'  # Invokes the setup-local action
-        uses: browserstack/github-actions/setup-local@master
-        with:
-          local-testing: start
-          local-identifier: random
-
-      # The next 3 steps are for building the web application to be tested and starting the web server on the runner environment
-
-      - name: 'Checkout the repository'
-        uses: actions/checkout@v2
-
-      - name: '🚚 Upgrade NPM'
-        run: npm install -g npm
-
-      - name: 'Use Node.js 17.x'
+      - name: '⚙ Setup Node.js v17.x'
         uses: actions/setup-node@v2
         with:
           node-version: 17.x
           cache: 'npm'
 
-      - name: 'Install dependencies for CI'
+      - name: '📦 Checkout the repository'
+        uses: actions/checkout@v2
+
+      - name: '🚚 Upgrade NPM'
+        run: npm install -g npm
+
+      - name: '🚚 Install dependencies for CI'
         run: npm ci
 
-      - name: 'Concatenate src files for testing'
+      - name: '🏗 Building src files for testing'
         run: npx grunt concat:test
+
+      - name: '📖 Get current package version'
+        uses: martinbeentjes/npm-get-version-action@v1.1.0
+
+      - name: '⚙ BrowserStack Env Setup'  # Invokes the setup-env action
+        uses: browserstack/github-actions/setup-env@master
+        with:
+          username:  ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESSKEY }}
+          project-name: 'showdown'
+          build: ${{ steps.package-version.outputs.current-version}} - ${{ github.run_id }}
+
+      - name: '⚙ BrowserStack Local Tunnel Setup'  # Invokes the setup-local action
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: start
+          local-identifier: random
 
       - name: 'Running test on BrowserStack with Karma'
         run: npx karma start karma.browserstack.js

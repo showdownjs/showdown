@@ -33,3 +33,5 @@ nav:
   - Quickstart:
     - Quickstart: quickstart.md
     - Compatibility: compatibility.md
+  - Configuration:
+    - Showdown options: configuration.md

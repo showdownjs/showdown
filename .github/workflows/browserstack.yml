@@ -36,6 +36,9 @@ jobs:
           node-version: 17.x
           cache: 'npm'
 
+      - name: 'install grunt-cli'
+        run: npm install -g grunt-cli
+
       - name: 'Concatenate src files for testing'
         run: grunt concat:test
 

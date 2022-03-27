@@ -31,7 +31,7 @@ jobs:
         run: npm install -g npm
 
       - name: '🚚 install grunt-cli'
-        run: npm install -g grunt-cli
+        run: npm install -g grunt-cli --force
 
       - name: 'Use Node.js 17.x'
         uses: actions/setup-node@v2

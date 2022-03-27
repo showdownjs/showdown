@@ -1,0 +1,48 @@
+name: 'BrowserStack Test'
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
+jobs:
+  ubuntu-job:
+    name: 'BrowserStack Test on Ubuntu'
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: 'BrowserStack Env Setup'  # Invokes the setup-env action
+        uses: browserstack/github-actions/setup-env@master
+        with:
+          username:  ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESSKEY }}
+
+      - name: 'BrowserStack Local Tunnel Setup'  # Invokes the setup-local action
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: start
+          local-identifier: random
+
+      # The next 3 steps are for building the web application to be tested and starting the web server on the runner environment
+
+      - name: 'Checkout the repository'
+        uses: actions/checkout@v2
+
+      - name: '🚚 Upgrade NPM'
+        run: npm install -g npm
+
+      - name: 'Use Node.js 17.x'
+        uses: actions/setup-node@v2
+        with:
+          node-version: 17.x
+          cache: 'npm'
+
+      - name: 'Concatenate src files for testing'
+        run: grunt concat:test
+
+      - name: 'Running test on BrowserStack with Karma'
+        run: karma start karma.browserstack.js
+
+      - name: 'BrowserStackLocal Stop'  # Terminating the BrowserStackLocal tunnel connection
+        uses: browserstack/github-actions/setup-local@master
+        with:
+          local-testing: stop

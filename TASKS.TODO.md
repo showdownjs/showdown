@@ -101,12 +101,12 @@
 ## CLI
 - [ ] Refactor the CLI
 - [ ] **#381**: *Support for src and dst directories in showdown cli*
-- [ ] **#584**: *Fails to read from stdin*
-- [ ] **#554**: *CLI not working with jsdom v10*
+- [X] **#584**: *Fails to read from stdin*
+- [X] **#554**: *CLI not working with jsdom v10*
 
 ## Other stuff
 - [X] Regexp rewrite for more performance oompf
-- [ ] Full unit testing
+- [X] Full unit testing
 - [ ] Better error reporting
 
 ## Stuff that probably won't make it to v2.0
@@ -138,3 +138,9 @@ This should address:
 - [ ] Options
 - [ ] Extensions (and the new event system)
 - [ ] Cookbook (with stuff for backwards compatibility, specially regarding removed options)
+
+## Browser Testing
+
+- [X] Implement unit tests in Karma
+- [ ] Implement functional tests in Karma
+- [ ] Integrate with browserstack

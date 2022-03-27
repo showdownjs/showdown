@@ -19,7 +19,6 @@
   "smarttabs": true,
   "onevar": true,
   "globals": {
-    "angular": true,
     "module": true,
     "define": true,
     "window": true,

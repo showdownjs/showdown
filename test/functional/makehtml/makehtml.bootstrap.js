@@ -8,7 +8,7 @@
 
   require('source-map-support').install();
   require('chai').should();
-  var fs = require('fs');
+  let fs = require('fs');
 
   function getTestSuite (dir) {
     return fs.readdirSync(dir)
@@ -17,20 +17,20 @@
   }
 
   function getJsonTestSuite (file) {
-    var json = JSON.parse(fs.readFileSync(file, 'utf8'));
+    let json = JSON.parse(fs.readFileSync(file, 'utf8'));
     return mapJson(json, file);
   }
 
   function filter () {
     return function (file) {
-      var ext = file.slice(-3);
+      let ext = file.slice(-3);
       return (ext === '.md');
     };
   }
 
   function map (dir) {
     return function (file) {
-      var oFile = 'file://' + process.cwd().replace(/\\/g, '/') + dir + file,
+      let oFile = 'file://' + process.cwd().replace(/\\/g, '/') + dir + file,
           name = file.replace('.md', ''),
           htmlPath = dir + name + '.html',
           html = fs.readFileSync(htmlPath, 'utf8'),
@@ -47,12 +47,12 @@
   }
 
   function mapJson (jsonArray, file) {
-    var tcObj = {};
-    for (var i = 0; i < jsonArray.length; ++i) {
-      var section = jsonArray[i].section;
-      var name = jsonArray[i].section + '_' + jsonArray[i].example;
-      var md = jsonArray[i].markdown;
-      var html = jsonArray[i].html;
+    let tcObj = {};
+    for (let i = 0; i < jsonArray.length; ++i) {
+      let section = jsonArray[i].section;
+      let name = jsonArray[i].section + '_' + jsonArray[i].example;
+      let md = jsonArray[i].markdown;
+      let html = jsonArray[i].html;
       if (!tcObj.hasOwnProperty(section)) {
         tcObj[section] = [];
       }

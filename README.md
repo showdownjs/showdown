@@ -2,9 +2,9 @@
 
 ![Build Status: Linux](https://github.com/showdownjs/showdown/actions/workflows/node.linux.yml/badge.svg)
 ![Build Status: Windows](https://github.com/showdownjs/showdown/actions/workflows/node.win.yml/badge.svg)
+[![Browserstack Tests](https://automate.browserstack.com/badge.svg?badge_key=VTIvTDNqWVdaTHljbS9RNmYrcTBiL0Uxc3dkRDhaN1dPaXpPb2VOc1B2VT0tLU1Ib09kVjVzMjhFcHExbWFSWlJEV3c9PQ==--1fb92e1730e4a00630d17d533822de6403ca65ec)](https://automate.browserstack.com/public-build/VTIvTDNqWVdaTHljbS9RNmYrcTBiL0Uxc3dkRDhaN1dPaXpPb2VOc1B2VT0tLU1Ib09kVjVzMjhFcHExbWFSWlJEV3c9PQ==--1fb92e1730e4a00630d17d533822de6403ca65ec)
 [![npm version](https://badge.fury.io/js/showdown.svg)](http://badge.fury.io/js/showdown)
 [![Bower version](https://badge.fury.io/bo/showdown.svg)](http://badge.fury.io/bo/showdown)
-[![Join the chat at https://gitter.im/showdownjs/showdown](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/showdownjs/showdown?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.me/tiviesantos)
 
 ------

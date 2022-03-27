@@ -5,7 +5,7 @@ module.exports = function (config) {
       username: process.env.BROWSERSTACK_USERNAME,
       accessKey: process.env.BROWSERSTACK_ACCESSKEY,
       project: 'showdown',
-      build: require('./package.json').version,
+      //build: require('./package.json').version,
       name: 'Unit Testing'
     },
 

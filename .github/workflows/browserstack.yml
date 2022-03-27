@@ -23,17 +23,18 @@ jobs:
           cache: 'npm'
 
       - name: '📖 Get current package version'
+        id: package-version
         uses: martinbeentjes/npm-get-version-action@v1.1.0
 
-      - name: '⚙ BrowserStack Env Setup'  # Invokes the setup-env action
+      - name: '📱 BrowserStack Env Setup'  # Invokes the setup-env action
         uses: browserstack/github-actions/setup-env@master
         with:
           username:  ${{ secrets.BROWSERSTACK_USERNAME }}
           access-key: ${{ secrets.BROWSERSTACK_ACCESSKEY }}
           project-name: 'showdown'
-          build-name: ${{ steps.package-version.outputs.current-version}} - ${{ github.run_id }}
+          build-name: ${{ steps.package-version.outputs.current-version}}-${{ github.run_id }}
 
-      - name: '⚙ BrowserStack Local Tunnel Setup'  # Invokes the setup-local action
+      - name: '🚇 BrowserStack Local Tunnel Setup'  # Invokes the setup-local action
         uses: browserstack/github-actions/setup-local@master
         with:
           local-testing: start

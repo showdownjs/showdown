@@ -31,7 +31,7 @@ jobs:
           username:  ${{ secrets.BROWSERSTACK_USERNAME }}
           access-key: ${{ secrets.BROWSERSTACK_ACCESSKEY }}
           project-name: 'showdown'
-          build: ${{ steps.package-version.outputs.current-version}} - ${{ github.run_id }}
+          build-name: ${{ steps.package-version.outputs.current-version}} - ${{ github.run_id }}
 
       - name: '⚙ BrowserStack Local Tunnel Setup'  # Invokes the setup-local action
         uses: browserstack/github-actions/setup-local@master

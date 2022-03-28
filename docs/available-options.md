@@ -1,0 +1,773 @@
+!!! warning ""
+    Starting from the version `1.6.0` and earlier, all the options are `disabled` by default in the cli tool.
+
+### omitExtraWLInCodeBlocks
+
+Omit trailing newline in code blocks (which is set by default before the closing tag). This option affects both indented and fenced (gfm style) code blocks.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.0.0`
+
+=== "input"
+    
+    ```
+        var foo = 'bar';
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <code><pre>var foo = 'bar';
+    </pre></code>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <code><pre>var foo = 'bar';</pre></code>
+    ```
+
+### noHeaderId
+
+Disable automatic generation of heading IDs.
+
+!!! warning ""
+    Setting the option to `true` overrides the following options:
+    
+    * [`prefixHeaderId`](#prefixheaderid)
+    * [`customizedHeaderId`](#customizedheaderid)
+    * [`ghCompatibleHeaderId`](#ghcompatibleheaderid)
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.1.0`
+
+=== "input"
+    
+    ```
+    # This is a heading
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <h1 id="thisisaheading">This is a heading</h1>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <h1>This is a heading</h1>
+    ```
+
+### customizedHeaderId
+
+Set custom ID for a heading.
+
+!!! warning ""
+    This option can be overridden with the [`noHeaderId`](#noheaderid) option.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.7.0`
+
+=== "code"
+
+    ```html
+    ## Sample heading {mycustomid}
+    ```
+
+=== "output"
+
+    ```html
+    <h1 id="mycustomid">This is a heading</h1>
+    ```
+
+!!! hint ""
+    For better readability and human-friendliness of the heading IDs, it is also recommended to set the [`ghCompatibleHeaderId`](#ghcompatibleheaderid) option to `true`.
+
+### ghCompatibleHeaderId
+
+Generate heading IDs compatible with GitHub style: spaces are replaced with dashes, and certain non-alphanumeric chars are removed.
+
+!!! warning ""
+    This option can be overridden with the [`noHeaderId`](#noheaderid) option.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.5.5`
+
+=== "input"
+    
+    ```
+    # This is a heading with @#$%
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <h1 id="thisisaheading">This is a heading</h1>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <h1 id="this-is-a-heading-with-">This is a heading with @#$%</h1>
+    ```
+
+### rawHeaderId
+
+Replace ` ` (space), `'` (single quote), and `"` (double quote) with `-` (dash) in the generated heading IDs, including prefixes.
+
+!!! danger ""
+    **Use with caution** as it might result in malformed IDs.
+
+* type:
+* default value:
+* introduced in: `1.7.3`
+
+### prefixHeaderId
+
+Add a prefix to the generated heading ID:
+
+* Passing a string will add that string to the heading ID.
+* Passing `true` will add a generic `section` prefix.
+
+!!! warning ""
+    This option can be overridden with the [`noHeaderId`](#noheaderid) option.
+
+* type: `string / boolean`
+* default value: `false`
+
+=== "input"
+    
+    ```
+    # This is a heading
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <h1 id="thisisaheading">This is a heading</h1>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <h1 id="sectionthisisaheading">This is a heading</h1>
+    ```
+
+=== "output (value is `showdown`)"
+
+     ```html
+     <h1 id="showdownthisisaheading">This is a heading</h1>
+     ```
+
+### rawPrefixHeaderId
+
+Prevent Showndown from modifying the prefix. Works only when [`prefixHeaderId`](#prefixheaderid) is set to a string value.
+
+!!! danger ""
+    **Use with caution** as it might result in malformed IDs. For example, when the prefix contains special characters like `"` `\` `/` or others.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.7.3`
+
+### headerLevelStart
+
+Set starting level for the heading tags.
+
+* type: `integer`
+* default value: `1`
+* introduced in: `1.1.0`
+
+=== "input"
+    
+    ```
+    # This is a heading
+    ```
+
+=== "output (value is `1`)"
+
+    ```html
+    <h1>This is a heading</h1>
+    ```
+
+=== "output (value is `3`)"
+
+    ```html
+    <h3>This is a heading</h3>
+    ```
+
+### parseImgDimensions
+
+Set image dimensions from within Markdown syntax.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.1.0`
+
+=== "example"
+    
+    ```
+    ![foo](foo.jpg =100x80)   set width to 100px and height to 80px
+    ![bar](bar.jpg =100x*)    set width to 100px and height to "auto"
+    ![baz](baz.jpg =80%x5em)  set width to 80% and height to 5em
+    ```
+
+### simplifiedAutoLink
+
+Enable automatic linking for plain text URLs.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.2.0`
+
+=== "input"
+    
+    ```
+    Lorem ipsum www.google.com
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <p>Lorem ipsum www.google.com</p>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>Lorem ipsum <a href="www.google.com">www.google.com</a></p>
+    ```
+
+### excludeTrailingPunctuationFromURLs
+
+Exclude trailing punctuation from autolinked URLs: `.` `!` `?` `(` `)`
+
+This option applies only to links generated by [`simplifiedAutoLink`](#simplifiedautolink).
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.5.1`
+
+=== "input"
+    
+    ```
+       check this link www.google.com.
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <p>check this link <a href="www.google.com">www.google.com.</a></p>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>check this link <a href="www.google.com">www.google.com</a>.</p>
+    ```
+
+### literalMidWordUnderscores
+
+Treat underscores in the middle of words as literal characters.
+
+Underscores allow you to specify the words that should be emphasized. However, in some cases, this may be unwanted behavior. With this option enabled, underscores in the middle of words will no longer be interpreted as `<em>` and `<strong>`, but as literal underscores.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.2.0`
+
+=== "input"
+    
+    ```
+    some text with__underscores__in the middle
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <p>some text with<strong>underscores</strong>in the middle</p>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>some text with__underscores__in the middle</p>
+    ```
+
+### strikethrough
+
+Enable support for strikethrough (`<del>`).
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.2.0`
+
+=== "input"
+    
+    ```
+    ~~strikethrough~~
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <del>strikethrough</del>
+    ```
+
+### tables
+
+Enable support for tables syntax.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.2.0`
+
+=== "example"
+    
+    ```
+    | h1    |    h2   |      h3 |
+    |:------|:-------:|--------:|
+    | 100   | [a][1]  | ![b][2] |
+    | *foo* | **bar** | ~~baz~~ |
+    ```
+
+### tablesHeaderId
+
+Generate automatic IDs for table headings. Works only when [`tables: true`](#tables).
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.2.0`
+
+### ghCodeBlocks
+
+Enable support for GFM code block style syntax (fenced codeblocks).
+
+* type: `boolean`
+* default value: `true`
+* introduced in: `0.3.1`
+
+=== "example"
+    
+    ```
+     ```
+     some code here
+	 ```
+    ```
+
+### tasklists
+
+Enable support for GitHub style tasklists.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.2.0`
+
+=== "example"
+    
+    ```
+     - [x] This task is done
+     - [ ] This task is still pending
+    ```
+
+### ghMentions
+
+Enables support for GitHub `@mentions` that allows you to link to the GitHub profile page of the mentioned username.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.6.0` 
+
+=== "input"
+    
+    ```
+    hello there @tivie
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <p>hello there @tivie</p>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>hello there <a href="https://www.github.com/tivie">@tivie</a></p>
+    ```
+
+### ghMentionsLink
+
+Specify where the link generated by `@mentions` should point to. Works only when [`ghMentions: true`](#ghmentions).
+
+* type: `boolean`
+* default value: `https://github.com/{u}`
+* introduced in: `1.6.2`
+
+=== "input"
+    
+    ```
+    hello there @tivie
+    ```
+
+=== "output (value is `https://github.com/{u}`)"
+
+    ```html
+    <p>hello there <a href="https://www.github.com/tivie">@tivie</a></p>
+    ```
+
+=== "output (value is `http://mysite.com/{u}/profile`)"
+
+    ```html
+    <p>hello there <a href="//mysite.com/tivie/profile">@tivie</a></p>
+    ```
+
+### smoothLivePreview
+
+Resolve an awkward effect when a paragraph is followed by a list. This effect appears on some circumstances, in live preview editors.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.2.1`
+
+!!! example "awkward effect"
+    
+    ![](http://i.imgur.com/YQ9iHTL.gif​)
+
+### smartIndentationFix
+
+Resolve indentation problems related to ES6 template strings in the midst of indented code.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.4.2`
+
+### disableForced4SpacesIndentedSublists
+
+Disable the rule of 4 spaces to indent sub-lists. If enabled, this option effectively reverts to the old behavior where you can indent sub-lists with 2 or 3 spaces.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.5.0`
+
+=== "input"
+    
+    ```
+    - one
+      - two
+
+    ...
+
+    - one
+        - two
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <ul>
+    <li>one</li>
+    <li>two</li>
+    </ul>
+    <p>...</p>
+    <ul>
+    <li>one
+        <ul>
+            <li>two</li>
+        </ul>
+    </li>
+    </ul>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <ul>
+    <li>one
+        <ul>
+            <li>two</li>
+        </ul>
+    </li>
+    </ul>
+    <p>...</p>
+    <ul>
+    <li>one
+        <ul>
+            <li>two</li>
+        </ul>
+    </li>
+    </ul>
+    ```
+
+### simpleLineBreaks
+
+Parse line breaks as `<br/>` in paragraphs (GitHub-style behavior).
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.5.1`
+
+=== "input"
+    
+    ```
+    a line
+    wrapped in two
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <p>a line
+    wrapped in two</p>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>a line<br>
+    wrapped in two</p>
+    ```
+
+### requireSpaceBeforeHeadingText
+
+Require a space between a heading `#` and the heading text.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.5.3`
+
+=== "input"
+    
+    ```
+    #heading
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <h1 id="heading">heading</h1>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>#heading</p>
+    ```
+
+### encodeEmails
+
+Enable automatic obfuscation of email addresses. During this process, email addresses are encoded via Character Entities, transforming ASCII email addresses into their equivalent decimal entities.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.6.1`
+
+=== "input"
+    
+    ```
+    <myself@example.com>
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <a href="mailto:myself@example.com">myself@example.com</a>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <a href="&#109;&#97;&#105;&#108;t&#x6f;&#x3a;&#109;&#x79;s&#x65;&#x6c;&#102;&#64;&#x65;xa&#109;&#112;&#108;&#101;&#x2e;c&#x6f;&#109;">&#x6d;&#121;s&#101;&#108;f&#x40;&#x65;&#120;a&#x6d;&#x70;&#108;&#x65;&#x2e;&#99;&#x6f;&#109;</a>
+    ```
+
+### openLinksInNewWindow
+
+Open links in new windows.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.7.0`
+
+=== "input"
+    
+    ```
+    [link](https://google.com)
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <a href="https://google.com">link</a>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <a href="https://google.com" rel="noopener noreferrer" target="_blank">link</a>
+    ```
+
+### backslashEscapesHTMLTags
+
+Support escaping of HTML tags.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.7.2`
+
+=== "input"
+    
+    ```html
+    \<div>foo\</div>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>&lt;div&gt;foo&lt;/div&gt;</p>
+    ```
+
+### emoji
+
+Enable emoji support. For more info on available emojis, see https://github.com/showdownjs/showdown/wiki/Emojis (since v.1.8.0)
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.8.0`
+
+=== "input"
+    
+    ```
+    this is a :smile: emoji
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <p>this is a :smile: emoji</p>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>this is a 😄 emoji</p>
+    ```
+
+!!! hint "Full list of supported emojies"
+
+    Check the [Showdown Wiki](https://github.com/showdownjs/showdown/wiki/Emojis#emoji-list) for a full list of supported emojies.
+
+### underline
+
+Enable support for underline. If enabled, underscores will no longer be parsed as `<em>` and `<strong>`.
+
+* type: `boolean`
+* default value: `false`
+* status: `Experimental`
+
+=== "example"
+    
+    ```
+    __underlined word__     // double underscores
+
+    ___underlined word___   // triple underscores
+    ```
+
+### completeHTMLDocument
+
+Output a complete HTML document, including `<html>`, `<head>`, and `<body>` tags instead of an HTML fragment.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.8.5`
+
+### metadata
+
+Enable support for document metadata (front-matter). You can define metadata at the top of a document between `««« »»»` or `--- ---` symbols.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.8.5`
+
+=== "input"
+    
+    ```js
+    let ref = `referenced value`;
+
+    var markdown = `
+    ---
+    first: Lorem
+    second: Ipsum
+    ref_variable: ${ref}
+    ---
+    `
+
+    var conv = new showdown.Converter({metadata: true});
+    var html = conv.makeHtml(markdown);
+    var metadata = conv.getMetadata();
+    ```
+
+=== "output (value is `true`)"
+
+    ```js
+    // console.log(metadata)
+    {
+        first: 'Lorem',
+        second: 'Ipsum',
+        ref_variable: 'referenced value'
+    }
+    ```
+
+### splitAdjacentBlockquotes
+
+Split adjacent blockquote blocks.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `1.8.6`
+
+=== "input"
+    
+    ```
+    > Quote #1
+    >> Sub-quote 1
+
+    > Quote #2
+    >> Sub-quote 2
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <blockquote>
+      <p>Quote #1</p>
+      <blockquote>
+        <p>Sub-quote 1</p>
+      </blockquote>
+      <p>Quote #2</p>
+      <blockquote>
+        <p>Sub-quote 2</p>
+      </blockquote>
+    </blockquote>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <blockquote>
+      <p>Quote #1</p>
+      <blockquote>
+        <p>Sub-quote 1</p>
+      </blockquote>
+    </blockquote>
+    <blockquote>
+      <p>Quote #2</p>
+      <blockquote>
+        <p>Sub-quote 2</p>
+      </blockquote>
+    </blockquote>    
+    ```

@@ -35,3 +35,4 @@ nav:
     - Compatibility: compatibility.md
   - Configuration:
     - Showdown options: configuration.md
+    - Available options: available-options.md

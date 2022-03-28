@@ -1,9 +1,14 @@
 name: 'BrowserStack Test'
+
 on:
   push:
     branches: [ master, develop ]
   pull_request:
     branches: [ master, develop ]
+
+env:
+  COMMIT_MSG: ${{ github.event.head_commit.message }}
+
 jobs:
   ubuntu-job:
     name: 'BrowserStack Test on Ubuntu'
@@ -26,8 +31,8 @@ jobs:
         id: package-version
         uses: martinbeentjes/npm-get-version-action@v1.1.0
 
-      - name: '📝 Print build version'
-        run: echo ${{ steps.package-version.outputs.current-version}}-${{ github.run_id }}
+      - name: '📝 Print build version and commit msg'
+        run: echo ${{ steps.package-version.outputs.current-version}}-${{ github.run_id }} $COMMIT_MSG
 
       - name: '📱 BrowserStack Env Setup'  # Invokes the setup-env action
         uses: browserstack/github-actions/setup-env@master

@@ -39,3 +39,5 @@ nav:
     - Flavors: flavors.md
   - CLI: cli.md
   - Integrations: integrations.md
+  - Extensions:
+    - Overview: extensions.md

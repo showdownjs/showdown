@@ -41,3 +41,4 @@ nav:
   - Integrations: integrations.md
   - Extensions:
     - Overview: extensions.md
+    - Create an extension: create-extension.md

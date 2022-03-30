@@ -38,3 +38,4 @@ nav:
     - Available options: available-options.md
     - Flavors: flavors.md
   - CLI: cli.md
+  - Integrations: integrations.md

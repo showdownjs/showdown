@@ -62,6 +62,22 @@ showdown.helper.isUndefined = function (value) {
 };
 
 /**
+ * Check if value is an object (excluding arrays)
+ * @param {*} value
+ * @returns {boolean}
+ */
+showdown.helper.isObject = function (value) {
+  'use strict';
+  return (
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value !== null
+  );
+}
+
+
+
+/**
  * ForEach helper function
  * Iterates over Arrays and Objects (own properties only)
  * @static
@@ -549,6 +565,24 @@ showdown.helper.cloneObject = function (obj, deep) {
     //this is costly and should be used sparsly
     return JSON.parse(JSON.stringify(obj));
   }
+};
+
+/**
+ * Populate attributes in output text
+ * @param {string} text
+ * @param {{}} attributes
+ * @returns {string}
+ */
+showdown.helper._populateAttributes = function (attributes) {
+  let text = '';
+  if (attributes && showdown.helper.isObject(attributes)) {
+    for (let attr in attributes) {
+      if (attributes.hasOwnProperty(attr)) {
+        text += ' ' + attr + '=' + attributes[attr];
+      }
+    }
+  }
+  return text;
 };
 
 showdown.helper.Event = class {

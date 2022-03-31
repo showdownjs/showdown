@@ -26,23 +26,69 @@
 showdown.subParser('makehtml.codeSpans', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.codeSpans.before', text, options, globals).getText();
+  let startEvent = new showdown.helper.Event('makehtml.codeSpans.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
 
-  if (typeof (text) === 'undefined') {
+  startEvent = globals.converter.dispatch(startEvent);
+
+  text = startEvent.output;
+
+  if (showdown.helper.isUndefined((text))) {
     text = '';
   }
-  text = text.replace(/(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm,
-    function (wholeMatch, m1, m2, m3) {
-      var c = m3;
+
+  let pattern = /(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm;
+
+  text = text.replace(pattern,
+    function (wholeMatch, m1, m2, c) {
+      let otp,
+          attributes = {};
+
       c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
       c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
-      c = showdown.subParser('makehtml.encodeCode')(c, options, globals);
-      c = m1 + '<code>' + c + '</code>';
-      c = showdown.subParser('makehtml.hashHTMLSpans')(c, options, globals);
-      return c;
+
+      let captureStartEvent = new showdown.helper.Event('makehtml.codeSpans.onCapture', c);
+      captureStartEvent
+        .setOutput(null)
+        ._setGlobals(globals)
+        ._setOptions(options)
+        .setRegexp(pattern)
+        .setMatches({
+          code: c
+        })
+        .setAttributes({});
+      captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+      // if something was passed as output, it takes precedence
+      // and will be used as output
+      if (captureStartEvent.output && captureStartEvent.output !== '') {
+        otp = m1 + captureStartEvent.output;
+      } else {
+        c = captureStartEvent.matches.code;
+        c = showdown.subParser('makehtml.encodeCode')(c, options, globals);
+        otp = m1 + '<code' + showdown.helper._populateAttributes(attributes) + '>' +  c + '</code>';
+      }
+
+      let beforeHashEvent = new showdown.helper.Event('makehtml.codeSpans.onHash', otp);
+      beforeHashEvent
+        .setOutput(otp)
+        ._setGlobals(globals)
+        ._setOptions(options);
+
+      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+      otp = beforeHashEvent.output;
+      return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
     }
   );
 
-  text = globals.converter._dispatch('makehtml.codeSpans.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.helper.Event('makehtml.codeSpans.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+
+  return afterEvent.output;
 });

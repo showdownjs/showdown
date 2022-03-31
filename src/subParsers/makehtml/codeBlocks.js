@@ -65,24 +65,8 @@ showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
 
       otp = '<pre><code>';
       if (!showdown.helper.isUndefined(attributes)) {
-        otp = '<pre';
-        if (!showdown.helper.isUndefined(attributes.pre)) {
-          for (let preAttr in attributes.pre) {
-            if (attributes.hasOwnProperty(preAttr)) {
-              otp += ' ' + preAttr + '=' + attributes[preAttr];
-            }
-          }
-        }
-
-        otp += '><code';
-        if (!showdown.helper.isUndefined(attributes.code)) {
-          for (let codeAttr in attributes.code) {
-            if (attributes.hasOwnProperty(codeAttr)) {
-              otp += ' ' + codeAttr + '=' + attributes[codeAttr];
-            }
-          }
-        }
-        otp += '>';
+        otp = '<pre' + showdown.helper._populateAttributes(attributes.pre) + '>';
+        otp += '<code' + showdown.helper._populateAttributes(attributes.code) + '>';
       }
       if (options.omitExtraWLInCodeBlocks) {
         end = '';

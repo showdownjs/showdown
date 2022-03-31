@@ -75,13 +75,7 @@ showdown.subParser('makehtml.blockQuotes', function (text, options, globals) {
         return pre;
       });
       attributes = captureStartEvent.attributes;
-      otp = '<blockquote';
-      for (let attr in attributes) {
-        if (attributes.hasOwnProperty(attr)) {
-          otp += ' ' + attr + '=' + attributes[attr];
-        }
-      }
-      otp += '>\n' + bq + '\n</blockquote>';
+      otp = '<blockquote' + showdown.helper._populateAttributes(attributes) + '>\n' +  bq + '\n</blockquote>';
     }
 
     let beforeHashEvent = new showdown.helper.Event('makehtml.blockQuotes.onHash', otp);

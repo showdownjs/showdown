@@ -74,11 +74,14 @@ Usually you would want to use this event if you wish to modify the subparser beh
 of the subparser.
 
 **IMPORTANT NOTE**: Extensions listening to onCapture event should try to AVOID changing the output property.
-Instead, they should modify the values of the matches and attributes arrays. This is because 
-the **output property takes precedence over the matches array**, which means 2 very important things:
+Instead, they should modify the values of the matches and attributes objects. This is because 
+the **output property takes precedence over the matches objects** and **prevents showdown to call other subparsers**
+inside the captured fragment.This means 3 very important things:
 
- 1. If something is passed as the output property, any changes to the matches array will be ignored.
- 2. Point 1 includes other extensions that listen to the same event.
+ 1. If something is passed as the output property, any changes to the matches and attributes objects will be ignored.
+ 2. Changes made by other extensions to the matches or attributes objects will also be ignored
+ 3. Showdown will not call other subparsers, such as encode code or span gamut in the text fragment, which may lead to
+    weird results.
 
 ```javascript
 // showdown extension 1 that is listening to makehtml.blockquote.onCapture

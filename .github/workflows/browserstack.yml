@@ -7,7 +7,7 @@ on:
     branches: [ master, develop ]
 
 env:
-  COMMIT_MSG: 'printf "%s" "${{ github.event.head_commit.message }}" | head -n 1' # Only the first line of commit msg
+  COMMIT_MSG: '$(printf "%s" "${{ github.event.head_commit.message }}" | head -n 1)' # Only the first line of commit msg
 
 jobs:
   ubuntu-job:
@@ -32,7 +32,7 @@ jobs:
         uses: martinbeentjes/npm-get-version-action@v1.1.0
 
       - name: '📝 Print build version and commit msg'
-        run: 'printf "version: %s\nbuild:%s\message:%s\n" "${{ steps.package-version.outputs.current-version}}" "${{ github.run_id }}" "$COMMIT_MSG"'
+        run: 'printf "version: %s\n build:%s\n message:%s\n" "${{ steps.package-version.outputs.current-version}}" "${{ github.run_id }}" "$COMMIT_MSG"'
 
       - name: '📱 BrowserStack Env Setup'  # Invokes the setup-env action
         uses: browserstack/github-actions/setup-env@master

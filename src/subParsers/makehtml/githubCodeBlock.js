@@ -35,15 +35,14 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
   let pattern = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1/g;
 
   text = text.replace(pattern, function (wholeMatch, delim, language, codeblock) {
-    let lang,
-        end = (options.omitExtraWLInCodeBlocks) ? '' : '\n',
+    let end = (options.omitExtraWLInCodeBlocks) ? '' : '\n',
         otp,
         attributes = {
           pre: {},
           code: {},
         };
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.codeBlock.onCapture', codeblock);
+    let captureStartEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onCapture', codeblock);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -60,10 +59,13 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
     // and will be used as output
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       otp = captureStartEvent.output;
+
     } else {
+
       // First parse the github code block
-      codeblock = captureStartEvent.matches.codeblock;
       let infostring = captureStartEvent.matches.infostring;
+      let lang = infostring.trim().split(' ')[0];
+      codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
       codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
       codeblock = codeblock
@@ -78,7 +80,6 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
         // if the language has spaces followed by some other chars, according to the spec we should just ignore everything
         // after the first space
         if (infostring) {
-          lang = infostring.trim().split(' ')[0];
           if (!attributes.code) {
             attributes.code = {};
           }
@@ -102,9 +103,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
         end = '';
       }
       otp += codeblock + end + '</code></pre>';
-
-      otp = showdown.subParser('makehtml.hashBlock')(otp, options, globals);
     }
+
+    let beforeHashEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    otp = showdown.subParser('makehtml.hashBlock')(otp, options, globals);
 
     // Since GHCodeblocks can be false positives, we need to
     // store the primitive text and the parsed text in a global var,

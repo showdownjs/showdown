@@ -94,6 +94,11 @@ Once installed, you can use Showndown according to the chosen method:
         <h1 id="hellomarkdown">hello, markdown!</h1>
         ```
 
+!!! warning "Potential XSS vulnerabilities"
+    Showdown doesn't sanitize the input since Markdown relies on it to parse certain features correctly into HTML. As a result, this may lead to potential XSS injection vulnerabilities.
+
+    Please refer to the [Markdown's XSS vulnerability](xss.md) page for more information.
+
 ## Other installation methods
 
 ### Tarball

@@ -33,3 +33,12 @@ nav:
   - Quickstart:
     - Quickstart: quickstart.md
     - Compatibility: compatibility.md
+  - Configuration:
+    - Showdown options: configuration.md
+    - Available options: available-options.md
+    - Flavors: flavors.md
+  - CLI: cli.md
+  - Integrations: integrations.md
+  - Extensions:
+    - Overview: extensions.md
+    - Create an extension: create-extension.md

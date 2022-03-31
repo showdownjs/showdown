@@ -1,10 +1,7 @@
 /**
  * Created by Tivie on 27/01/2017.
  */
-require('source-map-support').install();
-require('chai').should();
-require('sinon');
-var showdown = require('../../.build/showdown.js');
+chai.should();
 /*jshint expr: true*/
 /*jshint -W053 */
 /*jshint -W010 */
@@ -12,16 +9,21 @@ var showdown = require('../../.build/showdown.js');
 
 describe('encodeEmailAddress()', function () {
   'use strict';
-  var encoder = showdown.helper.encodeEmailAddress,
+  let encoder = showdown.helper.encodeEmailAddress,
       email = 'foobar@example.com',
-      encodedEmail = encoder(email);
+      encodedEmail = encoder(email),
+      encodedEmail2 = encoder(email);
 
   it('should encode email', function () {
     encodedEmail.should.not.equal(email);
   });
 
+  it('should encode email determinated', function () {
+    encodedEmail.should.equal(encodedEmail2);
+  });
+
   it('should decode to original email', function () {
-    var decodedEmail = encodedEmail.replace(/&#(.+?);/g, function (wm, cc) {
+    let decodedEmail = encodedEmail.replace(/&#(.+?);/g, function (wm, cc) {
       if (cc.charAt(0) === 'x') {
         //hex
         return String.fromCharCode('0' + cc);
@@ -36,7 +38,7 @@ describe('encodeEmailAddress()', function () {
 
 describe('isString()', function () {
   'use strict';
-  var isString = showdown.helper.isString;
+  let isString = showdown.helper.isString;
 
   it('should return true for new String Object', function () {
     isString(new String('some string')).should.be.true;
@@ -65,7 +67,7 @@ describe('isString()', function () {
 
 describe('isFunction()', function () {
   'use strict';
-  var isFunction = showdown.helper.isFunction;
+  let isFunction = showdown.helper.isFunction;
 
   it('should return true for closures', function () {
     isFunction(function () {}).should.be.true;
@@ -76,8 +78,8 @@ describe('isFunction()', function () {
     isFunction(foo).should.be.true;
   });
 
-  it('should return true for function variables', function () {
-    var bar = function () {};
+  it('should return true for function letiables', function () {
+    let bar = function () {};
     isFunction(bar).should.be.true;
   });
 
@@ -96,14 +98,14 @@ describe('isFunction()', function () {
 
 describe('isArray()', function () {
   'use strict';
-  var isArray = showdown.helper.isArray;
+  let isArray = showdown.helper.isArray;
 
   it('should return true for short syntax arrays', function () {
     isArray([]).should.be.true;
   });
 
   it('should return true for array objects', function () {
-    var myArr = new Array();
+    let myArr = new Array();
     isArray(myArr).should.be.true;
   });
 
@@ -126,14 +128,14 @@ describe('isArray()', function () {
 
 describe('isUndefined()', function () {
   'use strict';
-  var isUndefined = showdown.helper.isUndefined;
+  let isUndefined = showdown.helper.isUndefined;
 
   it('should return true if nothing is passed', function () {
     isUndefined().should.be.true;
   });
 
-  it('should return true if a variable is initialized but not defined', function () {
-    var myVar;
+  it('should return true if a letiable is initialized but not defined', function () {
+    let myVar;
     isUndefined(myVar).should.be.true;
   });
 
@@ -163,15 +165,15 @@ describe('isUndefined()', function () {
 
 describe('stdExtName()', function () {
   'use strict';
-  var stdExtName = showdown.helper.stdExtName;
+  let stdExtName = showdown.helper.stdExtName;
 
   it('should remove certain chars', function () {
-    var str = 'bla_-  \nbla';
+    let str = 'bla_-  \nbla';
     //[_?*+\/\\.^-]
     stdExtName(str).should.not.match(/[_?*+\/\\.^-]/g);
   });
   it('should make everything lowercase', function () {
-    var str = 'BLABLA';
+    let str = 'BLABLA';
     //[_?*+\/\\.^-]
     stdExtName(str).should.equal('blabla');
   });
@@ -179,7 +181,7 @@ describe('stdExtName()', function () {
 
 describe('forEach()', function () {
   'use strict';
-  var forEach = showdown.helper.forEach;
+  let forEach = showdown.helper.forEach;
 
   it('should throw an error if first parameter is undefined', function () {
     (function () {forEach();}).should.throw('obj param is required');
@@ -202,7 +204,7 @@ describe('forEach()', function () {
   });
 
   it('should iterate array items', function () {
-    var myArray = ['banana', 'orange', 'grape'];
+    let myArray = ['banana', 'orange', 'grape'];
     forEach(myArray, function (val, key, obj) {
       key.should.be.a('number');
       (key % 1).should.equal(0);
@@ -212,7 +214,7 @@ describe('forEach()', function () {
   });
 
   it('should iterate over object properties', function () {
-    var myObj = {foo: 'banana', bar: 'orange', baz: 'grape'};
+    let myObj = {foo: 'banana', bar: 'orange', baz: 'grape'};
     forEach(myObj, function (val, key, obj) {
       myObj.should.have.ownProperty(key);
       val.should.equal(myObj[key]);
@@ -221,7 +223,7 @@ describe('forEach()', function () {
   });
 
   it('should iterate only over object own properties', function () {
-    var Obj1 = {foo: 'banana'},
+    let Obj1 = {foo: 'banana'},
         myObj = Object.create(Obj1);
     myObj.bar = 'orange';
     myObj.baz = 'grape';
@@ -239,10 +241,10 @@ describe('forEach()', function () {
 describe('matchRecursiveRegExp()', function () {
   'use strict';
 
-  var rRegExp = showdown.helper.matchRecursiveRegExp;
+  let rRegExp = showdown.helper.matchRecursiveRegExp;
 
   it('should match nested elements', function () {
-    var result = rRegExp('<div><div>a</div></div>', '<div\\b[^>]*>', '</div>', 'gim');
+    let result = rRegExp('<div><div>a</div></div>', '<div\\b[^>]*>', '</div>', 'gim');
     result.should.deep.equal([['<div><div>a</div></div>', '<div>a</div>', '<div>', '</div>']]);
   });
 
@@ -251,9 +253,11 @@ describe('matchRecursiveRegExp()', function () {
 describe('repeat()', function () {
   'use strict';
   it('work produce the same output as String.prototype.repeat()', function () {
-    var str = 'foo',
-        expected = str.repeat(100),
-        actual = showdown.helper.repeat(str, 100);
-    expected.should.equal(actual);
+    if (typeof String.prototype.repeat !== 'undefined') {
+      let str = 'foo',
+          expected = str.repeat(100),
+          actual = showdown.helper.repeat(str, 100);
+      expected.should.equal(actual);
+    }
   });
 });

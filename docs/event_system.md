@@ -13,7 +13,6 @@ The life cycle can be summarized as this:
  - Extension A receives an event object and modifies it
    - Certain properties of the event object can be changed, ehich will change the behavior or output of the subparser
  - The extension then returns the event object
-   - Even though 
  - The converter passes this event object to the next extension in the chain
 
 
@@ -31,91 +30,113 @@ Events are raised when a subparser is run (or about to be run).
 Within a subparser, the events always follow a certain order (sequence). For instance, **.before** events always run before **.captureStart**.
 Each subparser raises several events sequentially:
 
- 1. **.start**: **always runs** except it subparser is disabled
+### onStart
 
-    Raised when the **subparser has started**, but no capturing or any modification to the text was done.
+**`<converter>.<subparser>.onStart`**: **always runs** except it subparser is disabled
+
+Raised when the **subparser has started**, but no capturing or any modification to the text was done. 
+**Always runs** (except if the subparser is deactivated through options).
     
-    **Always runs** (except if the subparser is deactivated through options).
-    
-    ***Properties***:
+***Properties***:
          
-    | property | type      | access     | description                                                        |
-    |----------|-----------|------------|--------------------------------------------------------------------|
-    | input    | string    | read       | The full text that was passed to the subparser                     |
-    | output   | string    | write      | The full text with modification that will be passed along the chain|
-    | regexp   | null      |            |                                                                    |
-    | matches  | null      |            |                                                                    |
+| property   | type      | access     | description                                                        |
+|------------|-----------|------------|--------------------------------------------------------------------|
+| input      | string    | read       | The full text that was passed to the subparser                     |
+| output     | string    | write      | The full text with modification that will be passed along the chain|
+| regexp     | null      |            |                                                                    |
+| matches    | null      |            |                                                                    |
+| attributes | null      |            |                                                                    |
+
     
-    Usually you would want to use this event if you wish to change the input to the subparser. Please note,
-    however, that the input text is the **complete text** that was fed to the converter.
-     
- 2. **.captureStart**: *might not be run*;
+Usually you would want to use this event if you wish to change the input to the subparser. Please note,
+however, that the input text is the **complete text** that was fed to the converter.
+
+### onCapture
+
+**`<converter>.<subparser>.onCapture`**: *might not be run*;
  
-     Raised when a regex match is found and a capture was successful. Some normalization and modification 
-     of the regex captured groups might be performed.
-     
-     Might not be run if no regex match is found.
-     
-     ***Properties***:
-     
-     | property | type     | access     | description                                                        |
-     |----------|----------|------------|--------------------------------------------------------------------|
-     | input    | string   | readonly   | The captured text                                                  |
-     | output   | null     |            |                                                                    |
-     | regexp   | RegExp   | readonly   | Regular Expression used to capture groups                          |
-     | matches  | object   | read/write | Matches groups. Changes to this object are reflected in the output |
-     
-     Usually you would want to use this event if you wish to modify a certain subparser behavior or text.
- 
- 3. **.captureEnd**: *might not be run*;
- 
-    Raised after the modifications to the captured text are done but before the replacement is introduced in the document.
+Raised when a regex match is found and a capture was successful. Some normalization and modification 
+of the regex captured groups might be performed.
+
+Might not be run if no regex match is found.
+
+***Properties***:
+
+| property   | type     | access     | description                                                        |
+|------------|----------|------------|--------------------------------------------------------------------|
+| input      | string   | readonly   | The captured text                                                  |
+| output     | string   | write      | null or well formed HTML (see note)                                |
+| regexp     | RegExp   | readonly   | Regular Expression used to capture groups                          |
+| matches    | object   | read/write | Matches groups. Changes to this object are reflected in the output |
+| attributes | object   | read/write | Attributes to add to the HTML output                               |
     
-    Might not be run if no regex match is found.
-         
-    ***Properties***:
-    
-    | property   | type      | access     | description                                                                    |
-    |------------|-----------|------------|--------------------------------------------------------------------------------|
-    | input      | string    | readonly   | The captured text                                                              |
-    | output     | string    | write      | The text that will be passed to the subparser/other listeners                  |
-    | regexp     | RegExp    | readonly   | Regular Expression used to capture groups                                      |
-    | matches    | object    | readonly   | Keypairs of matches groups. Changes **are ignored**                            |
-    | attributes | object    | read/write | Attributes to add to the HTML output                                           |
+Usually you would want to use this event if you wish to modify the subparser behavior, text or modify the HTML output
+of the subparser.
+
+**IMPORTANT NOTE**: Extensions listening to onCapture event should try to AVOID changing the output property.
+Instead, they should modify the values of the matches and attributes arrays. This is because 
+the **output property takes precedence over the matches array**, which means 2 very important things:
+
+ 1. If something is passed as the output property, any changes to the matches array will be ignored.
+ 2. Point 1 includes other extensions that listen to the same event.
+
+```javascript
+// showdown extension 1 that is listening to makehtml.blockquote.onCapture
+function extension_1 (showdownEvent) {
+  // i'm bad and write to output
+  showdownEvent.output = '<blockquote>foo</blockquote>'; // must be an well formed html string
+  showdownEvent.matches.blockquote = 'some nice quote'; 
+}
+
+// showdown extension 1 that is also listening to makehtml.blockquote.onCapture
+function extension_2 (showdownEvent) {
+  // I make blockquotes become bold
+  let quote = showdownEvent.matches.blockquote;
+  showdownEvent.matches.blockquote = '<strong>' + quote + '</strong>'; 
+}
+
+// the result will always be <blockquote>foo</blockquote>, regardless of the order of extension loading and call
+```
+
+
+### onHash
+
+**`<converter>.<subparser>.onHash`**: *always runs*;
  
- 4. **.beforeHash**: *might not be run*;
- 
-    Raised before the output is hashed.
+Raised before the output is hashed. **Always runs** (except if the subparser was deactivated through options), 
+even if no hashing is performed. 
     
-    Always run (except if the subparser was deactivated through options), even if no hashing is performed. 
-    
-    ***Properties***:
+***Properties***:
         
-    | property | type       | access     | description                                                        |
-    |----------|------------|------------|--------------------------------------------------------------------|
-    | input    | string     | read       | The captured text                                                  |
-    | output   | string     | write      | The text that will be passed to the subparser/other listeners      |
-    | regexp   | null       |            |                                                                    |
-    | matches  | null       |            |                                                                    |
+| property   | type       | access     | description                                                        |
+|------------|------------|------------|--------------------------------------------------------------------|
+| input      | string     | read       | The captured text                                                  |
+| output     | string     | write      | The text that will be passed to the subparser/other listeners      |
+| regexp     | null       |            |                                                                    |
+| matches    | null       |            |                                                                    |
+| attributes | null       |            |                                                                    |
+
+Usually you would want to use this event if you wish change the subparser's raw output before it is hashed.
+
+### onEnd
  
-    Usually you would want to use this event if you wish change the subparser output before it is hashed
+**`<converter>.<subparser>.onEnd`**: *always runs*;
  
- 5. **.end**: *always runs*;
- 
-    Raised when the subparser has finished its work and is about to exit.
+Raised when the subparser has finished its work and is about to exit.
      
-    Always runs (except if the subparser is deactivated through options).
+Always runs (except if the subparser is deactivated through options).
     
-    ***Properties***:
+***Properties***:
     
-    | property | type      | access     | description                                                        |
-    |----------|-----------|------------|--------------------------------------------------------------------|
-    | input    | string    | read       | The partial/full text with the subparser modifications             |
-    | output   | string    | write      | The text that will be passed to other subparsers                   |
-    | regexp   | null      |            |                                                                    |
-    | matches  | null      |            |                                                                    |
+| property | type      | access     | description                                                        |
+|----------|-----------|------------|--------------------------------------------------------------------|
+| input    | string    | read       | The full text with the subparser modifications (contains hashes)   |
+| output   | string    | write      | The text that will be passed to other subparsers                   |
+| regexp   | null      |            |                                                                    |
+| matches  | null      |            |                                                                    |
      
-    Usually you would want to use this event if you wish change the subparser hashed output
+Usually you would want to use this event if you want to run code or perform changes to the text after the subparser was
+run and it's output was hashed. Keep in mind that the input is the full text and might contain hashed elements.
 
 
 ### Special Events

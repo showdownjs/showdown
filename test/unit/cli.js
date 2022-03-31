@@ -62,10 +62,11 @@ describe('showdown cli', function () {
 
     describe('-v', function () {
       it('should display version', function () {
-        var proc = spawnCLI(null, ['-V'], {});
+        let proc = spawnCLI(null, ['-V'], {}),
+            verRegex = /^(\d{1,2}\.\d{1,3}\.\d{1,3}(?:-(alpha)|(beta)|(rc-\d{1,2})))?/;
         proc.status.should.equal(0);
-        proc.stdout.should.match(/^\d{1,2}\.\d{1,3}\.\d{1,3}/);
-        proc.stdout.should.match(/^(\d{1,2}\.\d{1,3}\.\d{1,3})/).and.capture(0).equals(packageJson.version);
+        proc.stdout.should.match(verRegex);
+        proc.stdout.should.match(verRegex).and.capture(0).equals(packageJson.version);
         proc.stderr.should.equal('');
       });
     });

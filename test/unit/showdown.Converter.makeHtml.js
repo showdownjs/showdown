@@ -1,16 +1,15 @@
 /**
- * Created by Estevao on 15-01-2015.
+ * Created by Tivie on 15-01-2015.
  */
-require('source-map-support').install();
-require('chai').should();
-require('sinon');
-var showdown = require('../../.build/showdown.js');
+//let showdown = require('../../.build/showdown.js') || require('showdown');
+chai.should();
+
 
 describe('showdown.Converter', function () {
   'use strict';
 
   describe('Converter.options extensions', function () {
-    var runCount;
+    let runCount;
     showdown.extension('testext', function () {
       return [{
         type: 'output',
@@ -21,7 +20,7 @@ describe('showdown.Converter', function () {
       }];
     });
 
-    var converter = new showdown.Converter({extensions: ['testext']});
+    let converter = new showdown.Converter({extensions: ['testext']});
 
     it('output extensions should run once', function () {
       runCount = 0;
@@ -31,36 +30,36 @@ describe('showdown.Converter', function () {
   });
 
   describe('makeHtml() with option omitExtraWLInCodeBlocks', function () {
-    var converter = new showdown.Converter({omitExtraWLInCodeBlocks: true}),
+    let converter = new showdown.Converter({omitExtraWLInCodeBlocks: true}),
         text = 'var foo = bar;',
         html = converter.makeHtml('    ' + text);
     it('should omit extra line after code tag', function () {
-      var expectedHtml = '<pre><code>' + text + '</code></pre>';
+      let expectedHtml = '<pre><code>' + text + '</code></pre>';
       html.should.equal(expectedHtml);
     });
   });
 
   describe('makeHtml() with option prefixHeaderId', function () {
-    var converter = new showdown.Converter(),
+    let converter = new showdown.Converter(),
         text = 'foo header';
 
     it('should prefix header id with "section"', function () {
       converter.setOption('prefixHeaderId', true);
-      var html = converter.makeHtml('# ' + text),
+      let html = converter.makeHtml('# ' + text),
           expectedHtml = '<h1 id="sectionfooheader">' + text + '</h1>';
       html.should.equal(expectedHtml);
     });
 
     it('should prefix header id with custom string', function () {
       converter.setOption('prefixHeaderId', 'blabla');
-      var html = converter.makeHtml('# ' + text),
+      let html = converter.makeHtml('# ' + text),
           expectedHtml = '<h1 id="blablafooheader">' + text + '</h1>';
       html.should.equal(expectedHtml);
     });
   });
 
   describe('makeHtml() with option metadata', function () {
-    var converter = new showdown.Converter(),
+    let converter = new showdown.Converter(),
         text1 =
           '---SIMPLE\n' +
           'foo: bar\n' +
@@ -75,7 +74,7 @@ describe('showdown.Converter', function () {
     it('should correctly set metadata', function () {
       converter.setOption('metadata', true);
 
-      var expectedHtml = '',
+      let expectedHtml = '',
           expectedObj = {foo: 'bar', baz: 'bazinga'},
           expectedRaw = 'foo: bar\nbaz: bazinga',
           expectedFormat = 'SIMPLE';
@@ -87,7 +86,7 @@ describe('showdown.Converter', function () {
 
     it('consecutive calls should reset metadata', function () {
       converter.makeHtml(text2);
-      var expectedObj = {a: 'b', c: '123'},
+      let expectedObj = {a: 'b', c: '123'},
           expectedRaw = 'a: b\nc: 123',
           expectedFormat = 'TIVIE';
       converter.getMetadata().should.eql(expectedObj);

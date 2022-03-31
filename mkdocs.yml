@@ -7,18 +7,21 @@ theme:
   favicon: http://showdownjs.com/apple-touch-icon.png
   icon:
     repo: fontawesome/brands/github
-  palette:
-    primary: red
-    accent: cyan
   features:
     - navigation.tabs
 
 markdown_extensions:
   - admonition
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true 
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
 
+extra_css:
+  - assets/extra.css 
+  
 repo_url: https://github.com/showdownjs/showdown
 repo_name: showdownjs/showdown
 site_dir: public
@@ -27,6 +30,15 @@ nav:
   - Home:
     - Introduction: index.md
     - Donations: donations.md
-  - Installation:
-    - Installation: installation.md
+  - Quickstart:
+    - Quickstart: quickstart.md
     - Compatibility: compatibility.md
+  - Configuration:
+    - Showdown options: configuration.md
+    - Available options: available-options.md
+    - Flavors: flavors.md
+  - CLI: cli.md
+  - Integrations: integrations.md
+  - Extensions:
+    - Overview: extensions.md
+    - Create an extension: create-extension.md

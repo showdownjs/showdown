@@ -6,14 +6,14 @@ on:
   pull_request:
     branches: [ master, develop ]
 
-env:
-  COMMIT_MSG: '$(printf "%s" "${{ github.event.head_commit.message }}" | head -n 1)' # Only the first line of commit msg
-
 jobs:
   ubuntu-job:
     name: 'BrowserStack Test on Ubuntu'
     runs-on: ubuntu-latest
     steps:
+      - name: set up env vars
+        # Only the first line of commit msg
+        run: echo "COMMIT_MSG=$(printf "%s" "${{ github.event.head_commit.message }}" | head -n 1)" >> $GITHUB_ENV
 
       - name: '📦 Checkout the repository'
         uses: actions/checkout@v2

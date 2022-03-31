@@ -131,7 +131,7 @@
     }
 
     // Text can be a markdown element, so we run through the appropriate parsers
-    text = showdown.subParser('makehtml.codeSpans')(text, options, globals);
+    text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
     text = showdown.subParser('makehtml.emoji')(text, options, globals);
     text = showdown.subParser('makehtml.underline')(text, options, globals);
     text = showdown.subParser('makehtml.italicsAndBold')(text, options, globals);

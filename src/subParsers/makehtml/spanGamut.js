@@ -7,7 +7,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
 
   text = globals.converter._dispatch('makehtml.span.before', text, options, globals).getText();
 
-  text = showdown.subParser('makehtml.codeSpans')(text, options, globals);
+  text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
   text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('makehtml.encodeBackslashEscapes')(text, options, globals);
 

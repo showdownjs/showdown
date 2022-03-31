@@ -1,9 +1,24 @@
-/**
- * Smart processing for ampersands and angle brackets that need to be encoded.
- */
+////
+// makehtml/encodeAmpsAndAngles.js
+// Copyright (c) 2018 ShowdownJS
+//
+// Smart processing for ampersands and angle brackets that need to be encoded.
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
 showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.encodeAmpsAndAngles.before', text, options, globals).getText();
+
+  let startEvent = new showdown.helper.Event('makehtml.encodeAmpsAndAngles.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   // Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
   // http://bumppo.net/projects/amputator/
@@ -18,6 +33,10 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
   // Encode >
   text = text.replace(/>/g, '&gt;');
 
-  text = globals.converter._dispatch('makehtml.encodeAmpsAndAngles.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.helper.Event('makehtml.encodeAmpsAndAngles.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  return afterEvent.output;
 });

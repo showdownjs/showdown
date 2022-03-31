@@ -12,9 +12,7 @@
 // - Estevão Soares dos Santos (Tivie) <https://github.com/tivie>
 ////
 
-/**
- * Form HTML ordered (numbered) and unordered (bulleted) lists.
- */
+
 showdown.subParser('makehtml.lists', function (text, options, globals) {
   'use strict';
 
@@ -116,11 +114,11 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
       // m1 - Leading line or
       // Has a double return (multi paragraph)
       if (m1 || (item.search(/\n{2,}/) > -1)) {
-        item = showdown.subParser('makehtml.githubCodeBlocks')(item, options, globals);
-        item = showdown.subParser('makehtml.blockQuotes')(item, options, globals);
+        item = showdown.subParser('makehtml.githubCodeBlock')(item, options, globals);
+        item = showdown.subParser('makehtml.blockquote')(item, options, globals);
         item = showdown.subParser('makehtml.headers')(item, options, globals);
         item = showdown.subParser('makehtml.lists')(item, options, globals);
-        item = showdown.subParser('makehtml.codeBlocks')(item, options, globals);
+        item = showdown.subParser('makehtml.codeBlock')(item, options, globals);
         item = showdown.subParser('makehtml.tables')(item, options, globals);
         item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
         //item = showdown.subParser('makehtml.paragraphs')(item, options, globals);

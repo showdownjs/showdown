@@ -71,7 +71,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
       }
       // parse code spans first, but we only support one line code spans
 
-      tableLines[i] = showdown.subParser('makehtml.codeSpans')(tableLines[i], options, globals);
+      tableLines[i] = showdown.subParser('makehtml.codeSpan')(tableLines[i], options, globals);
     }
 
     var rawHeaders = tableLines[0].split('|').map(function (s) { return s.trim();}),

@@ -32,7 +32,7 @@ Each subparser raises several events sequentially:
 
 ### onStart
 
-**`<converter>.<subparser>.onStart`**: **always runs** except it subparser is disabled
+**`<converter>.<subparser>.onStart`**: **always runs** except if the subparser is disabled
 
 Raised when the **subparser has started**, but no capturing or any modification to the text was done. 
 **Always runs** (except if the subparser is deactivated through options).

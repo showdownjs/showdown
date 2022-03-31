@@ -1,25 +1,22 @@
 ////
-// makehtml/codeBlocks.js
+// makehtml/codeBlock.js
 // Copyright (c) 2022 ShowdownJS
 //
 // Process Markdown `<pre><code>` blocks.
 //
 // ***Author:***
-// - Estevão Soares dos Santos (Tivie) <https://github.com/tivie>
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
 ////
 
-/**
- * Process Markdown `<pre><code>` blocks.
- */
-showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
+
+showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.codeBlocks.onStart', text);
+  let startEvent = new showdown.helper.Event('makehtml.codeBlock.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
     ._setOptions(options);
-
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
@@ -37,7 +34,7 @@ showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
           code: {}
         };
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.codeBlocks.onCapture', codeblock);
+    let captureStartEvent = new showdown.helper.Event('makehtml.codeBlock.onCapture', codeblock);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -47,7 +44,6 @@ showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
         codeblock: codeblock
       })
       .setAttributes(attributes);
-
     captureStartEvent = globals.converter.dispatch(captureStartEvent);
 
     // if something was passed as output, it takes precedence
@@ -74,7 +70,7 @@ showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
       otp += codeblock + end + '</code></pre>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.codeBlocks.onHash', otp);
+    let beforeHashEvent = new showdown.helper.Event('makehtml.codeBlock.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -88,7 +84,7 @@ showdown.subParser('makehtml.codeBlocks', function (text, options, globals) {
   // strip sentinel
   text = text.replace(/¨0/, '');
 
-  let afterEvent = new showdown.helper.Event('makehtml.codeBlocks.onEnd', text);
+  let afterEvent = new showdown.helper.Event('makehtml.codeBlock.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

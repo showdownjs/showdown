@@ -73,9 +73,7 @@ showdown.helper.isObject = function (value) {
     !Array.isArray(value) &&
     value !== null
   );
-}
-
-
+};
 
 /**
  * ForEach helper function
@@ -569,19 +567,38 @@ showdown.helper.cloneObject = function (obj, deep) {
 
 /**
  * Populate attributes in output text
- * @param {string} text
  * @param {{}} attributes
  * @returns {string}
  */
 showdown.helper._populateAttributes = function (attributes) {
   let text = '';
-  if (attributes && showdown.helper.isObject(attributes)) {
-    for (let attr in attributes) {
-      if (attributes.hasOwnProperty(attr)) {
-        text += ' ' + attr + '=' + attributes[attr];
+  if (!attributes || !showdown.helper.isObject(attributes)) {
+    return text;
+  }
+
+  for (let attr in attributes) {
+    if (attributes.hasOwnProperty(attr)) {
+      let key = attr,
+          val;
+      if (attr === 'classes') {
+        key = 'class';
       }
+
+      if (showdown.helper.isArray(attributes[attr])) {
+        val = attributes[attr].join(' ');
+        // if it's an empty array, continue
+        if (val === '') {
+          continue;
+        }
+      } else if (showdown.helper.isString(attributes[attr])) {
+        val = attributes[attr];
+      } else {
+        throw new TypeError('Attributes must be either an array or string but ' + typeof attributes[attr] + ' given');
+      }
+      text += ' ' + key + '="' + val + '"';
     }
   }
+
   return text;
 };
 

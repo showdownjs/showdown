@@ -1,12 +1,26 @@
-/**
- * Encode/escape certain characters inside Markdown code runs.
- * The point is that in code, these characters are literals,
- * and lose their special Markdown meanings.
- */
+////
+// makehtml/emoji.js
+// Copyright (c) 2018 ShowdownJS
+//
+// Encode/escape certain characters inside Markdown code runs.
+// The point is that in code, these characters are literals,
+// and lose their special Markdown meanings.
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
 showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.encodeCode.before', text, options, globals).getText();
+  let startEvent = new showdown.helper.Event('makehtml.encodeCode.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   // Encode all ampersands; HTML entities are not
   // entities within a Markdown code span.
@@ -18,6 +32,10 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   // Now, escape characters that are magic in Markdown:
     .replace(/([*_{}\[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
 
-  text = globals.converter._dispatch('makehtml.encodeCode.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.helper.Event('makehtml.encodeCode.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  return afterEvent.output;
 });

@@ -1,9 +1,28 @@
-# Event System
+# Event System )
 
 ## Introduction
 
+The Event System is the basis of the new Listener extensions, replacing the old extension system altogether.
 
-## The Event Object
+The life cycle can be summarized as this:
+
+ - A subparsers emmits an event 
+   - Each subparser can emmit a bunch of events (see list below)
+ - Extension A, which is a _Listener Extension_ registers and listens to a specific event
+   - An extension can only register to a specific event
+ - Extension A receives an event object and modifies it
+   - Certain properties of the event object can be changed, ehich will change the behavior or output of the subparser
+ - The extension then returns the event object
+   - Even though 
+ - The converter passes this event object to the next extension in the chain
+
+
+Note: 
+
+### The Event Object
+
+
+## Basic Event 
 
 
 ## Event Types
@@ -27,7 +46,8 @@ Each subparser raises several events sequentially:
     | regexp   | null      |            |                                                                    |
     | matches  | null      |            |                                                                    |
     
-    Usually you would want to use this event if you wish to change the input to the subparser
+    Usually you would want to use this event if you wish to change the input to the subparser. Please note,
+    however, that the input text is the **complete text** that was fed to the converter.
      
  2. **.captureStart**: *might not be run*;
  
@@ -38,15 +58,14 @@ Each subparser raises several events sequentially:
      
      ***Properties***:
      
-     | property | type      | access     | description                                                        |
-     |----------|-----------|------------|--------------------------------------------------------------------|
-     | input    | string    | read       | The captured text                                                  |
-     | output   | string    | write      | The text that will be passed to the subparser/other listeners      |
-     | regexp   | RegExp    | readonly   | Regular Expression used to capture groups                          |
-     | matches  | object    | read/write | Matches groups. Changes to this object are reflected in the output |
+     | property | type     | access     | description                                                        |
+     |----------|----------|------------|--------------------------------------------------------------------|
+     | input    | string   | readonly   | The captured text                                                  |
+     | output   | null     |            |                                                                    |
+     | regexp   | RegExp   | readonly   | Regular Expression used to capture groups                          |
+     | matches  | object   | read/write | Matches groups. Changes to this object are reflected in the output |
      
-     Usually you would want to use this event if you wish to modify a certain subparser behavior.
-     Exs: remove all title attributes from links; change indentation of code blocks; etc...
+     Usually you would want to use this event if you wish to modify a certain subparser behavior or text.
  
  3. **.captureEnd**: *might not be run*;
  
@@ -58,10 +77,10 @@ Each subparser raises several events sequentially:
     
     | property   | type      | access     | description                                                                    |
     |------------|-----------|------------|--------------------------------------------------------------------------------|
-    | input      | string    | read       | The captured text                                                              |
+    | input      | string    | readonly   | The captured text                                                              |
     | output     | string    | write      | The text that will be passed to the subparser/other listeners                  |
     | regexp     | RegExp    | readonly   | Regular Expression used to capture groups                                      |
-    | matches    | object    | read/write | Keypairs of matches groups. Changes to this object are reflected in the output |
+    | matches    | object    | readonly   | Keypairs of matches groups. Changes **are ignored**                            |
     | attributes | object    | read/write | Attributes to add to the HTML output                                           |
  
  4. **.beforeHash**: *might not be run*;

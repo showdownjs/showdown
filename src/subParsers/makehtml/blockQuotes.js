@@ -16,53 +16,90 @@
 showdown.subParser('makehtml.blockQuotes', function (text, options, globals) {
   'use strict';
 
-  //text = globals.converter._dispatch('makehtml.blockQuotes.before', text, options, globals).getText();
-  text = globals.converter._dispatch('makehtml.blockQuotes.start', text, options, globals, {regexp: null, matches: null}).getText();
+  let startEvent = new showdown.helper.Event('makehtml.blockQuotes.start', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+
+  text = globals.converter.dispatch(startEvent).output;
 
   // add a couple extra lines after the text and endtext mark
   text = text + '\n\n';
 
-  var rgx = /(^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+/gm;
+  let pattern = /(^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+/gm;
 
   if (options.splitAdjacentBlockquotes) {
-    rgx = /^ {0,3}>[\s\S]*?\n\n/gm;
+    pattern = /^ {0,3}>[\s\S]*?\n\n/gm;
   }
 
-  text = text.replace(rgx, function (bq) {
+  text = text.replace(pattern, function (bq) {
     // attacklab: hack around Konqueror 3.5.4 bug:
     // "----------bug".replace(/^-/g,"") == "bug"
     bq = bq.replace(/^[ \t]*>[ \t]?/gm, ''); // trim one level of quoting
     // attacklab: clean up hack
     bq = bq.replace(/¨0/g, '');
-
-    var params = {
-      regexp: rgx,
-      matches: {
-        text: bq
-      }
-    };
-    var captureStartEvent = globals.converter._dispatch('makehtml.blockQuotes.captureStart', text, options, globals, params);
-    bq = captureStartEvent.getMatches().text;
-
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
+
+    let captureStartEvent = new showdown.helper.Event('makehtml.blockQuotes.captureStart', bq);
+    captureStartEvent
+      .setOutput('')
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches({
+        blockquote: bq
+      });
+    bq = globals.converter.dispatch(captureStartEvent).matches.blockquote;
+
     bq = showdown.subParser('makehtml.githubCodeBlocks')(bq, options, globals);
     bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
 
     bq = bq.replace(/(^|\n)/g, '$1  ');
     // These leading spaces screw with <pre> content, so we need to fix that:
     bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wholeMatch, m1) {
-      var pre = m1;
+      let pre = m1;
       // attacklab: hack around Konqueror 3.5.4 bug:
       pre = pre.replace(/^ {2}/mg, '¨0');
       pre = pre.replace(/¨0/g, '');
       return pre;
     });
 
+    let captureEndEvent = new showdown.helper.Event('makehtml.blockQuotes.captureEnd', bq);
+    captureEndEvent
+      .setOutput('')
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches({
+        blockquote: bq
+      })
+      .setAttributes({});
+    bq = globals.converter.dispatch(captureEndEvent).output;
+    let attributes = captureEndEvent.attributes;
+    let otp = '<blockquote';
+    for (let attr in attributes) {
+      if (attributes.hasOwnProperty(attr)) {
+        otp += ' ' + attr + '=' + attributes[attr];
+      }
+    }
+    otp += '>\n' + bq + '\n</blockquote>';
 
+    let beforeHashEvent = new showdown.helper.Event('makehtml.blockQuotes.beforeHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
 
-    return showdown.subParser('makehtml.hashBlock')('<blockquote>\n' + bq + '\n</blockquote>', options, globals);
+    otp = beforeHashEvent.output;
+    return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
   });
 
-  text = globals.converter._dispatch('makehtml.blockQuotes.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.helper.Event('makehtml.blockQuotes.after', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+
+  return afterEvent.output;
 });

@@ -212,6 +212,30 @@ showdown.Converter = function (converterOptions) {
 
   /**
    *
+   * @param {showdown.helper.Event} event
+   * @returns showdown.helper.Event
+   */
+  this.dispatch = function (event) {
+    if (!(event instanceof showdown.helper.Event)) {
+      throw new TypeError('dispatch only accepts showdown.helper.Event objects as param, but ' + typeof event + ' given');
+    }
+    event.converter = this;
+    if (listeners.hasOwnProperty(event.name)) {
+      for (let i = 0; i < listeners[event.name].length; ++i) {
+        let listRet = listeners[event.name][i](event);
+        if (showdown.helper.isString(listRet)) {
+          event.output = listRet;
+          event.input = listRet;
+        } else if (listRet instanceof showdown.helper.Event && listRet.name === event.name) {
+          event = listRet;
+        }
+      }
+    }
+    return event;
+  };
+
+  /**
+   *
    * @param {string} evtName Event name
    * @param {string} text Text
    * @param {{}} options Converter Options
@@ -222,9 +246,10 @@ showdown.Converter = function (converterOptions) {
    */
   this._dispatch = function dispatch (evtName, text, options, globals, pParams) {
     evtName = evtName.toLowerCase();
+    text = text || '';
     var params = pParams || {};
     params.converter = this;
-    params.text = text;
+    params.input = text;
     params.options = options;
     params.globals = globals;
     var event = new showdown.helper.Event(evtName, text, params);
@@ -233,7 +258,7 @@ showdown.Converter = function (converterOptions) {
       for (var ei = 0; ei < listeners[evtName].length; ++ei) {
         var nText = listeners[evtName][ei](event);
         if (nText && typeof nText !== 'undefined') {
-          event.setText(nText);
+          event.output = nText;
         }
       }
     }

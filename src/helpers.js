@@ -476,76 +476,233 @@ showdown.helper.isAbsolutePath = function (path) {
 };
 
 /**
- * Showdown's Event Object
- * @param {string} name Name of the event
- * @param {string} text Text
- * @param {{}} params optional. params of the event
- * @constructor
+ * Clones an object . If the second parameter is true, it deep clones the object.
+ * Note: It should not be used in other contexts than showdown, since this algorithm might fail for
+ * cyclic references, and dataypes such as Dates, RegExps, Typed Arrays, etc...
+ * @param {{}} obj Object to clone
+ * @param {boolean} [deep] [optional] If it should deep clone the object. Default is false
  */
-showdown.helper.Event = function (name, text, params) {
-  'use strict';
+showdown.helper.cloneObject = function (obj, deep) {
+  deep = !!deep;
+  if (obj === null || typeof (obj) !== 'object') {
+    return obj;
+  }
 
-  var regexp = params.regexp || null;
-  var matches = params.matches || {};
-  var options = params.options || {};
-  var converter = params.converter || null;
-  var globals = params.globals || {};
+  if (obj instanceof Date) {
+    return new Date(obj);
+  }
+
+  if (!deep) {
+    var newObj = {};
+    for (var key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        newObj[key] = obj[key];
+      }
+    }
+    return newObj;
+  }
+
+  if (typeof structuredClone === 'function') {
+    return structuredClone(obj);
+  } else {
+    // note: This is not a real deep clone, and might work in weird ways if used in a dif
+    //this is costly and should be used sparsly
+    return JSON.parse(JSON.stringify(obj));
+  }
+};
+
+showdown.helper.Event = class {
 
   /**
-   * Get the name of the event
+   * Creates a new event object
+   * @param {string} name
+   * @param {string} input
+   * @param {{}} [params]
+   * @param {string} params.output
+   * @param {RegExp} params.regexp
+   * @param {{}} params.matches
+   * @param {{}} params.attributes
+   * @param {{}} params.globals
+   * @param {{}} params.options
+   * @param {showdown.Converter} params.converter
+   */
+  constructor (name, input, params) {
+    params = params || {};
+    let {output, regexp, matches, attributes, globals, options, converter} = params;
+    if (!showdown.helper.isString(name)) {
+      if (!showdown.helper.isString(name)) {
+        throw new TypeError('Event.name must be a string but ' + typeof name + ' given');
+      }
+    }
+    this._name = name.toLowerCase();
+    this.input = input;
+    this.output = output || input;
+    this.regexp = regexp || null;
+    this.matches = matches || {};
+    this.attributes = attributes || {};
+    this._globals = globals || {};
+    this._options = showdown.helper.cloneObject(options, true) || {};
+    this._converter = converter || undefined;
+  }
+
+  /** @returns {string} */
+  get name () {
+    return this._name;
+  }
+
+  /** @returns {string} */
+  get input () {
+    return this._input;
+  }
+
+  /** @param {string} value */
+  set input (value) {
+    if (!showdown.helper.isString(value)) {
+      throw new TypeError('Event.input must be a string but ' + typeof value + ' given');
+    }
+    this._input = value;
+  }
+
+  /** @returns {string} */
+  get output () {
+    return this._output;
+  }
+
+  /** @param {string} value */
+  set output (value) {
+    if (!showdown.helper.isString(value)) {
+      throw new TypeError('Event.output must be a string but ' + typeof value + ' given');
+    }
+    this._output = value;
+  }
+
+  /** @returns {null|RegExp} */
+  get regexp () {
+    return this._regexp;
+  }
+
+  /** @param {null|RegExp} value */
+  set regexp (value) {
+    if (!(value instanceof RegExp) && value !== null) {
+      throw new TypeError('Event.regexp must be a RegExp object (or null) but ' + typeof value + ' given');
+    }
+    this._regexp = value;
+  }
+
+  /** @returns {{}} */
+  get matches () {
+    return this._matches;
+  }
+
+  /** @param {{}}value */
+  set matches (value) {
+    if (typeof value !== 'object') {
+      throw new TypeError('Event.matches must be an object (or null) but ' + typeof value + ' given');
+    }
+    this._matches = value;
+  }
+
+  /** @returns {{}} */
+  get attributes () {
+    return this._attributes;
+  }
+
+  /** @param {{}} value */
+  set attributes (value) {
+    if (typeof value !== 'object') {
+      throw new TypeError('Event.attributes must be an object (or null) but ' + typeof value + ' given');
+    }
+    this._attributes = value;
+  }
+
+  /** @param {showdown.Converter} converter */
+  set converter (converter) {
+    this._converter = converter;
+  }
+
+  /** @returns {showdown.Converter} */
+  get converter () {
+    return this._converter;
+  }
+
+  // FLUID INTERFACE
+
+  /**
+   *
+   * @param {string} value
+   * @returns {showdown.helper.Event}
+   */
+  setInput (value) {
+    this.input = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {string} value
+   * @returns {showdown.helper.Event}
+   */
+  setOutput (value) {
+    this.output = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {RegExp} value
+   * @returns {showdown.helper.Event}
+   */
+  setRegexp (value) {
+    this.regexp = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {{}}value
+   * @returns {showdown.helper.Event}
+   */
+  setMatches (value) {
+    this.matches = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {{}}value
+   * @returns {showdown.helper.Event}
+   */
+  setAttributes (value) {
+    this.attributes = value;
+    return this;
+  }
+
+  _setOptions (value) {
+    this._options = value;
+    return this;
+  }
+
+  _setGlobals (value) {
+    this._globals = value;
+    return this;
+  }
+
+  _setConverter (value) {
+    this.converter = value;
+    return this;
+  }
+
+  /**
+   * Legacy: Return the output text
    * @returns {string}
    */
-  this.getName = function () {
-    return name;
-  };
+  getText () {
+    return this.output;
+  }
 
-  this.getEventName = function () {
-    return name;
-  };
-
-  this._stopExecution = false;
-
-  this.parsedText = params.parsedText || null;
-
-  this.getRegexp = function () {
-    return regexp;
-  };
-
-  this.getOptions = function () {
-    return options;
-  };
-
-  this.getConverter = function () {
-    return converter;
-  };
-
-  this.getGlobals = function () {
-    return globals;
-  };
-
-  this.getCapturedText = function () {
-    return text;
-  };
-
-  this.getText = function () {
-    return text;
-  };
-
-  this.setText = function (newText) {
-    text = newText;
-  };
-
-  this.getMatches = function () {
-    return matches;
-  };
-
-  this.setMatches = function (newMatches) {
-    matches = newMatches;
-  };
-
-  this.preventDefault = function (bool) {
-    this._stopExecution = !bool;
-  };
+  getMatches () {
+    return this.matches;
+  }
 };
 
 /**
@@ -2364,24 +2521,24 @@ showdown.helper.emojis = {
   'zzz': '\ud83d\udca4',
 
   /* special emojis :P */
-  'atom': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/atom.png?v8">',
-  'basecamp': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/basecamp.png?v8">',
-  'basecampy': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/basecampy.png?v8">',
-  'bowtie': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/bowtie.png?v8">',
-  'electron': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/electron.png?v8">',
-  'feelsgood': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/feelsgood.png?v8">',
-  'finnadie': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/finnadie.png?v8">',
-  'goberserk': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/goberserk.png?v8">',
-  'godmode': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/godmode.png?v8">',
-  'hurtrealbad': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/hurtrealbad.png?v8">',
-  'neckbeard': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/neckbeard.png?v8">',
-  'octocat': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/octocat.png?v8">',
-  'rage1': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage1.png?v8">',
-  'rage2': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage2.png?v8">',
-  'rage3': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage3.png?v8">',
-  'rage4': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage4.png?v8">',
-  'shipit': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/shipit.png?v8">',
-  'suspect': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/suspect.png?v8">',
-  'trollface': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/trollface.png?v8">',
-  'showdown': '<img width="20" height="20" align="absmiddle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC">'
+  'atom': '<img alt="atom" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/atom.png?v8">',
+  'basecamp': '<img alt="basecamp" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/basecamp.png?v8">',
+  'basecampy': '<img alt="basecampy" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/basecampy.png?v8">',
+  'bowtie': '<img alt="bowtie" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/bowtie.png?v8">',
+  'electron': '<img alt="electron" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/electron.png?v8">',
+  'feelsgood': '<img alt="feelsgood" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/feelsgood.png?v8">',
+  'finnadie': '<img alt="finnadie" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/finnadie.png?v8">',
+  'goberserk': '<img alt="goberserk" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/goberserk.png?v8">',
+  'godmode': '<img alt="godmode" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/godmode.png?v8">',
+  'hurtrealbad': '<img alt="hurtrealbad" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/hurtrealbad.png?v8">',
+  'neckbeard': '<img alt="neckbeard" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/neckbeard.png?v8">',
+  'octocat': '<img alt="octocat" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/octocat.png?v8">',
+  'rage1': '<img alt="rage1" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage1.png?v8">',
+  'rage2': '<img alt="rage2" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage2.png?v8">',
+  'rage3': '<img alt="rage3" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage3.png?v8">',
+  'rage4': '<img alt="rage4" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage4.png?v8">',
+  'shipit': '<img alt="shipit" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/shipit.png?v8">',
+  'suspect': '<img alt="suspect" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/suspect.png?v8">',
+  'trollface': '<img alt="trollface" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/trollface.png?v8">',
+  'showdown': '<img alt="showdown" width="20" height="20" align="absmiddle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC">'
 };

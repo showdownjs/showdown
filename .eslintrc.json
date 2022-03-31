@@ -1,4 +1,7 @@
 {
+  "parserOptions": {
+    "ecmaVersion": "latest"
+  },
   "rules": {
     "indent": [2, 2, {"SwitchCase": 1, "VariableDeclarator": 2}],
     "curly": [2, "all"],

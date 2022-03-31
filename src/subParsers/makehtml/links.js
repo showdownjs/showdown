@@ -83,11 +83,11 @@
    */
   function writeAnchorTag (evt, options, globals, emptyCase) {
 
-    var wholeMatch = evt.getMatches().wholeMatch;
-    var text = evt.getMatches().text;
-    var id = evt.getMatches().id;
-    var url = evt.getMatches().url;
-    var title = evt.getMatches().title;
+    var wholeMatch = evt.matches.wholeMatch;
+    var text = evt.matches.text;
+    var id = evt.matches.id;
+    var url = evt.matches.url;
+    var title = evt.matches.title;
     var target = '';
 
     if (!title) {

@@ -1,5 +1,5 @@
 ////
-// makehtml/emoji.js
+// makehtml/githubCodeBlock.js
 // Copyright (c) 2018 ShowdownJS
 //
 // Handle github codeblocks prior to running HashHTML so that
@@ -49,6 +49,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
       ._setOptions(options)
       .setRegexp(pattern)
       .setMatches({
+        _whoteMatch: wholeMatch,
         codeblock: codeblock,
         infostring: language
       })

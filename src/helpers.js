@@ -10,7 +10,7 @@ if (typeof this === 'undefined' && typeof window !== 'undefined') {
   showdown.helper.document = window.document;
 } else {
   if (typeof this.document === 'undefined' && typeof this.window === 'undefined') {
-    var jsdom = require('jsdom');
+    let jsdom = require('jsdom');
     this.window = new jsdom.JSDOM('', {}).window; // jshint ignore:line
   }
   showdown.helper.document = this.window.document;
@@ -35,7 +35,7 @@ showdown.helper.isString = function (a) {
  */
 showdown.helper.isFunction = function (a) {
   'use strict';
-  var getType = {};
+  let getType = {};
   return a && getType.toString.call(a) === '[object Function]';
 };
 
@@ -100,11 +100,11 @@ showdown.helper.forEach = function (obj, callback) {
   if (typeof obj.forEach === 'function') {
     obj.forEach(callback);
   } else if (showdown.helper.isArray(obj)) {
-    for (var i = 0; i < obj.length; i++) {
+    for (let i = 0; i < obj.length; i++) {
       callback(obj[i], i, obj);
     }
   } else if (typeof (obj) === 'object') {
-    for (var prop in obj) {
+    for (let prop in obj) {
       if (obj.hasOwnProperty(prop)) {
         callback(obj[prop], prop, obj);
       }
@@ -127,7 +127,7 @@ showdown.helper.stdExtName = function (s) {
 
 function escapeCharactersCallback (wholeMatch, m1) {
   'use strict';
-  var charCodeToEscape = m1.charCodeAt(0);
+  let charCodeToEscape = m1.charCodeAt(0);
   return '¨E' + charCodeToEscape + 'E';
 }
 
@@ -152,21 +152,21 @@ showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash
   'use strict';
   // First we have to escape the escape characters so that
   // we can build a character class out of them
-  var regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
+  let regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
 
   if (afterBackslash) {
     regexString = '\\\\' + regexString;
   }
 
-  var regex = new RegExp(regexString, 'g');
+  let regex = new RegExp(regexString, 'g');
   text = text.replace(regex, escapeCharactersCallback);
 
   return text;
 };
 
-var rgxFindMatchPos = function (str, left, right, flags) {
+let rgxFindMatchPos = function (str, left, right, flags) {
   'use strict';
-  var f = flags || '',
+  let f = flags || '',
       g = f.indexOf('g') > -1,
       x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
       l = new RegExp(left, f.replace(/g/g, '')),
@@ -184,7 +184,7 @@ var rgxFindMatchPos = function (str, left, right, flags) {
       } else if (t) {
         if (!--t) {
           end = m.index + m[0].length;
-          var obj = {
+          let obj = {
             left: {start: start, end: s},
             match: {start: s, end: m.index},
             right: {start: m.index, end: end},
@@ -234,10 +234,10 @@ var rgxFindMatchPos = function (str, left, right, flags) {
 showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
   'use strict';
 
-  var matchPos = rgxFindMatchPos (str, left, right, flags),
+  let matchPos = rgxFindMatchPos (str, left, right, flags),
       results = [];
 
-  for (var i = 0; i < matchPos.length; ++i) {
+  for (let i = 0; i < matchPos.length; ++i) {
     results.push([
       str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
       str.slice(matchPos[i].match.start, matchPos[i].match.end),
@@ -261,22 +261,22 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
   'use strict';
 
   if (!showdown.helper.isFunction(replacement)) {
-    var repStr = replacement;
+    let repStr = replacement;
     replacement = function () {
       return repStr;
     };
   }
 
-  var matchPos = rgxFindMatchPos(str, left, right, flags),
+  let matchPos = rgxFindMatchPos(str, left, right, flags),
       finalStr = str,
       lng = matchPos.length;
 
   if (lng > 0) {
-    var bits = [];
+    let bits = [];
     if (matchPos[0].wholeMatch.start !== 0) {
       bits.push(str.slice(0, matchPos[0].wholeMatch.start));
     }
-    for (var i = 0; i < lng; ++i) {
+    for (let i = 0; i < lng; ++i) {
       bits.push(
         replacement(
           str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
@@ -315,7 +315,7 @@ showdown.helper.regexIndexOf = function (str, regex, fromIndex) {
   if (!(regex instanceof RegExp)) {
     throw 'InvalidArgumentError: second parameter of showdown.helper.regexIndexOf function must be an instance of RegExp';
   }
-  var indexOf = str.substring(fromIndex || 0).search(regex);
+  let indexOf = str.substring(fromIndex || 0).search(regex);
   return (indexOf >= 0) ? (indexOf + (fromIndex || 0)) : indexOf;
 };
 
@@ -344,7 +344,8 @@ showdown.helper.splitAtIndex = function (str, index) {
  */
 /*jshint bitwise: false*/
 function xmur3 (str) {
-  for (var i = 0, h = 1779033703 ^ str.length; i < str.length; i++) {
+  let h;
+  for (let i = 0, h = 1779033703 ^ str.length; i < str.length; i++) {
     h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
     h = h << 13 | h >>> 19;
   }
@@ -365,7 +366,7 @@ function xmur3 (str) {
 /*jshint bitwise: false*/
 function mulberry32 (a) {
   return function () {
-    var t = a += 0x6D2B79F5;
+    let t = a += 0x6D2B79F5;
     t = Math.imul(t ^ t >>> 15, t | 1);
     t ^= t + Math.imul(t ^ t >>> 7, t | 61);
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
@@ -382,7 +383,7 @@ function mulberry32 (a) {
  */
 showdown.helper.encodeEmailAddress = function (mail) {
   'use strict';
-  var encode = [
+  let encode = [
     function (ch) {
       return '&#' + ch.charCodeAt(0) + ';';
     },
@@ -395,14 +396,14 @@ showdown.helper.encodeEmailAddress = function (mail) {
   ];
 
   // RNG seeded with mail, so that we can get determined results for each email.
-  var rand = mulberry32(xmur3(mail));
+  let rand = mulberry32(xmur3(mail));
 
   mail = mail.replace(/./g, function (ch) {
     if (ch === '@') {
       // this *must* be encoded. I insist.
       ch = encode[Math.floor(rand() * 2)](ch);
     } else {
-      var r = rand();
+      let r = rand();
       // roughly 10% raw, 45% hex, 45% dec
       ch = (
         r > 0.9 ? encode[2](ch) : r > 0.45 ? encode[1](ch) : encode[0](ch)
@@ -446,7 +447,7 @@ showdown.helper.repeat = function (str, count) {
     throw new RangeError('repeat count must not overflow maximum string size');
   }
   /*jshint bitwise: true*/
-  var maxCount = str.length * count;
+  let maxCount = str.length * count;
   count = Math.floor(Math.log(count) / Math.log(2));
   while (count) {
     str += str;
@@ -510,9 +511,9 @@ showdown.helper._hashHTMLSpan = function (html, globals) {
  */
 showdown.helper.applyBaseUrl = function (baseUrl, url) {
   // Only prepend if given a base URL and the path is not absolute.
-  if (baseUrl && !this.isAbsolutePath(url)) {
-    var urlResolve = require('url').resolve;
-    url = urlResolve(baseUrl, url);
+  if (baseUrl && baseUrl !== '' && !showdown.helper.isAbsolutePath(url)) {
+    let urlResolve = new showdown.helper.URLUtils(url, baseUrl);
+    url = urlResolve.href;
   }
 
   return url;
@@ -527,6 +528,71 @@ showdown.helper.applyBaseUrl = function (baseUrl, url) {
 showdown.helper.isAbsolutePath = function (path) {
   // Absolute paths begin with '[protocol:]//' or '#' (anchors)
   return /(^([a-z]+:)?\/\/)|(^#)/i.test(path);
+};
+
+showdown.helper.URLUtils = function (url, baseURL) {
+  const pattern1 = /^\s+|\s+$/g;
+  const pattern2 = /^([^:\/?#]+:)?(?:\/\/(?:([^:@\/?#]*)(?::([^:@\/?#]*))?@)?(([^:\/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
+
+  let m = String(url)
+    .replace(pattern1, '')
+    .match(pattern2);
+  if (!m) {
+    throw new RangeError();
+  }
+  let protocol = m[1] || '';
+  let username = m[2] || '';
+  let password = m[3] || '';
+  let host = m[4] || '';
+  let hostname = m[5] || '';
+  let port = m[6] || '';
+  let pathname = m[7] || '';
+  let search = m[8] || '';
+  let hash = m[9] || '';
+  if (baseURL !== undefined) {
+    let base = new showdown.helper.URLUtils(baseURL);
+    let flag = protocol === '' && host === '' && username === '';
+    if (flag && pathname === '' && search === '') {
+      search = base.search;
+    }
+    if (flag && pathname.charAt(0) !== '/') {
+      pathname = (pathname !== '' ? (((base.host !== '' || base.username !== '') && base.pathname === '' ? '/' : '') + base.pathname.slice(0, base.pathname.lastIndexOf('/') + 1) + pathname) : base.pathname);
+    }
+    // dot segments removal
+    let output = [];
+    pathname.replace(/^(\.\.?(\/|$))+/, '')
+      .replace(/\/(\.(\/|$))+/g, '/')
+      .replace(/\/\.\.$/, '/../')
+      .replace(/\/?[^\/]*/g, function (p) {
+        if (p === '/..') {
+          output.pop();
+        } else {
+          output.push(p);
+        }
+      });
+    pathname = output.join('').replace(/^\//, pathname.charAt(0) === '/' ? '/' : '');
+    if (flag) {
+      port = base.port;
+      hostname = base.hostname;
+      host = base.host;
+      password = base.password;
+      username = base.username;
+    }
+    if (protocol === '') {
+      protocol = base.protocol;
+    }
+  }
+  this.origin = protocol + (protocol !== '' || host !== '' ? '//' : '') + host;
+  this.href = protocol + (protocol !== '' || host !== '' ? '//' : '') + (username !== '' ? username + (password !== '' ? ':' + password : '') + '@' : '') + host + pathname + search + hash;
+  this.protocol = protocol;
+  this.username = username;
+  this.password = password;
+  this.host = host;
+  this.hostname = hostname;
+  this.port = port;
+  this.pathname = pathname;
+  this.search = search;
+  this.hash = hash;
 };
 
 /**
@@ -547,8 +613,8 @@ showdown.helper.cloneObject = function (obj, deep) {
   }
 
   if (!deep) {
-    var newObj = {};
-    for (var key in obj) {
+    let newObj = {};
+    for (let key in obj) {
       if (obj.hasOwnProperty(key)) {
         newObj[key] = obj[key];
       }
@@ -586,20 +652,59 @@ showdown.helper._populateAttributes = function (attributes) {
 
       if (showdown.helper.isArray(attributes[attr])) {
         val = attributes[attr].join(' ');
-        // if it's an empty array, continue
         if (val === '') {
-          continue;
+          val = null;
         }
       } else if (showdown.helper.isString(attributes[attr])) {
         val = attributes[attr];
+      } else if (attributes[attr] === null || showdown.helper.isUndefined(attributes[attr])) {
+        val = null;
       } else {
         throw new TypeError('Attributes must be either an array or string but ' + typeof attributes[attr] + ' given');
       }
-      text += ' ' + key + '="' + val + '"';
+      text += (val === null) ? '' : ' ' + key + '="' + val + '"';
     }
   }
 
   return text;
+};
+
+/**
+ * Validate options
+ * @param {{}} options
+ * @returns {{}}
+ */
+showdown.helper.validateOptions = function (options) {
+  if (!showdown.helper.isObject(options)) {
+    throw new TypeError('Options must be an object, but ' + typeof options + ' given');
+  }
+
+  let defaultOptions = getDefaultOpts(false);
+
+  for (let opt in defaultOptions) {
+    if (!defaultOptions.hasOwnProperty(opt)) {
+      continue;
+    }
+
+    if (!options.hasOwnProperty(opt)) {
+      options[opt] = defaultOptions[opt].defaultValue;
+    }
+
+    // TODO: dirty code. think about this we refactoring options
+    switch (opt) {
+      case 'prefixHeaderId':
+        if (typeof options[opt] !== 'boolean' && !showdown.helper.isString(options[opt])) {
+          throw new TypeError('Option prefixHeaderId must be of type boolean or string but ' + typeof options[opt] + ' given');
+        }
+        break;
+      default:
+        if (typeof options[opt] !== defaultOptions[opt].type) {
+          throw new TypeError('Option ' + opt + ' must be of type ' + defaultOptions[opt].type + ' but ' + typeof options[opt] + ' given');
+        }
+    }
+  }
+  //options.headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart);
+  return options;
 };
 
 showdown.helper.Event = class {
@@ -690,7 +795,28 @@ showdown.helper.Event = class {
     if (typeof value !== 'object') {
       throw new TypeError('Event.matches must be an object (or null) but ' + typeof value + ' given');
     }
-    this._matches = value;
+    this._matches = {};
+    for (let prop in value) {
+      if (value.hasOwnProperty(prop)) {
+        let descriptor = {};
+        if (/^_(.+)/.test(prop)) {
+          descriptor = {
+            enumerable: true,
+            configurable: false,
+            writable: false,
+            value: value[prop]
+          };
+        } else {
+          descriptor = {
+            enumerable: true,
+            configurable: false,
+            writable: true,
+            value: value[prop]
+          };
+        }
+        Object.defineProperty(this._matches, prop, descriptor);
+      }
+    }
   }
 
   /** @returns {{}} */
@@ -716,6 +842,13 @@ showdown.helper.Event = class {
     return this._converter;
   }
 
+  get options () {
+    return this._options;
+  }
+
+  get globals () {
+    return this._globals;
+  }
   // FLUID INTERFACE
 
   /**
@@ -826,7 +959,7 @@ if (!Math.imul) {
     // automatically handled for our convienence:
     // 1. 0x003fffff /*opA & 0x000fffff*/ * 0x7fffffff /*opB*/ = 0x1fffff7fc00001
     //    0x1fffff7fc00001 < Number.MAX_SAFE_INTEGER /*0x1fffffffffffff*/
-    var result = (opA & 0x003fffff) * opB;
+    let result = (opA & 0x003fffff) * opB;
     // 2. We can remove an integer coersion from the statement above because:
     //    0x1fffff7fc00001 + 0xffc00000 = 0x1fffffff800001
     //    0x1fffffff800001 < Number.MAX_SAFE_INTEGER /*0x1fffffffffffff*/

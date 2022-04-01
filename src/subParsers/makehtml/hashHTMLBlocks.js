@@ -1,8 +1,25 @@
+////
+// makehtml/hashHTMLBlocks.js
+// Copyright (c) 2018 ShowdownJS
+//
+// Hash HTML blocks
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
 showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.before', text, options, globals).getText();
+  let startEvent = new showdown.helper.Event('makehtml.hashHTMLBlocks.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
-  var blockTags = [
+  let blockTags = [
         'pre',
         'div',
         'h1',
@@ -40,7 +57,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
         'p'
       ],
       repFunc = function (wholeMatch, match, left, right) {
-        var txt = wholeMatch;
+        let txt = wholeMatch;
         // check if this html element is marked as markdown
         // if so, it's contents should be parsed as markdown
         if (left.search(/\bmarkdown\b/) !== -1) {
@@ -57,9 +74,9 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
   }
 
   // hash HTML Blocks
-  for (var i = 0; i < blockTags.length; ++i) {
+  for (let i = 0; i < blockTags.length; ++i) {
 
-    var opTagPos,
+    let opTagPos,
         rgx1     = new RegExp('^ {0,3}(<' + blockTags[i] + '\\b[^>]*>)', 'im'),
         patLeft  = '<' + blockTags[i] + '\\b[^>]*>',
         patRight = '</' + blockTags[i] + '>';
@@ -70,7 +87,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
 
 
       //2. Split the text in that position
-      var subTexts = showdown.helper.splitAtIndex(text, opTagPos),
+      let subTexts = showdown.helper.splitAtIndex(text, opTagPos),
           //3. Match recursively
           newSubText1 = showdown.helper.replaceRecursiveRegExp(subTexts[1], repFunc, patLeft, patRight, 'im');
 
@@ -94,6 +111,10 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
   text = text.replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g,
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
-  text = globals.converter._dispatch('makehtml.hashHTMLBlocks.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.helper.Event('makehtml.hashHTMLBlocks.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  return afterEvent.output;
 });

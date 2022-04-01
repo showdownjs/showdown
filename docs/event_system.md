@@ -18,7 +18,26 @@ The life cycle can be summarized as this:
 
 Note: 
 
-### The Event Object
+## The Event Object
+
+### Properties
+
+#### matches (type: **object**)
+
+This object holds the text captured by the subparser. The properties of this object
+are different for each subparser.
+
+Properties whose name starts with `_` are readonly.
+
+Example:
+
+```js
+// blockquote onCapture event
+{
+  _wholeMatch: "> some awesome quote",
+  blockquote: "some awesome quote"
+}
+```
 
 
 ## Basic Event 

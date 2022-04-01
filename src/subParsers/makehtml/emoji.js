@@ -27,7 +27,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
 
   let pattern = /:([\S]+?):/g;
 
-  text = text.replace(pattern, function (wm, emojiCode) {
+  text = text.replace(pattern, function (wholeMatch, emojiCode) {
     let otp = '';
     let captureStartEvent = new showdown.helper.Event('makehtml.emoji.onCapture', emojiCode);
     captureStartEvent
@@ -36,6 +36,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
       ._setOptions(options)
       .setRegexp(pattern)
       .setMatches({
+        _wholeMatch: wholeMatch,
         emojiCode: emojiCode
       })
       .setAttributes({});

@@ -41,6 +41,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
       ._setOptions(options)
       .setRegexp(pattern)
       .setMatches({
+        _wholeMatch: wholeMatch,
         codeblock: codeblock
       })
       .setAttributes(attributes);

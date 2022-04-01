@@ -2,7 +2,7 @@ showdown.subParser('makehtml.hashElement', function (text, options, globals) {
   'use strict';
 
   return function (wholeMatch, m1) {
-    var blockText = m1;
+    let blockText = m1;
 
     // Undo double lines
     blockText = blockText.replace(/\n\n/g, '\n');

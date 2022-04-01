@@ -116,7 +116,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
       if (m1 || (item.search(/\n{2,}/) > -1)) {
         item = showdown.subParser('makehtml.githubCodeBlock')(item, options, globals);
         item = showdown.subParser('makehtml.blockquote')(item, options, globals);
-        item = showdown.subParser('makehtml.headers')(item, options, globals);
+        item = showdown.subParser('makehtml.heading')(item, options, globals);
         item = showdown.subParser('makehtml.lists')(item, options, globals);
         item = showdown.subParser('makehtml.codeBlock')(item, options, globals);
         item = showdown.subParser('makehtml.tables')(item, options, globals);
@@ -125,7 +125,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
 
         // TODO: This is a copy of the paragraph parser
         // This is a provisory fix for issue #494
-        // For a permanente fix we need to rewrite the paragraph parser, passing the unhashify logic outside
+        // For a permanent fix we need to rewrite the paragraph parser, passing the unhashify logic outside
         // so that we can call the paragraph parser without accidently unashifying previously parsed blocks
 
         // Strip leading and trailing lines:

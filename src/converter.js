@@ -64,7 +64,7 @@ showdown.Converter = function (converterOptions) {
   function _constructor () {
     converterOptions = converterOptions || {};
 
-    for (var gOpt in globalOptions) {
+    for (let gOpt in globalOptions) {
       if (globalOptions.hasOwnProperty(gOpt)) {
         options[gOpt] = globalOptions[gOpt];
       }
@@ -72,7 +72,7 @@ showdown.Converter = function (converterOptions) {
 
     // Merge options
     if (typeof converterOptions === 'object') {
-      for (var opt in converterOptions) {
+      for (let opt in converterOptions) {
         if (converterOptions.hasOwnProperty(opt)) {
           options[opt] = converterOptions[opt];
         }
@@ -85,6 +85,8 @@ showdown.Converter = function (converterOptions) {
     if (options.extensions) {
       showdown.helper.forEach(options.extensions, _parseExtension);
     }
+
+    options = showdown.helper.validateOptions(options);
   }
 
   /**

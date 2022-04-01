@@ -20,6 +20,7 @@ var bootstrap = require('./makehtml.bootstrap.js'),
     metadataSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/metadata/'),
     splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/splitAdjacentBlockquotes/'),
     moreStyling = bootstrap.getTestSuite('test/functional/makehtml/cases/features/moreStyling/'),
+    customizedHeaderId = bootstrap.getTestSuite('test/functional/makehtml/cases/features/customizedHeaderId/'),
     http = require('http'),
     https = require('https'),
     expect = require('chai').expect;
@@ -331,6 +332,16 @@ describe('makeHtml() features testsuite', function () {
 
     for (var i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({moreStyling: true, tasklists: true});
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  describe('customizedHeaderId option', function () {
+    let converter,
+        suite = customizedHeaderId;
+
+    for (let i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({customizedHeaderId: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

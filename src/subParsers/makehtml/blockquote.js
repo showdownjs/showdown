@@ -35,7 +35,8 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
 
   text = text.replace(pattern, function (bq) {
     let otp,
-        attributes = {};
+        attributes = {},
+        wholeMatch = bq;
     // attacklab: hack around Konqueror 3.5.4 bug:
     // "----------bug".replace(/^-/g,"") == "bug"
     bq = bq.replace(/^[ \t]*>[ \t]?/gm, ''); // trim one level of quoting
@@ -50,6 +51,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
       ._setOptions(options)
       .setRegexp(pattern)
       .setMatches({
+        _wholeMatch: wholeMatch,
         blockquote: bq
       })
       .setAttributes({});
@@ -65,12 +67,8 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
       bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
       bq = bq.replace(/(^|\n)/g, '$1  ');
       // These leading spaces screw with <pre> content, so we need to fix that:
-      bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wholeMatch, m1) {
-        let pre = m1;
-        // attacklab: hack around Konqueror 3.5.4 bug:
-        pre = pre.replace(/^ {2}/mg, '¨0');
-        pre = pre.replace(/¨0/g, '');
-        return pre;
+      bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wm, m1) {
+        return m1.replace(/^ {2}/mg, '');
       });
       attributes = captureStartEvent.attributes;
       otp = '<blockquote' + showdown.helper._populateAttributes(attributes) + '>\n' +  bq + '\n</blockquote>';
@@ -81,9 +79,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
       .setOutput(otp)
       ._setGlobals(globals)
       ._setOptions(options);
-
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-
     otp = beforeHashEvent.output;
     return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
   });

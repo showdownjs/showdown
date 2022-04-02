@@ -134,7 +134,7 @@
     text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
     text = showdown.subParser('makehtml.emoji')(text, options, globals);
     text = showdown.subParser('makehtml.underline')(text, options, globals);
-    text = showdown.subParser('makehtml.italicsAndBold')(text, options, globals);
+    text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
     text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
     text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
     text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);

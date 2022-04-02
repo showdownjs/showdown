@@ -1,6 +1,3 @@
-
-//
-
 ////
 // makehtml/blockquote.js
 // Copyright (c) 2018 ShowdownJS

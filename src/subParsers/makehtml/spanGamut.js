@@ -13,7 +13,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
 
   // Process link and image tags. Images must come first,
   // because ![foo][f] looks like a link.
-  text = showdown.subParser('makehtml.images')(text, options, globals);
+  text = showdown.subParser('makehtml.image')(text, options, globals);
 
   text = globals.converter._dispatch('smakehtml.links.before', text, options, globals).getText();
   text = showdown.subParser('makehtml.links')(text, options, globals);

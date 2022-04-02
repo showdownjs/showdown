@@ -19,12 +19,22 @@ if (typeof this === 'undefined' && typeof window !== 'undefined') {
 /**
  * Check if var is string
  * @static
- * @param {string} a
+ * @param {*} a
  * @returns {boolean}
  */
 showdown.helper.isString = function (a) {
   'use strict';
   return (typeof a === 'string' || a instanceof String);
+};
+
+/**
+ * Check if var is a number
+ * @static
+ * @param {*} a
+ * @returns {boolean}
+ */
+showdown.helper.isNumber = function (a) {
+  return !isNaN(a);
 };
 
 /**
@@ -649,18 +659,19 @@ showdown.helper._populateAttributes = function (attributes) {
       if (attr === 'classes') {
         key = 'class';
       }
-
-      if (showdown.helper.isArray(attributes[attr])) {
+      if (attributes[attr] === null || showdown.helper.isUndefined(attributes[attr])) {
+        val = null;
+      } else if (showdown.helper.isArray(attributes[attr])) {
         val = attributes[attr].join(' ');
         if (val === '') {
           val = null;
         }
       } else if (showdown.helper.isString(attributes[attr])) {
         val = attributes[attr];
-      } else if (attributes[attr] === null || showdown.helper.isUndefined(attributes[attr])) {
-        val = null;
+      } else if (showdown.helper.isNumber(attributes[attr])) {
+        val = String(attributes[attr]);
       } else {
-        throw new TypeError('Attributes must be either an array or string but ' + typeof attributes[attr] + ' given');
+        throw new TypeError('Attribute "' + attr + '" must be either an array or string but ' + typeof attributes[attr] + ' given');
       }
       text += (val === null) ? '' : ' ' + key + '="' + val + '"';
     }

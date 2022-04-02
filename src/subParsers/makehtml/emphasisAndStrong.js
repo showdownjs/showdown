@@ -149,7 +149,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
     return (/\S$/.test(m)) ? parseInside (m, '<em>', wm, asteriskEm) : wm;
   });
   //}
-  let afterEvent = new showdown.helper.Event('makehtml.italicsAndBold.onEnd', text);
+  let afterEvent = new showdown.helper.Event('makehtml.emphasisAndStrong.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

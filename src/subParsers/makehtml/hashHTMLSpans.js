@@ -44,5 +44,6 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
     .setOutput(text)
     ._setGlobals(globals)
     ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
 });

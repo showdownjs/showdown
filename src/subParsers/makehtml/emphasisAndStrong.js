@@ -1,3 +1,17 @@
+////
+// makehtml/emphasisAndStrong.js
+// Copyright (c) 2022 ShowdownJS
+//
+// Transforms MD emphasis and strong into `<em>` and `<strong>` html entities
+//
+// Markdown treats asterisks (*) and underscores (_) as indicators of emphasis.
+// Text wrapped with one * or _ will be wrapped with an HTML <em> tag;
+// double *’s or _’s will be wrapped with an HTML <strong> tag
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
 showdown.subParser('makehtml.emphasisAndStrong', function (text, options, globals) {
   'use strict';
 
@@ -154,5 +168,6 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
     .setOutput(text)
     ._setGlobals(globals)
     ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
 });

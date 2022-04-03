@@ -59,9 +59,9 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
   }
 
   function parseTable (rawTable) {
-    var i, tableLines = rawTable.split('\n');
+    let tableLines = rawTable.split('\n');
 
-    for (i = 0; i < tableLines.length; ++i) {
+    for (let i = 0; i < tableLines.length; ++i) {
       // strip wrong first and last column if wrapped tables are used
       if (/^ {0,3}\|/.test(tableLines[i])) {
         tableLines[i] = tableLines[i].replace(/^ {0,3}\|/, '');
@@ -74,7 +74,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
       tableLines[i] = showdown.subParser('makehtml.codeSpan')(tableLines[i], options, globals);
     }
 
-    var rawHeaders = tableLines[0].split('|').map(function (s) { return s.trim();}),
+    let rawHeaders = tableLines[0].split('|').map(function (s) { return s.trim();}),
         rawStyles = tableLines[1].split('|').map(function (s) { return s.trim();}),
         rawCells = [],
         headers = [],
@@ -84,7 +84,7 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
     tableLines.shift();
     tableLines.shift();
 
-    for (i = 0; i < tableLines.length; ++i) {
+    for (let i = 0; i < tableLines.length; ++i) {
       if (tableLines[i].trim() === '') {
         continue;
       }
@@ -101,24 +101,25 @@ showdown.subParser('makehtml.tables', function (text, options, globals) {
       return rawTable;
     }
 
-    for (i = 0; i < rawStyles.length; ++i) {
+    for (let i = 0; i < rawStyles.length; ++i) {
       styles.push(parseStyles(rawStyles[i]));
     }
 
-    for (i = 0; i < rawHeaders.length; ++i) {
-      if (showdown.helper.isUndefined(styles[i])) {
-        styles[i] = '';
+    for (let i = 0; i < rawHeaders.length; ++i) {
+      let style = styles[i];
+      if (showdown.helper.isUndefined(style)) {
+        style = '';
       }
-      headers.push(parseHeaders(rawHeaders[i], styles[i]));
+      headers.push(parseHeaders(rawHeaders[i], style));
     }
 
-    for (i = 0; i < rawCells.length; ++i) {
-      var row = [];
-      for (var ii = 0; ii < headers.length; ++ii) {
-        if (showdown.helper.isUndefined(rawCells[i][ii])) {
+    for (let i = 0; i < rawCells.length; ++i) {
+      let row = [];
+      for (let ii = 0; ii < headers.length; ++ii) {
+        let cellTxt = (!showdown.helper.isUndefined(rawCells[i][ii])) ? rawCells[i][ii] : '',
+            style = (!showdown.helper.isUndefined(styles[ii])) ? styles[ii] : '';
 
-        }
-        row.push(parseCells(rawCells[i][ii], styles[ii]));
+        row.push(parseCells(cellTxt, style));
       }
       cells.push(row);
     }

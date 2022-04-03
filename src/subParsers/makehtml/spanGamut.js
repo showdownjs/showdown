@@ -5,7 +5,13 @@
 showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.span.before', text, options, globals).getText();
+  let startEvent = new showdown.helper.Event('makehtml.spanGamut.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
   text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
@@ -45,6 +51,11 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
     text = text.replace(/  +\n/g, '<br />\n');
   }
 
-  text = globals.converter._dispatch('makehtml.spanGamut.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.helper.Event('makehtml.spanGamut.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });

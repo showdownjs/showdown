@@ -38,5 +38,6 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
     .setOutput(text)
     ._setGlobals(globals)
     ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
 });

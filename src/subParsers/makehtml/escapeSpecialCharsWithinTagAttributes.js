@@ -41,5 +41,6 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
     .setOutput(text)
     ._setGlobals(globals)
     ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
 });

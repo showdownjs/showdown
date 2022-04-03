@@ -100,9 +100,8 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
     .setOutput(text)
     ._setGlobals(globals)
     ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
-
-
 });
 
 showdown.subParser('makehtml.heading.id', function (m, options, globals) {

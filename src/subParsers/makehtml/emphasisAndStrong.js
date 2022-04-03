@@ -61,7 +61,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
         break;
     }
 
-    let captureStartEvent = new showdown.Event('makehtml.' + subEventName + '.onCapture', txt);
+    let captureStartEvent = new showdown.Event('makehtml.emphasisAndStrong.' + subEventName + '.onCapture', txt);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)

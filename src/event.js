@@ -2,9 +2,6 @@
  * Created by Estevao on 31-05-2015.
  */
 
-/**
- * @type {showdown.Event}
- */
 showdown.Event = class {
 
   /**

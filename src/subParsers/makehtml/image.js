@@ -12,7 +12,19 @@
 showdown.subParser('makehtml.image', function (text, options, globals) {
   'use strict';
 
-  function writeImageTag (pattern, wholeMatch, altText, linkId, url, width, height, m5, title) {
+  /**
+   * @param {string} subEvtName
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @param {string} altText
+   * @param {string|null} [url]
+   * @param {string|null} [linkId]
+   * @param {string|null} [width]
+   * @param {string|null} [height]
+   * @param {string|null} [title]
+   * @returns {string}
+   */
+  function writeImageTag (subEvtName, pattern, wholeMatch, altText, url, linkId, width, height, title) {
 
     let gUrls    = globals.gUrls,
         gTitles  = globals.gTitles,
@@ -29,7 +41,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
         otp,
         attributes = {};
 
-    linkId = linkId.toLowerCase();
+    linkId = (linkId) ? linkId.toLowerCase() : null;
 
     if (!title) {
       title = null;
@@ -38,7 +50,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     if (wholeMatch.search(/\(<?\s*>? ?(['"].*['"])?\)$/m) > -1) {
       url = '';
 
-    } else if (url === '' || url === null) {
+    } else if (showdown.helper.isUndefined(url) || url === '' || url === null) {
       if (linkId === '' || linkId === null) {
         // lower-case and turn embedded newlines into spaces
         linkId = altText.toLowerCase().replace(/ ?\n/g, ' ');
@@ -84,7 +96,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       height = null;
     }
 
-    let captureStartEvent = new showdown.Event('makehtml.image.onCapture', wholeMatch);
+    let captureStartEvent = new showdown.Event('makehtml.image.' + subEvtName + '.onCapture', wholeMatch);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -109,7 +121,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       otp = '<img' + showdown.helper._populateAttributes(attributes) + ' />';
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.image.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.image.' + subEvtName + '.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -136,31 +148,31 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
 
   // First, handle reference-style labeled images: ![alt text][id]
   text = text.replace(referenceRegExp, function (wholeMatch, altText, linkId) {
-    return writeImageTag (referenceRegExp, wholeMatch, altText, linkId, '');
+    return writeImageTag ('reference', referenceRegExp, wholeMatch, altText, null, linkId);
   });
 
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
   // base64 encoded images
   text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
     url = url.replace(/\s/g, '');
-    return writeImageTag (base64RegExp, wholeMatch, altText, '', url, width, height, m5, title);
+    return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
   });
 
   // cases with crazy urls like ./image/cat1).png
   text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
     url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag (crazyRegExp, wholeMatch, altText, '', url, width, height, m5, title);
+    return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
   });
 
   // normal cases
   text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
     url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag (inlineRegExp, wholeMatch, altText, '', url, width, height, m5, title);
+    return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
   });
 
   // handle reference-style shortcuts: ![img text]
   text = text.replace(refShortcutRegExp, function (wholeMatch, altText) {
-    return writeImageTag (refShortcutRegExp, wholeMatch, altText, '', '');
+    return writeImageTag ('reference', refShortcutRegExp, wholeMatch, altText);
   });
 
   let afterEvent = new showdown.Event('makehtml.image.onEnd', text);

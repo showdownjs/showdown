@@ -16,7 +16,7 @@
 showdown.subParser('makehtml.blockquote', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.blockquote.onStart', text);
+  let startEvent = new showdown.Event('makehtml.blockquote.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -44,7 +44,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     bq = bq.replace(/¨0/g, '');
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.blockquote.onCapture', bq);
+    let captureStartEvent = new showdown.Event('makehtml.blockquote.onCapture', bq);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -74,7 +74,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
       otp = '<blockquote' + showdown.helper._populateAttributes(attributes) + '>\n' +  bq + '\n</blockquote>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.blockquote.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.blockquote.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -84,7 +84,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.blockquote.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.blockquote.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

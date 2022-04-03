@@ -24,7 +24,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
     return text;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onStart', text);
+  let startEvent = new showdown.Event('makehtml.githubCodeBlock.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -42,7 +42,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
           code: {},
         };
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onCapture', codeblock);
+    let captureStartEvent = new showdown.Event('makehtml.githubCodeBlock.onCapture', codeblock);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -106,7 +106,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
       otp += codeblock + end + '</code></pre>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.githubCodeBlock.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -124,7 +124,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
   // attacklab: strip sentinel
   text = text.replace(/¨0/, '');
 
-  let afterEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.githubCodeBlock.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

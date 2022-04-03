@@ -33,7 +33,7 @@
 showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.codeSpan.onStart', text);
+  let startEvent = new showdown.Event('makehtml.codeSpan.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -56,7 +56,7 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
     c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
     c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.codeSpan.onCapture', c);
+    let captureStartEvent = new showdown.Event('makehtml.codeSpan.onCapture', c);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -79,7 +79,7 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
       otp = m1 + '<code' + showdown.helper._populateAttributes(attributes) + '>' +  c + '</code>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.codeSpan.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.codeSpan.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -91,7 +91,7 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
   }
   );
 
-  let afterEvent = new showdown.helper.Event('makehtml.codeSpan.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.codeSpan.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

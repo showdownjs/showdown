@@ -11,7 +11,7 @@
 
 showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashHTMLBlocks.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashHTMLBlocks.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -28,7 +28,7 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
   // Hash <pre><code>
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^ {0,3}</code>\\s*</pre>', 'gim');
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashPreCodeTags.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashPreCodeTags.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

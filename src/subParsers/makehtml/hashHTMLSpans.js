@@ -11,7 +11,7 @@
 
 showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashHTMLSpans.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashHTMLSpans.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -39,7 +39,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
     return showdown.helper._hashHTMLSpan(wm, globals);
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashHTMLSpans.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashHTMLSpans.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

@@ -12,7 +12,7 @@
 showdown.subParser('makehtml.detab', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.detab.onStart', text);
+  let startEvent = new showdown.Event('makehtml.detab.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -43,7 +43,7 @@ showdown.subParser('makehtml.detab', function (text, options, globals) {
   text = text.replace(/¨A/g, '    ');  // g_tab_width
   text = text.replace(/¨B/g, '');
 
-  let afterEvent = new showdown.helper.Event('makehtml.detab.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.detab.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

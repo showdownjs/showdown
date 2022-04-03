@@ -17,7 +17,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     return text;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.emoji.onStart', text);
+  let startEvent = new showdown.Event('makehtml.emoji.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -29,7 +29,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
 
   text = text.replace(pattern, function (wholeMatch, emojiCode) {
     let otp = '';
-    let captureStartEvent = new showdown.helper.Event('makehtml.emoji.onCapture', emojiCode);
+    let captureStartEvent = new showdown.Event('makehtml.emoji.onCapture', emojiCode);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -51,7 +51,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
       otp = wm;
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.emoji.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.emoji.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -61,7 +61,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     return beforeHashEvent.output;
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.emoji.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.emoji.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

@@ -11,7 +11,7 @@
 
 showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.unhashHTMLSpans.onStart', text);
+  let startEvent = new showdown.Event('makehtml.unhashHTMLSpans.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -36,7 +36,7 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
     text = text.replace('¨C' + i + 'C', repText);
   }
 
-  let afterEvent = new showdown.helper.Event('makehtml.unhashHTMLSpans.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.unhashHTMLSpans.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

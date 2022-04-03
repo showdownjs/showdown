@@ -21,7 +21,7 @@
 showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.encodeBackslashEscapes.onStart', text);
+  let startEvent = new showdown.Event('makehtml.encodeBackslashEscapes.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -32,7 +32,7 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
   text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
   text = text.replace(/\\([`*_{}\[\]()>#+.!~=|:-])/g, showdown.helper.escapeCharactersCallback);
 
-  let afterEvent = new showdown.helper.Event('makehtml.encodeBackslashEscapes.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.encodeBackslashEscapes.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

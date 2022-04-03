@@ -84,7 +84,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       height = null;
     }
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.image.onCapture', wholeMatch);
+    let captureStartEvent = new showdown.Event('makehtml.image.onCapture', wholeMatch);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -109,7 +109,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       otp = '<img' + showdown.helper._populateAttributes(attributes) + ' />';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.image.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.image.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -120,7 +120,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     return otp;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.image.onStart', text);
+  let startEvent = new showdown.Event('makehtml.image.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -163,7 +163,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     return writeImageTag (refShortcutRegExp, wholeMatch, altText, '', '');
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.image.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.image.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

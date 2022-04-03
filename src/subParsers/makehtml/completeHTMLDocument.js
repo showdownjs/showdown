@@ -16,7 +16,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
     return text;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.completeHTMLDocument.onStart', text);
+  let startEvent = new showdown.Event('makehtml.completeHTMLDocument.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -71,7 +71,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
 
   text = doctypeParsed + '<html' + lang + '>\n<head>\n' + title + charset + metadata + '</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
 
-  let afterEvent = new showdown.helper.Event('makehtml.completeHTMLDocument.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.completeHTMLDocument.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

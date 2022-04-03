@@ -10,7 +10,7 @@
 
 showdown.subParser('makehtml.hashBlock', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashBlock.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashBlock.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -21,7 +21,7 @@ showdown.subParser('makehtml.hashBlock', function (text, options, globals) {
   text = text.replace(/(^\n+|\n+$)/g, '');
   text = '\n\n¨K' + (globals.gHtmlBlocks.push(text) - 1) + 'K\n\n';
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashBlock.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashBlock.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

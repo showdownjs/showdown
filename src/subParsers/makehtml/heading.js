@@ -26,7 +26,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
   'use strict';
 
   function parseHeader (pattern, wholeMatch, headingText, headingLevel, headingId) {
-    let captureStartEvent = new showdown.helper.Event('makehtml.heading.onCapture', headingText),
+    let captureStartEvent = new showdown.Event('makehtml.heading.onCapture', headingText),
         otp;
 
     captureStartEvent
@@ -54,7 +54,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
       otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + spanGamut + '</h' + headingLevel + '>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.heading.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.heading.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -65,7 +65,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
     return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.heading.onStart', text);
+  let startEvent = new showdown.Event('makehtml.heading.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -95,7 +95,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
   });
 
 
-  let afterEvent = new showdown.helper.Event('makehtml.heading.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.heading.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

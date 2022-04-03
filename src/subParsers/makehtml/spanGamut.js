@@ -5,7 +5,7 @@
 showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.spanGamut.onStart', text);
+  let startEvent = new showdown.Event('makehtml.spanGamut.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -51,7 +51,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
     text = text.replace(/  +\n/g, '<br />\n');
   }
 
-  let afterEvent = new showdown.helper.Event('makehtml.spanGamut.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.spanGamut.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

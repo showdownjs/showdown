@@ -12,7 +12,7 @@
 showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.encodeAmpsAndAngles.onStart', text);
+  let startEvent = new showdown.Event('makehtml.encodeAmpsAndAngles.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -33,7 +33,7 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
   // Encode >
   text = text.replace(/>/g, '&gt;');
 
-  let afterEvent = new showdown.helper.Event('makehtml.encodeAmpsAndAngles.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.encodeAmpsAndAngles.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

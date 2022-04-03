@@ -11,7 +11,7 @@
 
 showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashHTMLBlocks.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashHTMLBlocks.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -111,7 +111,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
   text = text.replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g,
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashHTMLBlocks.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashHTMLBlocks.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

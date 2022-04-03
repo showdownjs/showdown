@@ -58,7 +58,7 @@
    * @param {String} title
    * @param {{}} options
    * @param {{}} globals
-   * @returns {showdown.helper.Event|*}
+   * @returns {showdown.Event|*}
    */
   function createEvent (rgx, evtName, wholeMatch, text, id, url, title, options, globals) {
     return globals.converter._dispatch(evtName, wholeMatch, options, globals, {

@@ -11,7 +11,7 @@
 
 showdown.subParser('makehtml.hashCodeTags', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashCodeTags.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashCodeTags.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -27,7 +27,7 @@ showdown.subParser('makehtml.hashCodeTags', function (text, options, globals) {
   // Hash naked <code>
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '<code\\b[^>]*>', '</code>', 'gim');
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashCodeTags.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashCodeTags.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

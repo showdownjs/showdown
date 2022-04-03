@@ -16,7 +16,7 @@ showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
     return text;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.ellipsis.onStart', text);
+  let startEvent = new showdown.Event('makehtml.ellipsis.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -26,7 +26,7 @@ showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
 
   text = text.replace(/\.\.\./g, '…');
 
-  let afterEvent = new showdown.helper.Event('makehtml.ellipsis.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.ellipsis.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

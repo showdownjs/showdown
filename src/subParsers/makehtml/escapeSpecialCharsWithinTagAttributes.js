@@ -13,7 +13,7 @@
 showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onStart', text);
+  let startEvent = new showdown.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -36,7 +36,7 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
       .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

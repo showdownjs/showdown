@@ -12,7 +12,7 @@
 showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.codeBlock.onStart', text);
+  let startEvent = new showdown.Event('makehtml.codeBlock.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -34,7 +34,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
           code: {}
         };
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.codeBlock.onCapture', codeblock);
+    let captureStartEvent = new showdown.Event('makehtml.codeBlock.onCapture', codeblock);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -71,7 +71,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
       otp += codeblock + end + '</code></pre>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.codeBlock.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.codeBlock.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -85,7 +85,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
   // strip sentinel
   text = text.replace(/¨0/, '');
 
-  let afterEvent = new showdown.helper.Event('makehtml.codeBlock.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.codeBlock.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

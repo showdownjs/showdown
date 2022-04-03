@@ -15,7 +15,7 @@
 showdown.subParser('makehtml.emphasisAndStrong', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.emphasisAndStrong.onStart', text);
+  let startEvent = new showdown.Event('makehtml.emphasisAndStrong.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -61,7 +61,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
         break;
     }
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.' + subEventName + '.onCapture', txt);
+    let captureStartEvent = new showdown.Event('makehtml.' + subEventName + '.onCapture', txt);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -102,7 +102,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
       }
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.' + subEventName + '.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.' + subEventName + '.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -163,7 +163,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
     return (/\S$/.test(m)) ? parseInside (m, '<em>', wm, asteriskEm) : wm;
   });
   //}
-  let afterEvent = new showdown.helper.Event('makehtml.emphasisAndStrong.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.emphasisAndStrong.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

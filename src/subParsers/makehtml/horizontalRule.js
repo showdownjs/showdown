@@ -12,7 +12,7 @@
 ////
 showdown.subParser('makehtml.horizontalRule', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.horizontalRule.onStart', text);
+  let startEvent = new showdown.Event('makehtml.horizontalRule.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -25,7 +25,7 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
   text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, key);
   text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, key);
 
-  let afterEvent = new showdown.helper.Event('makehtml.horizontalRule.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.horizontalRule.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

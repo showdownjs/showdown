@@ -13,7 +13,7 @@
 showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.blockGamut.onStart', text);
+  let startEvent = new showdown.Event('makehtml.blockGamut.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -40,7 +40,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
   text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
 
-  let afterEvent = new showdown.helper.Event('makehtml.blockGamut.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.blockGamut.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)

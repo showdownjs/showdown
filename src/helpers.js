@@ -47,7 +47,15 @@ showdown.helper.isFunction = function (a) {
  */
 showdown.helper.isArray = function (a) {
   'use strict';
-  return Array.isArray(a);
+  let isArray;
+  if (!Array.isArray) {
+    isArray = function (arg) {
+      return Object.prototype.toString.call(arg) === '[object Array]';
+    };
+  } else {
+    isArray = Array.isArray;
+  }
+  return isArray(a);
 };
 
 /**

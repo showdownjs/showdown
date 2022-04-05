@@ -449,16 +449,15 @@ var showdown    = require('showdown'),
 ## Building
 
 Building your clone of the repository is easy.
-> Prerequesites: [npm](https://www.npmjs.com/package/npm) and [npx](https://www.npmjs.com/package/npx) must be installed.
+> Prerequesites: [Node.js](https://nodejs.org/) v12, [npm](https://www.npmjs.com/package/npm) and [npx](https://www.npmjs.com/package/npx) must be installed.
 
-1. run `npm install`: installs all the needed third-party packages into the [node_modules](/node_modules)  folder, based on the contents of [package-lock.json](/package-lock.json) and [package.json](/package.json).
-1. run `npx grunt build`(see [Gruntfile.js](/Gruntfile.js)). This:
+1. run `npm install`.
+2. run `npx grunt build` (see [`Gruntfile.js`](/Gruntfile.js)). This command:
 
     1. Cleans the repo.
-    1. Checks code quality ([JSHint](https://jshint.com/) and [ESLint](https://eslint.org/)).
-    1. Runs tests defined in the repo.
-    1. Creates the [distributable file](/showdown.js) in the [dist](/dist) folder.
-    1. Creates the [minified file](/showdown.min.js) in the same folder.
+    2. Checks code quality ([JSHint](https://jshint.com/) and [ESLint](https://eslint.org/)).
+    3. Runs tests.
+    4. Creates the [distributable](/showdown.js) and [minified](/showdown.min.js) files in the [`dist`](/dist) folder.
 
 ## Tests
 

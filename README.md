@@ -446,6 +446,19 @@ var showdown    = require('showdown'),
     converter = new showdown.Converter({ extensions: ['myExtension'] });
 ```
 
+## Building
+
+Building your clone of the repository is easy.
+> Prerequesites: [Node.js](https://nodejs.org/) v12, [npm](https://www.npmjs.com/package/npm) and [npx](https://www.npmjs.com/package/npx) must be installed.
+
+1. run `npm install`.
+2. run `npx grunt build` (see [`Gruntfile.js`](/Gruntfile.js)). This command:
+
+    1. Cleans the repo.
+    2. Checks code quality ([JSHint](https://jshint.com/) and [ESLint](https://eslint.org/)).
+    3. Runs tests.
+    4. Creates the [distributable](/showdown.js) and [minified](/showdown.min.js) files in the [`dist`](/dist) folder.
+
 ## Tests
 
 A suite of tests is available which require Node.js.  Once Node is installed, run the following command from

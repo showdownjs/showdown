@@ -42,3 +42,4 @@ nav:
   - Extensions:
     - Overview: extensions.md
     - Create an extension: create-extension.md
+  - Tutorials: tutorials/index.md

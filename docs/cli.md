@@ -151,3 +151,21 @@ showdown makehtml [options]
         ```sh
         showdown makehtml -e ~/twitter.js -e ~/youtube.js
         ```
+
+## Extra options
+
+You can specify any of the [supported options](available-options.md), and they will be passed to the converter.
+For example, you can enable strikethrough support via the following command:
+
+```
+showdown makehtml -i foo.md -o bar.html --strikethrough
+```
+
+this command is equivalent of doing:
+
+```js
+var conv = new showdown.Converter({strikethrough: true});
+```
+
+!!! warning ""
+    In the CLI tool, all the extra options are **disabled** by default. This is the opposite of what is defined for node and browser, where some options, like `ghCodeBlocks` are enabled (for backward compatibility and historical reasons).

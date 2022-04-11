@@ -90,7 +90,7 @@ The converter itself might even work in things that aren't web browsers, like Ac
 
 ## Node compatibility
 
-Showdown is intended to work on any supported Node.js version (see the [Node.js releases schedule](https://nodejs.org/en/about/releases/). The code may work with previous versions of Node.js, but no accomidations are made to ensure it does. 
+Showdown is intended to work on any supported Node.js version (see the [Node.js releases schedule](https://nodejs.org/en/about/releases/). The code may work with previous versions of Node.js, but no accommodations are made to ensure it does. 
 
 
 ## Legacy version

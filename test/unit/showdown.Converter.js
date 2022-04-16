@@ -1,16 +1,15 @@
 /**
  * Created by Estevao on 31-05-2015.
  */
-require('source-map-support').install();
-require('chai').should();
-require('sinon');
-var showdown = require('../../.build/showdown.js');
+//let showdown = require('../../.build/showdown.js') || require('showdown');
+chai.should();
+
 
 describe('showdown.Converter', function () {
   'use strict';
 
   describe('option methods', function () {
-    var converter = new showdown.Converter();
+    let converter = new showdown.Converter();
 
     it('setOption() should set option foo=baz', function () {
       converter.setOption('foo', 'baz');
@@ -21,14 +20,14 @@ describe('showdown.Converter', function () {
     });
 
     it('getOptions() should contain foo=baz', function () {
-      var options = converter.getOptions();
+      let options = converter.getOptions();
       options.should.have.ownProperty('foo');
       options.foo.should.equal('baz');
     });
   });
 
   describe('metadata methods', function () {
-    var converter = new showdown.Converter();
+    let converter = new showdown.Converter();
 
     it('_setMetadataPair() should set foo to bar', function () {
       converter._setMetadataPair('foo', 'bar');
@@ -47,18 +46,18 @@ describe('showdown.Converter', function () {
      * Test setFlavor('github')
      */
     describe('github', function () {
-      var converter = new showdown.Converter(),
+      let converter = new showdown.Converter(),
           ghOpts = showdown.getFlavorOptions('github');
 
       converter.setFlavor('github');
 
-      for (var opt in ghOpts) {
+      for (let opt in ghOpts) {
         if (ghOpts.hasOwnProperty(opt)) {
           check(opt, ghOpts[opt]);
         }
       }
       function check (key, val) {
-        it('should set ' + opt + ' to ' + val, function () {
+        it('should set ' + key + ' to ' + val, function () {
           converter.getOption(key).should.equal(val);
         });
       }
@@ -72,19 +71,19 @@ describe('showdown.Converter', function () {
 
     describe('flavor', function () {
       it('should be vanilla by default', function () {
-        var converter = new showdown.Converter();
+        let converter = new showdown.Converter();
         converter.getFlavor().should.equal('vanilla');
       });
 
       it('should be changed if global option is changed', function () {
         showdown.setFlavor('github');
-        var converter = new showdown.Converter();
+        let converter = new showdown.Converter();
         converter.getFlavor().should.equal('github');
         showdown.setFlavor('vanilla');
       });
 
       it('should not be changed if converter is initialized before global change', function () {
-        var converter = new showdown.Converter();
+        let converter = new showdown.Converter();
         showdown.setFlavor('github');
         converter.getFlavor().should.equal('vanilla');
         showdown.setFlavor('vanilla');
@@ -93,7 +92,7 @@ describe('showdown.Converter', function () {
   });
 
   describe('extension methods', function () {
-    var extObjMock = {
+    let extObjMock = {
           type: 'lang',
           filter: function () {}
         },
@@ -102,13 +101,13 @@ describe('showdown.Converter', function () {
         };
 
     it('addExtension() should add an extension Object', function () {
-      var converter = new showdown.Converter();
+      let converter = new showdown.Converter();
       converter.addExtension(extObjMock);
       converter.getAllExtensions().language.should.contain(extObjMock);
     });
 
     it('addExtension() should unwrap an extension wrapped in a function', function () {
-      var converter = new showdown.Converter();
+      let converter = new showdown.Converter();
 
       converter.addExtension(extObjFunc);
       converter.getAllExtensions().language.should.contain(extObjMock);
@@ -116,7 +115,7 @@ describe('showdown.Converter', function () {
 
     it('useExtension() should use a previous registered extension in showdown', function () {
       showdown.extension('foo', extObjMock);
-      var converter = new showdown.Converter();
+      let converter = new showdown.Converter();
 
       converter.useExtension('foo');
       converter.getAllExtensions().language.should.contain(extObjMock);
@@ -124,7 +123,7 @@ describe('showdown.Converter', function () {
     });
 
     it('removeExtension() should remove an added extension', function () {
-      var converter = new showdown.Converter();
+      let converter = new showdown.Converter();
       converter.addExtension(extObjMock);
 
       converter.removeExtension(extObjMock);
@@ -133,7 +132,7 @@ describe('showdown.Converter', function () {
   });
 
   describe('events', function () {
-    var events = [
+    let events = [
       'makehtml.anchors',
       'makehtml.autoLinks',
       'makehtml.blockGamut',
@@ -151,17 +150,17 @@ describe('showdown.Converter', function () {
       //'tables'
     ];
 
-    for (var i = 0; i < events.length; ++i) {
+    for (let i = 0; i < events.length; ++i) {
       runListener(events[i] + '.before');
       runListener(events[i] + '.after');
     }
 
     function runListener (name) {
       it('should listen to ' + name, function () {
-        var converter = new showdown.Converter();
+        let converter = new showdown.Converter();
         converter.listen(name, function (event) {
-          var evtName = event.getName();
-          var text = event.getCapturedText();
+          let evtName = event.getName();
+          let text = event.getCapturedText();
           evtName.should.equal(name.toLowerCase());
           text.should.match(/^[\s\S]*foo[\s\S]*$/);
           return text;

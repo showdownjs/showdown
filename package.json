@@ -1,6 +1,6 @@
 {
   "name": "showdown",
-  "version": "2.0.0",
+  "version": "3.0.0-alpha",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
   "homepage": "http://showdownjs.com/",
@@ -58,16 +58,27 @@
     "grunt-conventional-github-releaser": "^1.0.0",
     "grunt-endline": "^0.7.0",
     "grunt-eslint": "^24.0.0",
+    "grunt-mocha-test": "^0.13.3",
     "grunt-simple-mocha": "^0.4.0",
+    "karma": "^6.3.17",
+    "karma-browserstack-launcher": "^1.6.0",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^3.1.1",
+    "karma-firefox-launcher": "^2.1.2",
+    "karma-jsdom-launcher": "^12.0.0",
+    "karma-mocha": "^2.0.1",
     "load-grunt-tasks": "^5.1.0",
     "performance-now": "^2.1.0",
     "quiet-grunt": "^0.2.0",
+    "semver-sort": "^1.0.0",
     "sinon": "*",
-    "source-map-support": "^0.5.21",
-    "semver-sort": "^1.0.0"
+    "source-map-support": "^0.5.21"
   },
   "dependencies": {
     "commander": "^9.0.0",
     "jsdom": "^19.0.0"
+  },
+  "overrides": {
+    "minimist": "^1.2.6"
   }
 }

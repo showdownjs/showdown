@@ -2,14 +2,12 @@ name: documentation
 
 on:
   push:
-    branches:    
+    branches:
       - master
     paths:
       - 'mkdocs.yml'
       - 'docs/**'
       - '.github/workflows/docs.yml'
-    paths-ignore:
-      - 'README.md'
 
 jobs:
   build_docs:

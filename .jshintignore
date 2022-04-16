@@ -3,3 +3,4 @@ dist/**/*.js
 build/**/*.js
 src/options.js
 bin/*
+/karma.browserstack.js

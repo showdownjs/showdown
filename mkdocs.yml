@@ -15,6 +15,7 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true 
+  - pymdownx.tasklist
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
@@ -32,6 +33,7 @@ nav:
     - Donations: donations.md
   - Quickstart:
     - Quickstart: quickstart.md
+    - Showdown's Markdown syntax: markdown-syntax.md
     - Compatibility: compatibility.md
   - Configuration:
     - Showdown options: configuration.md
@@ -42,3 +44,5 @@ nav:
   - Extensions:
     - Overview: extensions.md
     - Create an extension: create-extension.md
+    - List of known extensions: extensions-list.md 
+  - Tutorials: tutorials/index.md

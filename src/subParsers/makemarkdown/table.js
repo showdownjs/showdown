@@ -1,4 +1,4 @@
-showdown.subParser('makeMarkdown.table', function (node, globals) {
+showdown.subParser('makeMarkdown.table', function (node, options, globals) {
   'use strict';
 
   var txt = '',
@@ -7,7 +7,7 @@ showdown.subParser('makeMarkdown.table', function (node, globals) {
       rows       = node.querySelectorAll('tbody>tr'),
       i, ii;
   for (i = 0; i < headings.length; ++i) {
-    var headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], globals),
+    var headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], options, globals),
         allign = '---';
 
     if (headings[i].hasAttribute('style')) {
@@ -35,7 +35,7 @@ showdown.subParser('makeMarkdown.table', function (node, globals) {
     for (ii = 0; ii < headings.length; ++ii) {
       var cellContent = ' ';
       if (typeof cols[ii] !== 'undefined') {
-        cellContent = showdown.subParser('makeMarkdown.tableCell')(cols[ii], globals);
+        cellContent = showdown.subParser('makeMarkdown.tableCell')(cols[ii], options, globals);
       }
       tableArray[r].push(cellContent);
     }

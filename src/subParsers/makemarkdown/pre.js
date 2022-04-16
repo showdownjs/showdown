@@ -1,4 +1,4 @@
-showdown.subParser('makeMarkdown.pre', function (node, globals) {
+showdown.subParser('makeMarkdown.pre', function (node, options, globals) {
   'use strict';
 
   var num  = node.getAttribute('prenum');

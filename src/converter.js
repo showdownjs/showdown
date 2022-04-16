@@ -386,7 +386,7 @@ showdown.Converter = function (converterOptions) {
         mdDoc = '';
 
     for (var i = 0; i < nodes.length; i++) {
-      mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], globals);
+      mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], options, globals);
     }
 
     function clean (node) {

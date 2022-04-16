@@ -1,4 +1,4 @@
-showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
+showdown.subParser('makeMarkdown.blockquote', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -7,7 +7,7 @@ showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
         childrenLength = children.length;
 
     for (var i = 0; i < childrenLength; ++i) {
-      var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], globals);
+      var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], options, globals);
 
       if (innerTxt === '') {
         continue;

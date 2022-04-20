@@ -29,7 +29,7 @@ jobs:
 
       - name: '📖 Get current package version'
         id: package-version
-        uses: martinbeentjes/npm-get-version-action@v1.1.0
+        uses: martinbeentjes/npm-get-version-action@v1.2.0
 
       - name: '📝 Print build version and commit msg'
         run: 'printf "version: %s\n build:%s\n message:%s\n" "${{ steps.package-version.outputs.current-version}}" "${{ github.run_id }}" "$COMMIT_MSG"'

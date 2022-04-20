@@ -140,9 +140,9 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  let inlineRegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
+  let inlineRegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(\S+?(?:\(\S*?\)\S*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
       crazyRegExp       = /!\[([^\]]*?)][ \t]*\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
-      base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z0-9+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
+      base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
       referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]/g,
       refShortcutRegExp = /!\[([^\[\]]+)]/g;
 

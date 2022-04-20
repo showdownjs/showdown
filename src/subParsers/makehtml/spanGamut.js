@@ -20,7 +20,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   // Process link and image tags. Images must come first,
   // because ![foo][f] looks like a link.
   text = showdown.subParser('makehtml.image')(text, options, globals);
-  text = showdown.subParser('makehtml.links')(text, options, globals);
+  text = showdown.subParser('makehtml.link')(text, options, globals);
 
   text = showdown.subParser('makehtml.emoji')(text, options, globals);
   text = showdown.subParser('makehtml.underline')(text, options, globals);

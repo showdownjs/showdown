@@ -1,14 +1,5 @@
-<a name="2.0.4"></a>
-## [2.0.4](https://github.com/showdownjs/showdown/compare/2.0.3...2.0.4) (2022-04-21)
-
-
-* test(cli)!: Add test for multiple config options ([914129f](https://github.com/showdownjs/showdown/commit/914129f)), closes [#916](https://github.com/showdownjs/showdown/issues/916)
-
-
-### Bug Fixes
-
-* **cli:** cli displays the correct version number ([8b48882](https://github.com/showdownjs/showdown/commit/8b48882))
-
+<a name="2.1.0"></a>
+## [2.1.0](https://github.com/showdownjs/showdown/compare/2.0.0...2.1.0) (2022-04-21)
 
 ### BREAKING CHANGES
 
@@ -24,6 +15,16 @@ after:
 showdown makehtml -i foo.md -o bar.html -c strikethrough -c emoji
 ```
 
+<a name="2.0.4"></a>
+## [2.0.4](https://github.com/showdownjs/showdown/compare/2.0.3...2.0.4) (2022-04-21)
+
+
+* test(cli): Add test for multiple config options ([914129f](https://github.com/showdownjs/showdown/commit/914129f)), closes [#916](https://github.com/showdownjs/showdown/issues/916)
+
+
+### Bug Fixes
+
+* **cli:** cli displays the correct version number ([8b48882](https://github.com/showdownjs/showdown/commit/8b48882))
 
 
 <a name="2.0.3"></a>

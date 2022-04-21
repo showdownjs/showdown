@@ -27,7 +27,7 @@ Note:
 This object holds the text captured by the subparser. The properties of this object
 are different for each subparser.
 
-Properties whose name starts with `_` are readonly.
+**Properties whose name starts with `_` are readonly**.
 
 Example:
 
@@ -214,3 +214,15 @@ These events are always guaranteed to be called, regardless of options or circum
 ### blockquote
 
 #### 
+
+
+### metadata
+
+
+
+## Common pitfalls
+
+### Infinite loop
+
+If you pass the input as output in a `onCapture` event, you might trigger an infinite loop. 
+

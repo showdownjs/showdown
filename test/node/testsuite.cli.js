@@ -128,6 +128,16 @@ describe('showdown cli', function () {
         proc.stdout.should.equal('<p>this is a 😄</p>');
       });
 
+      it('should enable 2 showdown options (emoji and strikethrough)', function () {
+        var proc = spawnCLI('makehtml', ['-c', 'emoji', '-c', 'strikethrough'], {
+          input: 'this is ~~not~~ a :smile:',
+          encoding: 'utf-8'
+        });
+        proc.status.should.equal(0);
+        proc.stderr.should.contain('Enabling option emoji');
+        proc.stdout.should.equal('<p>this is <del>not</del> a 😄</p>');
+      });
+
       it('should ignore unrecognized options', function () {
         var proc = spawnCLI('makehtml', ['-c', 'foobar'], {
           input: 'foo',

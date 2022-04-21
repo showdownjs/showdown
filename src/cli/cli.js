@@ -52,7 +52,7 @@ program.command('makehtml')
   .option('-a, --append', 'Append data to output instead of overwriting. Ignored if writing to stdout', false)
   .option('-e, --extensions <extensions...>', 'Load the specified extensions. Should be valid paths to node compatible extensions')
   .option('-p, --flavor <flavor>', 'Run with a predetermined flavor of options. Default is vanilla', 'vanilla')
-  .option('-c, --config <config...>', 'Enables showdown makehtml parser config options. Overrides flavor')
+  .option('-c, --config <config...>', 'Enables showdown makehtml parser config options (example: strikethrough). Overrides flavor')
   .option('--config-help', 'Shows configuration options for showdown parser')
   .action(makehtmlCommand);
 

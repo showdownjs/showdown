@@ -1,3 +1,31 @@
+<a name="2.0.4"></a>
+## [2.0.4](https://github.com/showdownjs/showdown/compare/2.0.3...2.0.4) (2022-04-21)
+
+
+* test(cli)!: Add test for multiple config options ([914129f](https://github.com/showdownjs/showdown/commit/914129f)), closes [#916](https://github.com/showdownjs/showdown/issues/916)
+
+
+### Bug Fixes
+
+* **cli:** cli displays the correct version number ([8b48882](https://github.com/showdownjs/showdown/commit/8b48882))
+
+
+### BREAKING CHANGES
+
+* the CLI no longer accepts "extra options". Instead you should pass the `-c` flag. To update:
+
+before:
+```
+showdown makehtml -i foo.md -o bar.html --strikethrough --emoji
+```
+
+after:
+```
+showdown makehtml -i foo.md -o bar.html -c strikethrough -c emoji
+```
+
+
+
 <a name="2.0.3"></a>
 ## [2.0.3](https://github.com/showdownjs/showdown/compare/2.0.2...2.0.3) (2022-03-08)
 

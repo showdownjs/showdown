@@ -1,6 +1,47 @@
 # Performance Tests for showdown
 
 
+## [version 2.0.4](https://github.com/showdownjs/showdown/tree/2.0.4)
+
+### Test Suite: Basic (50 cycles)
+| test | avgTime | max | min |
+|:-----|--------:|----:|----:|
+|Simple "Hello World"|0.152|4.211|0.053|
+|performance.testfile.md|17.126|28.600|15.134|
+
+### Test Suite: subParsers (20 cycles)
+| test | avgTime | max | min |
+|:-----|--------:|----:|----:|
+|hashHTMLBlocks|2.682|5.429|1.470|
+|anchors|0.331|2.759|0.177|
+|autoLinks|0.063|0.180|0.042|
+|blockQuotes|1.400|2.623|1.201|
+|codeBlocks|0.108|0.150|0.102|
+|codeSpans|0.197|0.574|0.159|
+|detab|0.044|0.081|0.040|
+|encodeAmpsAndAngles|0.091|0.154|0.073|
+|encodeBackslashEscapes|0.047|0.078|0.040|
+|encodeCode|0.401|0.844|0.347|
+|escapeSpecialCharsWithinTagAttributes|0.134|0.202|0.124|
+|githubCodeBlocks|0.121|0.425|0.084|
+|hashBlock|0.025|0.052|0.023|
+|hashElement|0.001|0.020|0.000|
+|hashHTMLSpans|2.612|3.409|2.443|
+|hashPreCodeTags|0.063|0.163|0.044|
+|headers|0.716|1.447|0.638|
+|horizontalRule|0.199|1.426|0.106|
+|images|0.106|0.194|0.082|
+|italicsAndBold|0.187|0.542|0.136|
+|lists|1.663|2.077|1.505|
+|outdent|0.147|0.466|0.102|
+|paragraphs|3.397|4.047|3.006|
+|spanGamut|2.451|3.099|2.226|
+|strikethrough|0.003|0.046|0.000|
+|stripLinkDefinitions|1.219|1.845|1.073|
+|tables|0.003|0.041|0.000|
+|unescapeSpecialChars|0.010|0.054|0.006|
+
+
 ## [version 2.0.3](https://github.com/showdownjs/showdown/tree/2.0.3)
 
 ### Test Suite: Basic (50 cycles)

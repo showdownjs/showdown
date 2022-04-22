@@ -233,6 +233,13 @@ module.exports = function (grunt) {
   grunt.registerTask('build-without-test', ['concat:dist', 'uglify', 'endline']);
   grunt.registerTask('prep-release', ['build', 'performance', 'generate-changelog']);
 
+  grunt.registerTask('extract-commonmark-tests', function () {
+    'use strict';
+    var commonmark = require('commonmark-spec');
+
+    grunt.file.write('test/functional/makehtml/cases/commonmark.testsuite.json', JSON.stringify(commonmark.tests, null, 2))
+  });
+
   // Default task(s).
   grunt.registerTask('default', ['test']);
 };

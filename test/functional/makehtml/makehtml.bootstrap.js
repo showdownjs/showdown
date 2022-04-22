@@ -50,7 +50,7 @@
     let tcObj = {};
     for (let i = 0; i < jsonArray.length; ++i) {
       let section = jsonArray[i].section;
-      let name = jsonArray[i].section + '_' + jsonArray[i].example;
+      let name = jsonArray[i].section + '_' + (jsonArray[i].example || jsonArray[i].number);
       let md = jsonArray[i].markdown;
       let html = jsonArray[i].html;
       if (!tcObj.hasOwnProperty(section)) {

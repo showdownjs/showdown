@@ -152,19 +152,44 @@ showdown makehtml [options]
         showdown makehtml -e ~/twitter.js -e ~/youtube.js
         ```
 
+###### `-c/--config`
+
+* Short format: `-c`
+* Alias: `--config`
+* Description: Enable or disable parser options.
+* Introduced in: `2.0.1` (Breaking change. See the [`Extra options`](#extra-options) section below)
+* Example: 
+
+    !!! example ""
+
+        ```sh
+        showdown makehtml -i foo.md -o bar.html -c strikethrough
+        showdown makehtml -i foo.md -o bar.html -c strikethrough -c emoji
+        ```
+
 ## Extra options
 
+Starting from the version `2.0.1`, CLI the format of passing extra options has changed. Please make the necessary changes to your code, if required.
+
+=== "since `v2.0.1`"
+
+    ```sh
+    showdown makehtml -i foo.md -o bar.html -c strikethrough -c emoji
+    ```
+
+=== "before `v2.0.1`"
+
+    ```sh
+    showdown makehtml -i foo.md -o bar.html --strikethrough --emoji
+    ```
+
+
 You can specify any of the [supported options](available-options.md), and they will be passed to the converter.
-For example, you can enable strikethrough support via the following command:
 
-```
-showdown makehtml -i foo.md -o bar.html --strikethrough
-```
-
-this command is equivalent of doing:
+The above commands are equivalent of doing:
 
 ```js
-var conv = new showdown.Converter({strikethrough: true});
+var conv = new showdown.Converter({strikethrough: true, emoji: true});
 ```
 
 !!! warning ""

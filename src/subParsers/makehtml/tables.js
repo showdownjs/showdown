@@ -1,4 +1,4 @@
-showdown.subParser('makehtml.tables', function (text, options, globals) {
+showdown.subParser('makehtml.tablesz', function (text, options, globals) {
   'use strict';
 
   if (!options.tables) {

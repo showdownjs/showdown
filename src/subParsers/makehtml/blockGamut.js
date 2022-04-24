@@ -31,7 +31,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
 
   text = showdown.subParser('makehtml.lists')(text, options, globals);
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
-  text = showdown.subParser('makehtml.tables')(text, options, globals);
+  text = showdown.subParser('makehtml.table')(text, options, globals);
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,

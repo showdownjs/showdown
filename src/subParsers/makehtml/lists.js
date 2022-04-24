@@ -119,7 +119,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
         item = showdown.subParser('makehtml.heading')(item, options, globals);
         item = showdown.subParser('makehtml.lists')(item, options, globals);
         item = showdown.subParser('makehtml.codeBlock')(item, options, globals);
-        item = showdown.subParser('makehtml.tables')(item, options, globals);
+        item = showdown.subParser('makehtml.table')(item, options, globals);
         item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
         //item = showdown.subParser('makehtml.paragraphs')(item, options, globals);
 

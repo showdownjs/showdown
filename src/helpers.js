@@ -664,6 +664,8 @@ showdown.helper._populateAttributes = function (attributes) {
     if (attributes.hasOwnProperty(attr)) {
       let key = attr,
           val;
+
+      // since class is a javascript reserved word we use classes
       if (attr === 'classes') {
         key = 'class';
       }
@@ -681,7 +683,23 @@ showdown.helper._populateAttributes = function (attributes) {
       } else {
         throw new TypeError('Attribute "' + attr + '" must be either an array or string but ' + typeof attributes[attr] + ' given');
       }
-      text += (val === null) ? '' : ' ' + key + '="' + val + '"';
+      // special attributes
+      switch (attr) {
+        // these attributes don't expect a value. If they are false, they should be removed. If they are true,
+        // they should be present but without any value
+        case 'checked':
+        case 'disabled':
+          if (val === true || val === 'true' || val === attr) {
+            text += ' ' + key;
+          }
+          // if falsy, they are just ignored
+          break;
+
+        // default behavior for all other attributes types
+        default:
+          text += (val === null) ? '' : ' ' + key + '="' + val + '"';
+          break;
+      }
     }
   }
 

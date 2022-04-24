@@ -53,7 +53,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
       otp = captureStartEvent.output;
     } else {
       codeblock = captureStartEvent.matches.codeblock;
-      codeblock = showdown.subParser('makehtml.outdent')(codeblock, options, globals);
+      codeblock = showdown.helper.outdent(codeblock);
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
       codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
       codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines

@@ -12,6 +12,59 @@
 showdown.subParser('makehtml.image', function (text, options, globals) {
   'use strict';
 
+  let startEvent = new showdown.Event('makehtml.image.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  let inlineRegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(\S+?(?:\(\S*?\)\S*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
+      crazyRegExp       = /!\[([^\]]*?)][ \t]*\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
+      base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
+      referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]/g,
+      refShortcutRegExp = /!\[([^\[\]]+)]/g;
+
+  // First, handle reference-style labeled images: ![alt text][id]
+  text = text.replace(referenceRegExp, function (wholeMatch, altText, linkId) {
+    return writeImageTag ('reference', referenceRegExp, wholeMatch, altText, null, linkId);
+  });
+
+  // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
+  // base64 encoded images
+  text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+    url = url.replace(/\s/g, '');
+    return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
+  });
+
+  // cases with crazy urls like ./image/cat1).png
+  text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
+  });
+
+  // normal cases
+  text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
+  });
+
+  // handle reference-style shortcuts: ![img text]
+  text = text.replace(refShortcutRegExp, function (wholeMatch, altText) {
+    return writeImageTag ('reference', refShortcutRegExp, wholeMatch, altText);
+  });
+
+  let afterEvent = new showdown.Event('makehtml.image.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+
+
   /**
    * @param {string} subEvtName
    * @param {RegExp} pattern
@@ -27,19 +80,19 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
   function writeImageTag (subEvtName, pattern, wholeMatch, altText, url, linkId, width, height, title) {
 
     let gUrls    = globals.gUrls,
-        gTitles  = globals.gTitles,
-        gDims    = globals.gDimensions,
-        matches = {
-          _wholeMatch: wholeMatch,
-          _altText: altText,
-          _linkId: linkId,
-          _url: url,
-          _width: width,
-          _height: height,
-          _title: title
-        },
-        otp,
-        attributes = {};
+      gTitles  = globals.gTitles,
+      gDims    = globals.gDimensions,
+      matches = {
+        _wholeMatch: wholeMatch,
+        _altText: altText,
+        _linkId: linkId,
+        _url: url,
+        _width: width,
+        _height: height,
+        _title: title
+      },
+      otp,
+      attributes = {};
 
     linkId = (linkId) ? linkId.toLowerCase() : null;
 
@@ -132,54 +185,4 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     return otp;
   }
 
-  let startEvent = new showdown.Event('makehtml.image.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  let inlineRegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(\S+?(?:\(\S*?\)\S*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
-      crazyRegExp       = /!\[([^\]]*?)][ \t]*\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
-      base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
-      referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]/g,
-      refShortcutRegExp = /!\[([^\[\]]+)]/g;
-
-  // First, handle reference-style labeled images: ![alt text][id]
-  text = text.replace(referenceRegExp, function (wholeMatch, altText, linkId) {
-    return writeImageTag ('reference', referenceRegExp, wholeMatch, altText, null, linkId);
-  });
-
-  // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
-  // base64 encoded images
-  text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = url.replace(/\s/g, '');
-    return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
-  });
-
-  // cases with crazy urls like ./image/cat1).png
-  text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
-  });
-
-  // normal cases
-  text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
-  });
-
-  // handle reference-style shortcuts: ![img text]
-  text = text.replace(refShortcutRegExp, function (wholeMatch, altText) {
-    return writeImageTag ('reference', refShortcutRegExp, wholeMatch, altText);
-  });
-
-  let afterEvent = new showdown.Event('makehtml.image.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
 });

@@ -15,130 +15,6 @@
 
 showdown.subParser('makehtml.link', function (text, options, globals) {
 
-  /**
-   *
-   * @param {string} subEvtName
-   * @param {RegExp} pattern
-   * @param {string} wholeMatch
-   * @param {string} text
-   * @param {string|null} [linkId]
-   * @param {string|null} [url]
-   * @param {string|null} [title]
-   * @param {boolean} [emptyCase]
-   * @returns {string}
-   */
-  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
-
-    let matches = {
-          _wholeMatch: wholeMatch,
-          _linkId: linkId,
-          _url: url,
-          _title: title,
-          text: text
-        },
-        otp,
-        attributes = {};
-
-    title = title || null;
-    url = url || null;
-    linkId = (linkId) ? linkId.toLowerCase() : null;
-    emptyCase = !!emptyCase;
-
-    if (emptyCase) {
-      url = '';
-    } else if (!url) {
-      if (!linkId) {
-        // lower-case and turn embedded newlines into spaces
-        linkId = text.toLowerCase().replace(/ ?\n/g, ' ');
-      }
-      url = '#' + linkId;
-
-      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
-        url = globals.gUrls[linkId];
-        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
-          title = globals.gTitles[linkId];
-        }
-      } else {
-        return wholeMatch;
-      }
-    }
-
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-    attributes.href = url;
-
-    if (title && showdown.helper.isString(title)) {
-      title = title
-        .replace(/"/g, '&quot;')
-        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-      attributes.title = title;
-    }
-
-    // optionLinksInNewWindow only applies
-    // to external links. Hash links (#) open in same page
-    if (options.openLinksInNewWindow && !/^#/.test(url)) {
-      attributes.rel = 'noopener noreferrer';
-      attributes.target = '¨E95Eblank'; // escaped _
-
-    }
-
-    let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches(matches)
-      .setAttributes(attributes);
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      attributes = captureStartEvent.attributes;
-      text = captureStartEvent.matches.text || '';
-      // Text can be a markdown element, so we run through the appropriate parsers
-      text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
-      text = showdown.subParser('makehtml.emoji')(text, options, globals);
-      text = showdown.subParser('makehtml.underline')(text, options, globals);
-      text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
-      text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
-      text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
-      text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
-      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-  }
-
-  /**
-   * @param {string} mail
-   * @returns {{mail: string, url: string}}
-   */
-  function parseMail (mail) {
-    let url = 'mailto:';
-    mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
-    if (options.encodeEmails) {
-      url = showdown.helper.encodeEmailAddress(url + mail);
-      mail = showdown.helper.encodeEmailAddress(mail);
-    } else {
-      url = url + mail;
-    }
-    return {
-      mail: mail,
-      url: url
-    };
-  }
-
   //
   // Parser starts here
   //
@@ -318,4 +194,130 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     ._setOptions(options);
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
+
+
+
+  /**
+   *
+   * @param {string} subEvtName
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @param {string} text
+   * @param {string|null} [linkId]
+   * @param {string|null} [url]
+   * @param {string|null} [title]
+   * @param {boolean} [emptyCase]
+   * @returns {string}
+   */
+  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
+
+    let matches = {
+        _wholeMatch: wholeMatch,
+        _linkId: linkId,
+        _url: url,
+        _title: title,
+        text: text
+      },
+      otp,
+      attributes = {};
+
+    title = title || null;
+    url = url || null;
+    linkId = (linkId) ? linkId.toLowerCase() : null;
+    emptyCase = !!emptyCase;
+
+    if (emptyCase) {
+      url = '';
+    } else if (!url) {
+      if (!linkId) {
+        // lower-case and turn embedded newlines into spaces
+        linkId = text.toLowerCase().replace(/ ?\n/g, ' ');
+      }
+      url = '#' + linkId;
+
+      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
+        url = globals.gUrls[linkId];
+        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
+          title = globals.gTitles[linkId];
+        }
+      } else {
+        return wholeMatch;
+      }
+    }
+
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+    attributes.href = url;
+
+    if (title && showdown.helper.isString(title)) {
+      title = title
+        .replace(/"/g, '&quot;')
+        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      attributes.title = title;
+    }
+
+    // optionLinksInNewWindow only applies
+    // to external links. Hash links (#) open in same page
+    if (options.openLinksInNewWindow && !/^#/.test(url)) {
+      attributes.rel = 'noopener noreferrer';
+      attributes.target = '¨E95Eblank'; // escaped _
+
+    }
+
+    let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches(matches)
+      .setAttributes(attributes);
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      attributes = captureStartEvent.attributes;
+      text = captureStartEvent.matches.text || '';
+      // Text can be a markdown element, so we run through the appropriate parsers
+      text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
+      text = showdown.subParser('makehtml.emoji')(text, options, globals);
+      text = showdown.subParser('makehtml.underline')(text, options, globals);
+      text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
+      text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
+      text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
+      text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
+      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+  }
+
+  /**
+   * @param {string} mail
+   * @returns {{mail: string, url: string}}
+   */
+  function parseMail (mail) {
+    let url = 'mailto:';
+    mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
+    if (options.encodeEmails) {
+      url = showdown.helper.encodeEmailAddress(url + mail);
+      mail = showdown.helper.encodeEmailAddress(mail);
+    } else {
+      url = url + mail;
+    }
+    return {
+      mail: mail,
+      url: url
+    };
+  }
 });

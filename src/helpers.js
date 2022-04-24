@@ -689,6 +689,19 @@ showdown.helper._populateAttributes = function (attributes) {
 };
 
 /**
+ * Remove one level of line-leading tabs or spaces
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.outdent = function (text) {
+  'use strict';
+  if (!showdown.helper.isString(text)) {
+    return text;
+  }
+  return text.replace(/^(\t| {1,4})/gm, '');
+};
+
+/**
  * Validate options
  * @param {{}} options
  * @returns {{}}

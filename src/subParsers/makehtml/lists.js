@@ -66,7 +66,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
     listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
       checked = (checked && checked.trim() !== '');
 
-      var item = showdown.subParser('makehtml.outdent')(m4, options, globals),
+      var item = showdown.helper.outdent(m4),
           bulletStyle = '';
 
       // Support for github tasklists

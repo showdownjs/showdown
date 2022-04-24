@@ -11,7 +11,7 @@
 
 showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.Event('makehtml.hashHTMLBlocks.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashPreCodeTags.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)

@@ -1,4 +1,4 @@
-;/*! showdown v 3.0.0-alpha - 03-04-2022 */
+;/*! showdown v 3.0.0-alpha - 24-04-2022 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -642,7 +642,15 @@ showdown.helper.isFunction = function (a) {
  */
 showdown.helper.isArray = function (a) {
   'use strict';
-  return Array.isArray(a);
+  let isArray;
+  if (!Array.isArray) {
+    isArray = function (arg) {
+      return Object.prototype.toString.call(arg) === '[object Array]';
+    };
+  } else {
+    isArray = Array.isArray;
+  }
+  return isArray(a);
 };
 
 /**
@@ -710,7 +718,7 @@ showdown.helper.forEach = function (obj, callback) {
 };
 
 /**
- * Standardidize extension name
+ * Standardize extension name
  * @static
  * @param {string} s extension name
  * @returns {string}
@@ -1301,228 +1309,6 @@ showdown.helper.validateOptions = function (options) {
   }
   //options.headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart);
   return options;
-};
-
-showdown.helper.Event = class {
-
-  /**
-   * Creates a new event object
-   * @param {string} name
-   * @param {string} input
-   * @param {{}} [params]
-   * @param {string} params.output
-   * @param {RegExp} params.regexp
-   * @param {{}} params.matches
-   * @param {{}} params.attributes
-   * @param {{}} params.globals
-   * @param {{}} params.options
-   * @param {showdown.Converter} params.converter
-   */
-  constructor (name, input, params) {
-    params = params || {};
-    let {output, regexp, matches, attributes, globals, options, converter} = params;
-    if (!showdown.helper.isString(name)) {
-      if (!showdown.helper.isString(name)) {
-        throw new TypeError('Event.name must be a string but ' + typeof name + ' given');
-      }
-    }
-    this._name = name.toLowerCase();
-    this.input = input;
-    this.output = output || input;
-    this.regexp = regexp || null;
-    this.matches = matches || {};
-    this.attributes = attributes || {};
-    this._globals = globals || {};
-    this._options = showdown.helper.cloneObject(options, true) || {};
-    this._converter = converter || undefined;
-  }
-
-  /** @returns {string} */
-  get name () {
-    return this._name;
-  }
-
-  /** @returns {string} */
-  get input () {
-    return this._input;
-  }
-
-  /** @param {string} value */
-  set input (value) {
-    if (!showdown.helper.isString(value)) {
-      throw new TypeError('Event.input must be a string but ' + typeof value + ' given');
-    }
-    this._input = value;
-  }
-
-  /** @returns {string} */
-  get output () {
-    return this._output;
-  }
-
-  /** @param {string|null} value */
-  set output (value) {
-    if (!showdown.helper.isString(value) && value !== null) {
-      throw new TypeError('Event.output must be a string but ' + typeof value + ' given');
-    }
-    this._output = value;
-  }
-
-  /** @returns {null|RegExp} */
-  get regexp () {
-    return this._regexp;
-  }
-
-  /** @param {null|RegExp} value */
-  set regexp (value) {
-    if (!(value instanceof RegExp) && value !== null) {
-      throw new TypeError('Event.regexp must be a RegExp object (or null) but ' + typeof value + ' given');
-    }
-    this._regexp = value;
-  }
-
-  /** @returns {{}} */
-  get matches () {
-    return this._matches;
-  }
-
-  /** @param {{}}value */
-  set matches (value) {
-    if (typeof value !== 'object') {
-      throw new TypeError('Event.matches must be an object (or null) but ' + typeof value + ' given');
-    }
-    this._matches = {};
-    for (let prop in value) {
-      if (value.hasOwnProperty(prop)) {
-        let descriptor = {};
-        if (/^_(.+)/.test(prop)) {
-          descriptor = {
-            enumerable: true,
-            configurable: false,
-            writable: false,
-            value: value[prop]
-          };
-        } else {
-          descriptor = {
-            enumerable: true,
-            configurable: false,
-            writable: true,
-            value: value[prop]
-          };
-        }
-        Object.defineProperty(this._matches, prop, descriptor);
-      }
-    }
-  }
-
-  /** @returns {{}} */
-  get attributes () {
-    return this._attributes;
-  }
-
-  /** @param {{}} value */
-  set attributes (value) {
-    if (typeof value !== 'object') {
-      throw new TypeError('Event.attributes must be an object (or null) but ' + typeof value + ' given');
-    }
-    this._attributes = value;
-  }
-
-  /** @param {showdown.Converter} converter */
-  set converter (converter) {
-    this._converter = converter;
-  }
-
-  /** @returns {showdown.Converter} */
-  get converter () {
-    return this._converter;
-  }
-
-  get options () {
-    return this._options;
-  }
-
-  get globals () {
-    return this._globals;
-  }
-  // FLUID INTERFACE
-
-  /**
-   *
-   * @param {string} value
-   * @returns {showdown.helper.Event}
-   */
-  setInput (value) {
-    this.input = value;
-    return this;
-  }
-
-  /**
-   *
-   * @param {string|null} value
-   * @returns {showdown.helper.Event}
-   */
-  setOutput (value) {
-    this.output = value;
-    return this;
-  }
-
-  /**
-   *
-   * @param {RegExp} value
-   * @returns {showdown.helper.Event}
-   */
-  setRegexp (value) {
-    this.regexp = value;
-    return this;
-  }
-
-  /**
-   *
-   * @param {{}}value
-   * @returns {showdown.helper.Event}
-   */
-  setMatches (value) {
-    this.matches = value;
-    return this;
-  }
-
-  /**
-   *
-   * @param {{}}value
-   * @returns {showdown.helper.Event}
-   */
-  setAttributes (value) {
-    this.attributes = value;
-    return this;
-  }
-
-  _setOptions (value) {
-    this._options = value;
-    return this;
-  }
-
-  _setGlobals (value) {
-    this._globals = value;
-    return this;
-  }
-
-  _setConverter (value) {
-    this.converter = value;
-    return this;
-  }
-
-  /**
-   * Legacy: Return the output text
-   * @returns {string}
-   */
-  getText () {
-    return this.output;
-  }
-
-  getMatches () {
-    return this.matches;
-  }
 };
 
 /**
@@ -3383,6 +3169,232 @@ showdown.helper.emojis = {
   'showdown': '<img alt="showdown" width="20" height="20" align="absmiddle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC">'
 };
 
+/**
+ * Created by Estevao on 31-05-2015.
+ */
+
+showdown.Event = class {
+
+  /**
+   * Creates a new showdown Event object
+   * @param {string} name
+   * @param {string} input
+   * @param {{}} [params]
+   * @param {string} params.output
+   * @param {RegExp} params.regexp
+   * @param {{}} params.matches
+   * @param {{}} params.attributes
+   * @param {{}} params.globals
+   * @param {{}} params.options
+   * @param {showdown.Converter} params.converter
+   */
+  constructor (name, input, params) {
+    params = params || {};
+    let {output, regexp, matches, attributes, globals, options, converter} = params;
+    if (!showdown.helper.isString(name)) {
+      if (!showdown.helper.isString(name)) {
+        throw new TypeError('Event.name must be a string but ' + typeof name + ' given');
+      }
+    }
+    this._name = name.toLowerCase();
+    this.input = input;
+    this.output = output || input;
+    this.regexp = regexp || null;
+    this.matches = matches || {};
+    this.attributes = attributes || {};
+    this._globals = globals || {};
+    this._options = showdown.helper.cloneObject(options, true) || {};
+    this._converter = converter || undefined;
+  }
+
+  /** @returns {string} */
+  get name () {
+    return this._name;
+  }
+
+  /** @returns {string} */
+  get input () {
+    return this._input;
+  }
+
+  /** @param {string} value */
+  set input (value) {
+    if (!showdown.helper.isString(value)) {
+      throw new TypeError('Event.input must be a string but ' + typeof value + ' given');
+    }
+    this._input = value;
+  }
+
+  /** @returns {string} */
+  get output () {
+    return this._output;
+  }
+
+  /** @param {string|null} value */
+  set output (value) {
+    if (!showdown.helper.isString(value) && value !== null) {
+      throw new TypeError('Event.output must be a string but ' + typeof value + ' given');
+    }
+    this._output = value;
+  }
+
+  /** @returns {null|RegExp} */
+  get regexp () {
+    return this._regexp;
+  }
+
+  /** @param {null|RegExp} value */
+  set regexp (value) {
+    if (!(value instanceof RegExp) && value !== null) {
+      throw new TypeError('Event.regexp must be a RegExp object (or null) but ' + typeof value + ' given');
+    }
+    this._regexp = value;
+  }
+
+  /** @returns {{}} */
+  get matches () {
+    return this._matches;
+  }
+
+  /** @param {{}}value */
+  set matches (value) {
+    if (typeof value !== 'object') {
+      throw new TypeError('Event.matches must be an object (or null) but ' + typeof value + ' given');
+    }
+    this._matches = {};
+    for (let prop in value) {
+      if (value.hasOwnProperty(prop)) {
+        let descriptor = {};
+        if (/^_(.+)/.test(prop)) {
+          descriptor = {
+            enumerable: true,
+            configurable: false,
+            writable: false,
+            value: value[prop]
+          };
+        } else {
+          descriptor = {
+            enumerable: true,
+            configurable: false,
+            writable: true,
+            value: value[prop]
+          };
+        }
+        Object.defineProperty(this._matches, prop, descriptor);
+      }
+    }
+  }
+
+  /** @returns {{}} */
+  get attributes () {
+    return this._attributes;
+  }
+
+  /** @param {{}} value */
+  set attributes (value) {
+    if (typeof value !== 'object') {
+      throw new TypeError('Event.attributes must be an object (or null) but ' + typeof value + ' given');
+    }
+    this._attributes = value;
+  }
+
+  /** @param {showdown.Converter} converter */
+  set converter (converter) {
+    this._converter = converter;
+  }
+
+  /** @returns {showdown.Converter} */
+  get converter () {
+    return this._converter;
+  }
+
+  get options () {
+    return this._options;
+  }
+
+  get globals () {
+    return this._globals;
+  }
+  // FLUID INTERFACE
+
+  /**
+   *
+   * @param {string} value
+   * @returns {showdown.Event}
+   */
+  setInput (value) {
+    this.input = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {string|null} value
+   * @returns {showdown.Event}
+   */
+  setOutput (value) {
+    this.output = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {RegExp} value
+   * @returns {showdown.Event}
+   */
+  setRegexp (value) {
+    this.regexp = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {{}}value
+   * @returns {showdown.Event}
+   */
+  setMatches (value) {
+    this.matches = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {{}}value
+   * @returns {showdown.Event}
+   */
+  setAttributes (value) {
+    this.attributes = value;
+    return this;
+  }
+
+  _setOptions (value) {
+    this._options = value;
+    return this;
+  }
+
+  _setGlobals (value) {
+    this._globals = value;
+    return this;
+  }
+
+  _setConverter (value) {
+    this.converter = value;
+    return this;
+  }
+
+  /**
+   * Legacy: Return the output text
+   * @returns {string}
+   */
+  getText () {
+    return this.output;
+  }
+
+  getMatches () {
+    return this.matches;
+  }
+};
+
 ////
 // makehtml/blockGamut.js
 // Copyright (c) 2018 ShowdownJS
@@ -3398,7 +3410,7 @@ showdown.helper.emojis = {
 showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.blockGamut.onStart', text);
+  let startEvent = new showdown.Event('makehtml.blockGamut.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3416,7 +3428,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
 
   text = showdown.subParser('makehtml.lists')(text, options, globals);
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
-  text = showdown.subParser('makehtml.tables')(text, options, globals);
+  text = showdown.subParser('makehtml.table')(text, options, globals);
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,
@@ -3425,7 +3437,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
   text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
 
-  let afterEvent = new showdown.helper.Event('makehtml.blockGamut.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.blockGamut.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3452,7 +3464,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
 showdown.subParser('makehtml.blockquote', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.blockquote.onStart', text);
+  let startEvent = new showdown.Event('makehtml.blockquote.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3480,7 +3492,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     bq = bq.replace(/¨0/g, '');
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.blockquote.onCapture', bq);
+    let captureStartEvent = new showdown.Event('makehtml.blockquote.onCapture', bq);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -3510,7 +3522,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
       otp = '<blockquote' + showdown.helper._populateAttributes(attributes) + '>\n' +  bq + '\n</blockquote>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.blockquote.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.blockquote.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -3520,7 +3532,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.blockquote.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.blockquote.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3543,7 +3555,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
 showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.codeBlock.onStart', text);
+  let startEvent = new showdown.Event('makehtml.codeBlock.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3565,7 +3577,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
           code: {}
         };
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.codeBlock.onCapture', codeblock);
+    let captureStartEvent = new showdown.Event('makehtml.codeBlock.onCapture', codeblock);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -3602,7 +3614,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
       otp += codeblock + end + '</code></pre>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.codeBlock.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.codeBlock.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -3616,7 +3628,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
   // strip sentinel
   text = text.replace(/¨0/, '');
 
-  let afterEvent = new showdown.helper.Event('makehtml.codeBlock.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.codeBlock.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3660,7 +3672,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
 showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.codeSpan.onStart', text);
+  let startEvent = new showdown.Event('makehtml.codeSpan.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3683,7 +3695,7 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
     c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
     c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.codeSpan.onCapture', c);
+    let captureStartEvent = new showdown.Event('makehtml.codeSpan.onCapture', c);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -3706,7 +3718,7 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
       otp = m1 + '<code' + showdown.helper._populateAttributes(attributes) + '>' +  c + '</code>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.codeSpan.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.codeSpan.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -3718,7 +3730,7 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
   }
   );
 
-  let afterEvent = new showdown.helper.Event('makehtml.codeSpan.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.codeSpan.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3745,7 +3757,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
     return text;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.completeHTMLDocument.onStart', text);
+  let startEvent = new showdown.Event('makehtml.completeHTMLDocument.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3800,7 +3812,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
 
   text = doctypeParsed + '<html' + lang + '>\n<head>\n' + title + charset + metadata + '</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
 
-  let afterEvent = new showdown.helper.Event('makehtml.completeHTMLDocument.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.completeHTMLDocument.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3823,7 +3835,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
 showdown.subParser('makehtml.detab', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.detab.onStart', text);
+  let startEvent = new showdown.Event('makehtml.detab.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3854,7 +3866,7 @@ showdown.subParser('makehtml.detab', function (text, options, globals) {
   text = text.replace(/¨A/g, '    ');  // g_tab_width
   text = text.replace(/¨B/g, '');
 
-  let afterEvent = new showdown.helper.Event('makehtml.detab.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.detab.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3881,7 +3893,7 @@ showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
     return text;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.ellipsis.onStart', text);
+  let startEvent = new showdown.Event('makehtml.ellipsis.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3891,7 +3903,7 @@ showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
 
   text = text.replace(/\.\.\./g, '…');
 
-  let afterEvent = new showdown.helper.Event('makehtml.ellipsis.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.ellipsis.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3919,7 +3931,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     return text;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.emoji.onStart', text);
+  let startEvent = new showdown.Event('makehtml.emoji.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3931,7 +3943,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
 
   text = text.replace(pattern, function (wholeMatch, emojiCode) {
     let otp = '';
-    let captureStartEvent = new showdown.helper.Event('makehtml.emoji.onCapture', emojiCode);
+    let captureStartEvent = new showdown.Event('makehtml.emoji.onCapture', emojiCode);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -3953,7 +3965,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
       otp = wm;
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.emoji.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.emoji.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -3963,7 +3975,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     return beforeHashEvent.output;
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.emoji.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.emoji.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -3989,7 +4001,7 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
 showdown.subParser('makehtml.emphasisAndStrong', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.emphasisAndStrong.onStart', text);
+  let startEvent = new showdown.Event('makehtml.emphasisAndStrong.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4035,7 +4047,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
         break;
     }
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.' + subEventName + '.onCapture', txt);
+    let captureStartEvent = new showdown.Event('makehtml.emphasisAndStrong.' + subEventName + '.onCapture', txt);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -4076,7 +4088,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
       }
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.' + subEventName + '.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.' + subEventName + '.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -4137,7 +4149,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
     return (/\S$/.test(m)) ? parseInside (m, '<em>', wm, asteriskEm) : wm;
   });
   //}
-  let afterEvent = new showdown.helper.Event('makehtml.emphasisAndStrong.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.emphasisAndStrong.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4160,7 +4172,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
 showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.encodeAmpsAndAngles.onStart', text);
+  let startEvent = new showdown.Event('makehtml.encodeAmpsAndAngles.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4181,7 +4193,7 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
   // Encode >
   text = text.replace(/>/g, '&gt;');
 
-  let afterEvent = new showdown.helper.Event('makehtml.encodeAmpsAndAngles.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.encodeAmpsAndAngles.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4213,7 +4225,7 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
 showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.encodeBackslashEscapes.onStart', text);
+  let startEvent = new showdown.Event('makehtml.encodeBackslashEscapes.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4224,7 +4236,7 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
   text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
   text = text.replace(/\\([`*_{}\[\]()>#+.!~=|:-])/g, showdown.helper.escapeCharactersCallback);
 
-  let afterEvent = new showdown.helper.Event('makehtml.encodeBackslashEscapes.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.encodeBackslashEscapes.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4249,7 +4261,7 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
 showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.encodeCode.onStart', text);
+  let startEvent = new showdown.Event('makehtml.encodeCode.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4267,7 +4279,7 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   // Now, escape characters that are magic in Markdown:
     .replace(/([*_{}\[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
 
-  let afterEvent = new showdown.helper.Event('makehtml.encodeCode.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.encodeCode.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4291,7 +4303,7 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
 showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onStart', text);
+  let startEvent = new showdown.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4314,7 +4326,7 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
       .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4349,7 +4361,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
     return text;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onStart', text);
+  let startEvent = new showdown.Event('makehtml.githubCodeBlock.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4367,7 +4379,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
           code: {},
         };
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onCapture', codeblock);
+    let captureStartEvent = new showdown.Event('makehtml.githubCodeBlock.onCapture', codeblock);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -4431,7 +4443,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
       otp += codeblock + end + '</code></pre>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.githubCodeBlock.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -4449,7 +4461,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
   // attacklab: strip sentinel
   text = text.replace(/¨0/, '');
 
-  let afterEvent = new showdown.helper.Event('makehtml.githubCodeBlock.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.githubCodeBlock.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4470,7 +4482,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
 
 showdown.subParser('makehtml.hashBlock', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashBlock.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashBlock.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4481,7 +4493,7 @@ showdown.subParser('makehtml.hashBlock', function (text, options, globals) {
   text = text.replace(/(^\n+|\n+$)/g, '');
   text = '\n\n¨K' + (globals.gHtmlBlocks.push(text) - 1) + 'K\n\n';
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashBlock.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashBlock.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4503,7 +4515,7 @@ showdown.subParser('makehtml.hashBlock', function (text, options, globals) {
 
 showdown.subParser('makehtml.hashCodeTags', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashCodeTags.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashCodeTags.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4519,7 +4531,7 @@ showdown.subParser('makehtml.hashCodeTags', function (text, options, globals) {
   // Hash naked <code>
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '<code\\b[^>]*>', '</code>', 'gim');
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashCodeTags.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashCodeTags.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4561,7 +4573,7 @@ showdown.subParser('makehtml.hashElement', function (text, options, globals) {
 
 showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashHTMLBlocks.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashHTMLBlocks.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4661,7 +4673,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
   text = text.replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g,
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashHTMLBlocks.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashHTMLBlocks.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4683,7 +4695,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
 
 showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashHTMLSpans.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashHTMLSpans.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4711,7 +4723,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
     return showdown.helper._hashHTMLSpan(wm, globals);
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashHTMLSpans.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashHTMLSpans.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4733,7 +4745,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
 
 showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.hashHTMLBlocks.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashHTMLBlocks.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4750,7 +4762,7 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
   // Hash <pre><code>
   text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^ {0,3}</code>\\s*</pre>', 'gim');
 
-  let afterEvent = new showdown.helper.Event('makehtml.hashPreCodeTags.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.hashPreCodeTags.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4787,7 +4799,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
   'use strict';
 
   function parseHeader (pattern, wholeMatch, headingText, headingLevel, headingId) {
-    let captureStartEvent = new showdown.helper.Event('makehtml.heading.onCapture', headingText),
+    let captureStartEvent = new showdown.Event('makehtml.heading.onCapture', headingText),
         otp;
 
     captureStartEvent
@@ -4815,7 +4827,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
       otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + spanGamut + '</h' + headingLevel + '>';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.heading.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.heading.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -4826,7 +4838,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
     return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.heading.onStart', text);
+  let startEvent = new showdown.Event('makehtml.heading.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4856,7 +4868,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
   });
 
 
-  let afterEvent = new showdown.helper.Event('makehtml.heading.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.heading.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4945,7 +4957,7 @@ showdown.subParser('makehtml.heading.id', function (m, options, globals) {
 ////
 showdown.subParser('makehtml.horizontalRule', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.horizontalRule.onStart', text);
+  let startEvent = new showdown.Event('makehtml.horizontalRule.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4958,7 +4970,7 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
   text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, key);
   text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, key);
 
-  let afterEvent = new showdown.helper.Event('makehtml.horizontalRule.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.horizontalRule.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4981,7 +4993,19 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
 showdown.subParser('makehtml.image', function (text, options, globals) {
   'use strict';
 
-  function writeImageTag (pattern, wholeMatch, altText, linkId, url, width, height, m5, title) {
+  /**
+   * @param {string} subEvtName
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @param {string} altText
+   * @param {string|null} [url]
+   * @param {string|null} [linkId]
+   * @param {string|null} [width]
+   * @param {string|null} [height]
+   * @param {string|null} [title]
+   * @returns {string}
+   */
+  function writeImageTag (subEvtName, pattern, wholeMatch, altText, url, linkId, width, height, title) {
 
     let gUrls    = globals.gUrls,
         gTitles  = globals.gTitles,
@@ -4998,7 +5022,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
         otp,
         attributes = {};
 
-    linkId = linkId.toLowerCase();
+    linkId = (linkId) ? linkId.toLowerCase() : null;
 
     if (!title) {
       title = null;
@@ -5007,7 +5031,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     if (wholeMatch.search(/\(<?\s*>? ?(['"].*['"])?\)$/m) > -1) {
       url = '';
 
-    } else if (url === '' || url === null) {
+    } else if (showdown.helper.isUndefined(url) || url === '' || url === null) {
       if (linkId === '' || linkId === null) {
         // lower-case and turn embedded newlines into spaces
         linkId = altText.toLowerCase().replace(/ ?\n/g, ' ');
@@ -5053,7 +5077,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       height = null;
     }
 
-    let captureStartEvent = new showdown.helper.Event('makehtml.image.onCapture', wholeMatch);
+    let captureStartEvent = new showdown.Event('makehtml.image.' + subEvtName + '.onCapture', wholeMatch);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -5078,7 +5102,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       otp = '<img' + showdown.helper._populateAttributes(attributes) + ' />';
     }
 
-    let beforeHashEvent = new showdown.helper.Event('makehtml.image.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.image.' + subEvtName + '.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -5089,7 +5113,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     return otp;
   }
 
-  let startEvent = new showdown.helper.Event('makehtml.image.onStart', text);
+  let startEvent = new showdown.Event('makehtml.image.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -5097,42 +5121,42 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  let inlineRegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
+  let inlineRegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(\S+?(?:\(\S*?\)\S*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
       crazyRegExp       = /!\[([^\]]*?)][ \t]*\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
-      base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z0-9+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
+      base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
       referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]/g,
       refShortcutRegExp = /!\[([^\[\]]+)]/g;
 
   // First, handle reference-style labeled images: ![alt text][id]
   text = text.replace(referenceRegExp, function (wholeMatch, altText, linkId) {
-    return writeImageTag (referenceRegExp, wholeMatch, altText, linkId, '');
+    return writeImageTag ('reference', referenceRegExp, wholeMatch, altText, null, linkId);
   });
 
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
   // base64 encoded images
   text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
     url = url.replace(/\s/g, '');
-    return writeImageTag (base64RegExp, wholeMatch, altText, '', url, width, height, m5, title);
+    return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
   });
 
   // cases with crazy urls like ./image/cat1).png
   text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
     url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag (crazyRegExp, wholeMatch, altText, '', url, width, height, m5, title);
+    return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
   });
 
   // normal cases
   text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
     url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag (inlineRegExp, wholeMatch, altText, '', url, width, height, m5, title);
+    return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
   });
 
   // handle reference-style shortcuts: ![img text]
   text = text.replace(refShortcutRegExp, function (wholeMatch, altText) {
-    return writeImageTag (refShortcutRegExp, wholeMatch, altText, '', '');
+    return writeImageTag ('reference', refShortcutRegExp, wholeMatch, altText);
   });
 
-  let afterEvent = new showdown.helper.Event('makehtml.image.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.image.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -5156,369 +5180,265 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
 // - Estevão Soares dos Santos (Tivie) <https://github.com/tivie>
 ////
 
-(function () {
+showdown.subParser('makehtml.link', function (text, options, globals) {
+
   /**
-   * Helper function: Wrapper function to pass as second replace parameter
    *
-   * @param {RegExp} rgx
-   * @param {string} evtRootName
-   * @param {{}} options
-   * @param {{}} globals
-   * @param {boolean} emptyCase
-   * @returns {Function}
-   */
-  function replaceAnchorTagReference (rgx, evtRootName, options, globals, emptyCase) {
-    emptyCase = !!emptyCase;
-    return function (wholeMatch, text, id, url, m5, m6, title) {
-      // bail we we find 2 newlines somewhere
-      if (/\n\n/.test(wholeMatch)) {
-        return wholeMatch;
-      }
-
-      var evt = createEvent(rgx, evtRootName + '.captureStart', wholeMatch, text, id, url, title, options, globals);
-      return writeAnchorTag(evt, options, globals, emptyCase);
-    };
-  }
-
-  function replaceAnchorTagBaseUrl (rgx, evtRootName, options, globals, emptyCase) {
-    return function (wholeMatch, text, id, url, m5, m6, title) {
-      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-
-      var evt = createEvent(rgx, evtRootName + '.captureStart', wholeMatch, text, id, url, title, options, globals);
-      return writeAnchorTag(evt, options, globals, emptyCase);
-    };
-  }
-
-  /**
-   * TODO Normalize this
-   * Helper function: Create a capture event
-   * @param {RegExp} rgx
-   * @param {String} evtName Event name
-   * @param {String} wholeMatch
-   * @param {String} text
-   * @param {String} id
-   * @param {String} url
-   * @param {String} title
-   * @param {{}} options
-   * @param {{}} globals
-   * @returns {showdown.helper.Event|*}
-   */
-  function createEvent (rgx, evtName, wholeMatch, text, id, url, title, options, globals) {
-    return globals.converter._dispatch(evtName, wholeMatch, options, globals, {
-      regexp: rgx,
-      matches: {
-        wholeMatch: wholeMatch,
-        text: text,
-        id: id,
-        url: url,
-        title: title
-      }
-    });
-  }
-
-  /**
-   * Helper Function: Normalize and write an anchor tag based on passed parameters
-   * @param evt
-   * @param options
-   * @param globals
-   * @param {boolean} emptyCase
+   * @param {string} subEvtName
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @param {string} text
+   * @param {string|null} [linkId]
+   * @param {string|null} [url]
+   * @param {string|null} [title]
+   * @param {boolean} [emptyCase]
    * @returns {string}
    */
-  function writeAnchorTag (evt, options, globals, emptyCase) {
+  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
 
-    var wholeMatch = evt.matches.wholeMatch;
-    var text = evt.matches.text;
-    var id = evt.matches.id;
-    var url = evt.matches.url;
-    var title = evt.matches.title;
-    var target = '';
+    let matches = {
+          _wholeMatch: wholeMatch,
+          _linkId: linkId,
+          _url: url,
+          _title: title,
+          text: text
+        },
+        otp,
+        attributes = {};
 
-    if (!title) {
-      title = '';
-    }
-    id = (id) ? id.toLowerCase() : '';
+    title = title || null;
+    url = url || null;
+    linkId = (linkId) ? linkId.toLowerCase() : null;
+    emptyCase = !!emptyCase;
 
     if (emptyCase) {
       url = '';
     } else if (!url) {
-      if (!id) {
+      if (!linkId) {
         // lower-case and turn embedded newlines into spaces
-        id = text.toLowerCase().replace(/ ?\n/g, ' ');
+        linkId = text.toLowerCase().replace(/ ?\n/g, ' ');
       }
-      url = '#' + id;
+      url = '#' + linkId;
 
-      if (!showdown.helper.isUndefined(globals.gUrls[id])) {
-        url = globals.gUrls[id];
-        if (!showdown.helper.isUndefined(globals.gTitles[id])) {
-          title = globals.gTitles[id];
+      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
+        url = globals.gUrls[linkId];
+        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
+          title = globals.gTitles[linkId];
         }
       } else {
         return wholeMatch;
       }
     }
-    //url = showdown.helper.escapeCharacters(url, '*_:~', false); // replaced line to improve performance
-    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
 
-    if (title !== '' && title !== null) {
-      title = title.replace(/"/g, '&quot;');
-      //title = showdown.helper.escapeCharacters(title, '*_', false); // replaced line to improve performance
-      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-      title = ' title="' + title + '"';
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+    attributes.href = url;
+
+    if (title && showdown.helper.isString(title)) {
+      title = title
+        .replace(/"/g, '&quot;')
+        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      attributes.title = title;
     }
 
     // optionLinksInNewWindow only applies
     // to external links. Hash links (#) open in same page
     if (options.openLinksInNewWindow && !/^#/.test(url)) {
-      // escaped _
-      target = ' rel="noopener noreferrer" target="¨E95Eblank"';
+      attributes.rel = 'noopener noreferrer';
+      attributes.target = '¨E95Eblank'; // escaped _
+
     }
 
-    // Text can be a markdown element, so we run through the appropriate parsers
-    text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
-    text = showdown.subParser('makehtml.emoji')(text, options, globals);
-    text = showdown.subParser('makehtml.underline')(text, options, globals);
-    text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
-    text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
-    text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
-    text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
+    let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches(matches)
+      .setAttributes(attributes);
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
 
-    //evt = createEvent(rgx, evtRootName + '.captureEnd', wholeMatch, text, id, url, title, options, globals);
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      attributes = captureStartEvent.attributes;
+      text = captureStartEvent.matches.text || '';
+      // Text can be a markdown element, so we run through the appropriate parsers
+      text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
+      text = showdown.subParser('makehtml.emoji')(text, options, globals);
+      text = showdown.subParser('makehtml.underline')(text, options, globals);
+      text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
+      text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
+      text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
+      text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
+      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
+    }
 
-    var result = '<a href="' + url + '"' + title + target + '>' + text + '</a>';
-
-    //evt = createEvent(rgx, evtRootName + '.beforeHash', wholeMatch, text, id, url, title, options, globals);
-
-    result = showdown.subParser('makehtml.hashHTMLSpans')(result, options, globals);
-
-    return result;
+    let beforeHashEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
   }
 
-  var evtRootName = 'makehtml.links';
-
   /**
-   * Turn Markdown link shortcuts into XHTML <a> tags.
+   * @param {string} mail
+   * @returns {{mail: string, url: string}}
    */
-  showdown.subParser('makehtml.links', function (text, options, globals) {
-
-    text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
-
-    // 1. Handle reference-style links: [link text] [id]
-    text = showdown.subParser('makehtml.links.reference')(text, options, globals);
-
-    // 2. Handle inline-style links: [link text](url "optional title")
-    text = showdown.subParser('makehtml.links.inline')(text, options, globals);
-
-    // 3. Handle reference-style shortcuts: [link text]
-    // These must come last in case there's a [link text][1] or [link text](/foo)
-    text = showdown.subParser('makehtml.links.referenceShortcut')(text, options, globals);
-
-    // 4. Handle angle brackets links -> `<http://example.com/>`
-    // Must come after links, because you can use < and > delimiters in inline links like [this](<url>).
-    text = showdown.subParser('makehtml.links.angleBrackets')(text, options, globals);
-
-    // 5. Handle GithubMentions (if option is enabled)
-    text = showdown.subParser('makehtml.links.ghMentions')(text, options, globals);
-
-    // 6. Handle <a> tags and img tags
-    text = text.replace(/<a\s[^>]*>[\s\S]*<\/a>/g, function (wholeMatch) {
-      return showdown.helper._hashHTMLSpan(wholeMatch, globals);
-    });
-
-    text = text.replace(/<img\s[^>]*\/?>/g, function (wholeMatch) {
-      return showdown.helper._hashHTMLSpan(wholeMatch, globals);
-    });
-
-    // 7. Handle naked links (if option is enabled)
-    text = showdown.subParser('makehtml.links.naked')(text, options, globals);
-
-    text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
-    return text;
-  });
-
-  /**
-   * TODO WRITE THIS DOCUMENTATION
-   */
-  showdown.subParser('makehtml.links.inline', function (text, options, globals) {
-    var evtRootName = evtRootName + '.inline';
-
-    text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
-
-    // 1. Look for empty cases: []() and [empty]() and []("title")
-    var rgxEmpty = /\[(.*?)]()()()()\(<? ?>? ?(?:["'](.*)["'])?\)/g;
-    text = text.replace(rgxEmpty, replaceAnchorTagBaseUrl(rgxEmpty, evtRootName, options, globals, true));
-
-    // 2. Look for cases with crazy urls like ./image/cat1).png
-    var rgxCrazy = /\[((?:\[[^\]]*]|[^\[\]])*)]()\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\5))?[ \t]?\)/g;
-    text = text.replace(rgxCrazy, replaceAnchorTagBaseUrl(rgxCrazy, evtRootName, options, globals));
-
-    // 3. inline links with no title or titles wrapped in ' or ":
-    // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
-    //var rgx2 = /\[[ ]*[\s]?[ ]*([^\n\[\]]*?)[ ]*[\s]?[ ]*] ?()\(<?[ ]*[\s]?[ ]*([^\s'"]*)>?(?:[ ]*[\n]?[ ]*()(['"])(.*?)\5)?[ ]*[\s]?[ ]*\)/; // this regex is too slow!!!
-    var rgx2 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)?)>?\s*(?:()(['"])(.*?)\5)? *\)/g;
-    text = text.replace(rgx2, replaceAnchorTagBaseUrl(rgx2, evtRootName, options, globals));
-
-    // 4. inline links with titles wrapped in (): [foo](bar.com (title))
-    var rgx3 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)?)>?\s+()()\((.*?)\) *\)/g;
-    text = text.replace(rgx3, replaceAnchorTagBaseUrl(rgx3, evtRootName, options, globals));
-
-    text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
-
-    return text;
-  });
-
-  /**
-   * TODO WRITE THIS DOCUMENTATION
-   */
-  showdown.subParser('makehtml.links.reference', function (text, options, globals) {
-    var evtRootName = evtRootName + '.reference';
-
-    text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
-
-    var rgx = /\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]()()()()/g;
-    text = text.replace(rgx, replaceAnchorTagReference(rgx, evtRootName, options, globals));
-
-    text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
-
-    return text;
-  });
-
-  /**
-   * TODO WRITE THIS DOCUMENTATION
-   */
-  showdown.subParser('makehtml.links.referenceShortcut', function (text, options, globals) {
-    var evtRootName = evtRootName + '.referenceShortcut';
-
-    text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
-
-    var rgx = /\[([^\[\]]+)]()()()()()/g;
-    text = text.replace(rgx, replaceAnchorTagReference(rgx, evtRootName, options, globals));
-
-    text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
-
-    return text;
-  });
-
-  /**
-   * TODO WRITE THIS DOCUMENTATION
-   */
-  showdown.subParser('makehtml.links.ghMentions', function (text, options, globals) {
-    var evtRootName = evtRootName + 'ghMentions';
-
-    if (!options.ghMentions) {
-      return text;
+  function parseMail (mail) {
+    let url = 'mailto:';
+    mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
+    if (options.encodeEmails) {
+      url = showdown.helper.encodeEmailAddress(url + mail);
+      mail = showdown.helper.encodeEmailAddress(mail);
+    } else {
+      url = url + mail;
     }
+    return {
+      mail: mail,
+      url: url
+    };
+  }
 
-    text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
+  //
+  // Parser starts here
+  //
+  let startEvent = new showdown.Event('makehtml.link.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
-    var rgx = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
+  // 1. Handle reference-style links: [link text] [id]
+  let referenceRegex = /\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]/g;
+  text = text.replace(referenceRegex, function (wholeMatch, text, linkId) {
+    // bail if we find 2 newlines somewhere
+    if (/\n\n/.test(wholeMatch)) {
+      return wholeMatch;
+    }
+    return writeAnchorTag ('reference', referenceRegex, wholeMatch, text, linkId);
+  });
 
-    text = text.replace(rgx, function (wholeMatch, st, escape, mentions, username) {
+  // 2. Handle inline-style links: [link text](url "optional title")
+  // 2.1. Look for empty cases: []() and [empty]() and []("title")
+  let inlineEmptyRegex = /\[(.*?)]\(<? ?>? ?(["'](.*)["'])?\)/g;
+  text = text.replace(inlineEmptyRegex, function (wholeMatch, text, m1, title) {
+    return writeAnchorTag ('inline', inlineEmptyRegex, wholeMatch, text, null, null, title, true);
+  });
+
+  // 2.2. Look for cases with crazy urls like ./image/cat1).png
+  // the url mus be enclosed in <>
+  let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
+  text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
+    return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
+  });
+
+  // 2.3. inline links with no title or titles wrapped in ' or ":
+  // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
+  let inlineNormalRegex1 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s*(?:(['"])(.*?)\3)? *\)/g;
+  text = text.replace(inlineNormalRegex1, function (wholeMatch, text, url, m1, title) {
+    return writeAnchorTag ('inline', inlineNormalRegex1, wholeMatch, text, null, url, title);
+  });
+
+  // 2.4. inline links with titles wrapped in (): [foo](bar.com (title))
+  let inlineNormalRegex2 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s+\((.*?)\) *\)/g;
+  text = text.replace(inlineNormalRegex2, function (wholeMatch, text, url, title) {
+    return writeAnchorTag ('inline', inlineNormalRegex2, wholeMatch, text, null, url, title);
+  });
+
+
+  // 3. Handle reference-style shortcuts: [link text]
+  // These must come last in case there's a [link text][1] or [link text](/foo)
+  let referenceShortcutRegex = /\[([^\[\]]+)]/g;
+  text = text.replace(referenceShortcutRegex, function (wholeMatch, text) {
+    return writeAnchorTag ('reference', referenceShortcutRegex, wholeMatch, text);
+  });
+
+  // 4. Handle angle brackets links -> `<http://example.com/>`
+  // Must come after links, because you can use < and > delimiters in inline links like [this](<url>).
+
+  // 4.1. Handle links first
+  let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
+  text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
+    let text = url;
+    url = (urlStart === 'www.') ? 'http://' + url : url;
+    return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
+  });
+
+  // 4.2. Then mail adresses
+  let angleBracketsMailRegex = /<(?:mailto:)?([-.\w]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)>/gi;
+  text = text.replace(angleBracketsMailRegex, function (wholeMatch, mail) {
+    const m = parseMail(mail);
+    return writeAnchorTag ('angleBrackets', angleBracketsMailRegex, wholeMatch, m.mail, null, m.url);
+  });
+
+  // 5. Handle GithubMentions (if option is enabled)
+  if (options.ghMentions) {
+    let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
+    text = text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
       // bail if the mentions was escaped
       if (escape === '\\') {
         return st + mentions;
       }
-
       // check if options.ghMentionsLink is a string
       // TODO Validation should be done at initialization not at runtime
       if (!showdown.helper.isString(options.ghMentionsLink)) {
         throw new Error('ghMentionsLink option must be a string');
       }
-      var url = options.ghMentionsLink.replace(/{u}/g, username);
-      var evt = createEvent(rgx, evtRootName + '.captureStart', wholeMatch, mentions, null, url, null, options, globals);
-      // captureEnd Event is triggered inside writeAnchorTag function
-      return st + writeAnchorTag(evt, options, globals);
+      let url = options.ghMentionsLink.replace(/\{u}/g, username);
+      return st + writeAnchorTag ('reference', ghMentionsRegex, wholeMatch, mentions, null, url);
     });
+  }
 
-    text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
-
-    return text;
+  // 6 and 7 have to come here to prevent naked links to catch html
+  // 6. Handle <a> tags
+  text = text.replace(/<a\s[^>]*>[\s\S]*<\/a>/g, function (wholeMatch) {
+    return showdown.helper._hashHTMLSpan(wholeMatch, globals);
   });
 
-  /**
-   * TODO WRITE THIS DOCUMENTATION
-   */
-  showdown.subParser('makehtml.links.angleBrackets', function (text, options, globals) {
-    var evtRootName = 'makehtml.links.angleBrackets';
-
-    text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
-
-    // 1. Parse links first
-    var urlRgx  = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
-    text = text.replace(urlRgx, function (wholeMatch, url, urlStart) {
-      var text = url;
-      url = (urlStart === 'www.') ? 'http://' + url : url;
-      var evt = createEvent(urlRgx, evtRootName + '.captureStart', wholeMatch, text, null, url, null, options, globals);
-      return writeAnchorTag(evt, options, globals);
-    });
-
-    // 2. Then Mail Addresses
-    var mailRgx = /<(?:mailto:)?([-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)>/gi;
-    text = text.replace(mailRgx, function (wholeMatch, mail) {
-      var url = 'mailto:';
-      mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
-      if (options.encodeEmails) {
-        url = showdown.helper.encodeEmailAddress(url + mail);
-        mail = showdown.helper.encodeEmailAddress(mail);
-      } else {
-        url = url + mail;
-      }
-      var evt = createEvent(mailRgx, evtRootName + '.captureStart', wholeMatch, mail, null, url, null, options, globals);
-      return writeAnchorTag(evt, options, globals);
-    });
-
-    text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
-    return text;
+  // 7. Handle <img> tags
+  text = text.replace(/<img\s[^>]*\/?>/g, function (wholeMatch) {
+    return showdown.helper._hashHTMLSpan(wholeMatch, globals);
   });
 
-  /**
-   * TODO MAKE THIS WORK (IT'S NOT ACTIVATED)
-   * TODO WRITE THIS DOCUMENTATION
-   */
-  showdown.subParser('makehtml.links.naked', function (text, options, globals) {
-    if (!options.simplifiedAutoLink) {
-      return text;
-    }
-
-    var evtRootName = 'makehtml.links.naked';
-
-    text = globals.converter._dispatch(evtRootName + '.start', text, options, globals).getText();
-
-    // 2. Now we check for
+  // 8. Handle naked links (if option is enabled)
+  if (options.simplifiedAutoLink) {
+    // 8.1. Check for naked URLs
     // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
-    var urlRgx = /([_*~]*?)(((?:https?|ftp):\/\/|www\.)[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*)\1/gi;
-    text = text.replace(urlRgx, function (wholeMatch, leadingMDChars, url, urlPrefix) {
-
+    let nakedUrlRegex = /([_*~]*?)(((?:https?|ftp):\/\/|www\.)[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*)\1/gi;
+    text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url, urlPrefix) {
       // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
-      var len = url.length;
-      var suffix = '';
-      for (var i = len - 1; i >= 0; --i) {
-        var char = url.charAt(i);
+      const len = url.length;
+      let suffix = '';
 
+      for (let i = len - 1; i >= 0; --i) {
+        let char = url.charAt(i);
         if (/[_*~,;:.!?]/.test(char)) {
-          // it's a punctuation char
-          // we remove it from the url
+          // it's a punctuation char so we remove it from the url
           url = url.slice(0, -1);
           // and prepend it to the suffix
           suffix = char + suffix;
-        } else if (/\)/.test(char)) {
-          var opPar = url.match(/\(/g) || [];
-          var clPar = url.match(/\)/g);
-
-          // it's a curved parenthesis so we need to check for "balance" (kinda)
-          if (opPar.length < clPar.length) {
-            // there are more closing Parenthesis than opening so chop it!!!!!
-            url = url.slice(0, -1);
-            // and prepend it to the suffix
-            suffix = char + suffix;
+        } else if (/[)\]]/.test(char)) {
+          // it's a parenthesis so we need to check for "balance" (kinda)
+          let opPar, clPar;
+          if (/\)/.test(char)) {
+            // it's a curved parenthesis
+            opPar = url.match(/\(/g) || [];
+            clPar = url.match(/\)/g);
           } else {
-            // it's (kinda) balanced so our work is done
-            break;
+            // it's a squared parenthesis
+            opPar = url.match(/\[/g) || [];
+            clPar = url.match(/]/g);
           }
-        } else if (/]/.test(char)) {
-          var opPar2 = url.match(/\[/g) || [];
-          var clPar2 = url.match(/\]/g);
-          // it's a squared parenthesis so we need to check for "balance" (kinda)
-          if (opPar2.length < clPar2.length) {
+          if (opPar.length < clPar.length) {
             // there are more closing Parenthesis than opening so chop it!!!!!
             url = url.slice(0, -1);
             // and prepend it to the suffix
@@ -5534,42 +5454,38 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       }
 
       // we copy the treated url to the text variable
-      var text = url;
+      let txt = url;
       // finally, if it's a www shortcut, we prepend http
       url = (urlPrefix === 'www.') ? 'http://' + url : url;
 
       // url part is done so let's take care of text now
       // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
-      text = text.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-
-      // finally we dispatch the event
-      var evt = createEvent(urlRgx, evtRootName + '.captureStart', wholeMatch, text, null, url, null, options, globals);
+      txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
 
       // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
       // we consumed those characters in the regexp
-      return leadingMDChars + writeAnchorTag(evt, options, globals) + suffix + leadingMDChars;
+      return leadingMDChars +
+        writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
+        suffix +
+        leadingMDChars;
     });
 
-    // 2. Then mails
-    var mailRgx = /(^|\s)(?:mailto:)?([A-Za-z0-9!#$%&'*+-/=?^_`{|}~.]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+)(?=$|\s)/gmi;
-    text = text.replace(mailRgx, function (wholeMatch, leadingChar, mail) {
-      var url = 'mailto:';
-      mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
-      if (options.encodeEmails) {
-        url = showdown.helper.encodeEmailAddress(url + mail);
-        mail = showdown.helper.encodeEmailAddress(mail);
-      } else {
-        url = url + mail;
-      }
-      var evt = createEvent(mailRgx, evtRootName + '.captureStart', wholeMatch, mail, null, url, null, options, globals);
-      return leadingChar + writeAnchorTag(evt, options, globals);
+    // 8.2. Now check for naked mail
+    let nakedMailRegex = /(^|\s)(?:mailto:)?([A-Za-z\d!#$%&'*+-/=?^_`{|}~.]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)(?=$|\s)/gmi;
+    text = text.replace(nakedMailRegex, function (wholeMatch, leadingChar, mail) {
+      const m = parseMail(mail);
+      return leadingChar + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
     });
+  }
 
-
-    text = globals.converter._dispatch(evtRootName + '.end', text, options, globals).getText();
-    return text;
-  });
-})();
+  let afterEvent = new showdown.Event('makehtml.link.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+});
 
 ////
 // makehtml/lists.js
@@ -5692,7 +5608,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
         item = showdown.subParser('makehtml.heading')(item, options, globals);
         item = showdown.subParser('makehtml.lists')(item, options, globals);
         item = showdown.subParser('makehtml.codeBlock')(item, options, globals);
-        item = showdown.subParser('makehtml.tables')(item, options, globals);
+        item = showdown.subParser('makehtml.table')(item, options, globals);
         item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
         //item = showdown.subParser('makehtml.paragraphs')(item, options, globals);
 
@@ -5855,11 +5771,50 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.metadata.before', text, options, globals).getText();
+  let startEvent = new showdown.Event('makehtml.metadata.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
-  function parseMetadataContents (content) {
+  /**
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @param {string} format
+   * @param {string} content
+   * @returns {string}
+   */
+  function parseMetadataContents (pattern, wholeMatch, format, content) {
+    let otp;
+    let captureStartEvent = new showdown.Event('makehtml.metadata.onCapture', content);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches({
+        _wholeMatch: wholeMatch,
+        format: format,
+        content: content
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+    format = captureStartEvent.matches.format;
+    content = captureStartEvent.matches.content;
+
+    // if something was passed as output, it will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '¨M';
+    }
+
     // raw is raw so it's not changed in any way
     globals.metadata.raw = content;
+    globals.metadata.format = format;
 
     // escape chars forbidden in html attributes
     // double quotes
@@ -5867,55 +5822,57 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
       // ampersand first
       .replace(/&/g, '&amp;')
       // double quotes
-      .replace(/"/g, '&quot;');
-
+      .replace(/"/g, '&quot;')
     // Restore dollar signs and tremas
-    content = content
       .replace(/¨D/g, '$$')
-      .replace(/¨T/g, '¨');
+      .replace(/¨T/g, '¨')
+      // replace multiple spaces
+      .replace(/\n {4}/g, ' ');
 
-    content = content.replace(/\n {4}/g, ' ');
     content.replace(/^([\S ]+): +([\s\S]+?)$/gm, function (wm, key, value) {
       globals.metadata.parsed[key] = value;
       return '';
     });
+    let beforeHashEvent = new showdown.Event('makehtml.metadata.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    if (!otp) {
+      otp = '¨M';
+    }
+    return otp;
   }
 
-  text = text.replace(/^\s*«««+\s*(\S*?)\n([\s\S]+?)\n»»»+\s*\n/, function (wholematch, format, content) {
-    parseMetadataContents(content);
-    return '¨M';
+  // 1. Metadata with «««»»» delimiters
+  const rgx1 = /^\s*«««+\s*(\S*?)\n([\s\S]+?)\n»»»+\s*\n/;
+  text = text.replace(rgx1, function (wholeMatch, format, content) {
+    return parseMetadataContents(rgx1, wholeMatch, format, content);
   });
 
-  text = text.replace(/^\s*---+\s*(\S*?)\n([\s\S]+?)\n---+\s*\n/, function (wholematch, format, content) {
-    if (format) {
-      globals.metadata.format = format;
-    }
-    parseMetadataContents(content);
-    return '¨M';
+  // 2. Metadata with YAML delimiters
+  const rgx2 = /^\s*---+\s*(\S*?)\n([\s\S]+?)\n---+\s*\n/;
+  text = text.replace(rgx2, function (wholeMatch, format, content) {
+    return parseMetadataContents(rgx1, wholeMatch, format, content);
   });
-
   text = text.replace(/¨M/g, '');
-
-  text = globals.converter._dispatch('makehtml.metadata.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.Event('makehtml.metadata.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });
 
 /**
  * Remove one level of line-leading tabs or spaces
  */
-showdown.subParser('makehtml.outdent', function (text, options, globals) {
+showdown.subParser('makehtml.outdent', function (text) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.outdent.before', text, options, globals).getText();
-
-  // attacklab: hack around Konqueror 3.5.4 bug:
-  // "----------bug".replace(/^-/g,"") == "bug"
-  text = text.replace(/^(\t|[ ]{1,4})/gm, '¨0'); // attacklab: g_tab_width
-
-  // attacklab: clean up hack
-  text = text.replace(/¨0/g, '');
-
-  text = globals.converter._dispatch('makehtml.outdent.after', text, options, globals).getText();
-  return text;
+  return text.replace(/^(\t| {1,4})/gm, '');
 });
 
 /**
@@ -5957,7 +5914,7 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
         codeFlag = false;
     // if this is a marker for an html block...
     // use RegExp.test instead of string.search because of QML bug
-    while (/¨(K|G)(\d+)\1/.test(grafsOutIt)) {
+    while (/¨([KG])(\d+)\1/.test(grafsOutIt)) {
       var delim = RegExp.$1,
           num   = RegExp.$2;
 
@@ -5974,7 +5931,7 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
       }
       blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
 
-      grafsOutIt = grafsOutIt.replace(/(\n\n)?¨(K|G)\d+\2(\n\n)?/, blockText);
+      grafsOutIt = grafsOutIt.replace(/(\n\n)?¨([KG])\d+\2(\n\n)?/, blockText);
       // Check if grafsOutIt is a pre->code
       if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOutIt)) {
         codeFlag = true;
@@ -6000,7 +5957,7 @@ showdown.subParser('makehtml.runExtension', function (ext, text, options, global
 
   } else if (ext.regex) {
     // TODO remove this when old extension loading mechanism is deprecated
-    var re = ext.regex;
+    let re = ext.regex;
     if (!(re instanceof RegExp)) {
       re = new RegExp(re, 'g');
     }
@@ -6017,7 +5974,7 @@ showdown.subParser('makehtml.runExtension', function (ext, text, options, global
 showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.helper.Event('makehtml.spanGamut.onStart', text);
+  let startEvent = new showdown.Event('makehtml.spanGamut.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -6032,13 +5989,8 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   // Process link and image tags. Images must come first,
   // because ![foo][f] looks like a link.
   text = showdown.subParser('makehtml.image')(text, options, globals);
+  text = showdown.subParser('makehtml.link')(text, options, globals);
 
-  text = globals.converter._dispatch('smakehtml.links.before', text, options, globals).getText();
-  text = showdown.subParser('makehtml.links')(text, options, globals);
-  text = globals.converter._dispatch('smakehtml.links.after', text, options, globals).getText();
-
-  //text = showdown.subParser('makehtml.autoLinks')(text, options, globals);
-  //text = showdown.subParser('makehtml.simplifiedAutoLinks')(text, options, globals);
   text = showdown.subParser('makehtml.emoji')(text, options, globals);
   text = showdown.subParser('makehtml.underline')(text, options, globals);
   text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
@@ -6063,7 +6015,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
     text = text.replace(/  +\n/g, '<br />\n');
   }
 
-  let afterEvent = new showdown.helper.Event('makehtml.spanGamut.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.spanGamut.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -6074,14 +6026,58 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
 
 showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
   'use strict';
-
-  if (options.strikethrough) {
-    text = globals.converter._dispatch('makehtml.strikethrough.before', text, options, globals).getText();
-    text = text.replace(/(?:~){2}([\s\S]+?)(?:~){2}/g, function (wm, txt) { return '<del>' + txt + '</del>'; });
-    text = globals.converter._dispatch('makehtml.strikethrough.after', text, options, globals).getText();
+  if (!options.strikethrough) {
+    return text;
   }
 
-  return text;
+  let startEvent = new showdown.Event('makehtml.strikethrough.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  const strikethroughRegex = /~{2}([\s\S]+?)~{2}/g;
+  text = text.replace(strikethroughRegex, function (wholeMatch, txt) {
+
+    let otp;
+    let captureStartEvent = new showdown.Event('makehtml.strikethrough.onCapture', txt);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(strikethroughRegex)
+      .setMatches({
+        _wholeMatch: wholeMatch,
+        strikethrough: txt
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '<del' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' + txt + '</del>';
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.strikethrough.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
+  });
+
+  let afterEvent = new showdown.Event('makehtml.strikethrough.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });
 
 /**
@@ -6092,13 +6088,13 @@ showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
 showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, globals) {
   'use strict';
 
-  var regex       = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?([^>\s]+)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=¨0))/gm,
-      base64Regex = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?(data:.+?\/.+?;base64,[A-Za-z0-9+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n\n|(?=¨0)|(?=\n\[))/gm;
+  const regex     = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?([^>\s]+)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=¨0))/gm,
+      base64Regex = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n\n|(?=¨0)|(?=\n\[))/gm;
 
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '¨0';
 
-  var replaceFunc = function (wholeMatch, linkId, url, width, height, blankLines, title) {
+  let replaceFunc = function (wholeMatch, linkId, url, width, height, blankLines, title) {
 
     // if there aren't two instances of linkId it must not be a reference link so back out
     linkId = linkId.toLowerCase();
@@ -6121,7 +6117,7 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
 
     } else {
       if (title) {
-        globals.gTitles[linkId] = title.replace(/"|'/g, '&quot;');
+        globals.gTitles[linkId] = title.replace(/["']/g, '&quot;');
       }
       if (options.parseImgDimensions && width && height) {
         globals.gDimensions[linkId] = {
@@ -6145,7 +6141,334 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
   return text;
 });
 
-showdown.subParser('makehtml.tables', function (text, options, globals) {
+showdown.subParser('makehtml.table', function (text, options, globals) {
+  'use strict';
+
+  if (!options.tables) {
+    return text;
+  }
+
+  // find escaped pipe characters
+  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+
+  //
+  // parser starts here
+  //
+  let startEvent = new showdown.Event('makehtml.table.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  // parse multi column tables
+  const tableRgx = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*[-=]{2,}[\s\S]+?(?:\n\n|¨0)/gm;
+  text = text.replace(tableRgx, function (wholeMatch) {
+    return parse(tableRgx, wholeMatch);
+  });
+
+  const singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
+  text = text.replace(singeColTblRgx, function (wholeMatch) {
+    return parse(singeColTblRgx, wholeMatch);
+  });
+
+  let afterEvent = new showdown.Event('makehtml.table.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+
+
+
+  /**
+   *
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @returns {string}
+   */
+  function parse (pattern, wholeMatch) {
+    let tab = preParse(wholeMatch);
+
+    // if parseTable returns null then it's a malformed table so we return what we caught
+    if (!tab) {
+      return wholeMatch;
+    }
+
+    // only now we consider it to be a markdown table and start doing stuff
+    let headers = tab.rawHeaders;
+    let styles = tab.rawStyles;
+    let cells = tab.rawCells;
+
+    let otp;
+    let captureStartEvent = new showdown.Event('makehtml.table.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches({
+        _wholeMatch: wholeMatch,
+        table: wholeMatch
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      // user provided an otp, so we use it
+      otp = captureStartEvent.output;
+    } else {
+      // user changed matches.table, so we need to generate headers, styles, and cells again
+      if (captureStartEvent.matches.table !== wholeMatch) {
+        tab = preParse(captureStartEvent.matches.table);
+        // user passed a malformed table, so we bail
+        if (!tab) {
+          return wholeMatch;
+        }
+        headers = tab.rawHeaders;
+        styles = tab.rawStyles;
+        cells = tab.rawCells;
+      }
+      let parsedTab = parseTable (headers, styles, cells);
+      let attributes = captureStartEvent.attributes;
+      otp = buildTableOtp(parsedTab.headers, parsedTab.cells, attributes);
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.table.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    return otp;
+  }
+
+  /**
+   *
+   * @param {string[]} headers
+   * @param {string[]} cells
+   * @param {{}} attributes
+   * @returns {string}
+   */
+  function buildTableOtp (headers, cells, attributes) {
+    let otp;
+    const colCount = headers.length,
+        rowCount = cells.length;
+
+    otp = '<table' + showdown.helper._populateAttributes(attributes) + '>\n<thead>\n<tr>\n';
+    for (let i = 0; i < colCount; ++i) {
+      otp += headers[i];
+    }
+    otp += '</tr>\n</thead>\n<tbody>\n';
+
+    for (let i = 0; i < rowCount; ++i) {
+      otp += '<tr>\n';
+      for (let ii = 0; ii < colCount; ++ii) {
+        otp += cells[i][ii];
+      }
+      otp += '</tr>\n';
+    }
+    otp += '</tbody>\n</table>\n';
+    return otp;
+  }
+
+  /**
+   * @param {string} rawTable
+   * @returns {{rawHeaders: string[], rawStyles: string[], rawCells: *[]}|null}
+   */
+  function preParse (rawTable) {
+    let tableLines = rawTable.split('\n');
+
+    for (let i = 0; i < tableLines.length; ++i) {
+      // strip wrong first and last column if wrapped tables are used
+      if (/^ {0,3}\|/.test(tableLines[i])) {
+        tableLines[i] = tableLines[i].replace(/^ {0,3}\|/, '');
+      }
+      if (/\|[ \t]*$/.test(tableLines[i])) {
+        tableLines[i] = tableLines[i].replace(/\|[ \t]*$/, '');
+      }
+      // parse code spans first, but we only support one line code spans
+      tableLines[i] = showdown.subParser('makehtml.codeSpan')(tableLines[i], options, globals);
+    }
+
+    let rawHeaders = tableLines[0].split('|').map(function (s) { return s.trim();}),
+        rawStyles = tableLines[1].split('|').map(function (s) { return s.trim();}),
+        rawCells = [];
+
+    tableLines.shift();
+    tableLines.shift();
+
+    for (let i = 0; i < tableLines.length; ++i) {
+      if (tableLines[i].trim() === '') {
+        continue;
+      }
+      rawCells.push(
+        tableLines[i]
+          .split('|')
+          .map(function (s) {
+            return s.trim();
+          })
+      );
+    }
+
+    if (rawHeaders.length < rawStyles.length) {
+      return null;
+    }
+
+    return {
+      rawHeaders: rawHeaders,
+      rawStyles: rawStyles,
+      rawCells: rawCells
+    };
+  }
+
+  /**
+   *
+   * @param {string[]} rawHeaders
+   * @param {string[]} rawStyles
+   * @param {string[]} rawCells
+   * @returns {{headers: *, cells: *}}
+   */
+  function parseTable (rawHeaders, rawStyles, rawCells) {
+    const headers = [],
+        cells = [],
+        styles = [],
+        colCount = rawHeaders.length,
+        rowCount = rawCells.length;
+
+    for (let i = 0; i < colCount; ++i) {
+      styles.push(parseStyle(rawStyles[i]));
+    }
+
+    for (let i = 0; i < colCount; ++i) {
+      let header = rawHeaders[i];
+      let captureStartEvent = new showdown.Event('makehtml.table.header.onCapture', rawHeaders[i]);
+      captureStartEvent
+        .setOutput(null)
+        ._setGlobals(globals)
+        ._setOptions(options)
+        .setRegexp(null)
+        .setMatches({
+          _wholeMatch: rawHeaders[i],
+          header: rawHeaders[i]
+        })
+        .setAttributes(styles[i]);
+      captureStartEvent = globals.converter.dispatch(captureStartEvent);
+      if (captureStartEvent.output && captureStartEvent.output !== '') {
+        // user provided an otp, so we use it
+        header = captureStartEvent.output;
+      } else {
+        header = parseHeader(captureStartEvent.matches.header, styles[i]);
+      }
+      let beforeHashEvent = new showdown.Event('makehtml.table.header.onHash', header);
+      beforeHashEvent
+        .setOutput(header)
+        ._setGlobals(globals)
+        ._setOptions(options);
+      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+      header = beforeHashEvent.output;
+
+      headers.push(header);
+    }
+
+    for (let i = 0; i < rowCount; ++i) {
+      let row = [];
+      for (let ii = 0; ii < colCount; ++ii) {
+        let cell = (!showdown.helper.isUndefined(rawCells[i][ii])) ? rawCells[i][ii] : '',
+            attributes = (!showdown.helper.isUndefined(styles[ii])) ? styles[ii] : {};
+
+        // since we're reusing attributes, we might need to remove the id that we previously set for headers
+        if (attributes.id) {
+          attributes.classes = [attributes.id] + '_col';
+          delete attributes.id;
+        }
+
+
+        let captureStartEvent = new showdown.Event('makehtml.table.cell.onCapture', cell);
+        captureStartEvent
+          .setOutput(null)
+          ._setGlobals(globals)
+          ._setOptions(options)
+          .setRegexp(null)
+          .setMatches({
+            _wholeMatch: cell,
+            cell: cell
+          })
+          .setAttributes(attributes);
+        captureStartEvent = globals.converter.dispatch(captureStartEvent);
+        if (captureStartEvent.output && captureStartEvent.output !== '') {
+          // user provided an otp, so we use it
+          cell = captureStartEvent.output;
+        } else {
+          attributes = captureStartEvent.attributes;
+          cell = parseCell(captureStartEvent.matches.cell, attributes);
+        }
+        let beforeHashEvent = new showdown.Event('makehtml.table.cell.onHash', cell);
+        beforeHashEvent
+          .setOutput(cell)
+          ._setGlobals(globals)
+          ._setOptions(options);
+        beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+        cell = beforeHashEvent.output;
+
+        row.push(cell);
+      }
+      cells.push(row);
+    }
+
+    return {headers: headers, cells: cells};
+  }
+
+  /**
+   * @param {string} sLine
+   * @returns {{}|{style: string}}
+   */
+  function parseStyle (sLine) {
+    if (/^:[ \t]*-+$/.test(sLine)) {
+      return { style: 'text-align:left;' };
+    } else if (/^-+[ \t]*:[ \t]*$/.test(sLine)) {
+      return { style: 'text-align:right;' };
+    } else if (/^:[ \t]*-+[ \t]*:$/.test(sLine)) {
+      return { style: 'text-align:center;' };
+    } else {
+      return {};
+    }
+  }
+
+  /**
+   *
+   * @param {string} headerText
+   * @param {{id: string}} attributes
+   * @returns {string}
+   */
+  function parseHeader (headerText, attributes) {
+    headerText = headerText.trim();
+    headerText = showdown.subParser('makehtml.spanGamut')(headerText, options, globals);
+
+    // support both tablesHeaderId and tableHeaderId due to error in documentation so we don't break backwards compatibility
+    // TODO think about this option!!! and remove backwards compatibility
+    if (options.tablesHeaderId || options.tableHeaderId) {
+      attributes.id = headerText.replace(/ /g, '_').toLowerCase();
+    }
+    return '<th' + showdown.helper._populateAttributes(attributes) + '>' + headerText + '</th>\n';
+  }
+
+  /**
+   *
+   * @param {string} cellText
+   * @param {{}} attributes
+   * @returns {string}
+   */
+  function parseCell (cellText, attributes) {
+    cellText = showdown.subParser('makehtml.spanGamut')(cellText, options, globals);
+    return '<td' + showdown.helper._populateAttributes(attributes) + '>' + cellText + '</td>\n';
+  }
+});
+
+showdown.subParser('makehtml.tablesz', function (text, options, globals) {
   'use strict';
 
   if (!options.tables) {
@@ -6352,7 +6675,7 @@ showdown.subParser('makehtml.unescapeSpecialChars', function (text, options, glo
 
 showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.helper.Event('makehtml.unhashHTMLSpans.onStart', text);
+  let startEvent = new showdown.Event('makehtml.unhashHTMLSpans.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -6377,7 +6700,7 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
     text = text.replace('¨C' + i + 'C', repText);
   }
 
-  let afterEvent = new showdown.helper.Event('makehtml.unhashHTMLSpans.onEnd', text);
+  let afterEvent = new showdown.Event('makehtml.unhashHTMLSpans.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -7208,12 +7531,12 @@ showdown.Converter = function (converterOptions) {
 
   /**
    *
-   * @param {showdown.helper.Event} event
-   * @returns showdown.helper.Event
+   * @param {showdown.Event} event
+   * @returns showdown.Event
    */
   this.dispatch = function (event) {
-    if (!(event instanceof showdown.helper.Event)) {
-      throw new TypeError('dispatch only accepts showdown.helper.Event objects as param, but ' + typeof event + ' given');
+    if (!(event instanceof showdown.Event)) {
+      throw new TypeError('dispatch only accepts showdown.Event objects as param, but ' + typeof event + ' given');
     }
     event.converter = this;
     if (listeners.hasOwnProperty(event.name)) {
@@ -7222,7 +7545,7 @@ showdown.Converter = function (converterOptions) {
         if (showdown.helper.isString(listRet)) {
           event.output = listRet;
           event.input = listRet;
-        } else if (listRet instanceof showdown.helper.Event && listRet.name === event.name) {
+        } else if (listRet instanceof showdown.Event && listRet.name === event.name) {
           event = listRet;
         }
       }
@@ -7237,7 +7560,7 @@ showdown.Converter = function (converterOptions) {
    * @param {{}} options Converter Options
    * @param {{}} globals Converter globals
    * @param {{}} [pParams] extra params for event
-   * @returns showdown.helper.Event
+   * @returns showdown.Event
    * @private
    */
   this._dispatch = function dispatch (evtName, text, options, globals, pParams) {
@@ -7248,7 +7571,7 @@ showdown.Converter = function (converterOptions) {
     params.input = text;
     params.options = options;
     params.globals = globals;
-    var event = new showdown.helper.Event(evtName, text, params);
+    var event = new showdown.Event(evtName, text, params);
 
     if (listeners.hasOwnProperty(evtName)) {
       for (var ei = 0; ei < listeners[evtName].length; ++ei) {

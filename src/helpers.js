@@ -549,11 +549,10 @@ showdown.helper.isAbsolutePath = function (path) {
 };
 
 showdown.helper.URLUtils = function (url, baseURL) {
-  const pattern1 = /^\s+|\s+$/g;
   const pattern2 = /^([^:\/?#]+:)?(?:\/\/(?:([^:@\/?#]*)(?::([^:@\/?#]*))?@)?(([^:\/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
 
   let m = String(url)
-    .replace(pattern1, '')
+    .trim()
     .match(pattern2);
   if (!m) {
     throw new RangeError();

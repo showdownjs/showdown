@@ -70,6 +70,7 @@ module.exports = function (config) {
     files: [
       { pattern: '.build/showdown.js'},
       { pattern: 'src/options.js'},
+      { pattern: 'test/mocks/md-to-trigger-all-events.ms',  watched: false, included: false, served: true, nocache: false},
       // tests
       { pattern: 'test/unit/showdown*.js' }
       //{ pattern: 'test/functional/showdown*.js' },

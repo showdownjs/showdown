@@ -11,7 +11,7 @@
 showdown.Converter = function (converterOptions) {
   'use strict';
 
-  var
+  let
       /**
        * Options used by this converter
        * @private
@@ -207,7 +207,7 @@ showdown.Converter = function (converterOptions) {
   }
 
   function rTrimInputText (text) {
-    var rsp = text.match(/^\s*/)[0].length,
+    let rsp = text.match(/^\s*/)[0].length,
         rgx = new RegExp('^\\s{0,' + rsp + '}', 'gm');
     return text.replace(rgx, '');
   }
@@ -230,37 +230,6 @@ showdown.Converter = function (converterOptions) {
           event.input = listRet;
         } else if (listRet instanceof showdown.Event && listRet.name === event.name) {
           event = listRet;
-        }
-      }
-    }
-    return event;
-  };
-
-  /**
-   *
-   * @param {string} evtName Event name
-   * @param {string} text Text
-   * @param {{}} options Converter Options
-   * @param {{}} globals Converter globals
-   * @param {{}} [pParams] extra params for event
-   * @returns showdown.Event
-   * @private
-   */
-  this._dispatch = function dispatch (evtName, text, options, globals, pParams) {
-    evtName = evtName.toLowerCase();
-    text = text || '';
-    var params = pParams || {};
-    params.converter = this;
-    params.input = text;
-    params.options = options;
-    params.globals = globals;
-    var event = new showdown.Event(evtName, text, params);
-
-    if (listeners.hasOwnProperty(evtName)) {
-      for (var ei = 0; ei < listeners[evtName].length; ++ei) {
-        var nText = listeners[evtName][ei](event);
-        if (nText && typeof nText !== 'undefined') {
-          event.output = nText;
         }
       }
     }

@@ -25,9 +25,12 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  let pattern = /:([\S]+?):/g;
+  let pattern = /:(\S+?):/g;
 
   text = text.replace(pattern, function (wholeMatch, emojiCode) {
+    if (!showdown.helper.emojis.hasOwnProperty(emojiCode)) {
+      return wholeMatch;
+    }
     let otp = '';
     let captureStartEvent = new showdown.Event('makehtml.emoji.onCapture', emojiCode);
     captureStartEvent
@@ -45,10 +48,8 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     // if something was passed as output, it takes precedence and will be used as output
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       otp = captureStartEvent.output;
-    } else if (showdown.helper.emojis.hasOwnProperty(emojiCode)) {
-      otp = showdown.helper.emojis[emojiCode];
     } else {
-      otp = wm;
+      otp = showdown.helper.emojis[emojiCode];
     }
 
     let beforeHashEvent = new showdown.Event('makehtml.emoji.onHash', otp);

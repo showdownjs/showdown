@@ -29,7 +29,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   // Do Horizontal Rules:
   text = showdown.subParser('makehtml.horizontalRule')(text, options, globals);
 
-  text = showdown.subParser('makehtml.lists')(text, options, globals);
+  text = showdown.subParser('makehtml.list')(text, options, globals);
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
   text = showdown.subParser('makehtml.table')(text, options, globals);
 

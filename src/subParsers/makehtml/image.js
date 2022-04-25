@@ -80,19 +80,19 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
   function writeImageTag (subEvtName, pattern, wholeMatch, altText, url, linkId, width, height, title) {
 
     let gUrls    = globals.gUrls,
-      gTitles  = globals.gTitles,
-      gDims    = globals.gDimensions,
-      matches = {
-        _wholeMatch: wholeMatch,
-        _altText: altText,
-        _linkId: linkId,
-        _url: url,
-        _width: width,
-        _height: height,
-        _title: title
-      },
-      otp,
-      attributes = {};
+        gTitles  = globals.gTitles,
+        gDims    = globals.gDimensions,
+        matches = {
+          _wholeMatch: wholeMatch,
+          _altText: altText,
+          _linkId: linkId,
+          _url: url,
+          _width: width,
+          _height: height,
+          _title: title
+        },
+        otp,
+        attributes = {};
 
     linkId = (linkId) ? linkId.toLowerCase() : null;
 

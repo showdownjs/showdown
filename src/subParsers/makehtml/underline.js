@@ -46,9 +46,13 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
   // escape remaining underscores to prevent them being parsed by italic and bold
   text = text.replace(/(_)/g, showdown.helper.escapeCharactersCallback);
 
-  text = globals.converter._dispatch('makehtml.underline.after', text, options, globals).getText();
-
-  return text;
+  let afterEvent = new showdown.Event('makehtml.underline.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 
 
   function parse (pattern, wholeMatch, txt) {

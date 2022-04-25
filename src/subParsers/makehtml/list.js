@@ -1,5 +1,5 @@
 ////
-// makehtml/lists.js
+// makehtml/list.js
 // Copyright (c) 2022 ShowdownJS
 //
 // Transforms MD lists into `<ul>` or `<ol>` html list
@@ -13,7 +13,7 @@
 ////
 
 
-showdown.subParser('makehtml.lists', function (text, options, globals) {
+showdown.subParser('makehtml.list', function (text, options, globals) {
   'use strict';
 
   // Start of list parsing
@@ -237,7 +237,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
           item = showdown.subParser('makehtml.githubCodeBlock')(item, options, globals);
           item = showdown.subParser('makehtml.blockquote')(item, options, globals);
           item = showdown.subParser('makehtml.heading')(item, options, globals);
-          item = showdown.subParser('makehtml.lists')(item, options, globals);
+          item = showdown.subParser('makehtml.list')(item, options, globals);
           item = showdown.subParser('makehtml.codeBlock')(item, options, globals);
           item = showdown.subParser('makehtml.table')(item, options, globals);
           item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
@@ -279,7 +279,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
         } else {
 
           // Recursion for sub-lists:
-          item = showdown.subParser('makehtml.lists')(item, options, globals);
+          item = showdown.subParser('makehtml.list')(item, options, globals);
           item = item.replace(/\n$/, ''); // chomp(item)
           item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
 

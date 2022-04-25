@@ -20,10 +20,21 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  let key = showdown.subParser('makehtml.hashBlock')('<hr />', options, globals);
-  text = text.replace(/^ {0,2}( ?-){3,}[ \t]*$/gm, key);
-  text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, key);
-  text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, key);
+
+  const rgx1 = /^ {0,2}( ?-){3,}[ \t]*$/gm;
+  text = text.replace(/^ {0,2}( ?-){3,}[ \t]*$/gm, function (wholeMatch) {
+    return parse(rgx1, wholeMatch);
+  });
+
+  const rgx2 = /^ {0,2}( ?\*){3,}[ \t]*$/gm;
+  text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, function (wholeMatch) {
+    return parse(rgx2, wholeMatch);
+  });
+
+  const rgx3 = /^ {0,2}( ?\*){3,}[ \t]*$/gm;
+  text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, function (wholeMatch) {
+    return parse(rgx3, wholeMatch);
+  });
 
   let afterEvent = new showdown.Event('makehtml.horizontalRule.onEnd', text);
   afterEvent
@@ -32,4 +43,44 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
     ._setOptions(options);
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
+
+  /**
+   *
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @returns {string}
+   */
+  function parse (pattern, wholeMatch) {
+    let otp;
+    let captureStartEvent = new showdown.Event('makehtml.horizontalRule.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches({
+        _whoteMatch: wholeMatch
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '<hr' + showdown.helper._populateAttributes(captureStartEvent.attributes) + ' />';
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.horizontalRule.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    otp = showdown.subParser('makehtml.hashBlock')(otp, options, globals);
+    return otp;
+  }
+
 });

@@ -102,7 +102,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
       }
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.' + subEventName + '.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.emphasisAndStrong.' + subEventName + '.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)

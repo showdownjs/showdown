@@ -24,7 +24,7 @@ jobs:
       - name: '⚙ Setup Node.js v17.x'
         uses: actions/setup-node@v2
         with:
-          node-version: 17.x
+          node-version: 16.x
           cache: 'npm'
 
       - name: '📖 Get current package version'

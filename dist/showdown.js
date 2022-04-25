@@ -1,4 +1,4 @@
-;/*! showdown v 3.0.0-alpha - 24-04-2022 */
+;/*! showdown v 3.0.0-alpha - 25-04-2022 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -386,6 +386,14 @@ showdown.subParser = function (name, func) {
   } else {
     throw Error('showdown.subParser function first argument must be a string (the name of the subparser)');
   }
+};
+
+/**
+ *
+ * @returns {{}}
+ */
+showdown.getSubParserList = function () {
+  return parsers;
 };
 
 /**
@@ -1249,6 +1257,8 @@ showdown.helper._populateAttributes = function (attributes) {
     if (attributes.hasOwnProperty(attr)) {
       let key = attr,
           val;
+
+      // since class is a javascript reserved word we use classes
       if (attr === 'classes') {
         key = 'class';
       }
@@ -1266,11 +1276,40 @@ showdown.helper._populateAttributes = function (attributes) {
       } else {
         throw new TypeError('Attribute "' + attr + '" must be either an array or string but ' + typeof attributes[attr] + ' given');
       }
-      text += (val === null) ? '' : ' ' + key + '="' + val + '"';
+      // special attributes
+      switch (attr) {
+        // these attributes don't expect a value. If they are false, they should be removed. If they are true,
+        // they should be present but without any value
+        case 'checked':
+        case 'disabled':
+          if (val === true || val === 'true' || val === attr) {
+            text += ' ' + key;
+          }
+          // if falsy, they are just ignored
+          break;
+
+        // default behavior for all other attributes types
+        default:
+          text += (val === null) ? '' : ' ' + key + '="' + val + '"';
+          break;
+      }
     }
   }
 
   return text;
+};
+
+/**
+ * Remove one level of line-leading tabs or spaces
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.outdent = function (text) {
+  'use strict';
+  if (!showdown.helper.isString(text)) {
+    return text;
+  }
+  return text.replace(/^(\t| {1,4})/gm, '');
 };
 
 /**
@@ -3426,7 +3465,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   // Do Horizontal Rules:
   text = showdown.subParser('makehtml.horizontalRule')(text, options, globals);
 
-  text = showdown.subParser('makehtml.lists')(text, options, globals);
+  text = showdown.subParser('makehtml.list')(text, options, globals);
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
   text = showdown.subParser('makehtml.table')(text, options, globals);
 
@@ -3596,7 +3635,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
       otp = captureStartEvent.output;
     } else {
       codeblock = captureStartEvent.matches.codeblock;
-      codeblock = showdown.subParser('makehtml.outdent')(codeblock, options, globals);
+      codeblock = showdown.helper.outdent(codeblock);
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
       codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
       codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
@@ -3939,9 +3978,12 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  let pattern = /:([\S]+?):/g;
+  let pattern = /:(\S+?):/g;
 
   text = text.replace(pattern, function (wholeMatch, emojiCode) {
+    if (!showdown.helper.emojis.hasOwnProperty(emojiCode)) {
+      return wholeMatch;
+    }
     let otp = '';
     let captureStartEvent = new showdown.Event('makehtml.emoji.onCapture', emojiCode);
     captureStartEvent
@@ -3959,10 +4001,8 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
     // if something was passed as output, it takes precedence and will be used as output
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       otp = captureStartEvent.output;
-    } else if (showdown.helper.emojis.hasOwnProperty(emojiCode)) {
-      otp = showdown.helper.emojis[emojiCode];
     } else {
-      otp = wm;
+      otp = showdown.helper.emojis[emojiCode];
     }
 
     let beforeHashEvent = new showdown.Event('makehtml.emoji.onHash', otp);
@@ -4088,7 +4128,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
       }
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.' + subEventName + '.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.emphasisAndStrong.' + subEventName + '.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -4182,7 +4222,7 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
 
   // Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
   // http://bumppo.net/projects/amputator/
-  text = text.replace(/&(?!#?[xX]?(?:[0-9a-fA-F]+|\w+);)/g, '&amp;');
+  text = text.replace(/&(?!#?[xX]?(?:[\da-fA-F]+|\w+);)/g, '&amp;');
 
   // Encode naked <'s
   text = text.replace(/<(?![a-z\/?$!])/gi, '&lt;');
@@ -4745,7 +4785,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
 
 showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.Event('makehtml.hashHTMLBlocks.onStart', text);
+  let startEvent = new showdown.Event('makehtml.hashPreCodeTags.onStart', text);
   startEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4965,10 +5005,21 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  let key = showdown.subParser('makehtml.hashBlock')('<hr />', options, globals);
-  text = text.replace(/^ {0,2}( ?-){3,}[ \t]*$/gm, key);
-  text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, key);
-  text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, key);
+
+  const rgx1 = /^ {0,2}( ?-){3,}[ \t]*$/gm;
+  text = text.replace(/^ {0,2}( ?-){3,}[ \t]*$/gm, function (wholeMatch) {
+    return parse(rgx1, wholeMatch);
+  });
+
+  const rgx2 = /^ {0,2}( ?\*){3,}[ \t]*$/gm;
+  text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, function (wholeMatch) {
+    return parse(rgx2, wholeMatch);
+  });
+
+  const rgx3 = /^ {0,2}( ?\*){3,}[ \t]*$/gm;
+  text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, function (wholeMatch) {
+    return parse(rgx3, wholeMatch);
+  });
 
   let afterEvent = new showdown.Event('makehtml.horizontalRule.onEnd', text);
   afterEvent
@@ -4977,6 +5028,46 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
     ._setOptions(options);
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
+
+  /**
+   *
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @returns {string}
+   */
+  function parse (pattern, wholeMatch) {
+    let otp;
+    let captureStartEvent = new showdown.Event('makehtml.horizontalRule.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches({
+        _whoteMatch: wholeMatch
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '<hr' + showdown.helper._populateAttributes(captureStartEvent.attributes) + ' />';
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.horizontalRule.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    otp = showdown.subParser('makehtml.hashBlock')(otp, options, globals);
+    return otp;
+  }
+
 });
 
 ////
@@ -4992,6 +5083,59 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
 
 showdown.subParser('makehtml.image', function (text, options, globals) {
   'use strict';
+
+  let startEvent = new showdown.Event('makehtml.image.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  let inlineRegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(\S+?(?:\(\S*?\)\S*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
+      crazyRegExp       = /!\[([^\]]*?)][ \t]*\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
+      base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
+      referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]/g,
+      refShortcutRegExp = /!\[([^\[\]]+)]/g;
+
+  // First, handle reference-style labeled images: ![alt text][id]
+  text = text.replace(referenceRegExp, function (wholeMatch, altText, linkId) {
+    return writeImageTag ('reference', referenceRegExp, wholeMatch, altText, null, linkId);
+  });
+
+  // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
+  // base64 encoded images
+  text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+    url = url.replace(/\s/g, '');
+    return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
+  });
+
+  // cases with crazy urls like ./image/cat1).png
+  text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
+  });
+
+  // normal cases
+  text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
+  });
+
+  // handle reference-style shortcuts: ![img text]
+  text = text.replace(refShortcutRegExp, function (wholeMatch, altText) {
+    return writeImageTag ('reference', refShortcutRegExp, wholeMatch, altText);
+  });
+
+  let afterEvent = new showdown.Event('makehtml.image.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+
 
   /**
    * @param {string} subEvtName
@@ -5113,56 +5257,6 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     return otp;
   }
 
-  let startEvent = new showdown.Event('makehtml.image.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  let inlineRegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(\S+?(?:\(\S*?\)\S*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
-      crazyRegExp       = /!\[([^\]]*?)][ \t]*\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
-      base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
-      referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]/g,
-      refShortcutRegExp = /!\[([^\[\]]+)]/g;
-
-  // First, handle reference-style labeled images: ![alt text][id]
-  text = text.replace(referenceRegExp, function (wholeMatch, altText, linkId) {
-    return writeImageTag ('reference', referenceRegExp, wholeMatch, altText, null, linkId);
-  });
-
-  // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
-  // base64 encoded images
-  text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = url.replace(/\s/g, '');
-    return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
-  });
-
-  // cases with crazy urls like ./image/cat1).png
-  text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
-  });
-
-  // normal cases
-  text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
-  });
-
-  // handle reference-style shortcuts: ![img text]
-  text = text.replace(refShortcutRegExp, function (wholeMatch, altText) {
-    return writeImageTag ('reference', refShortcutRegExp, wholeMatch, altText);
-  });
-
-  let afterEvent = new showdown.Event('makehtml.image.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
 });
 
 ////
@@ -5181,130 +5275,6 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
 ////
 
 showdown.subParser('makehtml.link', function (text, options, globals) {
-
-  /**
-   *
-   * @param {string} subEvtName
-   * @param {RegExp} pattern
-   * @param {string} wholeMatch
-   * @param {string} text
-   * @param {string|null} [linkId]
-   * @param {string|null} [url]
-   * @param {string|null} [title]
-   * @param {boolean} [emptyCase]
-   * @returns {string}
-   */
-  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
-
-    let matches = {
-          _wholeMatch: wholeMatch,
-          _linkId: linkId,
-          _url: url,
-          _title: title,
-          text: text
-        },
-        otp,
-        attributes = {};
-
-    title = title || null;
-    url = url || null;
-    linkId = (linkId) ? linkId.toLowerCase() : null;
-    emptyCase = !!emptyCase;
-
-    if (emptyCase) {
-      url = '';
-    } else if (!url) {
-      if (!linkId) {
-        // lower-case and turn embedded newlines into spaces
-        linkId = text.toLowerCase().replace(/ ?\n/g, ' ');
-      }
-      url = '#' + linkId;
-
-      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
-        url = globals.gUrls[linkId];
-        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
-          title = globals.gTitles[linkId];
-        }
-      } else {
-        return wholeMatch;
-      }
-    }
-
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-    attributes.href = url;
-
-    if (title && showdown.helper.isString(title)) {
-      title = title
-        .replace(/"/g, '&quot;')
-        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-      attributes.title = title;
-    }
-
-    // optionLinksInNewWindow only applies
-    // to external links. Hash links (#) open in same page
-    if (options.openLinksInNewWindow && !/^#/.test(url)) {
-      attributes.rel = 'noopener noreferrer';
-      attributes.target = '¨E95Eblank'; // escaped _
-
-    }
-
-    let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches(matches)
-      .setAttributes(attributes);
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      attributes = captureStartEvent.attributes;
-      text = captureStartEvent.matches.text || '';
-      // Text can be a markdown element, so we run through the appropriate parsers
-      text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
-      text = showdown.subParser('makehtml.emoji')(text, options, globals);
-      text = showdown.subParser('makehtml.underline')(text, options, globals);
-      text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
-      text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
-      text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
-      text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
-      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-  }
-
-  /**
-   * @param {string} mail
-   * @returns {{mail: string, url: string}}
-   */
-  function parseMail (mail) {
-    let url = 'mailto:';
-    mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
-    if (options.encodeEmails) {
-      url = showdown.helper.encodeEmailAddress(url + mail);
-      mail = showdown.helper.encodeEmailAddress(mail);
-    } else {
-      url = url + mail;
-    }
-    return {
-      mail: mail,
-      url: url
-    };
-  }
 
   //
   // Parser starts here
@@ -5485,10 +5455,136 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     ._setOptions(options);
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
+
+
+
+  /**
+   *
+   * @param {string} subEvtName
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @param {string} text
+   * @param {string|null} [linkId]
+   * @param {string|null} [url]
+   * @param {string|null} [title]
+   * @param {boolean} [emptyCase]
+   * @returns {string}
+   */
+  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
+
+    let matches = {
+          _wholeMatch: wholeMatch,
+          _linkId: linkId,
+          _url: url,
+          _title: title,
+          text: text
+        },
+        otp,
+        attributes = {};
+
+    title = title || null;
+    url = url || null;
+    linkId = (linkId) ? linkId.toLowerCase() : null;
+    emptyCase = !!emptyCase;
+
+    if (emptyCase) {
+      url = '';
+    } else if (!url) {
+      if (!linkId) {
+        // lower-case and turn embedded newlines into spaces
+        linkId = text.toLowerCase().replace(/ ?\n/g, ' ');
+      }
+      url = '#' + linkId;
+
+      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
+        url = globals.gUrls[linkId];
+        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
+          title = globals.gTitles[linkId];
+        }
+      } else {
+        return wholeMatch;
+      }
+    }
+
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+    attributes.href = url;
+
+    if (title && showdown.helper.isString(title)) {
+      title = title
+        .replace(/"/g, '&quot;')
+        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      attributes.title = title;
+    }
+
+    // optionLinksInNewWindow only applies
+    // to external links. Hash links (#) open in same page
+    if (options.openLinksInNewWindow && !/^#/.test(url)) {
+      attributes.rel = 'noopener noreferrer';
+      attributes.target = '¨E95Eblank'; // escaped _
+
+    }
+
+    let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches(matches)
+      .setAttributes(attributes);
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      attributes = captureStartEvent.attributes;
+      text = captureStartEvent.matches.text || '';
+      // Text can be a markdown element, so we run through the appropriate parsers
+      text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
+      text = showdown.subParser('makehtml.emoji')(text, options, globals);
+      text = showdown.subParser('makehtml.underline')(text, options, globals);
+      text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
+      text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
+      text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
+      text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
+      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+  }
+
+  /**
+   * @param {string} mail
+   * @returns {{mail: string, url: string}}
+   */
+  function parseMail (mail) {
+    let url = 'mailto:';
+    mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
+    if (options.encodeEmails) {
+      url = showdown.helper.encodeEmailAddress(url + mail);
+      mail = showdown.helper.encodeEmailAddress(mail);
+    } else {
+      url = url + mail;
+    }
+    return {
+      mail: mail,
+      url: url
+    };
+  }
 });
 
 ////
-// makehtml/lists.js
+// makehtml/list.js
 // Copyright (c) 2022 ShowdownJS
 //
 // Transforms MD lists into `<ul>` or `<ol>` html list
@@ -5502,8 +5598,100 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 ////
 
 
-showdown.subParser('makehtml.lists', function (text, options, globals) {
+showdown.subParser('makehtml.list', function (text, options, globals) {
   'use strict';
+
+  // Start of list parsing
+  const subListRgx = /^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
+  const mainListRgx = /(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
+  const listTypeRgx = /[*+-]/g;
+
+  let startEvent = new showdown.Event('makehtml.list.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  // add sentinel to hack around khtml/safari bug:
+  // http://bugs.webkit.org/show_bug.cgi?id=11231
+  text += '¨0';
+
+  if (globals.gListLevel) {
+    text = text.replace(subListRgx, function (wholeMatch, list, m2) {
+      return parseConsecutiveLists(subListRgx, list, (m2.search(listTypeRgx) > -1) ? 'ul' : 'ol', true);
+    });
+  } else {
+    text = text.replace(mainListRgx, function (wholeMatch, m1, list, m3) {
+      return parseConsecutiveLists(mainListRgx, list, (m3.search(listTypeRgx) > -1) ? 'ul' : 'ol', false);
+    });
+  }
+
+  // strip sentinel
+  text = text.replace(/¨0/, '');
+
+  let afterEvent = new showdown.Event('makehtml.list.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+
+  /**
+   *
+   * @param {RegExp} pattern
+   * @param {string} item
+   * @param {boolean} checked
+   * @returns {string}
+   */
+  function processTaskListItem (pattern, item, checked) {
+
+    const checkboxRgx = /^[ \t]*\[([xX ])]/m;
+    item = item.replace(checkboxRgx, function (wm, checkedRaw) {
+
+      let attributes = {
+        type: 'checkbox',
+        disabled: true,
+        style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
+        checked: !!checked
+      };
+      let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', item);
+
+      captureStartEvent
+        .setOutput(null)
+        ._setGlobals(globals)
+        ._setOptions(options)
+        .setRegexp(pattern)
+        .setMatches({
+          _wholeMatch: item,
+          _tasklistButton: wm,
+          _taksListButtonChecked: checkedRaw
+        })
+        .setAttributes(attributes);
+      captureStartEvent = globals.converter.dispatch(captureStartEvent);
+      let otp;
+      if (captureStartEvent.output && captureStartEvent.output !== '') {
+        otp = captureStartEvent.output;
+      } else {
+        attributes = captureStartEvent.attributes;
+        otp = '<input' + showdown.helper._populateAttributes(attributes)  + '>';
+      }
+
+      let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
+      beforeHashEvent
+        .setOutput(otp)
+        ._setGlobals(globals)
+        ._setOptions(options);
+      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+      otp = beforeHashEvent.output;
+      return otp;
+    });
+
+    return item;
+  }
 
   /**
    * Process the contents of a single ordered or unordered list, splitting it
@@ -5541,7 +5729,7 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
     // attacklab: add sentinel to emulate \z
     listStr += '¨0';
 
-    var rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[([xX ])])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
+    let rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[([xX ])])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
         isParagraphed = (/\n[ \t]*\n(?!¨0)/.test(listStr));
 
     // Since version 1.5, nesting sublists requires 4 spaces (or 1 tab) indentation,
@@ -5552,122 +5740,159 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
       rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[([xX ])])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0|\2([*+-]|\d+[.])[ \t]+))/gm;
     }
 
-    listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checked) {
-      checked = (checked && checked.trim() !== '');
+    listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checkedRaw) {
+      let item = showdown.helper.outdent(m4),
+          attributes = {},
+          checked = (checkedRaw && checkedRaw.trim() !== ''),
+          eventName = 'makehtml.list.listItem',
+          captureStartEvent,
+          matches = {
+            _wholeMatch: wholeMatch,
+            listItem: item,
+          };
 
-      var item = showdown.subParser('makehtml.outdent')(m4, options, globals),
-          bulletStyle = '';
 
       // Support for github tasklists
       if (taskbtn && options.tasklists) {
+        // it's a github tasklist and tasklists are enabled
 
         // Style used for tasklist bullets
-        bulletStyle = ' class="task-list-item';
-        if (options.moreStyling) {bulletStyle +=  checked ? ' task-list-item-complete' : '';}
-        bulletStyle += '" style="list-style-type: none;"';
-
-        item = item.replace(/^[ \t]*\[([xX ])?]/m, function () {
-          var otp = '<input type="checkbox" disabled style="margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;"';
-          if (checked) {
-            otp += ' checked';
-          }
-          otp += '>';
-          return otp;
-        });
-      }
-
-      // ISSUE #312
-      // This input: - - - a
-      // causes trouble to the parser, since it interprets it as:
-      // <ul><li><li><li>a</li></li></li></ul>
-      // instead of:
-      // <ul><li>- - a</li></ul>
-      // So, to prevent it, we will put a marker (¨A)in the beginning of the line
-      // Kind of hackish/monkey patching, but seems more effective than overcomplicating the list parser
-      item = item.replace(/^([-*+]|\d\.)[ \t]+[\S\n ]*/g, function (wm2) {
-        return '¨A' + wm2;
-      });
-
-      // SPECIAL CASE: a heading followed by a paragraph of text that is not separated by a double newline
-      // or/nor indented. ex:
-      //
-      // - # foo
-      // bar is great
-      //
-      // While this does now follow the spec per se, not allowing for this might cause confusion since
-      // header blocks don't need double-newlines after
-      if (/^#+.+\n.+/.test(item)) {
-        item = item.replace(/^(#+.+)$/m, '$1\n');
-      }
-
-      // m1 - Leading line or
-      // Has a double return (multi paragraph)
-      if (m1 || (item.search(/\n{2,}/) > -1)) {
-        item = showdown.subParser('makehtml.githubCodeBlock')(item, options, globals);
-        item = showdown.subParser('makehtml.blockquote')(item, options, globals);
-        item = showdown.subParser('makehtml.heading')(item, options, globals);
-        item = showdown.subParser('makehtml.lists')(item, options, globals);
-        item = showdown.subParser('makehtml.codeBlock')(item, options, globals);
-        item = showdown.subParser('makehtml.table')(item, options, globals);
-        item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
-        //item = showdown.subParser('makehtml.paragraphs')(item, options, globals);
-
-        // TODO: This is a copy of the paragraph parser
-        // This is a provisory fix for issue #494
-        // For a permanent fix we need to rewrite the paragraph parser, passing the unhashify logic outside
-        // so that we can call the paragraph parser without accidently unashifying previously parsed blocks
-
-        // Strip leading and trailing lines:
-        item = item.replace(/^\n+/g, '');
-        item = item.replace(/\n+$/g, '');
-
-        var grafs = item.split(/\n{2,}/g),
-            grafsOut = [],
-            end = grafs.length; // Wrap <p> tags
-
-        for (var i = 0; i < end; i++) {
-          var str = grafs[i];
-          // if this is an HTML marker, copy it
-          if (str.search(/¨([KG])(\d+)\1/g) >= 0) {
-            grafsOut.push(str);
-
-            // test for presence of characters to prevent empty lines being parsed
-            // as paragraphs (resulting in undesired extra empty paragraphs)
-          } else if (str.search(/\S/) >= 0) {
-            str = showdown.subParser('makehtml.spanGamut')(str, options, globals);
-            str = str.replace(/^([ \t]*)/g, '<p>');
-            str += '</p>';
-            grafsOut.push(str);
-          }
+        attributes.classes = ['task-list-item'];
+        attributes.style = 'list-style-type: none;';
+        if (options.moreStyling && checked) {
+          attributes.classes.push('task-list-item-complete');
         }
-        item = grafsOut.join('\n');
-        // Strip leading and trailing lines:
-        item = item.replace(/^\n+/g, '');
-        item = item.replace(/\n+$/g, '');
+        eventName = 'makehtml.list.taskListItem';
+        matches._taskListButton = taskbtn;
+        matches._taskListButtonChecked = checkedRaw;
+      }
 
+
+      captureStartEvent = new showdown.Event(eventName + '.onCapture', item);
+      captureStartEvent
+        .setOutput(null)
+        ._setGlobals(globals)
+        ._setOptions(options)
+        .setRegexp(rgx)
+        .setMatches(matches)
+        .setAttributes(attributes);
+      captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+      // if something was passed as output, it takes precedence
+      // and will be used as output
+      if (captureStartEvent.output && captureStartEvent.output !== '') {
+        item = captureStartEvent.output;
       } else {
 
-        // Recursion for sub-lists:
-        item = showdown.subParser('makehtml.lists')(item, options, globals);
-        item = item.replace(/\n$/, ''); // chomp(item)
-        item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
+        attributes = captureStartEvent.attributes;
+        item = captureStartEvent.matches.listItem;
 
-        // Colapse double linebreaks
-        item = item.replace(/\n\n+/g, '\n\n');
-
-        if (isParagraphed) {
-          item = showdown.subParser('makehtml.paragraphs')(item, options, globals);
-        } else {
-          item = showdown.subParser('makehtml.spanGamut')(item, options, globals);
+        // even if user there's no tasklist, it's fine because the tasklist handler will bail without raising the event
+        if (options.tasklists) {
+          item = processTaskListItem(rgx, item, checked);
         }
+
+        // ISSUE #312
+        // This input: - - - a
+        // causes trouble to the parser, since it interprets it as:
+        // <ul><li><li><li>a</li></li></li></ul>
+        // instead of:
+        // <ul><li>- - a</li></ul>
+        // So, to prevent it, we will put a marker (¨A)in the beginning of the line
+        // Kind of hackish/monkey patching, but seems more effective than overcomplicating the list parser
+        item = item.replace(/^([-*+]|\d\.)[ \t]+[\S\n ]*/g, function (wm2) {
+          return '¨A' + wm2;
+        });
+
+        // SPECIAL CASE: a heading followed by a paragraph of text that is not separated by a double newline
+        // or/nor indented. ex:
+        //
+        // - # foo
+        // bar is great
+        //
+        // While this does now follow the spec per se, not allowing for this might cause confusion since
+        // header blocks don't need double-newlines after
+        if (/^#+.+\n.+/.test(item)) {
+          item = item.replace(/^(#+.+)$/m, '$1\n');
+        }
+
+        // m1 - Leading line or
+        // Has a double return (multi paragraph)
+        if (m1 || (item.search(/\n{2,}/) > -1)) {
+          item = showdown.subParser('makehtml.githubCodeBlock')(item, options, globals);
+          item = showdown.subParser('makehtml.blockquote')(item, options, globals);
+          item = showdown.subParser('makehtml.heading')(item, options, globals);
+          item = showdown.subParser('makehtml.list')(item, options, globals);
+          item = showdown.subParser('makehtml.codeBlock')(item, options, globals);
+          item = showdown.subParser('makehtml.table')(item, options, globals);
+          item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
+          //item = showdown.subParser('makehtml.paragraphs')(item, options, globals);
+
+          // TODO: This is a copy of the paragraph parser
+          // This is a provisory fix for issue #494
+          // For a permanent fix we need to rewrite the paragraph parser, passing the unhashify logic outside
+          // so that we can call the paragraph parser without accidently unashifying previously parsed blocks
+
+          // Strip leading and trailing lines:
+          item = item.replace(/^\n+/g, '');
+          item = item.replace(/\n+$/g, '');
+
+          let grafs = item.split(/\n{2,}/g),
+              grafsOut = [],
+              end = grafs.length; // Wrap <p> tags
+
+          for (let i = 0; i < end; i++) {
+            let str = grafs[i];
+            // if this is an HTML marker, copy it
+            if (str.search(/¨([KG])(\d+)\1/g) >= 0) {
+              grafsOut.push(str);
+
+              // test for presence of characters to prevent empty lines being parsed
+              // as paragraphs (resulting in undesired extra empty paragraphs)
+            } else if (str.search(/\S/) >= 0) {
+              str = showdown.subParser('makehtml.spanGamut')(str, options, globals);
+              str = str.replace(/^([ \t]*)/g, '<p>');
+              str += '</p>';
+              grafsOut.push(str);
+            }
+          }
+          item = grafsOut.join('\n');
+          // Strip leading and trailing lines:
+          item = item.replace(/^\n+/g, '');
+          item = item.replace(/\n+$/g, '');
+
+        } else {
+
+          // Recursion for sub-lists:
+          item = showdown.subParser('makehtml.list')(item, options, globals);
+          item = item.replace(/\n$/, ''); // chomp(item)
+          item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
+
+          // Colapse double linebreaks
+          item = item.replace(/\n\n+/g, '\n\n');
+
+          if (isParagraphed) {
+            item = showdown.subParser('makehtml.paragraphs')(item, options, globals);
+          } else {
+            item = showdown.subParser('makehtml.spanGamut')(item, options, globals);
+          }
+        }
+
+        // now we need to remove the marker (¨A)
+        item = item.replace('¨A', '');
+        // we can finally wrap the line in list item tags
+
+        item =  '<li' + showdown.helper._populateAttributes(attributes) + '>' + item + '</li>\n';
+
       }
 
-      // now we need to remove the marker (¨A)
-      item = item.replace('¨A', '');
-      // we can finally wrap the line in list item tags
-      item =  '<li' + bulletStyle + '>' + item + '</li>\n';
-
-      return item;
+      let beforeHashEvent = new showdown.Event(eventName + '.onHash', item);
+      beforeHashEvent
+        .setOutput(item)
+        ._setGlobals(globals)
+        ._setOptions(options);
+      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+      return beforeHashEvent.output;
     });
 
     // attacklab: strip sentinel
@@ -5682,83 +5907,87 @@ showdown.subParser('makehtml.lists', function (text, options, globals) {
     return listStr;
   }
 
+  /**
+   *
+   * @param {string} list
+   * @param {string} listType
+   * @returns {string|null}
+   */
   function styleStartNumber (list, listType) {
     // check if ol and starts by a number different than 1
     if (listType === 'ol') {
-      var res = list.match(/^ *(\d+)\./);
+      let res = list.match(/^ *(\d+)\./);
       if (res && res[1] !== '1') {
-        return ' start="' + res[1] + '"';
+        return res[1];
       }
     }
-    return '';
+    return null;
   }
 
   /**
    * Check and parse consecutive lists (better fix for issue #142)
+   * @param {RegExp} pattern
    * @param {string} list
    * @param {string} listType
    * @param {boolean} trimTrailing
    * @returns {string}
    */
-  function parseConsecutiveLists (list, listType, trimTrailing) {
-    // check if we caught 2 or more consecutive lists by mistake
-    // we use the counterRgx, meaning if listType is UL we look for OL and vice versa
-    var olRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?\d+\.[ \t]/gm : /^ {0,3}\d+\.[ \t]/gm,
-        ulRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?[*+-][ \t]/gm : /^ {0,3}[*+-][ \t]/gm,
-        counterRxg = (listType === 'ul') ? olRgx : ulRgx,
-        result = '';
-
-    if (list.search(counterRxg) !== -1) {
-      (function parseCL (txt) {
-        var pos = txt.search(counterRxg),
-            style = styleStartNumber(list, listType);
-        if (pos !== -1) {
-          // slice
-          result += '\n\n<' + listType + style + '>\n' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
-
-          // invert counterType and listType
-          listType = (listType === 'ul') ? 'ol' : 'ul';
-          counterRxg = (listType === 'ul') ? olRgx : ulRgx;
-
-          //recurse
-          parseCL(txt.slice(pos));
-        } else {
-          result += '\n\n<' + listType + style + '>\n' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
-        }
-      })(list);
+  function parseConsecutiveLists (pattern, list, listType, trimTrailing) {
+    let otp = '';
+    let captureStartEvent = new showdown.Event('makehtml.list.onCapture', list);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches({
+        _wholeMatch: list,
+        list: list
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+    let attributes = captureStartEvent.attributes;
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
     } else {
-      var style = styleStartNumber(list, listType);
-      result = '\n\n<' + listType + style + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
+
+      // check if we caught 2 or more consecutive lists by mistake
+      // we use the counterRgx, meaning if listType is UL we look for OL and vice versa
+      const olRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?\d+\.[ \t]/gm : /^ {0,3}\d+\.[ \t]/gm;
+      const ulRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?[*+-][ \t]/gm : /^ {0,3}[*+-][ \t]/gm;
+      let counterRxg = (listType === 'ul') ? olRgx : ulRgx;
+
+      let attrs = showdown.helper.cloneObject(attributes);
+      if (list.search(counterRxg) !== -1) {
+
+        (function parseCL (txt) {
+          let pos = txt.search(counterRxg);
+          attrs.start = styleStartNumber(list, listType);
+
+          if (pos !== -1) {
+            // slice
+            otp += '\n\n<' + listType + showdown.helper._populateAttributes(attrs) + '>\n' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
+
+            // invert counterType and listType
+            listType = (listType === 'ul') ? 'ol' : 'ul';
+            counterRxg = (listType === 'ul') ? olRgx : ulRgx;
+
+            //recurse
+            parseCL(txt.slice(pos), attrs);
+          } else {
+            otp += '\n\n<' + listType + showdown.helper._populateAttributes(attrs) + '>\n' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
+          }
+        })(list, attributes);
+
+      } else {
+        attrs.start = styleStartNumber(list, listType);
+        otp = '\n\n<' + listType + showdown.helper._populateAttributes(attrs) + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
+      }
     }
-
-    return result;
+    return otp;
   }
-
-  // Start of list parsing
-  var subListRgx = /^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
-  var mainListRgx = /(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
-
-  text = globals.converter._dispatch('lists.before', text, options, globals).getText();
-  // add sentinel to hack around khtml/safari bug:
-  // http://bugs.webkit.org/show_bug.cgi?id=11231
-  text += '¨0';
-
-  if (globals.gListLevel) {
-    text = text.replace(subListRgx, function (wholeMatch, list, m2) {
-      var listType = (m2.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
-      return parseConsecutiveLists(list, listType, true);
-    });
-  } else {
-    text = text.replace(mainListRgx, function (wholeMatch, m1, list, m3) {
-      var listType = (m3.search(/[*+-]/g) > -1) ? 'ul' : 'ol';
-      return parseConsecutiveLists(list, listType, false);
-    });
-  }
-
-  // strip sentinel
-  text = text.replace(/¨0/, '');
-  text = globals.converter._dispatch('makehtml.lists.after', text, options, globals).getText();
-  return text;
 });
 
 /**
@@ -5868,20 +6097,11 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
 });
 
 /**
- * Remove one level of line-leading tabs or spaces
- */
-showdown.subParser('makehtml.outdent', function (text) {
-  'use strict';
-  return text.replace(/^(\t| {1,4})/gm, '');
-});
-
-/**
  *
  */
 showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.paragraphs.before', text, options, globals).getText();
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
@@ -5943,7 +6163,7 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
-  return globals.converter._dispatch('makehtml.paragraphs.after', text, options, globals).getText();
+  return text;
 });
 
 /**
@@ -6468,151 +6688,6 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
   }
 });
 
-showdown.subParser('makehtml.tablesz', function (text, options, globals) {
-  'use strict';
-
-  if (!options.tables) {
-    return text;
-  }
-
-  var tableRgx       = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*[-=]{2,}[\s\S]+?(?:\n\n|¨0)/gm,
-      //singeColTblRgx = /^ {0,3}\|.+\|\n {0,3}\|[ \t]*:?[ \t]*(?:[-=]){2,}[ \t]*:?[ \t]*\|[ \t]*\n(?: {0,3}\|.+\|\n)+(?:\n\n|¨0)/gm;
-      singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
-
-  function parseStyles (sLine) {
-    if (/^:[ \t]*--*$/.test(sLine)) {
-      return ' style="text-align:left;"';
-    } else if (/^--*[ \t]*:[ \t]*$/.test(sLine)) {
-      return ' style="text-align:right;"';
-    } else if (/^:[ \t]*--*[ \t]*:$/.test(sLine)) {
-      return ' style="text-align:center;"';
-    } else {
-      return '';
-    }
-  }
-
-  function parseHeaders (header, style) {
-    var id = '';
-    header = header.trim();
-    // support both tablesHeaderId and tableHeaderId due to error in documentation so we don't break backwards compatibility
-    if (options.tablesHeaderId || options.tableHeaderId) {
-      id = ' id="' + header.replace(/ /g, '_').toLowerCase() + '"';
-    }
-    header = showdown.subParser('makehtml.spanGamut')(header, options, globals);
-
-    return '<th' + id + style + '>' + header + '</th>\n';
-  }
-
-  function parseCells (cell, style) {
-    var subText = showdown.subParser('makehtml.spanGamut')(cell, options, globals);
-    return '<td' + style + '>' + subText + '</td>\n';
-  }
-
-  function buildTable (headers, cells) {
-    var tb = '<table>\n<thead>\n<tr>\n',
-        tblLgn = headers.length;
-
-    for (var i = 0; i < tblLgn; ++i) {
-      tb += headers[i];
-    }
-    tb += '</tr>\n</thead>\n<tbody>\n';
-
-    for (i = 0; i < cells.length; ++i) {
-      tb += '<tr>\n';
-      for (var ii = 0; ii < tblLgn; ++ii) {
-        tb += cells[i][ii];
-      }
-      tb += '</tr>\n';
-    }
-    tb += '</tbody>\n</table>\n';
-    return tb;
-  }
-
-  function parseTable (rawTable) {
-    let tableLines = rawTable.split('\n');
-
-    for (let i = 0; i < tableLines.length; ++i) {
-      // strip wrong first and last column if wrapped tables are used
-      if (/^ {0,3}\|/.test(tableLines[i])) {
-        tableLines[i] = tableLines[i].replace(/^ {0,3}\|/, '');
-      }
-      if (/\|[ \t]*$/.test(tableLines[i])) {
-        tableLines[i] = tableLines[i].replace(/\|[ \t]*$/, '');
-      }
-      // parse code spans first, but we only support one line code spans
-
-      tableLines[i] = showdown.subParser('makehtml.codeSpan')(tableLines[i], options, globals);
-    }
-
-    let rawHeaders = tableLines[0].split('|').map(function (s) { return s.trim();}),
-        rawStyles = tableLines[1].split('|').map(function (s) { return s.trim();}),
-        rawCells = [],
-        headers = [],
-        styles = [],
-        cells = [];
-
-    tableLines.shift();
-    tableLines.shift();
-
-    for (let i = 0; i < tableLines.length; ++i) {
-      if (tableLines[i].trim() === '') {
-        continue;
-      }
-      rawCells.push(
-        tableLines[i]
-          .split('|')
-          .map(function (s) {
-            return s.trim();
-          })
-      );
-    }
-
-    if (rawHeaders.length < rawStyles.length) {
-      return rawTable;
-    }
-
-    for (let i = 0; i < rawStyles.length; ++i) {
-      styles.push(parseStyles(rawStyles[i]));
-    }
-
-    for (let i = 0; i < rawHeaders.length; ++i) {
-      let style = styles[i];
-      if (showdown.helper.isUndefined(style)) {
-        style = '';
-      }
-      headers.push(parseHeaders(rawHeaders[i], style));
-    }
-
-    for (let i = 0; i < rawCells.length; ++i) {
-      let row = [];
-      for (let ii = 0; ii < headers.length; ++ii) {
-        let cellTxt = (!showdown.helper.isUndefined(rawCells[i][ii])) ? rawCells[i][ii] : '',
-            style = (!showdown.helper.isUndefined(styles[ii])) ? styles[ii] : '';
-
-        row.push(parseCells(cellTxt, style));
-      }
-      cells.push(row);
-    }
-
-    return buildTable(headers, cells);
-  }
-
-  text = globals.converter._dispatch('makehtml.tables.before', text, options, globals).getText();
-
-  // find escaped pipe characters
-  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
-
-  // parse multi column tables
-  text = text.replace(tableRgx, parseTable);
-
-  // parse one column tables
-  text = text.replace(singeColTblRgx, parseTable);
-
-  text = globals.converter._dispatch('makehtml.tables.after', text, options, globals).getText();
-
-  return text;
-});
-
 showdown.subParser('makehtml.underline', function (text, options, globals) {
   'use strict';
 
@@ -6620,30 +6695,87 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.underline.before', text, options, globals).getText();
+  let startEvent = new showdown.Event('makehtml.underline.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   if (options.literalMidWordUnderscores) {
-    text = text.replace(/\b___(\S[\s\S]*?)___\b/g, function (wm, txt) {
-      return '<u>' + txt + '</u>';
+
+    const rgx1 = /\b___(\S[\s\S]*?)___\b/g;
+    text = text.replace(rgx1, function (wm, txt) {
+      return parse(rgx1, wm, txt);
     });
-    text = text.replace(/\b__(\S[\s\S]*?)__\b/g, function (wm, txt) {
-      return '<u>' + txt + '</u>';
+
+    const rgx2 = /\b__(\S[\s\S]*?)__\b/g;
+    text = text.replace(rgx2, function (wm, txt) {
+      return parse(rgx2, wm, txt);
     });
   } else {
-    text = text.replace(/___(\S[\s\S]*?)___/g, function (wm, m) {
-      return (/\S$/.test(m)) ? '<u>' + m + '</u>' : wm;
+
+    const rgx3 = /___(\S[\s\S]*?)___/g;
+    text = text.replace(rgx3, function (wm, txt) {
+      if (!(/\S$/.test(txt))) {
+        return wm;
+      }
+      return parse(rgx3, wm, txt);
     });
-    text = text.replace(/__(\S[\s\S]*?)__/g, function (wm, m) {
-      return (/\S$/.test(m)) ? '<u>' + m + '</u>' : wm;
+
+    const rgx4 = /__(\S[\s\S]*?)__/g;
+    text = text.replace(rgx4, function (wm, txt) {
+      if (!(/\S$/.test(txt))) {
+        return wm;
+      }
+      return parse(rgx4, wm, txt);
     });
   }
 
   // escape remaining underscores to prevent them being parsed by italic and bold
   text = text.replace(/(_)/g, showdown.helper.escapeCharactersCallback);
 
-  text = globals.converter._dispatch('makehtml.underline.after', text, options, globals).getText();
+  let afterEvent = new showdown.Event('makehtml.underline.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 
-  return text;
+
+  function parse (pattern, wholeMatch, txt) {
+    let otp;
+    let captureStartEvent = new showdown.Event('makehtml.underline.onCapture', txt);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches({
+        _wholeMatch: wholeMatch,
+        strikethrough: txt
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '<u' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' + txt + '</u>';
+    }
+    let beforeHashEvent = new showdown.Event('makehtml.underline.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
+  }
+
+
 });
 
 /**
@@ -6651,15 +6783,26 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
  */
 showdown.subParser('makehtml.unescapeSpecialChars', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.unescapeSpecialChars.before', text, options, globals).getText();
+  let startEvent = new showdown.Event('makehtml.unescapeSpecialChars.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   text = text.replace(/¨E(\d+)E/g, function (wholeMatch, m1) {
-    var charCodeToReplace = parseInt(m1);
+    let charCodeToReplace = parseInt(m1);
     return String.fromCharCode(charCodeToReplace);
   });
 
-  text = globals.converter._dispatch('makehtml.unescapeSpecialChars.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.Event('makehtml.unescapeSpecialChars.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });
 
 ////
@@ -7328,7 +7471,7 @@ showdown.subParser('makeMarkdown.txt', function (node) {
 showdown.Converter = function (converterOptions) {
   'use strict';
 
-  var
+  let
       /**
        * Options used by this converter
        * @private
@@ -7524,7 +7667,7 @@ showdown.Converter = function (converterOptions) {
   }
 
   function rTrimInputText (text) {
-    var rsp = text.match(/^\s*/)[0].length,
+    let rsp = text.match(/^\s*/)[0].length,
         rgx = new RegExp('^\\s{0,' + rsp + '}', 'gm');
     return text.replace(rgx, '');
   }
@@ -7547,37 +7690,6 @@ showdown.Converter = function (converterOptions) {
           event.input = listRet;
         } else if (listRet instanceof showdown.Event && listRet.name === event.name) {
           event = listRet;
-        }
-      }
-    }
-    return event;
-  };
-
-  /**
-   *
-   * @param {string} evtName Event name
-   * @param {string} text Text
-   * @param {{}} options Converter Options
-   * @param {{}} globals Converter globals
-   * @param {{}} [pParams] extra params for event
-   * @returns showdown.Event
-   * @private
-   */
-  this._dispatch = function dispatch (evtName, text, options, globals, pParams) {
-    evtName = evtName.toLowerCase();
-    text = text || '';
-    var params = pParams || {};
-    params.converter = this;
-    params.input = text;
-    params.options = options;
-    params.globals = globals;
-    var event = new showdown.Event(evtName, text, params);
-
-    if (listeners.hasOwnProperty(evtName)) {
-      for (var ei = 0; ei < listeners[evtName].length; ++ei) {
-        var nText = listeners[evtName][ei](event);
-        if (nText && typeof nText !== 'undefined') {
-          event.output = nText;
         }
       }
     }

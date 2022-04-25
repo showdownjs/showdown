@@ -7,13 +7,7 @@
 
 describe('showdown.Event', function () {
   'use strict';
-  const subparserList = showdown.getSubParserList();
-  const eventTypes = [
-    'onStart',
-    'onEnd',
-    'onCapture',
-    'onHash'
-  ];
+  //const subparserList = showdown.getSubParserList();
 
   const testSpec = {
     makehtml: {
@@ -267,6 +261,7 @@ describe('showdown.Event', function () {
     });
 
     describe('makehtml', function () {
+      /* jshint -W083*/
       for (let parser in testSpec.makehtml) {
 
         describe(parser, function () {
@@ -277,6 +272,7 @@ describe('showdown.Event', function () {
             title += 'trigger "' + event + ' event"';
             let expected = testSpec.makehtml[parser][ts].result;
             let actual = false;
+
             it(title, function () {
               converter.listen(event, function () {
                 actual = true;
@@ -286,8 +282,8 @@ describe('showdown.Event', function () {
             });
           }
         });
-
       }
+      /* jshint +W083*/
     });
   });
 });

@@ -212,14 +212,14 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
 
     let matches = {
-        _wholeMatch: wholeMatch,
-        _linkId: linkId,
-        _url: url,
-        _title: title,
-        text: text
-      },
-      otp,
-      attributes = {};
+          _wholeMatch: wholeMatch,
+          _linkId: linkId,
+          _url: url,
+          _title: title,
+          text: text
+        },
+        otp,
+        attributes = {};
 
     title = title || null;
     url = url || null;

@@ -19,7 +19,7 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
 
   // Project configuration.
-  var config = {
+  let config = {
     pkg: grunt.file.readJSON('package.json'),
 
     concat: {
@@ -136,7 +136,16 @@ module.exports = function (grunt) {
 
     mochaTest: {
       functional: {
-        src: 'test/functional/**/*.js',
+        src: 'test/functional/**/testsuite.*.js',
+        options: {
+          timeout: 3000,
+          ignoreLeaks: true,
+          reporter: 'spec',
+          require: ['test/bootstrap.js']
+        }
+      },
+      commonmark: {
+        src: 'test/functional/makehtml/extra.testsuite.commonmark.js',
         options: {
           timeout: 3000,
           ignoreLeaks: true,
@@ -199,7 +208,7 @@ module.exports = function (grunt) {
    */
   grunt.registerTask('performancejs', function () {
     'use strict';
-    var perf = require('./test/performance/performance.js');
+    let perf = require('./test/performance/performance.js');
     perf.runTests();
     perf.generateLogs();
   });
@@ -227,6 +236,7 @@ module.exports = function (grunt) {
   grunt.registerTask('test-functional', ['concat:test', 'mochaTest:functional', 'clean']);
   grunt.registerTask('test-unit', ['concat:test', 'mochaTest:unit', 'clean']);
   grunt.registerTask('test-cli', ['clean', 'lint', 'concat:test', 'mochaTest:cli', 'clean']);
+  grunt.registerTask('test-commonmark', ['clean', 'lint', 'concat:test', 'mochaTest:commonmark', 'clean']);
 
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'concat:cli', 'uglify:dist', 'uglify:cli', 'endline']);
@@ -235,7 +245,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('extract-commonmark-tests', function () {
     'use strict';
-    var commonmark = require('commonmark-spec');
+    let commonmark = require('commonmark-spec');
 
     grunt.file.write('test/functional/makehtml/cases/commonmark.testsuite.json', JSON.stringify(commonmark.tests, null, 2))
   });

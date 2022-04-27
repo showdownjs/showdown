@@ -5,25 +5,26 @@
 showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.span.before', text, options, globals).getText();
+  let startEvent = new showdown.Event('makehtml.spanGamut.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
-  text = showdown.subParser('makehtml.codeSpans')(text, options, globals);
+  text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
   text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('makehtml.encodeBackslashEscapes')(text, options, globals);
 
   // Process link and image tags. Images must come first,
   // because ![foo][f] looks like a link.
-  text = showdown.subParser('makehtml.images')(text, options, globals);
+  text = showdown.subParser('makehtml.image')(text, options, globals);
+  text = showdown.subParser('makehtml.link')(text, options, globals);
 
-  text = globals.converter._dispatch('smakehtml.links.before', text, options, globals).getText();
-  text = showdown.subParser('makehtml.links')(text, options, globals);
-  text = globals.converter._dispatch('smakehtml.links.after', text, options, globals).getText();
-
-  //text = showdown.subParser('makehtml.autoLinks')(text, options, globals);
-  //text = showdown.subParser('makehtml.simplifiedAutoLinks')(text, options, globals);
   text = showdown.subParser('makehtml.emoji')(text, options, globals);
   text = showdown.subParser('makehtml.underline')(text, options, globals);
-  text = showdown.subParser('makehtml.italicsAndBold')(text, options, globals);
+  text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
   text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
   text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
 
@@ -45,6 +46,11 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
     text = text.replace(/  +\n/g, '<br />\n');
   }
 
-  text = globals.converter._dispatch('makehtml.spanGamut.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.Event('makehtml.spanGamut.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });

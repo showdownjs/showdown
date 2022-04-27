@@ -10,7 +10,7 @@ if (typeof this === 'undefined' && typeof window !== 'undefined') {
   showdown.helper.document = window.document;
 } else {
   if (typeof this.document === 'undefined' && typeof this.window === 'undefined') {
-    var jsdom = require('jsdom');
+    let jsdom = require('jsdom');
     this.window = new jsdom.JSDOM('', {}).window; // jshint ignore:line
   }
   showdown.helper.document = this.window.document;
@@ -19,12 +19,22 @@ if (typeof this === 'undefined' && typeof window !== 'undefined') {
 /**
  * Check if var is string
  * @static
- * @param {string} a
+ * @param {*} a
  * @returns {boolean}
  */
 showdown.helper.isString = function (a) {
   'use strict';
   return (typeof a === 'string' || a instanceof String);
+};
+
+/**
+ * Check if var is a number
+ * @static
+ * @param {*} a
+ * @returns {boolean}
+ */
+showdown.helper.isNumber = function (a) {
+  return !isNaN(a);
 };
 
 /**
@@ -35,7 +45,7 @@ showdown.helper.isString = function (a) {
  */
 showdown.helper.isFunction = function (a) {
   'use strict';
-  var getType = {};
+  let getType = {};
   return a && getType.toString.call(a) === '[object Function]';
 };
 
@@ -70,6 +80,20 @@ showdown.helper.isUndefined = function (value) {
 };
 
 /**
+ * Check if value is an object (excluding arrays)
+ * @param {*} value
+ * @returns {boolean}
+ */
+showdown.helper.isObject = function (value) {
+  'use strict';
+  return (
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value !== null
+  );
+};
+
+/**
  * ForEach helper function
  * Iterates over Arrays and Objects (own properties only)
  * @static
@@ -94,11 +118,11 @@ showdown.helper.forEach = function (obj, callback) {
   if (typeof obj.forEach === 'function') {
     obj.forEach(callback);
   } else if (showdown.helper.isArray(obj)) {
-    for (var i = 0; i < obj.length; i++) {
+    for (let i = 0; i < obj.length; i++) {
       callback(obj[i], i, obj);
     }
   } else if (typeof (obj) === 'object') {
-    for (var prop in obj) {
+    for (let prop in obj) {
       if (obj.hasOwnProperty(prop)) {
         callback(obj[prop], prop, obj);
       }
@@ -109,7 +133,7 @@ showdown.helper.forEach = function (obj, callback) {
 };
 
 /**
- * Standardidize extension name
+ * Standardize extension name
  * @static
  * @param {string} s extension name
  * @returns {string}
@@ -121,7 +145,7 @@ showdown.helper.stdExtName = function (s) {
 
 function escapeCharactersCallback (wholeMatch, m1) {
   'use strict';
-  var charCodeToEscape = m1.charCodeAt(0);
+  let charCodeToEscape = m1.charCodeAt(0);
   return '¨E' + charCodeToEscape + 'E';
 }
 
@@ -146,21 +170,21 @@ showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash
   'use strict';
   // First we have to escape the escape characters so that
   // we can build a character class out of them
-  var regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
+  let regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
 
   if (afterBackslash) {
     regexString = '\\\\' + regexString;
   }
 
-  var regex = new RegExp(regexString, 'g');
+  let regex = new RegExp(regexString, 'g');
   text = text.replace(regex, escapeCharactersCallback);
 
   return text;
 };
 
-var rgxFindMatchPos = function (str, left, right, flags) {
+let rgxFindMatchPos = function (str, left, right, flags) {
   'use strict';
-  var f = flags || '',
+  let f = flags || '',
       g = f.indexOf('g') > -1,
       x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
       l = new RegExp(left, f.replace(/g/g, '')),
@@ -178,7 +202,7 @@ var rgxFindMatchPos = function (str, left, right, flags) {
       } else if (t) {
         if (!--t) {
           end = m.index + m[0].length;
-          var obj = {
+          let obj = {
             left: {start: start, end: s},
             match: {start: s, end: m.index},
             right: {start: m.index, end: end},
@@ -228,10 +252,10 @@ var rgxFindMatchPos = function (str, left, right, flags) {
 showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
   'use strict';
 
-  var matchPos = rgxFindMatchPos (str, left, right, flags),
+  let matchPos = rgxFindMatchPos (str, left, right, flags),
       results = [];
 
-  for (var i = 0; i < matchPos.length; ++i) {
+  for (let i = 0; i < matchPos.length; ++i) {
     results.push([
       str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
       str.slice(matchPos[i].match.start, matchPos[i].match.end),
@@ -255,22 +279,22 @@ showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right
   'use strict';
 
   if (!showdown.helper.isFunction(replacement)) {
-    var repStr = replacement;
+    let repStr = replacement;
     replacement = function () {
       return repStr;
     };
   }
 
-  var matchPos = rgxFindMatchPos(str, left, right, flags),
+  let matchPos = rgxFindMatchPos(str, left, right, flags),
       finalStr = str,
       lng = matchPos.length;
 
   if (lng > 0) {
-    var bits = [];
+    let bits = [];
     if (matchPos[0].wholeMatch.start !== 0) {
       bits.push(str.slice(0, matchPos[0].wholeMatch.start));
     }
-    for (var i = 0; i < lng; ++i) {
+    for (let i = 0; i < lng; ++i) {
       bits.push(
         replacement(
           str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
@@ -309,7 +333,7 @@ showdown.helper.regexIndexOf = function (str, regex, fromIndex) {
   if (!(regex instanceof RegExp)) {
     throw 'InvalidArgumentError: second parameter of showdown.helper.regexIndexOf function must be an instance of RegExp';
   }
-  var indexOf = str.substring(fromIndex || 0).search(regex);
+  let indexOf = str.substring(fromIndex || 0).search(regex);
   return (indexOf >= 0) ? (indexOf + (fromIndex || 0)) : indexOf;
 };
 
@@ -338,7 +362,8 @@ showdown.helper.splitAtIndex = function (str, index) {
  */
 /*jshint bitwise: false*/
 function xmur3 (str) {
-  for (var i = 0, h = 1779033703 ^ str.length; i < str.length; i++) {
+  let h;
+  for (let i = 0, h = 1779033703 ^ str.length; i < str.length; i++) {
     h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
     h = h << 13 | h >>> 19;
   }
@@ -359,7 +384,7 @@ function xmur3 (str) {
 /*jshint bitwise: false*/
 function mulberry32 (a) {
   return function () {
-    var t = a += 0x6D2B79F5;
+    let t = a += 0x6D2B79F5;
     t = Math.imul(t ^ t >>> 15, t | 1);
     t ^= t + Math.imul(t ^ t >>> 7, t | 61);
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
@@ -376,7 +401,7 @@ function mulberry32 (a) {
  */
 showdown.helper.encodeEmailAddress = function (mail) {
   'use strict';
-  var encode = [
+  let encode = [
     function (ch) {
       return '&#' + ch.charCodeAt(0) + ';';
     },
@@ -389,14 +414,14 @@ showdown.helper.encodeEmailAddress = function (mail) {
   ];
 
   // RNG seeded with mail, so that we can get determined results for each email.
-  var rand = mulberry32(xmur3(mail));
+  let rand = mulberry32(xmur3(mail));
 
   mail = mail.replace(/./g, function (ch) {
     if (ch === '@') {
       // this *must* be encoded. I insist.
       ch = encode[Math.floor(rand() * 2)](ch);
     } else {
-      var r = rand();
+      let r = rand();
       // roughly 10% raw, 45% hex, 45% dec
       ch = (
         r > 0.9 ? encode[2](ch) : r > 0.45 ? encode[1](ch) : encode[0](ch)
@@ -440,7 +465,7 @@ showdown.helper.repeat = function (str, count) {
     throw new RangeError('repeat count must not overflow maximum string size');
   }
   /*jshint bitwise: true*/
-  var maxCount = str.length * count;
+  let maxCount = str.length * count;
   count = Math.floor(Math.log(count) / Math.log(2));
   while (count) {
     str += str;
@@ -504,9 +529,9 @@ showdown.helper._hashHTMLSpan = function (html, globals) {
  */
 showdown.helper.applyBaseUrl = function (baseUrl, url) {
   // Only prepend if given a base URL and the path is not absolute.
-  if (baseUrl && !this.isAbsolutePath(url)) {
-    var urlResolve = require('url').resolve;
-    url = urlResolve(baseUrl, url);
+  if (baseUrl && baseUrl !== '' && !showdown.helper.isAbsolutePath(url)) {
+    let urlResolve = new showdown.helper.URLUtils(url, baseUrl);
+    url = urlResolve.href;
   }
 
   return url;
@@ -523,77 +548,212 @@ showdown.helper.isAbsolutePath = function (path) {
   return /(^([a-z]+:)?\/\/)|(^#)/i.test(path);
 };
 
+showdown.helper.URLUtils = function (url, baseURL) {
+  const pattern2 = /^([^:\/?#]+:)?(?:\/\/(?:([^:@\/?#]*)(?::([^:@\/?#]*))?@)?(([^:\/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
+
+  let m = String(url)
+    .trim()
+    .match(pattern2);
+  if (!m) {
+    throw new RangeError();
+  }
+  let protocol = m[1] || '';
+  let username = m[2] || '';
+  let password = m[3] || '';
+  let host = m[4] || '';
+  let hostname = m[5] || '';
+  let port = m[6] || '';
+  let pathname = m[7] || '';
+  let search = m[8] || '';
+  let hash = m[9] || '';
+  if (baseURL !== undefined) {
+    let base = new showdown.helper.URLUtils(baseURL);
+    let flag = protocol === '' && host === '' && username === '';
+    if (flag && pathname === '' && search === '') {
+      search = base.search;
+    }
+    if (flag && pathname.charAt(0) !== '/') {
+      pathname = (pathname !== '' ? (((base.host !== '' || base.username !== '') && base.pathname === '' ? '/' : '') + base.pathname.slice(0, base.pathname.lastIndexOf('/') + 1) + pathname) : base.pathname);
+    }
+    // dot segments removal
+    let output = [];
+    pathname.replace(/^(\.\.?(\/|$))+/, '')
+      .replace(/\/(\.(\/|$))+/g, '/')
+      .replace(/\/\.\.$/, '/../')
+      .replace(/\/?[^\/]*/g, function (p) {
+        if (p === '/..') {
+          output.pop();
+        } else {
+          output.push(p);
+        }
+      });
+    pathname = output.join('').replace(/^\//, pathname.charAt(0) === '/' ? '/' : '');
+    if (flag) {
+      port = base.port;
+      hostname = base.hostname;
+      host = base.host;
+      password = base.password;
+      username = base.username;
+    }
+    if (protocol === '') {
+      protocol = base.protocol;
+    }
+  }
+  this.origin = protocol + (protocol !== '' || host !== '' ? '//' : '') + host;
+  this.href = protocol + (protocol !== '' || host !== '' ? '//' : '') + (username !== '' ? username + (password !== '' ? ':' + password : '') + '@' : '') + host + pathname + search + hash;
+  this.protocol = protocol;
+  this.username = username;
+  this.password = password;
+  this.host = host;
+  this.hostname = hostname;
+  this.port = port;
+  this.pathname = pathname;
+  this.search = search;
+  this.hash = hash;
+};
+
 /**
- * Showdown's Event Object
- * @param {string} name Name of the event
- * @param {string} text Text
- * @param {{}} params optional. params of the event
- * @constructor
+ * Clones an object . If the second parameter is true, it deep clones the object.
+ * Note: It should not be used in other contexts than showdown, since this algorithm might fail for
+ * cyclic references, and dataypes such as Dates, RegExps, Typed Arrays, etc...
+ * @param {{}} obj Object to clone
+ * @param {boolean} [deep] [optional] If it should deep clone the object. Default is false
  */
-showdown.helper.Event = function (name, text, params) {
+showdown.helper.cloneObject = function (obj, deep) {
+  deep = !!deep;
+  if (obj === null || typeof (obj) !== 'object') {
+    return obj;
+  }
+
+  if (obj instanceof Date) {
+    return new Date(obj);
+  }
+
+  if (!deep) {
+    let newObj = {};
+    for (let key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        newObj[key] = obj[key];
+      }
+    }
+    return newObj;
+  }
+
+  if (typeof structuredClone === 'function') {
+    return structuredClone(obj);
+  } else {
+    // note: This is not a real deep clone, and might work in weird ways if used in a dif
+    //this is costly and should be used sparsly
+    return JSON.parse(JSON.stringify(obj));
+  }
+};
+
+/**
+ * Populate attributes in output text
+ * @param {{}} attributes
+ * @returns {string}
+ */
+showdown.helper._populateAttributes = function (attributes) {
+  let text = '';
+  if (!attributes || !showdown.helper.isObject(attributes)) {
+    return text;
+  }
+
+  for (let attr in attributes) {
+    if (attributes.hasOwnProperty(attr)) {
+      let key = attr,
+          val;
+
+      // since class is a javascript reserved word we use classes
+      if (attr === 'classes') {
+        key = 'class';
+      }
+      if (attributes[attr] === null || showdown.helper.isUndefined(attributes[attr])) {
+        val = null;
+      } else if (showdown.helper.isArray(attributes[attr])) {
+        val = attributes[attr].join(' ');
+        if (val === '') {
+          val = null;
+        }
+      } else if (showdown.helper.isString(attributes[attr])) {
+        val = attributes[attr];
+      } else if (showdown.helper.isNumber(attributes[attr])) {
+        val = String(attributes[attr]);
+      } else {
+        throw new TypeError('Attribute "' + attr + '" must be either an array or string but ' + typeof attributes[attr] + ' given');
+      }
+      // special attributes
+      switch (attr) {
+        // these attributes don't expect a value. If they are false, they should be removed. If they are true,
+        // they should be present but without any value
+        case 'checked':
+        case 'disabled':
+          if (val === true || val === 'true' || val === attr) {
+            text += ' ' + key;
+          }
+          // if falsy, they are just ignored
+          break;
+
+        // default behavior for all other attributes types
+        default:
+          text += (val === null) ? '' : ' ' + key + '="' + val + '"';
+          break;
+      }
+    }
+  }
+
+  return text;
+};
+
+/**
+ * Remove one level of line-leading tabs or spaces
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.outdent = function (text) {
   'use strict';
-
-  var regexp = params.regexp || null;
-  var matches = params.matches || {};
-  var options = params.options || {};
-  var converter = params.converter || null;
-  var globals = params.globals || {};
-
-  /**
-   * Get the name of the event
-   * @returns {string}
-   */
-  this.getName = function () {
-    return name;
-  };
-
-  this.getEventName = function () {
-    return name;
-  };
-
-  this._stopExecution = false;
-
-  this.parsedText = params.parsedText || null;
-
-  this.getRegexp = function () {
-    return regexp;
-  };
-
-  this.getOptions = function () {
-    return options;
-  };
-
-  this.getConverter = function () {
-    return converter;
-  };
-
-  this.getGlobals = function () {
-    return globals;
-  };
-
-  this.getCapturedText = function () {
+  if (!showdown.helper.isString(text)) {
     return text;
-  };
+  }
+  return text.replace(/^(\t| {1,4})/gm, '');
+};
 
-  this.getText = function () {
-    return text;
-  };
+/**
+ * Validate options
+ * @param {{}} options
+ * @returns {{}}
+ */
+showdown.helper.validateOptions = function (options) {
+  if (!showdown.helper.isObject(options)) {
+    throw new TypeError('Options must be an object, but ' + typeof options + ' given');
+  }
 
-  this.setText = function (newText) {
-    text = newText;
-  };
+  let defaultOptions = getDefaultOpts(false);
 
-  this.getMatches = function () {
-    return matches;
-  };
+  for (let opt in defaultOptions) {
+    if (!defaultOptions.hasOwnProperty(opt)) {
+      continue;
+    }
 
-  this.setMatches = function (newMatches) {
-    matches = newMatches;
-  };
+    if (!options.hasOwnProperty(opt)) {
+      options[opt] = defaultOptions[opt].defaultValue;
+    }
 
-  this.preventDefault = function (bool) {
-    this._stopExecution = !bool;
-  };
+    // TODO: dirty code. think about this we refactoring options
+    switch (opt) {
+      case 'prefixHeaderId':
+        if (typeof options[opt] !== 'boolean' && !showdown.helper.isString(options[opt])) {
+          throw new TypeError('Option prefixHeaderId must be of type boolean or string but ' + typeof options[opt] + ' given');
+        }
+        break;
+      default:
+        if (typeof options[opt] !== defaultOptions[opt].type) {
+          throw new TypeError('Option ' + opt + ' must be of type ' + defaultOptions[opt].type + ' but ' + typeof options[opt] + ' given');
+        }
+    }
+  }
+  //options.headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart);
+  return options;
 };
 
 /**
@@ -626,7 +786,7 @@ if (!Math.imul) {
     // automatically handled for our convienence:
     // 1. 0x003fffff /*opA & 0x000fffff*/ * 0x7fffffff /*opB*/ = 0x1fffff7fc00001
     //    0x1fffff7fc00001 < Number.MAX_SAFE_INTEGER /*0x1fffffffffffff*/
-    var result = (opA & 0x003fffff) * opB;
+    let result = (opA & 0x003fffff) * opB;
     // 2. We can remove an integer coersion from the statement above because:
     //    0x1fffff7fc00001 + 0xffc00000 = 0x1fffffff800001
     //    0x1fffffff800001 < Number.MAX_SAFE_INTEGER /*0x1fffffffffffff*/
@@ -2432,24 +2592,24 @@ showdown.helper.emojis = {
   'zzz': '\ud83d\udca4',
 
   /* special emojis :P */
-  'atom': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/atom.png?v8">',
-  'basecamp': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/basecamp.png?v8">',
-  'basecampy': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/basecampy.png?v8">',
-  'bowtie': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/bowtie.png?v8">',
-  'electron': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/electron.png?v8">',
-  'feelsgood': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/feelsgood.png?v8">',
-  'finnadie': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/finnadie.png?v8">',
-  'goberserk': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/goberserk.png?v8">',
-  'godmode': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/godmode.png?v8">',
-  'hurtrealbad': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/hurtrealbad.png?v8">',
-  'neckbeard': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/neckbeard.png?v8">',
-  'octocat': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/octocat.png?v8">',
-  'rage1': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage1.png?v8">',
-  'rage2': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage2.png?v8">',
-  'rage3': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage3.png?v8">',
-  'rage4': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage4.png?v8">',
-  'shipit': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/shipit.png?v8">',
-  'suspect': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/suspect.png?v8">',
-  'trollface': '<img width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/trollface.png?v8">',
-  'showdown': '<img width="20" height="20" align="absmiddle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC">'
+  'atom': '<img alt="atom" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/atom.png?v8">',
+  'basecamp': '<img alt="basecamp" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/basecamp.png?v8">',
+  'basecampy': '<img alt="basecampy" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/basecampy.png?v8">',
+  'bowtie': '<img alt="bowtie" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/bowtie.png?v8">',
+  'electron': '<img alt="electron" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/electron.png?v8">',
+  'feelsgood': '<img alt="feelsgood" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/feelsgood.png?v8">',
+  'finnadie': '<img alt="finnadie" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/finnadie.png?v8">',
+  'goberserk': '<img alt="goberserk" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/goberserk.png?v8">',
+  'godmode': '<img alt="godmode" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/godmode.png?v8">',
+  'hurtrealbad': '<img alt="hurtrealbad" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/hurtrealbad.png?v8">',
+  'neckbeard': '<img alt="neckbeard" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/neckbeard.png?v8">',
+  'octocat': '<img alt="octocat" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/octocat.png?v8">',
+  'rage1': '<img alt="rage1" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage1.png?v8">',
+  'rage2': '<img alt="rage2" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage2.png?v8">',
+  'rage3': '<img alt="rage3" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage3.png?v8">',
+  'rage4': '<img alt="rage4" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/rage4.png?v8">',
+  'shipit': '<img alt="shipit" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/shipit.png?v8">',
+  'suspect': '<img alt="suspect" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/suspect.png?v8">',
+  'trollface': '<img alt="trollface" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/trollface.png?v8">',
+  'showdown': '<img alt="showdown" width="20" height="20" align="absmiddle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC">'
 };

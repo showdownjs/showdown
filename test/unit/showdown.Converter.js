@@ -1,7 +1,6 @@
 /**
  * Created by Estevao on 31-05-2015.
  */
-//let showdown = require('../../.build/showdown.js') || require('showdown');
 chai.should();
 
 
@@ -159,8 +158,8 @@ describe('showdown.Converter', function () {
       it('should listen to ' + name, function () {
         let converter = new showdown.Converter();
         converter.listen(name, function (event) {
-          let evtName = event.getName();
-          let text = event.getCapturedText();
+          let evtName = event.name;
+          let text = event.input;
           evtName.should.equal(name.toLowerCase());
           text.should.match(/^[\s\S]*foo[\s\S]*$/);
           return text;

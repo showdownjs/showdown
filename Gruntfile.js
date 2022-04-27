@@ -33,6 +33,7 @@ module.exports = function (grunt) {
           'src/options.js',
           'src/showdown.js',
           'src/helpers.js',
+          'src/event.js',
           'src/subParsers/makehtml/*.js',
           'src/subParsers/makemarkdown/*.js',
           'src/converter.js',

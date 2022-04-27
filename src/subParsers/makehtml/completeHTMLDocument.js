@@ -1,6 +1,14 @@
-/**
- * Create a full HTML document from the processed markdown
- */
+////
+// makehtml/completeHTMLDocument.js
+// Copyright (c) 2018 ShowdownJS
+//
+// Create a full HTML document from the processed markdown
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
 showdown.subParser('makehtml.completeHTMLDocument', function (text, options, globals) {
   'use strict';
 
@@ -8,9 +16,15 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.completeHTMLDocument.before', text, options, globals).getText();
+  let startEvent = new showdown.Event('makehtml.completeHTMLDocument.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
-  var doctype = 'html',
+  let doctype = 'html',
       doctypeParsed = '<!DOCTYPE HTML>\n',
       title = '',
       charset = '<meta charset="utf-8">\n',
@@ -25,7 +39,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
     }
   }
 
-  for (var meta in globals.metadata.parsed) {
+  for (let meta in globals.metadata.parsed) {
     if (globals.metadata.parsed.hasOwnProperty(meta)) {
       switch (meta.toLowerCase()) {
         case 'doctype':
@@ -57,6 +71,11 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
 
   text = doctypeParsed + '<html' + lang + '>\n<head>\n' + title + charset + metadata + '</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
 
-  text = globals.converter._dispatch('makehtml.completeHTMLDocument.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.Event('makehtml.completeHTMLDocument.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });

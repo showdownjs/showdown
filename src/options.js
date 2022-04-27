@@ -5,7 +5,7 @@
 function getDefaultOpts (simple) {
   'use strict';
 
-  var defaultOptions = {
+  let defaultOptions = {
     omitExtraWLInCodeBlocks: {
       defaultValue: false,
       describe: 'Omit the default extra whiteline added to code blocks',
@@ -37,9 +37,9 @@ function getDefaultOpts (simple) {
       type: 'boolean'
     },
     headerLevelStart: {
-      defaultValue: false,
+      defaultValue: 1,
       describe: 'The header blocks level start',
-      type: 'integer'
+      type: 'number'
     },
     parseImgDimensions: {
       defaultValue: false,
@@ -172,7 +172,7 @@ function getDefaultOpts (simple) {
       type: 'boolean'
     },
     relativePathBaseUrl: {
-      defaultValue: false,
+      defaultValue: '',
       describe: 'Prepends a base URL to relative paths',
       type: 'string'
     },
@@ -180,8 +180,8 @@ function getDefaultOpts (simple) {
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));
   }
-  var ret = {};
-  for (var opt in defaultOptions) {
+  let ret = {};
+  for (let opt in defaultOptions) {
     if (defaultOptions.hasOwnProperty(opt)) {
       ret[opt] = defaultOptions[opt].defaultValue;
     }
@@ -191,9 +191,9 @@ function getDefaultOpts (simple) {
 
 function allOptionsOn () {
   'use strict';
-  var options = getDefaultOpts(true),
+  let options = getDefaultOpts(true),
       ret = {};
-  for (var opt in options) {
+  for (let opt in options) {
     if (options.hasOwnProperty(opt)) {
       ret[opt] = true;
     }

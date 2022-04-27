@@ -1,7 +1,6 @@
 /**
  * Created by Tivie on 27/01/2017.
  */
-//let showdown = require('../../.build/showdown.js') || require('showdown');
 
 describe('showdown.options', function () {
   'use strict';

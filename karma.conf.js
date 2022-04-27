@@ -15,7 +15,8 @@ module.exports = function (config) {
       { pattern: 'src/options.js'},
       // tests
       { pattern: 'test/unit/showdown*.js' },
-      { pattern: 'test/functional/showdown*.js' },
+      { pattern: 'test/unit/showdown.events.js' },
+      //{ pattern: 'test/functional/makehtml/testsuite.*.js' },
     ],
     reporters: ['progress'],
     port: 9876,  // karma web server port

@@ -1,7 +1,7 @@
 /**
  * Created by Estevao on 08-06-2015.
  */
-var bootstrap = require('./makehtml.bootstrap.js'),
+const bootstrap = require('./makehtml.bootstrap.js'),
     showdown = bootstrap.showdown,
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/'),
@@ -20,6 +20,7 @@ var bootstrap = require('./makehtml.bootstrap.js'),
     metadataSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/metadata/'),
     splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/splitAdjacentBlockquotes/'),
     moreStyling = bootstrap.getTestSuite('test/functional/makehtml/cases/features/moreStyling/'),
+    customizedHeaderId = bootstrap.getTestSuite('test/functional/makehtml/cases/features/customizedHeaderId/'),
     http = require('http'),
     https = require('https'),
     expect = require('chai').expect;
@@ -28,8 +29,8 @@ describe('makeHtml() features testsuite', function () {
   'use strict';
 
   describe('issues', function () {
-    for (var i = 0; i < testsuite.length; ++i) {
-      var converter;
+    for (let i = 0; i < testsuite.length; ++i) {
+      let converter;
       if (testsuite[i].name === '#143.support-image-dimensions') {
         converter = new showdown.Converter({parseImgDimensions: true});
       } else if (testsuite[i].name === '#69.header-level-start') {
@@ -113,9 +114,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test Table Syntax Support **/
   describe('table support', function () {
-    var converter,
+    let converter,
         suite = tableSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'basic-with-header-ids') {
         converter = new showdown.Converter({tables: true, tablesHeaderId: true});
       } else if (suite[i].name === '#179.parse-md-in-table-ths') {
@@ -129,9 +130,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test simplifiedAutoLink Support **/
   describe('simplifiedAutoLink support in', function () {
-    var converter,
+    let converter,
         suite = simplifiedAutoLinkSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'emphasis-and-strikethrough') {
         converter = new showdown.Converter({simplifiedAutoLink: true, strikethrough: true});
       } else if (suite[i].name === 'disallow-underscores') {
@@ -147,9 +148,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test openLinksInNewWindow support **/
   describe('openLinksInNewWindow support in', function () {
-    var converter,
+    let converter,
         suite = openLinksInNewWindowSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'simplifiedAutoLink') {
         converter = new showdown.Converter({openLinksInNewWindow: true, simplifiedAutoLink: true});
       } else {
@@ -161,9 +162,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test disableForced4SpacesIndentedSublists support **/
   describe('disableForced4SpacesIndentedSublists support in', function () {
-    var converter,
+    let converter,
         suite = disableForced4SpacesIndentedSublistsSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({disableForced4SpacesIndentedSublists: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
@@ -171,9 +172,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test rawHeaderId support **/
   describe('rawHeaderId support', function () {
-    var converter,
+    let converter,
         suite = rawHeaderIdSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'with-prefixHeaderId') {
         converter = new showdown.Converter({rawHeaderId: true, prefixHeaderId: '/prefix/'});
       } else {
@@ -185,9 +186,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test rawPrefixHeaderId support **/
   describe('rawPrefixHeaderId support', function () {
-    var converter,
+    let converter,
         suite = rawPrefixHeaderIdSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({rawPrefixHeaderId: true, prefixHeaderId: '/prefix/'});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
@@ -195,7 +196,7 @@ describe('makeHtml() features testsuite', function () {
 
   /** test emojis support **/
   describe('emojis support', function () {
-    var converter,
+    let converter,
         suite = emojisSuite,
         imgSrcRegexp = /<img[^>]+src=("https?:\/\/[^"]+"|'https?:\/\/[^']+')/g;
 
@@ -221,7 +222,7 @@ describe('makeHtml() features testsuite', function () {
       };
     }
 
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'simplifiedautolinks') {
         converter = new showdown.Converter({emoji: true, simplifiedAutoLink: true});
       } else {
@@ -230,7 +231,7 @@ describe('makeHtml() features testsuite', function () {
 
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
 
-      var imgUrl = imgSrcRegexp.exec(suite[i].expected);
+      let imgUrl = imgSrcRegexp.exec(suite[i].expected);
       if (imgUrl) {
         it('should use a working emoji URL', testImageUrlExists(imgUrl[1]));
       }
@@ -239,9 +240,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test underline support **/
   describe('underline support', function () {
-    var converter,
+    let converter,
         suite = underlineSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'simplifiedautolinks') {
         converter = new showdown.Converter({underline: true, simplifiedAutoLink: true});
       } else {
@@ -253,9 +254,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test ellipsis option **/
   describe('ellipsis option', function () {
-    var converter,
+    let converter,
         suite = ellipsisSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({ellipsis: false});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
@@ -263,9 +264,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test literalMidWordUnderscores option **/
   describe('literalMidWordUnderscores option', function () {
-    var converter,
+    let converter,
         suite = literalMidWordUnderscoresSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({literalMidWordUnderscores: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
@@ -274,9 +275,9 @@ describe('makeHtml() features testsuite', function () {
   /** test literalMidWordAsterisks option **/
   /*
   describe('literalMidWordAsterisks option', function () {
-    var converter,
+    let converter,
         suite = literalMidWordAsterisksSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({literalMidWordAsterisks: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
@@ -285,9 +286,9 @@ describe('makeHtml() features testsuite', function () {
 
   /** test completeHTMLDocument option **/
   describe('completeHTMLDocument option', function () {
-    var converter,
+    let converter,
         suite = completeHTMLOutputSuite;
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({completeHTMLDocument: true});
 
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
@@ -296,10 +297,10 @@ describe('makeHtml() features testsuite', function () {
 
   /** test metadata option **/
   describe('metadata option', function () {
-    var converter,
+    let converter,
         suite = metadataSuite;
 
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       if (suite[i].name === 'embeded-in-output' ||
         suite[i].name === 'embeded-two-consecutive-metadata-blocks' ||
         suite[i].name === 'embeded-two-consecutive-metadata-blocks-different-symbols') {
@@ -315,10 +316,10 @@ describe('makeHtml() features testsuite', function () {
 
   /** test metadata option **/
   describe('splitAdjacentBlockquotes option', function () {
-    var converter,
+    let converter,
         suite = splitAdjacentBlockquotesSuite;
 
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({splitAdjacentBlockquotes: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
@@ -326,11 +327,21 @@ describe('makeHtml() features testsuite', function () {
 
   /** test moreStyling option **/
   describe('moreStyling option', function () {
-    var converter,
+    let converter,
         suite = moreStyling;
 
-    for (var i = 0; i < suite.length; ++i) {
+    for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({moreStyling: true, tasklists: true});
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  describe('customizedHeaderId option', function () {
+    let converter,
+        suite = customizedHeaderId;
+
+    for (let i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({customizedHeaderId: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

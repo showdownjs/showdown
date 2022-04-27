@@ -1,9 +1,24 @@
-/**
- * Convert all tabs to spaces
- */
+////
+// makehtml/detab.js
+// Copyright (c) 2018 ShowdownJS
+//
+// Convert all tabs to spaces
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
 showdown.subParser('makehtml.detab', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.detab.before', text, options, globals).getText();
+
+  let startEvent = new showdown.Event('makehtml.detab.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   // expand first n-1 tabs
   text = text.replace(/\t(?=\t)/g, '    '); // g_tab_width
@@ -28,6 +43,11 @@ showdown.subParser('makehtml.detab', function (text, options, globals) {
   text = text.replace(/¨A/g, '    ');  // g_tab_width
   text = text.replace(/¨B/g, '');
 
-  text = globals.converter._dispatch('makehtml.detab.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.Event('makehtml.detab.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });

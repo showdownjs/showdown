@@ -184,6 +184,14 @@ showdown.subParser = function (name, func) {
 };
 
 /**
+ *
+ * @returns {{}}
+ */
+showdown.getSubParserList = function () {
+  return parsers;
+};
+
+/**
  * Gets or registers an extension
  * @static
  * @param {string} name

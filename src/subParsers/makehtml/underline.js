@@ -5,28 +5,85 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.underline.before', text, options, globals).getText();
+  let startEvent = new showdown.Event('makehtml.underline.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   if (options.literalMidWordUnderscores) {
-    text = text.replace(/\b___(\S[\s\S]*?)___\b/g, function (wm, txt) {
-      return '<u>' + txt + '</u>';
+
+    const rgx1 = /\b___(\S[\s\S]*?)___\b/g;
+    text = text.replace(rgx1, function (wm, txt) {
+      return parse(rgx1, wm, txt);
     });
-    text = text.replace(/\b__(\S[\s\S]*?)__\b/g, function (wm, txt) {
-      return '<u>' + txt + '</u>';
+
+    const rgx2 = /\b__(\S[\s\S]*?)__\b/g;
+    text = text.replace(rgx2, function (wm, txt) {
+      return parse(rgx2, wm, txt);
     });
   } else {
-    text = text.replace(/___(\S[\s\S]*?)___/g, function (wm, m) {
-      return (/\S$/.test(m)) ? '<u>' + m + '</u>' : wm;
+
+    const rgx3 = /___(\S[\s\S]*?)___/g;
+    text = text.replace(rgx3, function (wm, txt) {
+      if (!(/\S$/.test(txt))) {
+        return wm;
+      }
+      return parse(rgx3, wm, txt);
     });
-    text = text.replace(/__(\S[\s\S]*?)__/g, function (wm, m) {
-      return (/\S$/.test(m)) ? '<u>' + m + '</u>' : wm;
+
+    const rgx4 = /__(\S[\s\S]*?)__/g;
+    text = text.replace(rgx4, function (wm, txt) {
+      if (!(/\S$/.test(txt))) {
+        return wm;
+      }
+      return parse(rgx4, wm, txt);
     });
   }
 
   // escape remaining underscores to prevent them being parsed by italic and bold
   text = text.replace(/(_)/g, showdown.helper.escapeCharactersCallback);
 
-  text = globals.converter._dispatch('makehtml.underline.after', text, options, globals).getText();
+  let afterEvent = new showdown.Event('makehtml.underline.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 
-  return text;
+
+  function parse (pattern, wholeMatch, txt) {
+    let otp;
+    let captureStartEvent = new showdown.Event('makehtml.underline.onCapture', txt);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches({
+        _wholeMatch: wholeMatch,
+        strikethrough: txt
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '<u' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' + txt + '</u>';
+    }
+    let beforeHashEvent = new showdown.Event('makehtml.underline.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
+  }
+
+
 });

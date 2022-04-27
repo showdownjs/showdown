@@ -143,4 +143,4 @@ This should address:
 
 - [X] Implement unit tests in Karma
 - [ ] Implement functional tests in Karma
-- [ ] Integrate with browserstack
+- [X] Integrate with browserstack

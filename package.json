@@ -68,6 +68,7 @@
     "karma-jsdom-launcher": "^12.0.0",
     "karma-mocha": "^2.0.1",
     "load-grunt-tasks": "^5.1.0",
+    "mocha": "^9.2.2",
     "performance-now": "^2.1.0",
     "quiet-grunt": "^0.2.0",
     "semver-sort": "^1.0.0",

@@ -3,13 +3,24 @@
  */
 showdown.subParser('makehtml.unescapeSpecialChars', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.unescapeSpecialChars.before', text, options, globals).getText();
+  let startEvent = new showdown.Event('makehtml.unescapeSpecialChars.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   text = text.replace(/¨E(\d+)E/g, function (wholeMatch, m1) {
-    var charCodeToReplace = parseInt(m1);
+    let charCodeToReplace = parseInt(m1);
     return String.fromCharCode(charCodeToReplace);
   });
 
-  text = globals.converter._dispatch('makehtml.unescapeSpecialChars.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.Event('makehtml.unescapeSpecialChars.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });

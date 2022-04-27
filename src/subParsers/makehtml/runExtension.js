@@ -9,7 +9,7 @@ showdown.subParser('makehtml.runExtension', function (ext, text, options, global
 
   } else if (ext.regex) {
     // TODO remove this when old extension loading mechanism is deprecated
-    var re = ext.regex;
+    let re = ext.regex;
     if (!(re instanceof RegExp)) {
       re = new RegExp(re, 'g');
     }

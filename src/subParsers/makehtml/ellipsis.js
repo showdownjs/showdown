@@ -1,3 +1,14 @@
+////
+// makehtml/ellipsis.js
+// Copyright (c) 2018 ShowdownJS
+//
+// transform three dots (...) into ellipsis (…)
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
 showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
   'use strict';
 
@@ -5,11 +16,21 @@ showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
     return text;
   }
 
-  text = globals.converter._dispatch('makehtml.ellipsis.before', text, options, globals).getText();
+  let startEvent = new showdown.Event('makehtml.ellipsis.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   text = text.replace(/\.\.\./g, '…');
 
-  text = globals.converter._dispatch('makehtml.ellipsis.after', text, options, globals).getText();
-
-  return text;
+  let afterEvent = new showdown.Event('makehtml.ellipsis.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });

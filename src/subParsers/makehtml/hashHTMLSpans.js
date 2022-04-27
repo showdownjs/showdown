@@ -1,9 +1,23 @@
-/**
- * Hash span elements that should not be parsed as markdown
- */
+////
+// makehtml/hashHTMLSpans.js
+// Copyright (c) 2018 ShowdownJS
+//
+// Hash span elements that should not be parsed as markdown
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
 showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
   'use strict';
-  text = globals.converter._dispatch('makehtml.hashHTMLSpans.before', text, options, globals).getText();
+  let startEvent = new showdown.Event('makehtml.hashHTMLSpans.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   // Hash Self Closing tags
   text = text.replace(/<[^>]+?\/>/gi, function (wm) {
@@ -25,34 +39,11 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
     return showdown.helper._hashHTMLSpan(wm, globals);
   });
 
-  text = globals.converter._dispatch('makehtml.hashHTMLSpans.after', text, options, globals).getText();
-  return text;
-});
-
-/**
- * Unhash HTML spans
- */
-showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals) {
-  'use strict';
-  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.before', text, options, globals).getText();
-
-  for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
-    var repText = globals.gHtmlSpans[i],
-        // limiter to prevent infinite loop (assume 10 as limit for recurse)
-        limit = 0;
-
-    while (/¨C(\d+)C/.test(repText)) {
-      var num = RegExp.$1;
-      repText = repText.replace('¨C' + num + 'C', globals.gHtmlSpans[num]);
-      if (limit === 10) {
-        console.error('maximum nesting of 10 spans reached!!!');
-        break;
-      }
-      ++limit;
-    }
-    text = text.replace('¨C' + i + 'C', repText);
-  }
-
-  text = globals.converter._dispatch('makehtml.unhashHTMLSpans.after', text, options, globals).getText();
-  return text;
+  let afterEvent = new showdown.Event('makehtml.hashHTMLSpans.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });

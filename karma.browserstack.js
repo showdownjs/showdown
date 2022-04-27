@@ -18,10 +18,17 @@ module.exports = function (config) {
         os: 'Windows',
         os_version: '10'
       },
-      bstack_firefox_windows: {
+      bstack_firefox_old_windows: {
         base: 'BrowserStack',
         browser: 'firefox',
-        browser_version: '44',
+        browser_version: '45',
+        os: 'Windows',
+        os_version: '10'
+      },
+      bstack_firefox_latest_windows: {
+        base: 'BrowserStack',
+        browser: 'firefox',
+        browser_version: '99',
         os: 'Windows',
         os_version: '10'
       },
@@ -32,6 +39,7 @@ module.exports = function (config) {
         os: 'Windows',
         os_version: '10'
       },
+      /*
       bstack_ie11_windows: {
         base: 'BrowserStack',
         browser: 'ie',
@@ -39,6 +47,7 @@ module.exports = function (config) {
         os: 'Windows',
         os_version: '10'
       },
+      */
       bstack_macos_safari: {
         base: 'BrowserStack',
         browser: 'safari',
@@ -64,7 +73,7 @@ module.exports = function (config) {
       }
     },
 
-    browsers: ['bstack_chrome_windows', 'bstack_firefox_windows', 'bstack_ie11_windows', 'bstack_edge_windows', 'bstack_iphoneX', 'bstack_macos_safari', 'bstack_android'],
+    browsers: ['bstack_chrome_windows', 'bstack_firefox_old_windows', 'bstack_firefox_latest_windows', /*'bstack_ie11_windows',*/ 'bstack_edge_windows', 'bstack_iphoneX', 'bstack_macos_safari', 'bstack_android'],
     frameworks: ['mocha', 'chai'],
     reporters: ['dots', 'BrowserStack'],
     files: [

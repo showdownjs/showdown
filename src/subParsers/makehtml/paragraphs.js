@@ -4,7 +4,6 @@
 showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   'use strict';
 
-  text = globals.converter._dispatch('makehtml.paragraphs.before', text, options, globals).getText();
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
@@ -37,7 +36,7 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
         codeFlag = false;
     // if this is a marker for an html block...
     // use RegExp.test instead of string.search because of QML bug
-    while (/¨(K|G)(\d+)\1/.test(grafsOutIt)) {
+    while (/¨([KG])(\d+)\1/.test(grafsOutIt)) {
       var delim = RegExp.$1,
           num   = RegExp.$2;
 
@@ -54,7 +53,7 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
       }
       blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
 
-      grafsOutIt = grafsOutIt.replace(/(\n\n)?¨(K|G)\d+\2(\n\n)?/, blockText);
+      grafsOutIt = grafsOutIt.replace(/(\n\n)?¨([KG])\d+\2(\n\n)?/, blockText);
       // Check if grafsOutIt is a pre->code
       if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOutIt)) {
         codeFlag = true;
@@ -66,5 +65,5 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
-  return globals.converter._dispatch('makehtml.paragraphs.after', text, options, globals).getText();
+  return text;
 });

@@ -11,7 +11,7 @@
 showdown.Converter = function (converterOptions) {
   'use strict';
 
-  var
+  let
       /**
        * Options used by this converter
        * @private
@@ -64,7 +64,7 @@ showdown.Converter = function (converterOptions) {
   function _constructor () {
     converterOptions = converterOptions || {};
 
-    for (var gOpt in globalOptions) {
+    for (let gOpt in globalOptions) {
       if (globalOptions.hasOwnProperty(gOpt)) {
         options[gOpt] = globalOptions[gOpt];
       }
@@ -72,7 +72,7 @@ showdown.Converter = function (converterOptions) {
 
     // Merge options
     if (typeof converterOptions === 'object') {
-      for (var opt in converterOptions) {
+      for (let opt in converterOptions) {
         if (converterOptions.hasOwnProperty(opt)) {
           options[opt] = converterOptions[opt];
         }
@@ -85,6 +85,8 @@ showdown.Converter = function (converterOptions) {
     if (options.extensions) {
       showdown.helper.forEach(options.extensions, _parseExtension);
     }
+
+    options = showdown.helper.validateOptions(options);
   }
 
   /**
@@ -205,35 +207,29 @@ showdown.Converter = function (converterOptions) {
   }
 
   function rTrimInputText (text) {
-    var rsp = text.match(/^\s*/)[0].length,
+    let rsp = text.match(/^\s*/)[0].length,
         rgx = new RegExp('^\\s{0,' + rsp + '}', 'gm');
     return text.replace(rgx, '');
   }
 
   /**
    *
-   * @param {string} evtName Event name
-   * @param {string} text Text
-   * @param {{}} options Converter Options
-   * @param {{}} globals Converter globals
-   * @param {{}} [pParams] extra params for event
-   * @returns showdown.helper.Event
-   * @private
+   * @param {showdown.Event} event
+   * @returns showdown.Event
    */
-  this._dispatch = function dispatch (evtName, text, options, globals, pParams) {
-    evtName = evtName.toLowerCase();
-    var params = pParams || {};
-    params.converter = this;
-    params.text = text;
-    params.options = options;
-    params.globals = globals;
-    var event = new showdown.helper.Event(evtName, text, params);
-
-    if (listeners.hasOwnProperty(evtName)) {
-      for (var ei = 0; ei < listeners[evtName].length; ++ei) {
-        var nText = listeners[evtName][ei](event);
-        if (nText && typeof nText !== 'undefined') {
-          event.setText(nText);
+  this.dispatch = function (event) {
+    if (!(event instanceof showdown.Event)) {
+      throw new TypeError('dispatch only accepts showdown.Event objects as param, but ' + typeof event + ' given');
+    }
+    event.converter = this;
+    if (listeners.hasOwnProperty(event.name)) {
+      for (let i = 0; i < listeners[event.name].length; ++i) {
+        let listRet = listeners[event.name][i](event);
+        if (showdown.helper.isString(listRet)) {
+          event.output = listRet;
+          event.input = listRet;
+        } else if (listRet instanceof showdown.Event && listRet.name === event.name) {
+          event = listRet;
         }
       }
     }
@@ -325,7 +321,7 @@ showdown.Converter = function (converterOptions) {
     // run the sub parsers
     text = showdown.subParser('makehtml.metadata')(text, options, globals);
     text = showdown.subParser('makehtml.hashPreCodeTags')(text, options, globals);
-    text = showdown.subParser('makehtml.githubCodeBlocks')(text, options, globals);
+    text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
     text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
     text = showdown.subParser('makehtml.hashCodeTags')(text, options, globals);
     text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);

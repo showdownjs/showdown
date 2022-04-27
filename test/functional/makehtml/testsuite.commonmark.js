@@ -3,7 +3,6 @@
  */
 
 // jshint ignore: start
-/*
 var bootstrap = require('./makehtml.bootstrap.js'),
     converter = new bootstrap.showdown.Converter(),
     assertion = bootstrap.assertion,
@@ -22,4 +21,3 @@ describe('makeHtml() commonmark testsuite', function () {
     }
   }
 });
-*/

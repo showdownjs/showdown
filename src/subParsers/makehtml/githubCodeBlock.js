@@ -68,7 +68,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
       let lang = infostring.trim().split(' ')[0];
       codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
-      codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
+      //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
       codeblock = codeblock
         .replace(/^\n+/g, '')  // trim leading newlines
         .replace(/\n+$/g, ''); // trim trailing whitespace

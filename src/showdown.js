@@ -30,21 +30,9 @@ var showdown = {},
         noHeaderId:                           true,
         ghCodeBlocks:                         false
       },
-      ghost: {
-        omitExtraWLInCodeBlocks:              true,
-        parseImgDimensions:                   true,
-        simplifiedAutoLink:                   true,
-        literalMidWordUnderscores:            true,
-        strikethrough:                        true,
-        tables:                               true,
-        tablesHeaderId:                       true,
-        ghCodeBlocks:                         true,
-        tasklists:                            true,
-        smoothLivePreview:                    true,
-        simpleLineBreaks:                     true,
-        requireSpaceBeforeHeadingText:        true,
-        ghMentions:                           false,
-        encodeEmails:                         true
+      commonmark: {
+        noHeaderId:                           true,
+        requireSpaceBeforeHeadingText:        true
       },
       vanilla: getDefaultOpts(true),
       allOn: allOptionsOn()

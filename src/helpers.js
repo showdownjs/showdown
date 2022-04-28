@@ -705,6 +705,14 @@ showdown.helper._populateAttributes = function (attributes) {
   return text;
 };
 
+showdown.helper.normalizeLeadingTabs = function (text) {
+  // 1. (1 to 3 spaces followed by a tab at the start of the line) becomes (1 tab)
+  text = text.replace(/^ {1,3}\t/gm, '\t');
+
+  // 2.
+  return text;
+};
+
 /**
  * Remove one level of line-leading tabs or spaces
  * @param {string} text

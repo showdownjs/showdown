@@ -73,16 +73,18 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  let setextRegexH1 = (options.smoothLivePreview) ? /^(.+)[ \t]*\n={2,}[ \t]*\n+/gm : /^(.+)[ \t]*\n=+[ \t]*\n+/gm,
-      setextRegexH2 = (options.smoothLivePreview) ? /^(.+)[ \t]*\n-{2,}[ \t]*\n+/gm : /^(.+)[ \t]*\n-+[ \t]*\n+/gm,
-      atxRegex      = (options.requireSpaceBeforeHeadingText) ? /^(#{1,6})[ \t]+(.+?)[ \t]*#*\n+/gm : /^(#{1,6})[ \t]*(.+?)[ \t]*#*\n+/gm;
+  let setextRegexH1 = (options.smoothLivePreview) ? /^(.+[ \t]*\n)(.+[ \t]*\n)?(.+[ \t]*\n)?={2,}[ \t]*\n+/gm : /^( {0,3}[^ \t\n].+[ \t]*\n)(.+[ \t]*\n)?(.+[ \t]*\n)? {0,3}=+[ \t]*$/gm,
+      setextRegexH2 = (options.smoothLivePreview) ? /^(.+[ \t]*\n)(.+[ \t]*\n)?(.+[ \t]*\n)?-{2,}[ \t]*\n+/gm : /^( {0,3}[^ \t\n].+[ \t]*\n)(.+[ \t]*\n)?(.+[ \t]*\n)? {0,3}-+[ \t]*$/gm,
+      atxRegex      = (options.requireSpaceBeforeHeadingText) ? /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm : /^ {0,3}(#{1,6})[ \t]*(.+?)[ \t]*#*[ \t]*$/gm;
 
-  text = text.replace(setextRegexH1, function (wholeMatch, headingText) {
+  text = text.replace(setextRegexH1, function (wholeMatch, line1, line2, line3) {
+    let headingText = line1.trim() + ((line2) ? '\n' + line2.trim() : '') + ((line3) ? '\n' + line3.trim() : '');
     let id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(headingText, options, globals);
     return parseHeader(setextRegexH1, wholeMatch, headingText, options.headerLevelStart, id);
   });
 
-  text = text.replace(setextRegexH2, function (wholeMatch, headingText) {
+  text = text.replace(setextRegexH2, function (wholeMatch, line1, line2, line3) {
+    let headingText = line1.trim() + ((line2) ? '\n' + line2.trim() : '') + ((line3) ? '\n' + line3.trim() : '');
     let id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(headingText, options, globals);
     return parseHeader(setextRegexH2, wholeMatch, headingText, options.headerLevelStart + 1, id);
   });
@@ -154,7 +156,7 @@ showdown.subParser('makehtml.heading.id', function (m, options, globals) {
       .toLowerCase();
   } else {
     title = title
-      .replace(/[^\w]/g, '')
+      .replace(/\W/g, '')
       .toLowerCase();
   }
 

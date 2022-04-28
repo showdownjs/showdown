@@ -60,6 +60,7 @@
     "grunt-endline": "^0.7.0",
     "grunt-eslint": "^24.0.0",
     "grunt-mocha-test": "^0.13.3",
+    "html-prettify": "^1.0.6",
     "karma": "^6.3.17",
     "karma-browserstack-launcher": "^1.6.0",
     "karma-chai": "^0.1.0",

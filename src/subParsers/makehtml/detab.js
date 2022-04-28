@@ -12,6 +12,7 @@
 showdown.subParser('makehtml.detab', function (text, options, globals) {
   'use strict';
 
+  return text;
   let startEvent = new showdown.Event('makehtml.detab.onStart', text);
   startEvent
     .setOutput(text)

@@ -23,7 +23,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
   // sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '¨0';
 
-  let pattern = /(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=¨0))/g;
+  let pattern = /(?:\n\n|^)((?:(?: {4}|\t).*\n+)+)(\n* {0,3}[^ \t\n]|(?=¨0))/g;
   text = text.replace(pattern, function (wholeMatch, m1, m2) {
     let codeblock = m1,
         nextChar = m2,
@@ -55,7 +55,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
       codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.helper.outdent(codeblock);
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
-      codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
+      //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
       codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
       codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing newlines
       attributes = captureStartEvent.attributes;

@@ -303,7 +303,8 @@ showdown.Converter = function (converterOptions) {
     text = '\n\n' + text + '\n\n';
 
     // detab
-    text = showdown.subParser('makehtml.detab')(text, options, globals);
+    //text = showdown.subParser('makehtml.detab')(text, options, globals);
+    text = showdown.helper.normalizeLeadingTabs(text);
 
     /**
      * Strip any lines consisting only of spaces and tabs.

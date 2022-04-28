@@ -8,6 +8,7 @@
 
   require('source-map-support').install();
   require('chai').should();
+  const htmlPrettify = require('html-prettify');
   let fs = require('fs');
 
   function getTestSuite (dir) {
@@ -52,7 +53,13 @@
       let section = jsonArray[i].section;
       let name = jsonArray[i].section + '_' + (jsonArray[i].example || jsonArray[i].number);
       let md = jsonArray[i].markdown;
+      // transformations
+      md = md.replace(/→/g, '\t'); // replace → with tabs
+
       let html = jsonArray[i].html;
+      // transformations
+      html = html.replace(/→/g, '\t'); // replace → with tabs
+
       if (!tcObj.hasOwnProperty(section)) {
         tcObj[section] = [];
       }
@@ -67,10 +74,15 @@
   }
 
 
-  function assertion (testCase, converter) {
+  function assertion (testCase, converter, prettify) {
+    prettify = prettify || false;
     return function () {
       testCase.actual = converter.makeHtml(testCase.input);
-      testCase = normalize(testCase);
+      // transformations for readability
+      //testCase.expected = testCase.expected.replace(/\t/g, '→');
+      //testCase.actual = testCase.actual.replace(/\t/g, '→');
+
+      testCase = normalize(testCase, prettify);
 
       // Compare
       testCase.actual.should.equal(testCase.expected, testCase.file);
@@ -78,7 +90,7 @@
   }
 
   //Normalize input/output
-  function normalize (testCase) {
+  function normalize (testCase, prettify) {
 
     // Normalize line returns
     testCase.expected = testCase.expected.replace(/(\r\n)|\n|\r/g, '\n');
@@ -96,9 +108,12 @@
     testCase.expected = testCase.expected.trim();
     testCase.actual = testCase.actual.trim();
 
-    //Beautify
-    //testCase.expected = beautify(testCase.expected, beauOptions);
-    //testCase.actual = beautify(testCase.actual, beauOptions);
+    //prettify
+    if (prettify) {
+      testCase.expected = htmlPrettify(testCase.expected);
+      testCase.actual = htmlPrettify(testCase.actual);
+    }
+
 
     // Normalize line returns
     testCase.expected = testCase.expected.replace(/(\r\n)|\n|\r/g, '\n');

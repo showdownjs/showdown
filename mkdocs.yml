@@ -30,6 +30,7 @@ site_dir: public
 nav:
   - Home:
     - Introduction: index.md
+    - Contribution guide: contribution-guide.md
     - Donations: donations.md
     - Credits: credits.md
   - Quickstart:

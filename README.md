@@ -486,28 +486,26 @@ Pull Request.
 PRs are awesome. However, before you submit your pull request consider the following guidelines:
 
  - Search GitHub for an open or closed Pull Request that relates to your submission. You don't want to duplicate effort.
- - When issuing PRs that change code, make your changes in a new git branch based on master:
+ - When issuing PRs that change code, make your changes in a new git branch based on **develop**:
 
    ```bash
-   git checkout -b my-fix-branch master
+   git checkout -b my-fix-branch develop
    ```
 
- - Documentation (i.e: README.md) changes can be made directly against master.
  - Run the full test suite before submitting and make sure all tests pass (obviously =P).
- - Try to follow our [**coding style rules**][coding-rules].
-   Breaking them prevents the PR to pass the tests.
+ - Try to follow our [**coding style rules**][coding-rules]. Breaking them prevents the PR to pass the tests.
  - Refrain from fixing multiple issues in the same pull request. It's preferable to open multiple small PRs instead of one
    hard to review big one.
- - If the PR introduces a new feature or fixes an issue, please add the appropriate test case.
- - We use commit notes to generate the changelog. It's extremely helpful if your commit messages adhere to the
- [**AngularJS Git Commit Guidelines**][ng-commit-guide].
+ - If the PR introduces a new feature or fixes an issue, **please add the appropriate test case**.
+ - We use [conventional commit][conventional-commits] notes to generate the changelog that follow the conventional changelog spec. It's extremely helpful if your commit messages adhere to these [Commit Guidelines][conventional-commits].
+ - Don't forget to add your name to the [CREDITS.md](https://github.com/showdownjs/showdown/blob/master/CREDITS.md) file. We like to give credit were it's due.
  - If we suggest changes then:
      - Make the required updates.
-     - Re-run the Angular test suite to ensure tests are still passing.
+     - Re-run the test suite to ensure tests are still passing.
      - Rebase your branch and force push to your GitHub repository (this will update your Pull Request):
 
      ```bash
-     git rebase master -i
+     git rebase develop -i
      git push origin my-fix-branch -f
      ```
  - After your pull request is merged, you can safely delete your branch.
@@ -538,5 +536,5 @@ Showdown is powered by:<br/>
 [xss-wiki]: https://github.com/showdownjs/showdown/wiki/Markdown's-XSS-Vulnerability-(and-how-to-mitigate-it)
 [ext-wiki]: https://github.com/showdownjs/showdown/wiki/extensions
 [coding-rules]: https://github.com/showdownjs/code-style/blob/master/README.md
-[ng-commit-guide]: https://github.com/showdownjs/code-style/blob/master/README.md#commit-message-convention
+[conventional-commits]: https://www.conventionalcommits.org/
 [boilerplate-repo]: https://github.com/showdownjs/extension-boilerplate

@@ -50,6 +50,7 @@
     "chai": "*",
     "chai-match": "*",
     "commonmark-spec": "^0.30.0",
+    "diffable-html": "^5.0.0",
     "grunt": "^1.4.1",
     "grunt-contrib-clean": "^2.0.0",
     "grunt-contrib-concat": "^2.0.0",
@@ -60,7 +61,6 @@
     "grunt-endline": "^0.7.0",
     "grunt-eslint": "^24.0.0",
     "grunt-mocha-test": "^0.13.3",
-    "html-prettify": "^1.0.6",
     "karma": "^6.3.17",
     "karma-browserstack-launcher": "^1.6.0",
     "karma-chai": "^0.1.0",
@@ -81,6 +81,18 @@
     "jsdom": "^19.0.0"
   },
   "overrides": {
-    "minimist": "^1.2.6"
+    "minimist": "^1.2.6",
+    "grunt-conventional-changelog": {
+      "conventional-changelog": "^3.1.25"
+    },
+    "grunt-conventional-github-releaser": {
+      "conventional-github-releaser": {
+        "conventional-changelog": "^3.1.25",
+        "dateformat": "^5.0.3",
+        "git-semver-tags": "^4.1.1",
+        "meow": "^8.1.2",
+        "semver-regex": "^4.0.2"
+      }
+    }
   }
 }

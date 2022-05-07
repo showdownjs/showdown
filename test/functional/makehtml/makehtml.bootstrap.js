@@ -8,7 +8,9 @@
 
   require('source-map-support').install();
   require('chai').should();
-  const htmlPrettify = require('html-prettify');
+  //const htmlPrettify = require('html-prettify');
+  const htmlPrettify = require('diffable-html');
+
   let fs = require('fs');
 
   function getTestSuite (dir) {
@@ -18,7 +20,7 @@
   }
 
   function getJsonTestSuite (file) {
-    let json = JSON.parse(fs.readFileSync(file, 'utf8'));
+    let json = JSON.parse(fs.readFileSync(file, 'utf8').toString());
     return mapJson(json, file);
   }
 
@@ -126,7 +128,6 @@
     getTestSuite: getTestSuite,
     getJsonTestSuite: getJsonTestSuite,
     assertion: assertion,
-    normalize: normalize,
     showdown: require('../../../.build/showdown.js')
   };
 })();

@@ -49,19 +49,16 @@ function runTests () {
       showdown.subParser('makehtml.hashHTMLBlocks')(testMDFile, options, globals);
     })
     .add('anchors', function () {
-      showdown.subParser('makehtml.links')(testMDFile, options, globals);
+      showdown.subParser('makehtml.link')(testMDFile, options, globals);
     })
     .add('blockQuotes', function () {
-      showdown.subParser('makehtml.blockQuotes')(testMDFile, options, globals);
+      showdown.subParser('makehtml.blockquote')(testMDFile, options, globals);
     })
     .add('codeBlocks', function () {
-      showdown.subParser('makehtml.codeBlocks')(testMDFile, options, globals);
+      showdown.subParser('makehtml.codeBlock')(testMDFile, options, globals);
     })
     .add('codeSpans', function () {
-      showdown.subParser('makehtml.codeSpans')(testMDFile, options, globals);
-    })
-    .add('detab', function () {
-      showdown.subParser('makehtml.detab')(testMDFile, options, globals);
+      showdown.subParser('makehtml.codeSpan')(testMDFile, options, globals);
     })
     .add('encodeAmpsAndAngles', function () {
       showdown.subParser('makehtml.encodeAmpsAndAngles')(testMDFile, options, globals);
@@ -76,7 +73,7 @@ function runTests () {
       showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(testMDFile, options, globals);
     })
     .add('githubCodeBlocks', function () {
-      showdown.subParser('makehtml.githubCodeBlocks')(testMDFile, options, globals);
+      showdown.subParser('makehtml.githubCodeBlock')(testMDFile, options, globals);
     })
     .add('hashBlock', function () {
       showdown.subParser('makehtml.hashBlock')(testMDFile, options, globals);
@@ -91,22 +88,19 @@ function runTests () {
       showdown.subParser('makehtml.hashPreCodeTags')(testMDFile, options, globals);
     })
     .add('headers', function () {
-      showdown.subParser('makehtml.headers')(testMDFile, options, globals);
+      showdown.subParser('makehtml.heading')(testMDFile, options, globals);
     })
     .add('horizontalRule', function () {
       showdown.subParser('makehtml.horizontalRule')(testMDFile, options, globals);
     })
     .add('images', function () {
-      showdown.subParser('makehtml.images')(testMDFile, options, globals);
+      showdown.subParser('makehtml.image')(testMDFile, options, globals);
     })
     .add('italicsAndBold', function () {
-      showdown.subParser('makehtml.italicsAndBold')(testMDFile, options, globals);
+      showdown.subParser('makehtml.emphasisAndStrong')(testMDFile, options, globals);
     })
     .add('lists', function () {
-      showdown.subParser('makehtml.lists')(testMDFile, options, globals);
-    })
-    .add('outdent', function () {
-      showdown.subParser('makehtml.outdent')(testMDFile, options, globals);
+      showdown.subParser('makehtml.list')(testMDFile, options, globals);
     })
     .add('paragraphs', function () {
       showdown.subParser('makehtml.paragraphs')(testMDFile, options, globals);
@@ -121,7 +115,7 @@ function runTests () {
       showdown.subParser('makehtml.stripLinkDefinitions')(testMDFile, options, globals);
     })
     .add('tables', function () {
-      showdown.subParser('makehtml.tables')(testMDFile, options, globals);
+      showdown.subParser('makehtml.table')(testMDFile, options, globals);
     })
     .add('unescapeSpecialChars', function () {
       showdown.subParser('makehtml.unescapeSpecialChars')(testMDFile, options, globals);

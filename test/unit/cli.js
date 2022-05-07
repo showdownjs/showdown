@@ -63,7 +63,7 @@ describe('showdown cli', function () {
     describe('-v', function () {
       it('should display version', function () {
         let proc = spawnCLI(null, ['-V'], {}),
-            verRegex = /^(\d{1,2}\.\d{1,3}\.\d{1,3}(?:-(alpha)|(beta)|(rc-\d{1,2})))?/;
+            verRegex = /^(\d{1,2}\.\d{1,3}\.\d{1,3}(?:-(alpha\d{0,2})|(beta\d{0,2})|(rc-\d{1,2})))?/;
         proc.status.should.equal(0);
         proc.stdout.should.match(verRegex);
         proc.stdout.should.match(verRegex).and.capture(0).equals(packageJson.version);

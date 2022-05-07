@@ -3,7 +3,7 @@
   "version": "3.0.0-alpha",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
-  "homepage": "http://showdownjs.com/",
+  "homepage": "https://showdownjs.com/",
   "keywords": [
     "markdown",
     "converter"
@@ -57,7 +57,6 @@
     "grunt-contrib-jshint": "^3.1.0",
     "grunt-contrib-uglify": "^5.0.1",
     "grunt-conventional-changelog": "^6.1.0",
-    "grunt-conventional-github-releaser": "^1.0.0",
     "grunt-endline": "^0.7.0",
     "grunt-eslint": "^24.0.0",
     "grunt-mocha-test": "^0.13.3",
@@ -84,15 +83,6 @@
     "minimist": "^1.2.6",
     "grunt-conventional-changelog": {
       "conventional-changelog": "^3.1.25"
-    },
-    "grunt-conventional-github-releaser": {
-      "conventional-github-releaser": {
-        "conventional-changelog": "^3.1.25",
-        "dateformat": "^5.0.3",
-        "git-semver-tags": "^4.1.1",
-        "meow": "^8.1.2",
-        "semver-regex": "^4.0.2"
-      }
     }
   }
 }

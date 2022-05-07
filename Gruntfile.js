@@ -192,7 +192,6 @@ module.exports = function (grunt) {
   grunt.registerTask('generate-changelog', function () {
     'use strict';
     grunt.loadNpmTasks('grunt-conventional-changelog');
-    grunt.loadNpmTasks('grunt-conventional-github-releaser');
     grunt.task.run('conventionalChangelog');
   });
 

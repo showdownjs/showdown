@@ -239,20 +239,16 @@ This is a second.
 </code></pre>
 <p>You can also embed blockquotes in a list.</p>
 <ul>
-    <li>Green</li>
+    <li><p>Green
+&gt; What is this?  It is embedded blockquote.  Mix 'em and match 'em.</p></li>
+    <li><p>Blue</p></li>
+    <li><p>Red</p>
+<pre><code>* Green
+&gt; What is this?  It is embedded blockquote.  Mix 'em and match 'em.
+* Blue
+* Red
+</code></pre></li>
 </ul>
-<blockquote>
-    <p>What is this?  It is embedded blockquote.  Mix 'em and match 'em.</p>
-    <ul>
-        <li>Blue</li>
-        <li>Red</li>
-    </ul>
-</blockquote>
-<pre><code>    * Green
-    &gt; What is this?  It is embedded blockquote.  Mix 'em and match 'em.
-    * Blue
-    * Red
-</code></pre>
 <p>You can also embed code blocks in a list.</p>
 <ul>
     <li><p>Green</p>
@@ -264,7 +260,7 @@ This is a second.
 </code></pre></li>
     <li><p>Blue</p></li>
     <li><p>Red</p>
-        <pre><code>* Green
+<pre><code>* Green
 
     Try this code:
 
@@ -314,9 +310,7 @@ Pipe      |     $1 | eleven
 | `help()`      | Display the __help__ window.   |
 | `destroy()`   | **Destroy your computer!**     |
 </code></pre>
-<ul>
-    <li>-  -</li>
-</ul>
+<hr />
 <h2 id="codeandsyntaxhighlighting">Code and Syntax highlighting</h2>
 <p>Pre-formatted code blocks are used for writing about programming or markup source code. Rather than forming normal paragraphs, the code block linesare interpreted literally.  Markdown wraps a code block in both <code>&lt;pre&gt;</code> and <code>&lt;code&gt;</code> tags.</p>
 <p>To produce a code block in Markdown, indent every line of the block by at least 4 spaces or 1 tab. For :</p>

@@ -25,9 +25,156 @@
 showdown.subParser('makehtml.heading', function (text, options, globals) {
   'use strict';
 
+  let startEvent = new showdown.Event('makehtml.heading.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  let setextRegexH1 = /^( {0,3}([^ \t\n]+.*\n)(.+\n)?(.+\n)?)( {0,3}=+[ \t]*)$/gm,
+      setextRegexH2 = /^( {0,3}([^ \t\n]+.*\n)(.+\n)?(.+\n)?)( {0,3}(-+)[ \t]*)$/gm,
+      atxRegex      = (options.requireSpaceBeforeHeadingText) ? /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm : /^ {0,3}(#{1,6})[ \t]*(.+?)[ \t]*#*[ \t]*$/gm;
+
+  text = text.replace(setextRegexH1, function (wholeMatch, headingText, line1, line2, line3, line4) {
+    return parseSetextHeading(setextRegexH2, options.headerLevelStart, wholeMatch, headingText, line1, line2, line3, line4);
+  });
+
+  text = text.replace(setextRegexH2, function (wholeMatch, headingText, line1, line2, line3, line4) {
+    return parseSetextHeading(setextRegexH2, options.headerLevelStart + 1, wholeMatch, headingText, line1, line2, line3, line4);
+  });
+
+  text = text.replace(atxRegex, function (wholeMatch, m1, m2) {
+    let headingLevel = options.headerLevelStart - 1 + m1.length,
+        headingText = (options.customizedHeaderId) ? m2.replace(/\s?{([^{]+?)}\s*$/, '') : m2,
+        id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(m2, options, globals);
+    return parseHeader(setextRegexH2, wholeMatch, headingText, headingLevel, id);
+  });
+
+  let afterEvent = new showdown.Event('makehtml.heading.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+
+
+  function parseSetextHeading (pattern, headingLevel, wholeMatch, headingText, line1, line2, line3, line4) {
+
+    // count lines
+    let count = headingText.trim().split('\n').length;
+    let prepend = '';
+    let nPrepend;
+    const hrCheckRgx = /^ {0,3}[-_*]([-_*] ?){2,}$/;
+
+    // one liner edge cases
+    if (count === 1) {
+      // hr
+      // let's find the hr edge case first
+      if (showdown.helper.trimEnd(line1).match(hrCheckRgx)) {
+        // it's the edge case, so it's a false positive
+        prepend  = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
+        if (prepend !== line1) {
+          // it's an oneliner list
+          return prepend.trim() + '\n' + line4;
+        }
+      }
+
+      // now check if it's an unordered list
+      if (line1.match(/^ {0,3}[-*+][ \t]/)) {
+
+        prepend = showdown.subParser('makehtml.blockGamut')(line1, options, globals);
+        if (prepend !== line1) {
+          // it's an oneliner list
+          return prepend.trim() + '\n' + line4;
+        }
+      }
+
+      // no edge case let's proceed as usual
+    } else {
+      let multilineText = '';
+
+      // multiline is a bit trickier
+      // first we must take care of the edge cases of:
+      // case1: |  case2:
+      // ---    |  ---
+      // foo    |  foo
+      // ---    |  bar
+      //        |  ---
+      //
+      if (showdown.helper.trimEnd(line1).match(hrCheckRgx)) {
+        nPrepend  = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
+        if (nPrepend !== line1) {
+          line1 = '';
+          // we add the parsed block to prepend
+          prepend = nPrepend.trim();
+          // and remove the line from the headingText, so it doesn't appear repeated
+          headingText = line2 + ((line3) ? line3 : '');
+        }
+      }
+
+      // now we take care of these cases:
+      // case1: |  case2:
+      // foo    |  foo
+      // ***    |  ***
+      // ---    |  bar
+      //        |  ---
+      //
+      if (showdown.helper.trimEnd(line2).match(hrCheckRgx)) {
+        // This case sucks, because the first line could be anything!!!
+        // first let's make sure it's a hr
+        nPrepend  = showdown.subParser('makehtml.horizontalRule')(line2, options, globals);
+        if (nPrepend !== line2) {
+          line2 = nPrepend;
+          // it is, so now we must parse line1 also
+          if (line1) {
+            line1 = showdown.subParser('makehtml.blockGamut')(line1, options, globals);
+            line1 = showdown.subParser('makehtml.paragraphs')(line1, options, globals);
+            line1 = line1.trim() + '\n';
+            prepend = line1;
+            // and clear line1
+            line1 = '';
+          }
+          // we add the parsed blocks to prepend
+          prepend += line2.trim() + '\n';
+          line2 = '';
+          // and remove the lines from the headingText, so it doesn't appear repeated
+          headingText = (line3) ? line3 : '';
+        }
+      }
+
+      // all edge cases should be treated now
+      multilineText = line1 + line2 + ((line3) ? line3 : '');
+
+      nPrepend = showdown.subParser('makehtml.blockGamut')(multilineText, options, globals);
+      //console.log(nPrepend);
+      if (nPrepend !== multilineText) {
+        // we found a block, so it should take precedence
+        prepend += nPrepend;
+        headingText = '';
+      }
+    }
+
+    // trim stuff
+    headingText = headingText.trim();
+
+    // let's check if heading is empty
+    // after looking for blocks, heading text might be empty which is a false positive
+    if (!headingText) {
+      return prepend + line4;
+    }
+
+    // after this, we're pretty sure it's a heading so let's proceed
+    let id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(headingText, options, globals);
+    return prepend + parseHeader(pattern, wholeMatch, headingText, headingLevel, id);
+  }
+
   function parseHeader (pattern, wholeMatch, headingText, headingLevel, headingId) {
     let captureStartEvent = new showdown.Event('makehtml.heading.onCapture', headingText),
-        otp;
+      otp;
 
     captureStartEvent
       .setOutput(null)
@@ -50,7 +197,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
     } else {
       headingText = captureStartEvent.matches.heading;
       let spanGamut = showdown.subParser('makehtml.spanGamut')(headingText, options, globals),
-          attributes = captureStartEvent.attributes;
+        attributes = captureStartEvent.attributes;
       otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + spanGamut + '</h' + headingLevel + '>';
     }
 
@@ -65,45 +212,6 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
     return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
   }
 
-  let startEvent = new showdown.Event('makehtml.heading.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  let setextRegexH1 = (options.smoothLivePreview) ? /^(.+[ \t]*\n)(.+[ \t]*\n)?(.+[ \t]*\n)?={2,}[ \t]*\n+/gm : /^( {0,3}[^ \t\n].+[ \t]*\n)(.+[ \t]*\n)?(.+[ \t]*\n)? {0,3}=+[ \t]*$/gm,
-      setextRegexH2 = (options.smoothLivePreview) ? /^(.+[ \t]*\n)(.+[ \t]*\n)?(.+[ \t]*\n)?-{2,}[ \t]*\n+/gm : /^( {0,3}[^ \t\n].+[ \t]*\n)(.+[ \t]*\n)?(.+[ \t]*\n)? {0,3}-+[ \t]*$/gm,
-      atxRegex      = (options.requireSpaceBeforeHeadingText) ? /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm : /^ {0,3}(#{1,6})[ \t]*(.+?)[ \t]*#*[ \t]*$/gm;
-
-  text = text.replace(setextRegexH1, function (wholeMatch, line1, line2, line3) {
-    let headingText = line1.trim() + ((line2) ? '\n' + line2.trim() : '') + ((line3) ? '\n' + line3.trim() : '');
-    let id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(headingText, options, globals);
-    return parseHeader(setextRegexH1, wholeMatch, headingText, options.headerLevelStart, id);
-  });
-
-  text = text.replace(setextRegexH2, function (wholeMatch, line1, line2, line3) {
-    let headingText = line1.trim() + ((line2) ? '\n' + line2.trim() : '') + ((line3) ? '\n' + line3.trim() : '');
-    let id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(headingText, options, globals);
-    return parseHeader(setextRegexH2, wholeMatch, headingText, options.headerLevelStart + 1, id);
-  });
-
-  text = text.replace(atxRegex, function (wholeMatch, m1, m2) {
-    let headingLevel = options.headerLevelStart - 1 + m1.length,
-        headingText = (options.customizedHeaderId) ? m2.replace(/\s?{([^{]+?)}\s*$/, '') : m2,
-        id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(m2, options, globals);
-    return parseHeader(setextRegexH2, wholeMatch, headingText, headingLevel, id);
-  });
-
-
-  let afterEvent = new showdown.Event('makehtml.heading.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
 });
 
 showdown.subParser('makehtml.heading.id', function (m, options, globals) {

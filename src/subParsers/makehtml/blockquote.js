@@ -24,9 +24,6 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  // add a couple extra lines after the text and endtext mark
-  text = text + '\n\n';
-
   let pattern = /(^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+/gm;
 
   if (options.splitAdjacentBlockquotes) {
@@ -37,11 +34,8 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     let otp,
         attributes = {},
         wholeMatch = bq;
-    // attacklab: hack around Konqueror 3.5.4 bug:
-    // "----------bug".replace(/^-/g,"") == "bug"
+
     bq = bq.replace(/^[ \t]*>[ \t]?/gm, ''); // trim one level of quoting
-    // attacklab: clean up hack
-    bq = bq.replace(/¨0/g, '');
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
 
     let captureStartEvent = new showdown.Event('makehtml.blockquote.onCapture', bq);
@@ -65,6 +59,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
       bq = captureStartEvent.matches.blockquote;
       bq = showdown.subParser('makehtml.githubCodeBlock')(bq, options, globals);
       bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
+      bq = showdown.subParser('makehtml.paragraphs')(bq, options, globals);
       bq = bq.replace(/(^|\n)/g, '$1  ');
       // These leading spaces screw with <pre> content, so we need to fix that:
       bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wm, m1) {

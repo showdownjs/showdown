@@ -29,8 +29,14 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
-  text = text.replace(/\\([`*_{}\[\]()>#+.!~=|:-])/g, showdown.helper.escapeCharactersCallback);
+  text = text
+    .replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback)
+    .replace(/\\([!#%'()*+,\-.\/:;=?@\[\]\\^_`{|}~])/g, showdown.helper.escapeCharactersCallback)
+    .replace(/\\¨D/g, '¨D') // escape $ (which was already escaped as ¨D) (charcode is 36)
+    .replace(/\\&/g, '&amp;') // escape &
+    .replace(/\\"/g, '&quot;') // escaping "
+    .replace(/\\</g, '&lt;') // escaping <
+    .replace(/\\>/g, '&gt;'); // escaping <
 
   let afterEvent = new showdown.Event('makehtml.encodeBackslashEscapes.onEnd', text);
   afterEvent

@@ -548,6 +548,31 @@ showdown.helper.isAbsolutePath = function (path) {
   return /(^([a-z]+:)?\/\/)|(^#)/i.test(path);
 };
 
+
+/**
+ * Polyfill method for trimStart
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.trimStart = function (text) {
+  return (!String.prototype.trimStart) ?
+    text.replace(/^[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+/, '') :
+    text.trimStart();
+};
+
+/**
+ * Polyfill method for trimEnd
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.trimEnd = function (text) {
+  return (!String.prototype.trimEnd) ?
+    text.replace(/[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+$/, '') :
+    text.trimEnd();
+};
+
+
+
 showdown.helper.URLUtils = function (url, baseURL) {
   const pattern2 = /^([^:\/?#]+:)?(?:\/\/(?:([^:@\/?#]*)(?::([^:@\/?#]*))?@)?(([^:\/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
 

@@ -22,32 +22,48 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
 
 
   // parses: --- and - - -
-  const rgx1 = /^ {0,3}( ?-){3,}[ \t]*$/gm;
+  const rgx1 = /^ {0,2}( ?-){3,}[ \t]*$/gm;
   text = text.replace(rgx1, function (wholeMatch) {
     return parse(rgx1, wholeMatch);
   });
   // parses: -\t-\t-
-  const rgx2 = /^ {0,3}(\t?-){3,}[ \t]*$/gm;
+  const rgx2 = /^ {0,3}-(\t?-){2,}[ \t]*$/gm;
   text = text.replace(rgx2, function (wholeMatch) {
     return parse(rgx2, wholeMatch);
   });
 
-  const rgx3 = /^ {0,3}( ?\*){3,}[ \t]*$/gm;
+  const rgx3 = /^ {0,2}( ?\*){3,}[ \t]*$/gm;
   text = text.replace(rgx3, function (wholeMatch) {
     return parse(rgx3, wholeMatch);
   });
-  const rgx4 = /^ {0,3}(\t?\*){3,}[ \t]*$/gm;
+  const rgx4 = /^ {0,3}\*(\t?\*){2,}[ \t]*$/gm;
   text = text.replace(rgx4, function (wholeMatch) {
     return parse(rgx4, wholeMatch);
   });
 
-  const rgx5 = /^ {0,3}( ?\*){3,}[ \t]*$/gm;
+
+  const rgx5 = /^ {0,2}( ?_){3,}[ \t]*$/gm;
   text = text.replace(rgx5, function (wholeMatch) {
     return parse(rgx5, wholeMatch);
   });
-  const rgx6 = /^ {0,3}(\t?\*){3,}[ \t]*$/gm;
+  const rgx6 = /^ {0,3}_(\t?_){2,}[ \t]*$/gm;
   text = text.replace(rgx6, function (wholeMatch) {
     return parse(rgx6, wholeMatch);
+  });
+
+  // super weird horizontal rule
+
+  const rgx7 = /^ {0,3}(- *){2,}-[ \t]*$/gm;
+  text = text.replace(rgx7, function (wholeMatch) {
+    return parse(rgx7, wholeMatch);
+  });
+  const rgx8 = /^ {0,3}(\* *){2,}\*[ \t]*$/gm;
+  text = text.replace(rgx8, function (wholeMatch) {
+    return parse(rgx8, wholeMatch);
+  });
+  const rgx9 = /^ {0,3}(_ *){2,}_[ \t]*$/gm;
+  text = text.replace(rgx9, function (wholeMatch) {
+    return parse(rgx9, wholeMatch);
   });
 
   let afterEvent = new showdown.Event('makehtml.horizontalRule.onEnd', text);

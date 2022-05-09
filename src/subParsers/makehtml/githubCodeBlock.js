@@ -32,9 +32,37 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output + '¨0';
 
-  let pattern = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1/g;
+  //const accentRegex = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)(?:(\n {0,3}\1[`~]*)|¨0)/g;
+  const closedBlockRegex   = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1[`~]*/gm;
+  const unclosedBlockRegex = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)¨0/gm;
+  const emptyBlockRegex    = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n {0,3}\1[`~]*/gm;
 
-  text = text.replace(pattern, function (wholeMatch, delim, language, codeblock) {
+  text = text.replace(closedBlockRegex, function (wholeMatch, delim, language, codeblock) {
+    return parse(closedBlockRegex, wholeMatch, delim, language, codeblock);
+  });
+
+  text = text.replace(emptyBlockRegex, function (wholeMatch, delim, language) {
+    console.log('|', wholeMatch, '|>');
+    return parse(emptyBlockRegex, wholeMatch, delim, language, '');
+  });
+
+  text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
+    return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
+  });
+
+  // attacklab: strip sentinel
+  text = text.replace(/¨0/, '');
+
+  let afterEvent = new showdown.Event('makehtml.githubCodeBlock.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+
+  function parse (pattern, wholeMatch, delim, language, codeblock) {
     let end = (options.omitExtraWLInCodeBlocks) ? '' : '\n',
         otp,
         attributes = {
@@ -119,16 +147,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
     // store the primitive text and the parsed text in a global var,
     // and then return a token
     return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: otp}) - 1) + 'G\n\n';
-  });
+  }
 
-  // attacklab: strip sentinel
-  text = text.replace(/¨0/, '');
 
-  let afterEvent = new showdown.Event('makehtml.githubCodeBlock.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
 });

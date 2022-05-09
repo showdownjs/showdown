@@ -10,6 +10,7 @@ let bootstrap = require('./makehtml.bootstrap.js'),
     }),
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getJsonTestSuite('test/functional/makehtml/cases/commonmark.testsuite.json');
+const {tests} = require('commonmark-spec');
 
 describe('makeHtml() commonmark testsuite', function () {
   'use strict';
@@ -24,9 +25,20 @@ describe('makeHtml() commonmark testsuite', function () {
             case 'Setext headings_93': // spec says it cannot be lazy continuation but then proceeds to make it a lazy continuation.
             case 'Thematic breaks_43': // malformed input of test case
             case 'Thematic breaks_61': // hr inside lists does not make sense
+            case 'Fenced code blocks_146': // as of date, github doesn't support this so we don't either
               continue;
+
             case 'Setext headings_91': //it's failing because the testcase converts " to &quot; even though it's not supposed to
               testsuite[section][i].expected = testsuite[section][i].expected.replace(/&quot;/g, '"')
+              break;
+
+            case 'Fenced code blocks_142': // we use different classes to mark languages in fenced code blocks
+            case 'Fenced code blocks_143': // we use different classes to mark languages in fenced code blocks
+              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-ruby', 'ruby language-ruby');
+              break;
+
+            case 'Fenced code blocks_144': // we use different classes to mark languages in fenced code blocks
+              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-;', '; language-;');
               break;
           }
           it(name, assertion(testsuite[section][i], converter, true));

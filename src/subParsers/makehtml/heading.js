@@ -85,10 +85,25 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
 
       // now check if it's an unordered list
       if (line1.match(/^ {0,3}[-*+][ \t]/)) {
-
-        prepend = showdown.subParser('makehtml.blockGamut')(line1, options, globals);
+        if (line4.trim().match(/^=+/)) {
+          line1 += line4;
+        }
+        prepend = showdown.subParser('makehtml.list')(line1, options, globals);
         if (prepend !== line1) {
           // it's an oneliner list
+          return prepend.trim() + '\n' + line4;
+        }
+      }
+
+      // check if it's a blockquote
+      if (line1.match(/^ {0,3}>[ \t]?[^ \t]/)) {
+        if (line4.trim().match(/^=+/)) {
+          line1 += line4;
+        }
+        prepend = showdown.subParser('makehtml.blockquote')(line1, options, globals);
+        if (prepend !== line1) {
+          // it's an oneliner blockquote
+
           return prepend.trim() + '\n' + line4;
         }
       }
@@ -148,8 +163,11 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
 
       // all edge cases should be treated now
       multilineText = line1 + line2 + ((line3) ? line3 : '');
+      if (line4.trim().match(/^=+/)) {
+        multilineText += line4;
+      }
 
-      nPrepend = showdown.subParser('makehtml.blockGamut')(multilineText, options, globals);
+      nPrepend = showdown.subParser('makehtml.blockGamut')(multilineText, options, globals, 'makehtml.heading');
       //console.log(nPrepend);
       if (nPrepend !== multilineText) {
         // we found a block, so it should take precedence

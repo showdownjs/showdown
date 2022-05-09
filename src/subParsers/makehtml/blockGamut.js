@@ -10,8 +10,10 @@
 ////
 
 
-showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
+showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip) {
   'use strict';
+
+  skip = skip || false;
 
   let startEvent = new showdown.Event('makehtml.blockGamut.onStart', text);
   startEvent
@@ -23,10 +25,14 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
 
   // we parse blockquotes first so that we can have headings and hrs
   // inside blockquotes
-  text = showdown.subParser('makehtml.heading')(text, options, globals);
+  if (skip !== 'makehtml.heading') {
+    text = showdown.subParser('makehtml.heading')(text, options, globals);
+  }
 
   // Do Horizontal Rules:
-  text = showdown.subParser('makehtml.horizontalRule')(text, options, globals);
+  if (skip !== 'makehtml.horizontalRule') {
+    text = showdown.subParser('makehtml.horizontalRule')(text, options, globals);
+  }
 
   text = showdown.subParser('makehtml.list')(text, options, globals);
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);

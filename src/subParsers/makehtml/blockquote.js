@@ -34,7 +34,6 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     let otp,
         attributes = {},
         wholeMatch = bq;
-
     bq = bq.replace(/^[ \t]*>[ \t]?/gm, ''); // trim one level of quoting
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
 

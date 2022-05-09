@@ -293,7 +293,7 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/\r/g, '\n'); // Mac to Unix
 
     // Stardardize line spaces
-    text = text.replace(/\u00A0/g, '&nbsp;');
+    //text = text.replace(/\u00A0/g, '&nbsp;');
 
     if (options.smartIndentationFix) {
       text = rTrimInputText(text);

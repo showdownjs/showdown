@@ -42,8 +42,6 @@ describe('makeHtml() commonmark testsuite', function () {
               testsuite[section][i].expected = testsuite[section][i].expected.replace('language-;', '; language-;');
               break;
 
-            case 'Hard line breaks_638':
-              console.log(testsuite[section][i].input);
 
           }
           it(name, assertion(testsuite[section][i], converter, true));

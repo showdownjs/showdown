@@ -85,18 +85,23 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
       if (showdown.helper.isUndefined(attributes.strong)) {
         attributes.strong = {};
       }
+
       switch (tags) {
         case '<em>':
-          otp = '<em' + showdown.helper._populateAttributes(attributes.em) + '>' + txt + '</em>';
+          otp = '<em' + showdown.helper._populateAttributes(attributes.em) + '>' +
+                showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+                '</em>';
           break;
         case '<strong>':
-          otp = '<strong' + showdown.helper._populateAttributes(attributes.strong) + '>' + txt + '</strong>';
+          otp = '<strong' + showdown.helper._populateAttributes(attributes.strong) + '>' +
+                showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+                '</strong>';
           break;
         case '<strong><em>':
           otp = '<strong' + showdown.helper._populateAttributes(attributes.strong) + '>' +
-                  '<em' + showdown.helper._populateAttributes(attributes.em) + '>' +
-                    txt +
-                  '</em>' +
+                '<em' + showdown.helper._populateAttributes(attributes.em) + '>' +
+                showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+                '</em>' +
                 '</strong>';
           break;
       }
@@ -109,10 +114,11 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
       ._setOptions(options);
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
     otp = beforeHashEvent.output;
+    otp = showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
     return otp;
   }
 
-  // it's faster to have 3 separate regexes for each case than have just one
+  // it's faster to have separate regexes for each case than have just one
   // because of backtracking, in some cases, it could lead to an exponential effect
   // called "catastrophic backtrace". Ominous!
   const lmwuStrongEmRegex         = /\b___(\S[\s\S]*?)___\b/g,

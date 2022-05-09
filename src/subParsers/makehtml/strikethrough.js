@@ -33,7 +33,9 @@ showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       otp = captureStartEvent.output;
     } else {
-      otp = '<del' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' + txt + '</del>';
+      otp = '<del' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' +
+            showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+            '</del>';
     }
 
     let beforeHashEvent = new showdown.Event('makehtml.strikethrough.onHash', otp);

@@ -42,7 +42,6 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
   });
 
   text = text.replace(emptyBlockRegex, function (wholeMatch, delim, language) {
-    console.log('|', wholeMatch, '|>');
     return parse(emptyBlockRegex, wholeMatch, delim, language, '');
   });
 

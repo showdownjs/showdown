@@ -74,7 +74,9 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       otp = captureStartEvent.output;
     } else {
-      otp = '<u' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' + txt + '</u>';
+      otp = '<u' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' +
+        showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+        '</u>';
     }
     let beforeHashEvent = new showdown.Event('makehtml.underline.onHash', otp);
     beforeHashEvent

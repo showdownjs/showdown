@@ -26,6 +26,7 @@ describe('makeHtml() commonmark testsuite', function () {
             case 'Thematic breaks_43': // malformed input of test case
             case 'Thematic breaks_61': // hr inside lists does not make sense
             case 'Fenced code blocks_146': // as of date, github doesn't support this so we don't either
+            //case 'Raw HTML_619': // breaks prettifier so the test fails
               continue;
 
             case 'Setext headings_91': //it's failing because the testcase converts " to &quot; even though it's not supposed to
@@ -40,6 +41,10 @@ describe('makeHtml() commonmark testsuite', function () {
             case 'Fenced code blocks_144': // we use different classes to mark languages in fenced code blocks
               testsuite[section][i].expected = testsuite[section][i].expected.replace('language-;', '; language-;');
               break;
+
+            case 'Hard line breaks_638':
+              console.log(testsuite[section][i].input);
+
           }
           it(name, assertion(testsuite[section][i], converter, true));
         }

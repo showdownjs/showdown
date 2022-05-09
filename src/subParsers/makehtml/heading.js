@@ -168,7 +168,6 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
       }
 
       nPrepend = showdown.subParser('makehtml.blockGamut')(multilineText, options, globals, 'makehtml.heading');
-      //console.log(nPrepend);
       if (nPrepend !== multilineText) {
         // we found a block, so it should take precedence
         prepend += nPrepend;
@@ -192,7 +191,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
 
   function parseHeader (pattern, wholeMatch, headingText, headingLevel, headingId) {
     let captureStartEvent = new showdown.Event('makehtml.heading.onCapture', headingText),
-      otp;
+        otp;
 
     captureStartEvent
       .setOutput(null)
@@ -215,7 +214,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
     } else {
       headingText = captureStartEvent.matches.heading;
       let spanGamut = showdown.subParser('makehtml.spanGamut')(headingText, options, globals),
-        attributes = captureStartEvent.attributes;
+          attributes = captureStartEvent.attributes;
       otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + spanGamut + '</h' + headingLevel + '>';
     }
 

@@ -112,8 +112,14 @@
 
     //prettify
     if (prettify) {
-      testCase.expected = htmlPrettify(testCase.expected);
-      testCase.actual = htmlPrettify(testCase.actual);
+      try {
+        testCase.expected = htmlPrettify(testCase.expected);
+        testCase.actual = htmlPrettify(testCase.actual);
+      } catch (e) {
+        // some weird html in testcase breaks prettifier so we skip it and do some manual stuff
+        testCase.expected = testCase.expected.trim().replace('\n', '');
+        testCase.actual = testCase.actual.trim().replace('\n', '');
+      }
     }
 
 

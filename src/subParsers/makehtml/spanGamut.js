@@ -34,17 +34,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   // now we encode amps and angles
   text = showdown.subParser('makehtml.encodeAmpsAndAngles')(text, options, globals);
 
-  // Do hard breaks
-  if (options.simpleLineBreaks) {
-    // GFM style hard breaks
-    // only add line breaks if the text does not contain a block (special case for lists)
-    if (!/\n\n¨K/.test(text)) {
-      text = text.replace(/\n+/g, '<br />\n');
-    }
-  } else {
-    // Vanilla hard breaks
-    text = text.replace(/  +\n/g, '<br />\n');
-  }
+  text = showdown.subParser('makehtml.hardLineBreaks')(text, options, globals);
 
   let afterEvent = new showdown.Event('makehtml.spanGamut.onEnd', text);
   afterEvent

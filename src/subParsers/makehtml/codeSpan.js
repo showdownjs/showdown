@@ -55,6 +55,8 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
 
     c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
     c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
+    // remove newlines
+    c = c.replace(/\n/, ' ');
 
     let captureStartEvent = new showdown.Event('makehtml.codeSpan.onCapture', c);
     captureStartEvent

@@ -2,3 +2,7 @@
   --md-primary-fg-color: rgb(196, 54, 39);
   --md-accent-fg-color: rgb(62, 139, 138);
 }
+
+table {
+  box-sizing: initial;
+}

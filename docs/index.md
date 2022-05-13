@@ -31,8 +31,7 @@ Showdown can be used on the client-side (in the browser) or server-side (with No
 
 ## Installation
 
-To install Showdown, follow the instructions from the [Installation guide](installation.md).
-
+To install Showdown, follow the instructions from the [quickstart guide](quickstart.md).
 
 ## License
 
@@ -41,11 +40,3 @@ ShowdownJS v 2.0 is release under the MIT version.
 Previous versions are release under BSD.
 
 [sd-logo]: https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png
-[wiki]: https://github.com/showdownjs/showdown/wiki
-[cli-wiki]: https://github.com/showdownjs/showdown/wiki/CLI-tool
-[definitely-typed]: https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/showdown
-[xss-wiki]: https://github.com/showdownjs/showdown/wiki/Markdown's-XSS-Vulnerability-(and-how-to-mitigate-it)
-[ext-wiki]: https://github.com/showdownjs/showdown/wiki/extensions
-[coding-rules]: https://github.com/showdownjs/code-style/blob/master/README.md
-[ng-commit-guide]: https://github.com/showdownjs/code-style/blob/master/README.md#commit-message-convention
-[boilerplate-repo]: https://github.com/showdownjs/extension-boilerplate

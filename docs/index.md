@@ -31,8 +31,7 @@ Showdown can be used on the client-side (in the browser) or server-side (with No
 
 ## Installation
 
-To install Showdown, follow the instructions from the [Installation guide](installation.md).
-
+To install Showdown, follow the instructions from the [Installation guide](https://showdownjs.com/docs/quickstart/#installation).
 
 ## License
 

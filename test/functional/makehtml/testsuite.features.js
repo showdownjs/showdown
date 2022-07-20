@@ -21,6 +21,7 @@ const bootstrap = require('./makehtml.bootstrap.js'),
     splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/splitAdjacentBlockquotes/'),
     moreStyling = bootstrap.getTestSuite('test/functional/makehtml/cases/features/moreStyling/'),
     customizedHeaderId = bootstrap.getTestSuite('test/functional/makehtml/cases/features/customizedHeaderId/'),
+    xfnRelAutoMe = bootstrap.getTestSuite('test/functional/makehtml/cases/features/xfnRelAutoMe/'),
     http = require('http'),
     https = require('https'),
     expect = require('chai').expect;
@@ -105,6 +106,8 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({metadata: true});
       } else if (testsuite[i].name === 'relativePathBaseUrl') {
         converter = new showdown.Converter({relativePathBaseUrl: 'http://my.site.com/'});
+      } else if (testsuite[i].name === 'xfnRelAutoMe') {
+        converter = new showdown.Converter({xfnRelAutoMe: true});
       } else {
         converter = new showdown.Converter();
       }
@@ -342,6 +345,16 @@ describe('makeHtml() features testsuite', function () {
 
     for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({customizedHeaderId: true});
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  describe('xfnRelAutoMe option', function () {
+    let converter,
+        suite = xfnRelAutoMe;
+
+    for (let i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({xfnRelAutoMe: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

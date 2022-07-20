@@ -171,6 +171,11 @@ function getDefaultOpts (simple) {
       describe: 'Adds some useful styling css classes in the generated html',
       type: 'boolean'
     },
+    xfnRelAutoMe: {
+      defaultValue: false,
+      describe: 'Automatically add self-referential relation tag to on-site links',
+      type: 'boolean'
+    },
     relativePathBaseUrl: {
       defaultValue: '',
       describe: 'Prepends a base URL to relative paths',

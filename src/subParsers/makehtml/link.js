@@ -246,6 +246,8 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     }
 
     url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    // Store clean copy of the url
+    const _url = url;
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     attributes.href = url;
 
@@ -262,6 +264,11 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
       attributes.rel = 'noopener noreferrer';
       attributes.target = '¨E95Eblank'; // escaped _
 
+    }
+
+    const urlMeta = new showdown.helper.URLUtils(_url);
+    if (options.xfnRelAutoMe && (urlMeta.hostname === '' || urlMeta.hostname === (showdown.helper.window.location.hostname || 'example.com'))) { // window.location will not be set in testing, so set default value of example.com
+      attributes.rel = 'me';
     }
 
     let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);

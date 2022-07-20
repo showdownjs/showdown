@@ -3,6 +3,7 @@
     * [Estevão Santos](https://github.com/tivie)
     * [SyntaxRules](https://github.com/SyntaxRules)
     * [Anton Zolotukhin](https://github.com/bandantonio)
+    * [Geoffrey Hudson](https://github.com/gdog2u)
 
 === "v.1"
 

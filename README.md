@@ -443,7 +443,7 @@ var converter = new showdown.Converter({ extensions: ['twitter'] });
 ```js
 var showdown    = require('showdown'),
     myExtension = require('myExtension'),
-    converter = new showdown.Converter({ extensions: ['myExtension'] });
+    converter = new showdown.Converter({ extensions: [myExtension] });
 ```
 
 ## Building

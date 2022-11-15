@@ -29,10 +29,6 @@ describe('makeHtml() commonmark testsuite', function () {
             //case 'Raw HTML_619': // breaks prettifier so the test fails
               continue;
 
-            case 'Setext headings_91': //it's failing because the testcase converts " to &quot; even though it's not supposed to
-              testsuite[section][i].expected = testsuite[section][i].expected.replace(/&quot;/g, '"')
-              break;
-
             case 'Fenced code blocks_142': // we use different classes to mark languages in fenced code blocks
             case 'Fenced code blocks_143': // we use different classes to mark languages in fenced code blocks
               testsuite[section][i].expected = testsuite[section][i].expected.replace('language-ruby', 'ruby language-ruby');

@@ -29,6 +29,8 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   // Do the angle bracket song and dance:
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+  // encode "
+    .replace(/"/g, '&quot;')
   // Now, escape characters that are magic in Markdown:
     .replace(/([*_{}\[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
 

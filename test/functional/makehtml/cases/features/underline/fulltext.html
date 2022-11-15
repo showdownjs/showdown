@@ -75,7 +75,7 @@ ___triple underscores___
 <p>Which gives you a link like this:</p>
 <p>This is <a href="http://example.com/" title="Optional Title Here">an example</a> reference-style link.</p>
 <p>Elsewhere in the document, usually at the bottom of the file, you define your link label on a line by itself:</p>
-<pre><code>[id]: http://example.com/  "Optional Title Here"
+<pre><code>[id]: http://example.com/  &quot;Optional Title Here&quot;
 </code></pre>
 <p>Links can get pretty fancy, so if you want the long form version, visit the
     official <a href="http://daringfireball.net/projects/markdown/">Markdown</a> docs.</p>
@@ -84,7 +84,7 @@ ___triple underscores___
 <p><img src="http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png" alt="Alt text" /></p>
 <pre><code>![Alt text](http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png)
 
-![Alt text](http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png "Optional title")
+![Alt text](http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png &quot;Optional title&quot;)
 </code></pre>
 <hr />
 <h1 id="blockelements">Block Elements</h1>
@@ -157,7 +157,7 @@ This is a second.
         <li>This is the second list item.</li>
     </ol>
     <p>Here's some example code:</p>
-    <pre><code>return shell_exec("echo $input | $markdown_script");
+    <pre><code>return shell_exec(&quot;echo $input | $markdown_script&quot;);
 </code></pre>
 </blockquote>
 <pre><code>&gt; ## This is a header.
@@ -167,7 +167,7 @@ This is a second.
 &gt; 
 &gt; Here's some example code:
 &gt; 
-&gt;     return shell_exec("echo $input | $markdown_script");
+&gt;     return shell_exec(&quot;echo $input | $markdown_script&quot;);
 </code></pre>
 <h2 id="lists">Lists</h2>
 <p>Markdown supports ordered (numbered) and unordered (bulleted) lists.  List markers typically start at the left margin, but may be indented by up to three spaces. List markers must be followed by one or more spaces or a tab.</p>
@@ -331,7 +331,7 @@ Pipe      |     $1 | eleven
 <p>You can also highlight snippets of text (Markdown uses the excellent <a href="http://pygments.org/">Pygments</a> library) to allow you to use code highlighting  Here's an example of some Python code:</p>
 <pre><code>#!python
 #
-def wiki_rocks(text): formatter = lambda t: "funky"+t return formatter(text)         
+def wiki_rocks(text): formatter = lambda t: &quot;funky&quot;+t return formatter(text)
 </code></pre>
 <p>To do this, do not indent the block. Start the block with <code>```</code> three ticks. Then, provide the comment with the type of syntax you are using.  There is a <a href="http://pygments.org/docs/lexers/">the vast library of Pygment lexers</a>. Markdown accepts the 'short name' or the 'mimetype' of anything in there.</p>
 <p>You can also use a fence style for code.</p>

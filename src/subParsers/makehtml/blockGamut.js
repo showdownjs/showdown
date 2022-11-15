@@ -23,10 +23,11 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  // we parse blockquotes first so that we can have headings and hrs
-  // inside blockquotes
-  if (skip !== 'makehtml.heading') {
-    text = showdown.subParser('makehtml.heading')(text, options, globals);
+  if (skip !== 'makehtml.heading.setext') {
+    text = showdown.subParser('makehtml.heading.setext')(text, options, globals);
+  }
+  if (skip !== 'makehtml.heading.atx') {
+    text = showdown.subParser('makehtml.heading.atx')(text, options, globals);
   }
 
   // Do Horizontal Rules:

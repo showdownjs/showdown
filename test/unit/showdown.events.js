@@ -109,16 +109,32 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '```\nfoo\n```', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
-      heading: [
+      'heading.atx': [
         { event: 'onStart', text: '# foo', result: true },
         { event: 'onStart', text: 'foo', result: true },
         { event: 'onEnd', text: '# foo', result: true },
         { event: 'onEnd', text: 'foo', result: true },
         { event: 'onCapture', text: '# foo', result: true },
+        { event: 'onCapture', text: 'foo\n---', result: false },
+        { event: 'onCapture', text: 'foo\n===', result: false },
+        { event: 'onCapture', text: 'foo', result: false },
+        { event: 'onHash', text: '# foo', result: true },
+        { event: 'onHash', text: 'foo\n---', result: false },
+        { event: 'onHash', text: 'foo\n===', result: false },
+        { event: 'onHash', text: 'foo', result: false }
+      ],
+      'heading.setext': [
+        { event: 'onStart', text: 'foo\n---', result: true },
+        { event: 'onStart', text: 'foo\n===', result: true },
+        { event: 'onStart', text: 'foo', result: true },
+        { event: 'onEnd', text: 'foo\n---', result: true },
+        { event: 'onEnd', text: 'foo\n===', result: true },
+        { event: 'onEnd', text: 'foo', result: true },
+        { event: 'onCapture', text: '# foo', result: false },
         { event: 'onCapture', text: 'foo\n---', result: true },
         { event: 'onCapture', text: 'foo\n===', result: true },
         { event: 'onCapture', text: 'foo', result: false },
-        { event: 'onHash', text: '# foo', result: true },
+        { event: 'onHash', text: '# foo', result: false },
         { event: 'onHash', text: 'foo\n---', result: true },
         { event: 'onHash', text: 'foo\n===', result: true },
         { event: 'onHash', text: 'foo', result: false }
@@ -267,8 +283,10 @@ describe('showdown.Event', function () {
         describe(parser, function () {
           for (let ts in testSpec.makehtml[parser]) {
             let event = 'makehtml.' + parser + '.' + testSpec.makehtml[parser][ts].event;
+
             let md = testSpec.makehtml[parser][ts].text;
-            let title = (testSpec.makehtml[parser][ts].result) ? 'should ' : 'should NOT ';
+            let title = '«' + md + '» ';
+            title += (testSpec.makehtml[parser][ts].result) ? 'should ' : 'should NOT ';
             title += 'trigger "' + event + ' event"';
             let expected = testSpec.makehtml[parser][ts].result;
             let actual = false;

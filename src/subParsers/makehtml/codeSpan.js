@@ -90,8 +90,7 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
     otp = beforeHashEvent.output;
     return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-  }
-  );
+  });
 
   let afterEvent = new showdown.Event('makehtml.codeSpan.onEnd', text);
   afterEvent

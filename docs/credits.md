@@ -2,6 +2,7 @@
 
     * [Estevão Santos](https://github.com/tivie)
     * [SyntaxRules](https://github.com/SyntaxRules)
+    * [Anton Zolotukhin](https://github.com/bandantonio)
 
 === "v.1"
 

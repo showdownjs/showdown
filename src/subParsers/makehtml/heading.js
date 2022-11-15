@@ -134,7 +134,7 @@
         .replace(/¨D/g, '')
         // replace rest of the chars (&~$ are repeated as they might have been escaped)
         // borrowed from github's redcarpet (so they should produce similar results)
-        .replace(/[&+$,\/:;=?@"#{}|^¨~\[\]`\\*)(%.!'<>]/g, '')
+        .replace(/[&+$,\/:;=?@"#{}|^¨¿？：~\[\]`、゠＝…‥『』〝〟「」\\*()｛｝（）［］【】%.。，¡!！'<>]/g, '')
         .toLowerCase();
     } else if (options.rawHeaderId) {
       title = title

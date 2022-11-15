@@ -1,4 +1,4 @@
-Showdown allows you to load additional functionality via extensions. You can find a list of known Showdown extensions [here][ext-wiki].
+Showdown allows you to load additional functionality via extensions. You can find a list of known Showdown extensions [here][ext-list].
 
 You can also check the [boilerplate repo][boilerplate-repo], to create your own extension(s).
 
@@ -32,5 +32,5 @@ You can also check the [boilerplate repo][boilerplate-repo], to create your own 
     showdown -e twitter -i foo.md -o bar.html
     ```
 
-[ext-wiki]: https://github.com/showdownjs/showdown/wiki/extensions
+[ext-list]: extensions-list.md
 [boilerplate-repo]: https://github.com/showdownjs/extension-boilerplate

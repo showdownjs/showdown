@@ -30,6 +30,7 @@ site_dir: public
 nav:
   - Home:
     - Introduction: index.md
+    - Contribution guide: contribution-guide.md
     - Donations: donations.md
     - Credits: credits.md
   - Quickstart:
@@ -42,8 +43,10 @@ nav:
     - Flavors: flavors.md
   - CLI: cli.md
   - Integrations: integrations.md
+  - Event system: event-system.md
   - Extensions:
     - Overview: extensions.md
     - Create an extension: create-extension.md
     - List of known extensions: extensions-list.md 
   - Tutorials: tutorials/index.md
+  - Local development: local-development.md

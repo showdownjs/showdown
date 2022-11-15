@@ -309,7 +309,7 @@
 
           if (/^¨K\d+K$/.test(nLastLine) || /^\s*$/gm.test(nLastLine)) {
             // everything before --- or === is a block or empty line, so it's a false positive
-            prepend += nPrepend;
+            prepend += nPrepend + '\n\n';
             headingText = '';
           } else {
             // the last line is something else... so let's look at the line before that

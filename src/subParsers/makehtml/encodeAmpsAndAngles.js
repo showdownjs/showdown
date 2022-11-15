@@ -33,6 +33,9 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
   // Encode >
   text = text.replace(/>/g, '&gt;');
 
+  // encode "
+  text = text.replace(/"/g, '&quot;');
+
   let afterEvent = new showdown.Event('makehtml.encodeAmpsAndAngles.onEnd', text);
   afterEvent
     .setOutput(text)

@@ -22,7 +22,7 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
   text = startEvent.output;
 
   // Build a regex to find HTML tags.
-  let tags     = /<\/?[a-z\d_:-]+(?:[\s]+[\s\S]+?)?>/gi,
+  let tags     = /<\/?[a-z\d_:-]+(?:\s+[\s\S]+?)?>/gi,
       comments = /<!(--(([^>-]|-[^>])([^-]|-[^-])*)--)>/gi;
 
   text = text.replace(tags, function (wholeMatch) {

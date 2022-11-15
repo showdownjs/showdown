@@ -209,7 +209,7 @@
         // let's find the hr edge case first
         if (showdown.helper.trimEnd(line1).match(hrCheckRgx)) {
           // it's the edge case, so it's a false positive
-          prepend  = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
+          prepend = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
           if (prepend !== line1) {
             // it's an oneliner list
             return prepend.trim() + '\n' + line4;
@@ -236,7 +236,6 @@
           prepend = showdown.subParser('makehtml.blockquote')(line1, options, globals);
           if (prepend !== line1) {
             // it's an oneliner blockquote
-
             return prepend.trim() + '\n' + line4;
           }
         }
@@ -302,11 +301,27 @@
 
         nPrepend = showdown.subParser('makehtml.blockGamut')(multilineText, options, globals, 'makehtml.heading.setext');
         if (nPrepend !== multilineText) {
-          // we found a block, so it should take precedence
-          prepend += nPrepend;
-          headingText = '';
+          // we found one or more blocks, so we need to reparse (blocks should take precendence though)
+          nPrepend = showdown.helper.trimEnd(nPrepend);
+          // let's check if the last line is a parsed block
+          let newLines = nPrepend.trim().split('\n');
+          let nLastLine = newLines.pop().toString();
+
+          if (/^¨K\d+K$/.test(nLastLine) || /^\s*$/gm.test(nLastLine)) {
+            // everything before --- or === is a block or empty line, so it's a false positive
+            prepend += nPrepend;
+            headingText = '';
+          } else {
+            // the last line is something else... so let's look at the line before that
+            let toHeading = nLastLine;
+            nLastLine = newLines.pop().toString();
+            if (/^¨K\d+K$/.test(nLastLine) === false && /^\s*$/gm.test(nLastLine) === false) {
+              toHeading = nLastLine + '\n' + toHeading;
+            }
+            headingText = toHeading;
+            prepend = newLines.join('\n').trim();
+          }
         }
-        console.log(prepend);
       }
 
       // trim stuff

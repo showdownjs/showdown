@@ -241,7 +241,7 @@ var defaultOptions = showdown.getDefaultOptions();
     <h3>foo</h3>
     ```
 
- * **parseImgDimensions**: (boolean) [default false] Enable support for setting image dimensions from within markdown syntax.
+ * **parseImgDimensions**: (boolean) [default true] Enable support for setting image dimensions from within markdown syntax.
    Examples:
    ```
    ![foo](foo.jpg =100x80)     simple, assumes units are in px

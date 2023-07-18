@@ -6,25 +6,11 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
 
   text = globals.converter._dispatch('makehtml.images.before', text, options, globals).getText();
 
-  var inlineRegExp,
-      crazyRegExp,
-      base64RegExp,
-      referenceRegExp,
-      refShortcutRegExp;
-
-  if (options.parseImgDimensions) {
-    inlineRegExp      = /!\[([^\]]*?)][ \t]*()\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g;
-    crazyRegExp       = /!\[([^\]]*?)][ \t]*()\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(?:(["'])([^"]*?)\6))?[ \t]?\)/g;
-    base64RegExp      = /!\[([^\]]*?)][ \t]*()\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z0-9+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g;
-    referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]()()()()()/g;
-    refShortcutRegExp = /!\[([^\[\]]+)]()()()()()/g;
-  } else {
-    inlineRegExp      = /!\[([^\]]*?)][ \t]*()\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?()()[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g;
-    crazyRegExp       = /!\[([^\]]*?)][ \t]*()\([ \t]?<([^>]*)>()()[ \t]*(?:(?:(["'])([^"]*?)\6))?[ \t]?\)/g;
-    base64RegExp      = /!\[([^\]]*?)][ \t]*()\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z0-9+/=\n]+?)>?()()[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g;
-    referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]()()()()()/g;
-    refShortcutRegExp = /!\[([^\[\]]+)]()()()()()/g;
-  }
+  var inlineRegExp      = /!\[([^\]]*?)][ \t]*()\([ \t]?<?([\S]+?(?:\([\S]*?\)[\S]*?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
+      crazyRegExp       = /!\[([^\]]*?)][ \t]*()\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(?:(["'])([^"]*?)\6))?[ \t]?\)/g,
+      base64RegExp      = /!\[([^\]]*?)][ \t]*()\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z0-9+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
+      referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]()()()()()/g,
+      refShortcutRegExp = /!\[([^\[\]]+)]()()()()()/g;
 
   function writeImageTagBase64 (wholeMatch, altText, linkId, url, width, height, m5, title) {
     url = url.replace(/\s/g, '');
@@ -89,7 +75,7 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
       result += ' title="' + title + '"';
     }
 
-    if (width && height) {
+    if (options.parseImgDimensions && width && height) {
       width  = (width === '*') ? 'auto' : width;
       height = (height === '*') ? 'auto' : height;
 

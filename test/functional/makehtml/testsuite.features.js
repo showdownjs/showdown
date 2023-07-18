@@ -32,6 +32,8 @@ describe('makeHtml() features testsuite', function () {
       var converter;
       if (testsuite[i].name === '#143.support-image-dimensions') {
         converter = new showdown.Converter({parseImgDimensions: true});
+      } else if (testsuite[i].name === '#143.not.support-image-dimensions') {
+        converter = new showdown.Converter({parseImgDimensions: false});
       } else if (testsuite[i].name === '#69.header-level-start') {
         converter = new showdown.Converter({headerLevelStart: 3});
       } else if (testsuite[i].name === '#164.1.simple-autolink' || testsuite[i].name === '#204.certain-links-with-at-and-dot-break-url') {

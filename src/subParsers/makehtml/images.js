@@ -75,7 +75,7 @@ showdown.subParser('makehtml.images', function (text, options, globals) {
       result += ' title="' + title + '"';
     }
 
-    if (width && height) {
+    if (options.parseImgDimensions && width && height) {
       width  = (width === '*') ? 'auto' : width;
       height = (height === '*') ? 'auto' : height;
 

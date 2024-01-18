@@ -36,6 +36,8 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
   'use strict';
   text = globals.converter._dispatch('makehtml.unhashHTMLSpans.before', text, options, globals).getText();
 
+  var replacedSpans = [];
+
   for (var i = 0; i < globals.gHtmlSpans.length; ++i) {
     var repText = globals.gHtmlSpans[i],
         // limiter to prevent infinite loop (assume 10 as limit for recurse)
@@ -50,8 +52,16 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
       }
       ++limit;
     }
-    text = text.replace('¨C' + i + 'C', repText);
+
+    replacedSpans.push(repText);
   }
+
+  // It is important to only do one replace for all the spans combined.
+  // Otherwise this gets really slow on large texts with many spans because
+  // of all the string copies.
+  text = text.replace(/¨C(\d+)C/g, function (_wm, num) {
+    return replacedSpans[num];
+  });
 
   text = globals.converter._dispatch('makehtml.unhashHTMLSpans.after', text, options, globals).getText();
   return text;

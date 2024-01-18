@@ -56,16 +56,12 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
     replacedSpans.push(repText);
   }
 
-  // Repeated replace is really slow for a large number of spans and long texts
-  // (for example for 4000 spans and 1.8MB of text it can take >10sec).
-  // By only going through the text once, we can reduce the time to just a few milliseconds.
-  var s = text.split('¨C');
-  for (var ii = 1; ii < s.length; ++ii) {
-    var endIdx = s[ii].indexOf('C');
-    var span = replacedSpans[s[ii].substring(0, endIdx)];
-    s[ii] = span + s[ii].substring(endIdx + 1);
-  }
-  text = s.join('');
+  // It is important to only do one replace for all the spans combined.
+  // Otherwise this gets really slow on large texts with many spans because
+  // of all the string copies.
+  text = text.replace(/¨C(\d+)C/g, function (_wm, num) {
+    return replacedSpans[num];
+  });
 
   text = globals.converter._dispatch('makehtml.unhashHTMLSpans.after', text, options, globals).getText();
   return text;

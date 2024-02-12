@@ -51,6 +51,11 @@ function getDefaultOpts (simple) {
       describe: 'Turn on/off GFM autolink style',
       type: 'boolean'
     },
+    httpsAutoLinks: {
+      defaultValue:  false,
+      describe: 'Use \'https://\' for auto-generated links',
+      type: 'string'
+    },
     literalMidWordUnderscores: {
       defaultValue: false,
       describe: 'Parse midword underscores as literal underscores',

@@ -54,7 +54,7 @@ function getDefaultOpts (simple) {
     httpsAutoLinks: {
       defaultValue:  false,
       describe: 'Use \'https://\' for auto-generated links',
-      type: 'string'
+      type: 'boolean'
     },
     literalMidWordUnderscores: {
       defaultValue: false,

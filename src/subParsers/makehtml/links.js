@@ -302,7 +302,7 @@
     var urlRgx  = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
     text = text.replace(urlRgx, function (wholeMatch, url, urlStart) {
       var text = url;
-      url = (urlStart === 'www.') ? 'http://' + url : url;
+      url = (urlStart === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
       var evt = createEvent(urlRgx, evtRootName + '.captureStart', wholeMatch, text, null, url, null, options, globals);
       return writeAnchorTag(evt, options, globals);
     });
@@ -392,7 +392,7 @@
       // we copy the treated url to the text variable
       var text = url;
       // finally, if it's a www shortcut, we prepend http
-      url = (urlPrefix === 'www.') ? 'http://' + url : url;
+      url = (urlPrefix === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
 
       // url part is done so let's take care of text now
       // we need to escape the text (because of links such as www.example.com/foo__bar__baz)

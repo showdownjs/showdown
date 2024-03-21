@@ -1,0 +1,4 @@
+name: "Showdown CodeQL config"
+
+paths-ignore:
+  - "dist/**"

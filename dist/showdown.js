@@ -1,4 +1,4 @@
-;/*! showdown v 2.0.0 - 10-03-2022 */
+;/*! showdown v 3.0.0-alpha - 28-03-2024 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -632,7 +632,15 @@ showdown.helper.isFunction = function (a) {
  */
 showdown.helper.isArray = function (a) {
   'use strict';
-  return Array.isArray(a);
+  let isArray;
+  if (!Array.isArray) {
+    isArray = function (arg) {
+      return Object.prototype.toString.call(arg) === '[object Array]';
+    };
+  } else {
+    isArray = Array.isArray;
+  }
+  return isArray(a);
 };
 
 /**
@@ -905,17 +913,53 @@ showdown.helper.splitAtIndex = function (str, index) {
   return [str.substring(0, index), str.substring(index)];
 };
 
+
+/**
+ * MurmurHash3's mixing function
+ * https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
+ *
+ * @param {string} string
+ * @returns {Number}
+ */
+/*jshint bitwise: false*/
+function xmur3 (str) {
+  for (var i = 0, h = 1779033703 ^ str.length; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = h << 13 | h >>> 19;
+  }
+  return function () {
+    h = Math.imul(h ^ h >>> 16, 2246822507);
+    h = Math.imul(h ^ h >>> 13, 3266489909);
+    return (h ^= h >>> 16) >>> 0;
+  };
+}
+
+/**
+ * Random Number Generator
+ * https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
+ *
+ * @param {Number} seed
+ * @returns {Number}
+ */
+/*jshint bitwise: false*/
+function mulberry32 (a) {
+  return function () {
+    var t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
 /**
  * Obfuscate an e-mail address through the use of Character Entities,
  * transforming ASCII characters into their equivalent decimal or hex entities.
  *
- * Since it has a random component, subsequent calls to this function produce different results
  *
  * @param {string} mail
- * @param {string} seed
  * @returns {string}
  */
-showdown.helper.encodeEmailAddress = function (mail, seed) {
+showdown.helper.encodeEmailAddress = function (mail) {
   'use strict';
   var encode = [
     function (ch) {
@@ -929,12 +973,15 @@ showdown.helper.encodeEmailAddress = function (mail, seed) {
     }
   ];
 
+  // RNG seeded with mail, so that we can get determined results for each email.
+  var rand = mulberry32(xmur3(mail));
+
   mail = mail.replace(/./g, function (ch) {
     if (ch === '@') {
       // this *must* be encoded. I insist.
-      ch = encode[Math.floor(Math.random() * 2)](ch);
+      ch = encode[Math.floor(rand() * 2)](ch);
     } else {
-      var r = Math.random();
+      var r = rand();
       // roughly 10% raw, 45% hex, 45% dec
       ch = (
         r > 0.9 ? encode[2](ch) : r > 0.45 ? encode[1](ch) : encode[0](ch)
@@ -991,9 +1038,9 @@ showdown.helper.repeat = function (str, count) {
 /**
  * String.prototype.padEnd polyfill
  *
- * @param str
- * @param targetLength
- * @param padString
+ * @param {string} str
+ * @param {int} targetLength
+ * @param {string} [padString]
  * @returns {string}
  */
 showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
@@ -1152,6 +1199,26 @@ if (typeof (console) === 'undefined') {
       'use strict';
       throw msg;
     }
+  };
+}
+
+// Math.imul() polyfill
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/imul
+if (!Math.imul) {
+  Math.imul = function (opA, opB) {
+    opB |= 0; // ensure that opB is an integer. opA will automatically be coerced.
+    // floating points give us 53 bits of precision to work with plus 1 sign bit
+    // automatically handled for our convienence:
+    // 1. 0x003fffff /*opA & 0x000fffff*/ * 0x7fffffff /*opB*/ = 0x1fffff7fc00001
+    //    0x1fffff7fc00001 < Number.MAX_SAFE_INTEGER /*0x1fffffffffffff*/
+    var result = (opA & 0x003fffff) * opB;
+    // 2. We can remove an integer coersion from the statement above because:
+    //    0x1fffff7fc00001 + 0xffc00000 = 0x1fffffff800001
+    //    0x1fffffff800001 < Number.MAX_SAFE_INTEGER /*0x1fffffffffffff*/
+    if (opA & 0xffc00000 /*!== 0*/) {
+      result += (opA & 0xffc00000) * opB | 0;
+    }
+    return result | 0;
   };
 }
 
@@ -4188,7 +4255,7 @@ showdown.subParser('makehtml.italicsAndBold', function (text, options, globals) 
     // 3. inline links with no title or titles wrapped in ' or ":
     // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
     //var rgx2 = /\[[ ]*[\s]?[ ]*([^\n\[\]]*?)[ ]*[\s]?[ ]*] ?()\(<?[ ]*[\s]?[ ]*([^\s'"]*)>?(?:[ ]*[\n]?[ ]*()(['"])(.*?)\5)?[ ]*[\s]?[ ]*\)/; // this regex is too slow!!!
-    var rgx2 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)?)>?\s*(?:()(['"])(.*?)\5)? *\)/g;
+    var rgx2 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)*)>?\s*(?:()(['"])(.*?)\5)? *\)/g;
     text = text.replace(rgx2, replaceAnchorTagBaseUrl(rgx2, evtRootName, options, globals));
 
     // 4. inline links with titles wrapped in (): [foo](bar.com (title))
@@ -4703,12 +4770,12 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
     });
   }
 
-  text = text.replace(/^\s*«««+(\S*?)\n([\s\S]+?)\n»»»+\n/, function (wholematch, format, content) {
+  text = text.replace(/^\s*«««+\s*(\S*?)\n([\s\S]+?)\n»»»+\s*\n/, function (wholematch, format, content) {
     parseMetadataContents(content);
     return '¨M';
   });
 
-  text = text.replace(/^\s*---+(\S*?)\n([\s\S]+?)\n---+\n/, function (wholematch, format, content) {
+  text = text.replace(/^\s*---+\s*(\S*?)\n([\s\S]+?)\n---+\s*\n/, function (wholematch, format, content) {
     if (format) {
       globals.metadata.format = format;
     }
@@ -5149,7 +5216,7 @@ showdown.subParser('makehtml.unescapeSpecialChars', function (text, options, glo
   return text;
 });
 
-showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
+showdown.subParser('makeMarkdown.blockquote', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -5158,7 +5225,7 @@ showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
         childrenLength = children.length;
 
     for (var i = 0; i < childrenLength; ++i) {
-      var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], globals);
+      var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], options, globals);
 
       if (innerTxt === '') {
         continue;
@@ -5178,7 +5245,7 @@ showdown.subParser('makeMarkdown.break', function () {
   return '  \n';
 });
 
-showdown.subParser('makeMarkdown.codeBlock', function (node, globals) {
+showdown.subParser('makeMarkdown.codeBlock', function (node, options, globals) {
   'use strict';
 
   var lang = node.getAttribute('language'),
@@ -5192,7 +5259,7 @@ showdown.subParser('makeMarkdown.codeSpan', function (node) {
   return '`' + node.innerHTML + '`';
 });
 
-showdown.subParser('makeMarkdown.emphasis', function (node, globals) {
+showdown.subParser('makeMarkdown.emphasis', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -5201,14 +5268,14 @@ showdown.subParser('makeMarkdown.emphasis', function (node, globals) {
     var children = node.childNodes,
         childrenLength = children.length;
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
     txt += '*';
   }
   return txt;
 });
 
-showdown.subParser('makeMarkdown.header', function (node, globals, headerLevel) {
+showdown.subParser('makeMarkdown.header', function (node, options, globals, headerLevel) {
   'use strict';
 
   var headerMark = new Array(headerLevel + 1).join('#'),
@@ -5220,7 +5287,7 @@ showdown.subParser('makeMarkdown.header', function (node, globals, headerLevel) 
         childrenLength = children.length;
 
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
   }
   return txt;
@@ -5236,11 +5303,13 @@ showdown.subParser('makeMarkdown.image', function (node) {
   'use strict';
 
   var txt = '';
-  if (node.hasAttribute('src')) {
+  if (node.hasAttribute('src') && node.getAttribute('src') !== '') {
     txt += '![' + node.getAttribute('alt') + '](';
     txt += '<' + node.getAttribute('src') + '>';
     if (node.hasAttribute('width') && node.hasAttribute('height')) {
-      txt += ' =' + node.getAttribute('width') + 'x' + node.getAttribute('height');
+      var width = node.getAttribute('width');
+      var height = node.getAttribute('height');
+      txt += ' =' + (width === 'auto' ? '*' : width) + 'x' + (height === 'auto' ? '*' : height);
     }
 
     if (node.hasAttribute('title')) {
@@ -5251,7 +5320,7 @@ showdown.subParser('makeMarkdown.image', function (node) {
   return txt;
 });
 
-showdown.subParser('makeMarkdown.input', function (node, globals) {
+showdown.subParser('makeMarkdown.input', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -5263,33 +5332,49 @@ showdown.subParser('makeMarkdown.input', function (node, globals) {
   var children = node.childNodes,
       childrenLength = children.length;
   for (var i = 0; i < childrenLength; ++i) {
-    txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
   }
   return txt;
 });
 
-showdown.subParser('makeMarkdown.links', function (node, globals) {
+showdown.subParser('makeMarkdown.links', function (node, options, globals) {
   'use strict';
 
   var txt = '';
   if (node.hasChildNodes() && node.hasAttribute('href')) {
     var children = node.childNodes,
         childrenLength = children.length;
-    txt = '[';
-    for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+
+    // special case for mentions
+    // to simplify (and not make stuff really complicated) mentions will only work in this circumstance:
+    // <a class="user-mention" href="https://github.com/user">@user</a>
+    // that is, if there's a "user-mention" class and option ghMentions is true
+    // otherwise is ignored
+    var classes = node.getAttribute('class');
+    if (options.ghMentions && /(?:^| )user-mention\b/.test(classes)) {
+      for (var ii = 0; ii < childrenLength; ++ii) {
+        txt += showdown.subParser('makeMarkdown.node')(children[ii], options, globals);
+      }
+
+    } else {
+      txt = '[';
+      for (var i = 0; i < childrenLength; ++i) {
+        txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+      }
+      txt += '](';
+      txt += '<' + node.getAttribute('href') + '>';
+      if (node.hasAttribute('title')) {
+        txt += ' "' + node.getAttribute('title') + '"';
+      }
+      txt += ')';
     }
-    txt += '](';
-    txt += '<' + node.getAttribute('href') + '>';
-    if (node.hasAttribute('title')) {
-      txt += ' "' + node.getAttribute('title') + '"';
-    }
-    txt += ')';
+
+
   }
   return txt;
 });
 
-showdown.subParser('makeMarkdown.list', function (node, globals, type) {
+showdown.subParser('makeMarkdown.list', function (node, options, globals, type) {
   'use strict';
 
   var txt = '';
@@ -5314,14 +5399,14 @@ showdown.subParser('makeMarkdown.list', function (node, globals, type) {
     }
 
     // parse list item
-    txt += bullet + showdown.subParser('makeMarkdown.listItem')(listItems[i], globals);
+    txt += bullet + showdown.subParser('makeMarkdown.listItem')(listItems[i], options, globals);
     ++listNum;
   }
 
   return txt.trim();
 });
 
-showdown.subParser('makeMarkdown.listItem', function (node, globals) {
+showdown.subParser('makeMarkdown.listItem', function (node, options, globals) {
   'use strict';
 
   var listItemTxt = '';
@@ -5330,7 +5415,7 @@ showdown.subParser('makeMarkdown.listItem', function (node, globals) {
       childrenLenght = children.length;
 
   for (var i = 0; i < childrenLenght; ++i) {
-    listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
   }
   // if it's only one liner, we need to add a newline at the end
   if (!/\n$/.test(listItemTxt)) {
@@ -5349,7 +5434,7 @@ showdown.subParser('makeMarkdown.listItem', function (node, globals) {
 
 
 
-showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
+showdown.subParser('makeMarkdown.node', function (node, options, globals, spansOnly) {
   'use strict';
 
   spansOnly = spansOnly || false;
@@ -5358,7 +5443,7 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
 
   // edge case of text without wrapper paragraph
   if (node.nodeType === 3) {
-    return showdown.subParser('makeMarkdown.txt')(node, globals);
+    return showdown.subParser('makeMarkdown.txt')(node, options, globals);
   }
 
   // HTML comment
@@ -5379,91 +5464,91 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
     // BLOCKS
     //
     case 'h1':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 1) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 1) + '\n\n'; }
       break;
     case 'h2':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 2) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 2) + '\n\n'; }
       break;
     case 'h3':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 3) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 3) + '\n\n'; }
       break;
     case 'h4':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 4) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 4) + '\n\n'; }
       break;
     case 'h5':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 5) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 5) + '\n\n'; }
       break;
     case 'h6':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 6) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 6) + '\n\n'; }
       break;
 
     case 'p':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.paragraph')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.paragraph')(node, options, globals) + '\n\n'; }
       break;
 
     case 'blockquote':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.blockquote')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.blockquote')(node, options, globals) + '\n\n'; }
       break;
 
     case 'hr':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.hr')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.hr')(node, options, globals) + '\n\n'; }
       break;
 
     case 'ol':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, globals, 'ol') + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, options, globals, 'ol') + '\n\n'; }
       break;
 
     case 'ul':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, globals, 'ul') + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, options, globals, 'ul') + '\n\n'; }
       break;
 
     case 'precode':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.codeBlock')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.codeBlock')(node, options, globals) + '\n\n'; }
       break;
 
     case 'pre':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.pre')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.pre')(node, options, globals) + '\n\n'; }
       break;
 
     case 'table':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.table')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.table')(node, options, globals) + '\n\n'; }
       break;
 
     //
     // SPANS
     //
     case 'code':
-      txt = showdown.subParser('makeMarkdown.codeSpan')(node, globals);
+      txt = showdown.subParser('makeMarkdown.codeSpan')(node, options, globals);
       break;
 
     case 'em':
     case 'i':
-      txt = showdown.subParser('makeMarkdown.emphasis')(node, globals);
+      txt = showdown.subParser('makeMarkdown.emphasis')(node, options, globals);
       break;
 
     case 'strong':
     case 'b':
-      txt = showdown.subParser('makeMarkdown.strong')(node, globals);
+      txt = showdown.subParser('makeMarkdown.strong')(node, options, globals);
       break;
 
     case 'del':
-      txt = showdown.subParser('makeMarkdown.strikethrough')(node, globals);
+      txt = showdown.subParser('makeMarkdown.strikethrough')(node, options, globals);
       break;
 
     case 'a':
-      txt = showdown.subParser('makeMarkdown.links')(node, globals);
+      txt = showdown.subParser('makeMarkdown.links')(node, options, globals);
       break;
 
     case 'img':
-      txt = showdown.subParser('makeMarkdown.image')(node, globals);
+      txt = showdown.subParser('makeMarkdown.image')(node, options, globals);
       break;
 
     case 'br':
-      txt = showdown.subParser('makeMarkdown.break')(node, globals);
+      txt = showdown.subParser('makeMarkdown.break')(node, options, globals);
       break;
 
     case 'input':
-      txt = showdown.subParser('makeMarkdown.input')(node, globals);
+      txt = showdown.subParser('makeMarkdown.input')(node, options, globals);
       break;
 
     default:
@@ -5476,7 +5561,7 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
   return txt;
 });
 
-showdown.subParser('makeMarkdown.paragraph', function (node, globals) {
+showdown.subParser('makeMarkdown.paragraph', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -5484,7 +5569,7 @@ showdown.subParser('makeMarkdown.paragraph', function (node, globals) {
     var children = node.childNodes,
         childrenLength = children.length;
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
   }
 
@@ -5494,14 +5579,14 @@ showdown.subParser('makeMarkdown.paragraph', function (node, globals) {
   return txt;
 });
 
-showdown.subParser('makeMarkdown.pre', function (node, globals) {
+showdown.subParser('makeMarkdown.pre', function (node, options, globals) {
   'use strict';
 
   var num  = node.getAttribute('prenum');
   return '<pre>' + globals.preList[num] + '</pre>';
 });
 
-showdown.subParser('makeMarkdown.strikethrough', function (node, globals) {
+showdown.subParser('makeMarkdown.strikethrough', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -5510,14 +5595,14 @@ showdown.subParser('makeMarkdown.strikethrough', function (node, globals) {
     var children = node.childNodes,
         childrenLength = children.length;
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
     txt += '~~';
   }
   return txt;
 });
 
-showdown.subParser('makeMarkdown.strong', function (node, globals) {
+showdown.subParser('makeMarkdown.strong', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -5526,85 +5611,176 @@ showdown.subParser('makeMarkdown.strong', function (node, globals) {
     var children = node.childNodes,
         childrenLength = children.length;
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
     txt += '**';
   }
   return txt;
 });
 
-showdown.subParser('makeMarkdown.table', function (node, globals) {
-  'use strict';
+showdown.subParser('makeMarkdown.table',
+  /**
+   *
+   * @param {DocumentFragment} node
+   * @param {{}} options
+   * @param {{}} globals
+   * @returns {string}
+   */
+  function (node, options, globals) {
+    'use strict';
 
-  var txt = '',
-      tableArray = [[], []],
-      headings   = node.querySelectorAll('thead>tr>th'),
-      rows       = node.querySelectorAll('tbody>tr'),
-      i, ii;
-  for (i = 0; i < headings.length; ++i) {
-    var headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], globals),
-        allign = '---';
+    var txt = '',
+        tableArray = [[], []],
+        headings,
+        rows = [],
+        colCount,
+        i,
+        ii;
 
-    if (headings[i].hasAttribute('style')) {
-      var style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
-      switch (style) {
-        case 'text-align:left;':
-          allign = ':---';
-          break;
-        case 'text-align:right;':
-          allign = '---:';
-          break;
-        case 'text-align:center;':
-          allign = ':---:';
-          break;
-      }
-    }
-    tableArray[0][i] = headContent.trim();
-    tableArray[1][i] = allign;
-  }
-
-  for (i = 0; i < rows.length; ++i) {
-    var r = tableArray.push([]) - 1,
-        cols = rows[i].getElementsByTagName('td');
-
-    for (ii = 0; ii < headings.length; ++ii) {
-      var cellContent = ' ';
-      if (typeof cols[ii] !== 'undefined') {
-        cellContent = showdown.subParser('makeMarkdown.tableCell')(cols[ii], globals);
-      }
-      tableArray[r].push(cellContent);
-    }
-  }
-
-  var cellSpacesCount = 3;
-  for (i = 0; i < tableArray.length; ++i) {
-    for (ii = 0; ii < tableArray[i].length; ++ii) {
-      var strLen = tableArray[i][ii].length;
-      if (strLen > cellSpacesCount) {
-        cellSpacesCount = strLen;
-      }
-    }
-  }
-
-  for (i = 0; i < tableArray.length; ++i) {
-    for (ii = 0; ii < tableArray[i].length; ++ii) {
-      if (i === 1) {
-        if (tableArray[i][ii].slice(-1) === ':') {
-          tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(0, -1), cellSpacesCount - 1, '-') + ':';
-        } else {
-          tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
+    /**
+     * @param {Element} tr
+     */
+    function iterateRow (tr) {
+      var children = tr.childNodes,
+          cols = [];
+      // we need to iterate by order, since td and th can be used interchangeably and in any order
+      // we will ignore malformed stuff, comments and floating text.
+      for (var i = 0; i < children.length; ++i) {
+        var childName = children[i].nodeName.toUpperCase();
+        if (childName === 'TD' || childName === 'TH') {
+          cols.push(children[i]);
         }
-      } else {
-        tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount);
+      }
+      return cols;
+    }
+
+
+    // first lets look for <thead>
+    // we will ignore thead without <tr> children
+    // also, since markdown doesn't support tables with multiple heading rows, only the first one will be transformed
+    // the rest will count as regular rows
+    if (node.querySelectorAll(':scope>thead').length !== 0 && node.querySelectorAll(':scope>thead>tr').length !== 0) {
+      var thead = node.querySelectorAll(':scope>thead>tr');
+
+      // thead>tr can have td and th children
+      for (i = 0; i < thead.length; ++i) {
+        rows.push(iterateRow(thead[i]));
       }
     }
-    txt += '| ' + tableArray[i].join(' | ') + ' |\n';
+
+    // now let's look for tbody
+    // we will ignore tbody without <tr> children
+    if (node.querySelectorAll(':scope>tbody').length !== 0 && node.querySelectorAll(':scope>tbody>tr').length !== 0) {
+      var tbody = node.querySelectorAll(':scope>tbody>tr');
+      // tbody>tr can have td and th children, although th are not very screen reader friendly
+      for (i = 0; i < tbody.length; ++i) {
+        rows.push(iterateRow(tbody[i]));
+      }
+    }
+
+    // now look for tfoot
+    if (node.querySelectorAll(':scope>tfoot').length !== 0 && node.querySelectorAll(':scope>tfoot>tr').length !== 0) {
+      var tfoot = node.querySelectorAll(':scope>tfoot>tr');
+      // tfoot>tr can have td and th children, although th are not very screen reader friendly
+      for (i = 0; i < tfoot.length; ++i) {
+        rows.push(iterateRow(tfoot[i]));
+      }
+    }
+
+    // lastly look for naked tr
+    if (node.querySelectorAll(':scope>tr').length !== 0) {
+
+      var tr = node.querySelectorAll(':scope>tr');
+      // tfoot>tr can have td and th children, although th are not very screen reader friendly
+      for (i = 0; i < tr.length; ++i) {
+        rows.push(iterateRow(tr[i]));
+      }
+    }
+
+    // TODO: implement <caption> in tables https://developer.mozilla.org/pt-BR/docs/Web/HTML/Element/caption
+    // note: <colgroup> is ignored, since they are basically styling
+
+    // we need now to account for cases of completely empty tables, like <table></table> or equivalent
+    if (rows.length === 0) {
+      // table is empty, return empty text
+      return txt;
+    }
+
+    // count the first row. We need it to trim the table (if table rows have inconsistent number of columns)
+    colCount = rows[0].length;
+
+    // let's shift the first row as a heading
+    headings = rows.shift();
+
+    for (i = 0; i < headings.length; ++i) {
+      var headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], globals),
+          align = '---';
+
+      if (headings[i].hasAttribute('style')) {
+        var style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
+        switch (style) {
+          case 'text-align:left;':
+            align = ':---';
+            break;
+          case 'text-align:right;':
+            align = '---:';
+            break;
+          case 'text-align:center;':
+            align = ':---:';
+            break;
+        }
+      }
+      tableArray[0][i] = headContent.trim();
+      tableArray[1][i] = align;
+    }
+
+    // now iterate through the rows and create the pseudo output (not pretty yet)
+    for (i = 0; i < rows.length; ++i) {
+      var r = tableArray.push([]) - 1;
+
+      for (ii = 0; ii < colCount; ++ii) {
+        var cellContent = ' ';
+        if (typeof rows[i][ii] !== 'undefined') {
+          // Note: if rows[i][ii] is undefined, it means the row has fewer elements than the header,
+          // and empty content will be added
+          cellContent = showdown.subParser('makeMarkdown.tableCell')(rows[i][ii], globals);
+        }
+        tableArray[r].push(cellContent);
+      }
+    }
+
+    // now tidy up the output, aligning cells and stuff
+    var cellSpacesCount = 3;
+    for (i = 0; i < tableArray.length; ++i) {
+      for (ii = 0; ii < tableArray[i].length; ++ii) {
+        var strLen = tableArray[i][ii].length;
+        if (strLen > cellSpacesCount) {
+          cellSpacesCount = strLen;
+        }
+      }
+    }
+
+    for (i = 0; i < tableArray.length; ++i) {
+      for (ii = 0; ii < tableArray[i].length; ++ii) {
+        if (i === 1) {
+          if (tableArray[i][ii].slice(-1) === ':') {
+            tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(0, -1), cellSpacesCount - 1, '-') + ':';
+          } else {
+            tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
+          }
+
+        } else {
+          tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount);
+        }
+      }
+      txt += '| ' + tableArray[i].join(' | ') + ' |\n';
+    }
+
+    return txt.trim();
   }
+);
 
-  return txt.trim();
-});
-
-showdown.subParser('makeMarkdown.tableCell', function (node, globals) {
+showdown.subParser('makeMarkdown.tableCell', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -5615,7 +5791,7 @@ showdown.subParser('makeMarkdown.tableCell', function (node, globals) {
       childrenLength = children.length;
 
   for (var i = 0; i < childrenLength; ++i) {
-    txt += showdown.subParser('makeMarkdown.node')(children[i], globals, true);
+    txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals, true);
   }
   return txt.trim();
 });
@@ -6052,7 +6228,7 @@ showdown.Converter = function (converterOptions) {
         mdDoc = '';
 
     for (var i = 0; i < nodes.length; i++) {
-      mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], globals);
+      mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], options, globals);
     }
 
     function clean (node) {

@@ -210,7 +210,7 @@
     // 3. inline links with no title or titles wrapped in ' or ":
     // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
     //var rgx2 = /\[[ ]*[\s]?[ ]*([^\n\[\]]*?)[ ]*[\s]?[ ]*] ?()\(<?[ ]*[\s]?[ ]*([^\s'"]*)>?(?:[ ]*[\n]?[ ]*()(['"])(.*?)\5)?[ ]*[\s]?[ ]*\)/; // this regex is too slow!!!
-    var rgx2 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)?)>?\s*(?:()(['"])(.*?)\5)? *\)/g;
+    var rgx2 = /\[([\S ]*?)]\s?()\( *<?([^\s'"]*?(?:\([\S]*?\)[\S]*?)*)>?\s*(?:()(['"])(.*?)\5)? *\)/g;
     text = text.replace(rgx2, replaceAnchorTagBaseUrl(rgx2, evtRootName, options, globals));
 
     // 4. inline links with titles wrapped in (): [foo](bar.com (title))

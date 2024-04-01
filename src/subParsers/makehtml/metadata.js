@@ -66,7 +66,7 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
       // replace multiple spaces
       .replace(/\n {4}/g, ' ');
 
-    content.replace(/^([\S ]+): +([\s\S]+?)$/gm, function (wm, key, value) {
+    content.replace(/^([\S ]+?): +([\s\S]+?)$/gm, function (wm, key, value) {
       globals.metadata.parsed[key] = value;
       return '';
     });

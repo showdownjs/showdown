@@ -64,6 +64,7 @@ describe('showdown.Converter', function () {
           '---SIMPLE\n' +
           'foo: bar\n' +
           'baz: bazinga\n' +
+          'lorem: ipsum: dolor\n' +
           '---\n',
         text2 =
           '---TIVIE\n' +
@@ -75,8 +76,8 @@ describe('showdown.Converter', function () {
       converter.setOption('metadata', true);
 
       let expectedHtml = '',
-          expectedObj = {foo: 'bar', baz: 'bazinga'},
-          expectedRaw = 'foo: bar\nbaz: bazinga',
+          expectedObj = {foo: 'bar', baz: 'bazinga', lorem: 'ipsum: dolor'},
+          expectedRaw = 'foo: bar\nbaz: bazinga\nlorem: ipsum: dolor',
           expectedFormat = 'SIMPLE';
       converter.makeHtml(text1).should.equal(expectedHtml);
       converter.getMetadata().should.eql(expectedObj);

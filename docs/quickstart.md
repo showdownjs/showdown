@@ -32,7 +32,7 @@ To quickstart with Showdown, install it as a package (for server-side) or includ
     https://cdn.jsdelivr.net/npm/showdown@<version>/dist/showdown.min.js
     ```
     
-    [Showndown page on jsDelivr](https://www.jsdelivr.com/package/npm/showdown)
+    [Showdown page on jsDelivr](https://www.jsdelivr.com/package/npm/showdown)
 
 === "cdnjs"
 
@@ -40,7 +40,7 @@ To quickstart with Showdown, install it as a package (for server-side) or includ
     https://cdnjs.cloudflare.com/ajax/libs/showdown/<version>/showdown.min.js
     ```
 
-    [Showndown page on cdnjs](https://cdnjs.com/libraries/showdown)
+    [Showdown page on cdnjs](https://cdnjs.com/libraries/showdown)
 
 === "unpkg"
 
@@ -48,14 +48,14 @@ To quickstart with Showdown, install it as a package (for server-side) or includ
     https://unpkg.com/showdown/dist/showdown.min.js
     ```
 
-    [Showndown page on unpkg](https://unpkg.com/browse/showdown@latest/)
+    [Showdown page on unpkg](https://unpkg.com/browse/showdown@latest/)
 
 !!! note ""
     Replace `<version>` with an actual full length version you're interested in. For example, `2.0.3`.
 
 ## Usage
 
-Once installed, you can use Showndown according to the chosen method:
+Once installed, you can use Showdown according to the chosen method:
 
 ### Server-side
 

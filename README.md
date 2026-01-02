@@ -14,7 +14,7 @@ Showdown can be used client side (in the browser) or server side (with Node.js).
 
 ## Live DEMO
 
-Check out a live demo here: http://demo.showdownjs.com/
+
 
 As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
 

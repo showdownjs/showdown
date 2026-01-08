@@ -36,10 +36,10 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
         grafsOutIt = grafsOut[i],
         codeFlag = false;
     // if this is a marker for an html block...
-    // use RegExp.test instead of string.search because of QML bug
-    while (/¨(K|G)(\d+)\1/.test(grafsOutIt)) {
-      var delim = RegExp.$1,
-          num   = RegExp.$2;
+    let arr = null;
+    while ((arr = /¨(K|G)(\d+)\1/.exec(grafsOutIt)) !== null) {
+      var delim = arr[1],
+          num   = arr[2];
 
       if (delim === 'K') {
         blockText = globals.gHtmlBlocks[num];

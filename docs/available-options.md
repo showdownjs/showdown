@@ -475,7 +475,7 @@ Open links in new windows.
 Set image dimensions from within Markdown syntax.
 
 * type: `boolean`
-* default value: `false`
+* default value: `true`
 * introduced in: `1.1.0`
 
 === "example"

@@ -30,6 +30,7 @@ var globals = {
 
 function runTests () {
   var testMDFile = fs.readFileSync('test/performance.testfile.md', 'utf8');
+  var testMDFileBig = fs.readFileSync('test/performance.big.testfile.md', 'utf8');
   new performance.Suite('Basic')
     .setOption('cycles', 50)
     .add('Simple "Hello World"', function () {
@@ -38,6 +39,14 @@ function runTests () {
     .add('performance.testfile.md', {
       prepare: function () {
         return testMDFile;
+      },
+      test: function (mdText) {
+        converter.makeHtml(mdText);
+      }
+    })
+    .add('performance.big.testfile.md', {
+      prepare: function () {
+        return testMDFileBig;
       },
       test: function (mdText) {
         converter.makeHtml(mdText);

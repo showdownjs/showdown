@@ -81,6 +81,7 @@
   },
   "overrides": {
     "minimist": "^1.2.6",
+    "serialize-javascript": "^7.0.5",
     "grunt-conventional-changelog": {
       "conventional-changelog": "^3.1.25"
     }

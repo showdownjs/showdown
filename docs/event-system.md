@@ -44,10 +44,10 @@ Some properties can be read-only: their names start with `_` (underscore).
 
 ## Event types
 
-Events are emitted when a sub-parser runs (or about to be run).
-In the sub-parser, the events follow strict order sequence: [`onStart`](#onstart) -> [`onCapture`](#oncapture) -> [`onHash`](#onhash) -> [`onEnd`](#onend)
+Events are emitted when a sub-parser runs (or is about to be run).
+The `makehtml` (Markdown to HTML) sub-parsers emit up to four events, in this strict order: [`onStart`](#onstart) -> [`onCapture`](#oncapture) -> [`onHash`](#onhash) -> [`onEnd`](#onend).
 
-It means that `.before` events always run before `.captureStart`.
+The `makeMarkdown` (HTML to Markdown) sub-parsers emit a subset of these — see [makeMarkdown events](#makemarkdown-html-to-markdown-events) below.
 
 ### onStart
 
@@ -180,54 +180,51 @@ Emitted when the sub-parser has finished its work and is about to exit.
 | `regexp`  | `null`   |         |                                                             |
 | `matches` | `null`   |         |                                                             |
 
+## makeMarkdown (HTML to Markdown) events
+
+The reverse converter — `<converter>.makeMarkdown()`, which turns HTML back into Markdown — also emits namespaced events. Because its sub-parsers operate on **DOM nodes** (one construct at a time) rather than running regular expressions over text, they emit only two of the lifecycle events: [`onStart`](#onstart) and [`onEnd`](#onend). There is no `onCapture`/`onHash` phase, since there is no regex capture step.
+
+Event names follow the same `<converter>.<subparser>.<event>` convention, with `makeMarkdown` as the converter prefix:
+
+* **`makeMarkdown.<subparser>.onStart`**
+* **`makeMarkdown.<subparser>.onEnd`**
+
+emitted by each of these sub-parsers: `blockquote`, `break`, `codeBlock`, `codeSpan`, `emphasis`, `header`, `hr`, `image`, `input`, `links`, `list`, `listItem`, `paragraph`, `pre`, `strikethrough`, `strong`, `table`, `tableCell`, `txt`.
+
+In addition, two **document-level** events wrap the whole conversion:
+
+* **`makeMarkdown.onStart`** — emitted once with the raw HTML source, before it is parsed into a DOM. Listeners can rewrite the source.
+* **`makeMarkdown.onEnd`** — emitted once with the final generated Markdown. Listeners can post-process it.
+
+### Properties
+
+Unlike the makehtml events, the `input` of a makeMarkdown event is a single node/fragment, **not** the full document text:
+
+| property     | type     | access  | description                                                                                             |
+|--------------|----------|---------|---------------------------------------------------------------------------------------------------------|
+| `input`      | `string` | `read`  | `onStart`: the serialized HTML (or text value) of the node being processed. `onEnd`: the generated Markdown. |
+| `output`     | `string` | `write` | The Markdown string that will be used / passed along (see the override note below).                     |
+| `matches`    | `object` | `read`  | Holds `{ node }` — the source DOM node currently being converted.                                       |
+| `regexp`     | `null`   |         |                                                                                                         |
+| `attributes` | `null`   |         |                                                                                                         |
+
+!!! hint "Overriding a node's rendering with `onStart`"
+    The `onStart` event's `output` starts as `null`. If a listener sets it to a non-empty string, that string is used as the sub-parser's result and the **default rendering of the node is skipped** (the matching `onEnd` event still runs). This is the makeMarkdown equivalent of the `onCapture` output-precedence behavior.
+
+    !!! example ""
+
+        ```js
+        // Render every <a> as bare text instead of a Markdown link
+        converter.listen('makeMarkdown.links.onStart', function (evt) {
+          evt.output = evt.matches.node.textContent;
+          return evt;
+        });
+        ```
+
 ## Special Events
 
-There are special events useful for *"positioning"* a listener extension in the main chain of events.
-Usually, these extensions introduce new syntax that, due to precedence
-
-In contrary, the special events will always be called, regardless of options or circumstances. 
-
-### .before.{subparserName}
-
-**`.before.{subparserName}`**: **always runs**
-    
-Emitted just before the **`{subparserName}` is about to be entered**.
-    
-**Properties**
-
-| property  | type     | access  | description                                                    |
-|-----------|----------|---------|----------------------------------------------------------------|
-| `input`   | `string` | `read`  | Full text that was passed to the subparser                     |
-| `output`  | `string` | `write` | Full text with modification that will be passed along the chain |
-| `regexp`  | `null`   |         |                                                                |
-| `matches` | `null`   |         |                                                                |
-
-!!! note "Difference between `before.{subparserName}` and `{subparserName}.start`"
-    
-    1. **`before.{subparserName}`** is always guaranteed to be called, **even if the subparser is disabled**,
-    while **{subparserName}.start** isn't.
-
-        For example, `makehtml.before.strikethrough` is always called even if the option `strikethrough` is `false`.
-        
-    1. **`before.{subparserName}`** is only emitted **once** in a span context while **`{subparserName}.start`** is emitted
-    everytime **`{subparserName}`** is called.
-
-    <!-- As a rule of thumb --> 
-
-### .after.{subparserName}
-
-**`.after.{subparserName}`**: **always runs**;
- 
-Emitted when the **`{subparserName}` has exited** and before the next one is called.
-    
-**Properties**
-    
-| property  | type     | access  | description                                       |   
-|-----------|----------|---------|---------------------------------------------------|
-| `input`   | `string` | `read`  | Partial/full text with the subparser modifications |
-| `output`  | `string` | `write` | The text that will be passed to other subparsers  |
-| `regexp`  | `null`   |         |                                                   |
-| `matches` | `null`   |         |                                                   |
+!!! warning "Removed"
+    The `.before.{subparserName}` and `.after.{subparserName}` special events were **deprecated in 2.0** and have been **removed in 3.0**. Use the per-sub-parser [`onStart`](#onstart) and [`onEnd`](#onend) events instead.
 
 <!--
 ## Events List

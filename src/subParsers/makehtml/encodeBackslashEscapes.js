@@ -36,7 +36,7 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
     .replace(/\\&/g, '&amp;') // escape &
     .replace(/\\"/g, '&quot;') // escaping "
     .replace(/\\</g, '&lt;') // escaping <
-    .replace(/\\>/g, '&gt;'); // escaping <
+    .replace(/\\>/g, '&gt;'); // escaping >
 
   let afterEvent = new showdown.Event('makehtml.encodeBackslashEscapes.onEnd', text);
   afterEvent

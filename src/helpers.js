@@ -1,3 +1,5 @@
+// noinspection HtmlDeprecatedAttribute
+
 /**
  * showdownjs helper functions
  */
@@ -635,6 +637,19 @@ showdown.helper.URLUtils = function (url, baseURL) {
   this.pathname = pathname;
   this.search = search;
   this.hash = hash;
+};
+
+/**
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+showdown.helper.urlASCIIEncoding = function (url) {
+  url = url
+    .replace(/\\/g, '%5C')
+    .replace(/ /g, '%20');
+
+  return url;
 };
 
 /**

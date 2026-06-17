@@ -77,7 +77,16 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   // 4.1. Handle links first
   let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
   text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
+
+    // backslash escaped characters do not work inside autolinks (according to commonmark spec... sure)
+    // so let's unescape them (and add a backslash html entity before)
+    url = url.replace(/(¨E\d+E)/g, '\\$1');
+    url = showdown.subParser('makehtml.unescapeSpecialChars')(url, options, globals);
     let text = url;
+
+    // now let's replace some entities which should be properly url encoded
+    url = showdown.helper.urlASCIIEncoding(url);
+
     url = (urlStart === 'www.') ? 'http://' + url : url;
     return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
   });

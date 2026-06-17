@@ -26,10 +26,14 @@ the end
 
 <canvas id="canvas" width="300" height="300"> Sorry, your browser doesn't support the &lt;canvas&gt; element. </canvas>
 
-<figure><img src="mypic.png" alt="An awesome picture"><figcaption>Caption for the awesome picture</figcaption></figure>
+<figure>![An awesome picture](<mypic.png>)<figcaption>Caption for the awesome picture</figcaption></figure>
 
-<hgroup><h1>Main title</h1><h2>Secondary title</h2></hgroup>
+<hgroup># Main title
+
+## Secondary title</hgroup>
 
 <output name="result"></output>
 
-<details><summary>Summarise me</summary><p>Explain the details</p></details>
+<details><summary>Summarise me</summary>
+
+Explain the details</details>

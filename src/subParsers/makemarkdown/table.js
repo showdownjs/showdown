@@ -123,6 +123,20 @@ showdown.subParser('makeMarkdown.table',
                 break;
             }
           }
+          // fall back to the deprecated `align` attribute when no inline text-align style matched
+          if (align === '---' && headings[i].hasAttribute('align')) {
+            switch (headings[i].getAttribute('align').toLowerCase()) {
+              case 'left':
+                align = ':---';
+                break;
+              case 'right':
+                align = '---:';
+                break;
+              case 'center':
+                align = ':---:';
+                break;
+            }
+          }
           tableArray[0][i] = headContent.trim();
           tableArray[1][i] = align;
         }

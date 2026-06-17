@@ -16,7 +16,7 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
     result = (function () {
       var txt = '';
       if (node.hasAttribute('src') && node.getAttribute('src') !== '') {
-        txt += '![' + node.getAttribute('alt') + '](';
+        txt += '![' + (node.getAttribute('alt') || '') + '](';
         txt += '<' + node.getAttribute('src') + '>';
         if (node.hasAttribute('width') && node.hasAttribute('height')) {
           var width = node.getAttribute('width');

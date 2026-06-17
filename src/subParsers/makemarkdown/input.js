@@ -14,18 +14,11 @@ showdown.subParser('makeMarkdown.input', function (node, options, globals) {
     result = startEvent.output;
   } else {
     result = (function () {
-      var txt = '';
-      if (node.getAttribute('checked') !== null) {
-        txt += '[x]';
-      } else {
-        txt += '[ ]';
+      // only checkbox inputs map to task-list markdown; anything else passes through as raw HTML
+      if (node.getAttribute('type') !== 'checkbox') {
+        return node.outerHTML;
       }
-      var children = node.childNodes,
-          childrenLength = children.length;
-      for (var i = 0; i < childrenLength; ++i) {
-        txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-      }
-      return txt;
+      return (node.getAttribute('checked') !== null) ? '[x]' : '[ ]';
     })();
   }
 

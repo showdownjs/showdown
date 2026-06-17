@@ -181,6 +181,11 @@ function getDefaultOpts (simple) {
       describe: 'Resolve HTML5 named and numeric character references to their characters (CommonMark behavior)',
       type: 'boolean'
     },
+    commonmarkEmphasis: {
+      defaultValue: false,
+      describe: 'Parse emphasis and strong emphasis using the CommonMark delimiter-run algorithm (flanking rules)',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

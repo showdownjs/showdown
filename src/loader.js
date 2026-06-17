@@ -1,4 +1,4 @@
-var root = this;
+var root = this || globalThis;
 
 // AMD Loader
 if (typeof define === 'function' && define.amd) {

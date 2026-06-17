@@ -193,6 +193,8 @@ Event names follow the same `<converter>.<subparser>.<event>` convention, with `
 
 emitted by each of these sub-parsers: `blockquote`, `break`, `codeBlock`, `codeSpan`, `emphasis`, `header`, `hr`, `image`, `input`, `links`, `list`, `listItem`, `paragraph`, `pre`, `strikethrough`, `strong`, `table`, `tableCell`, `txt`, `underline`.
 
+The recursive `node` dispatcher (the analogue of makehtml's `blockGamut`/`spanGamut`) also emits **`makeMarkdown.node.onStart`** / **`makeMarkdown.node.onEnd`** for every node it processes. Because every node passes through it, this is the one place to observe (or override) content that has no dedicated sub-parser — HTML comments and unknown/raw elements.
+
 In addition, two **document-level** events wrap the whole conversion:
 
 * **`makeMarkdown.onStart`** — emitted once with the raw HTML source, before it is parsed into a DOM. Listeners can rewrite the source.

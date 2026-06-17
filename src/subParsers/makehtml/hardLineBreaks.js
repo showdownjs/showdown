@@ -1,18 +1,23 @@
 ////
-// makehtml/emphasisAndStrong.js
+// makehtml/hardLineBreaks.js
 // Copyright (c) 2022 ShowdownJS
 //
-// Transforms MD emphasis and strong into `<em>` and `<strong>` html entities
-//
-// Markdown treats asterisks (*) and underscores (_) as indicators of emphasis.
-// Text wrapped with one * or _ will be wrapped with an HTML <em> tag;
-// double *’s or _’s will be wrapped with an HTML <strong> tag
+// Transforms hard line breaks (trailing spaces / backslash) into `<br />` tags.
 //
 // ***Author:***
 // - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
 ////
 
-showdown.subParser('makehtml.hardLineBreaks', function (text, options) {
+showdown.subParser('makehtml.hardLineBreaks', function (text, options, globals) {
+  'use strict';
+
+  let startEvent = new showdown.Event('makehtml.hardLineBreaks.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   // Do hard breaks
   if (options.simpleLineBreaks) {
@@ -27,6 +32,12 @@ showdown.subParser('makehtml.hardLineBreaks', function (text, options) {
   }
   text = text.replace(/\\\n/g, '<br />\n');
 
-  return text;
+  let afterEvent = new showdown.Event('makehtml.hardLineBreaks.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 
 });

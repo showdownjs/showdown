@@ -115,6 +115,10 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '```\nfoo\n```', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
+      hardLineBreaks: [
+        { event: 'onStart', text: 'foo', result: true },
+        { event: 'onEnd', text: 'foo', result: true }
+      ],
       'heading.atx': [
         { event: 'onStart', text: '# foo', result: true },
         { event: 'onStart', text: 'foo', result: true },
@@ -247,6 +251,14 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '~~foo~~', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
+      stripLinkDefinitions: [
+        { event: 'onStart', text: 'foo', result: true },
+        { event: 'onEnd', text: 'foo', result: true },
+        { event: 'onCapture', text: '[foo]: bar.com\n\n[foo]', result: true },
+        { event: 'onCapture', text: 'foo', result: false },
+        { event: 'onHash', text: '[foo]: bar.com\n\n[foo]', result: true },
+        { event: 'onHash', text: 'foo', result: false }
+      ],
       table: [
         { event: 'onStart', text: '|foo|bar|\n|---|---|\n|1|2|', result: true },
         { event: 'onStart', text: 'foo', result: true },
@@ -269,6 +281,10 @@ describe('showdown.Event', function () {
       ]
     },
     makeMarkdown: {
+      node: [
+        { event: 'onStart', text: '<p>foo</p>', result: true },
+        { event: 'onEnd', text: '<p>foo</p>', result: true }
+      ],
       header: [
         { event: 'onStart', text: '<h1>foo</h1>', result: true },
         { event: 'onStart', text: '<p>foo</p>', result: false },

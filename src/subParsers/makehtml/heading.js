@@ -25,6 +25,7 @@
 
   /**
    *
+   * @param {string} subEvtName Heading style ('atx' or 'setext'), used to namespace the dispatched events
    * @param {RegExp} pattern
    * @param {string} wholeMatch
    * @param {string} headingText
@@ -34,8 +35,8 @@
    * @param {{}} globals
    * @returns {string}
    */
-  function parseHeader (pattern, wholeMatch, headingText, headingLevel, headingId, options, globals) {
-    let captureStartEvent = new showdown.Event('makehtml.heading.onCapture', headingText),
+  function parseHeader (subEvtName, pattern, wholeMatch, headingText, headingLevel, headingId, options, globals) {
+    let captureStartEvent = new showdown.Event('makehtml.heading.' + subEvtName + '.onCapture', headingText),
         otp;
 
     captureStartEvent
@@ -63,7 +64,7 @@
       otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + spanGamut + '</h' + headingLevel + '>';
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.heading.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.heading.' + subEvtName + '.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -335,7 +336,7 @@
 
       // after this, we're pretty sure it's a heading so let's proceed
       let id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(headingText, options, globals);
-      return prepend + parseHeader(pattern, wholeMatch, headingText, headingLevel, id, options, globals);
+      return prepend + parseHeader('setext', pattern, wholeMatch, headingText, headingLevel, id, options, globals);
     }
 
 
@@ -356,7 +357,7 @@
       let headingLevel = options.headerLevelStart - 1 + m1.length,
           headingText = (options.customizedHeaderId) ? m2.replace(/\s?{([^{]+?)}\s*$/, '') : m2,
           id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(m2, options, globals);
-      return parseHeader(atxRegex, wholeMatch, headingText, headingLevel, id, options, globals);
+      return parseHeader('atx', atxRegex, wholeMatch, headingText, headingLevel, id, options, globals);
     });
 
     let afterEvent = new showdown.Event('makehtml.heading.atx.onEnd', text);

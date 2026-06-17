@@ -261,6 +261,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     if (options.openLinksInNewWindow && !/^#/.test(url)) {
       attributes.rel = 'noopener noreferrer';
       attributes.target = '¨E95Eblank'; // escaped _
+      attributes['aria-label'] = text + ' (opens in new tab)';
 
     }
 

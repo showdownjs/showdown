@@ -103,9 +103,12 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
   // Special case for standalone HTML comments
+  // A comment is terminated by either `-->` or `--!>` (the HTML "comment end
+  // bang" state). Matching only `-->` lets content an author believes is
+  // commented-out leak through to the browser as live HTML (js/bad-tag-filter).
   text = showdown.helper.replaceRecursiveRegExp(text, function (txt) {
     return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
-  }, '^ {0,3}<!--', '-->', 'gm');
+  }, '^ {0,3}<!--', '--!?>', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)
   text = text.replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g,

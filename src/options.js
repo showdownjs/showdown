@@ -176,6 +176,11 @@ function getDefaultOpts (simple) {
       describe: 'Prepends a base URL to relative paths',
       type: 'string'
     },
+    decodeEntities: {
+      defaultValue: false,
+      describe: 'Resolve HTML5 named and numeric character references to their characters (CommonMark behavior)',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

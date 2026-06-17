@@ -4,10 +4,9 @@
 
 // jshint ignore: start
 let bootstrap = require('./makehtml.bootstrap.js'),
-    converter = new bootstrap.showdown.Converter({
-      noHeaderId: true,
-      requireSpaceBeforeHeadingText: true
-    }),
+    // Run the CommonMark suite in CommonMark mode: derive options from the `commonmark`
+    // flavor so that flavor-gated CommonMark behaviors (e.g. decodeEntities) are exercised.
+    converter = new bootstrap.showdown.Converter(bootstrap.showdown.getFlavorOptions('commonmark')),
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getJsonTestSuite('test/functional/makehtml/cases/commonmark.testsuite.json');
 const {tests} = require('commonmark-spec');

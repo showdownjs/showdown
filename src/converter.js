@@ -328,6 +328,9 @@ showdown.Converter = function (converterOptions) {
     text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);
     text = showdown.subParser('makehtml.blockGamut')(text, options, globals);
     text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
+    // decode character references (gated by the decodeEntities option) after inline parsing,
+    // while code spans/blocks are still hashed, so decoded chars are not re-parsed
+    text = showdown.subParser('makehtml.decodeEntities')(text, options, globals);
     text = showdown.subParser('makehtml.unhashHTMLSpans')(text, options, globals);
     text = showdown.subParser('makehtml.unescapeSpecialChars')(text, options, globals);
 

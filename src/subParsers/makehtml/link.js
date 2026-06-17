@@ -74,29 +74,50 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   // 4. Handle angle brackets links -> `<http://example.com/>`
   // Must come after links, because you can use < and > delimiters in inline links like [this](<url>).
 
-  // 4.1. Handle links first
-  let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
-  text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
+  if (options.commonmarkAutolinks) {
+    // CommonMark autolinks: any scheme (2-32 chars) URI, and emails, with no entity encoding.
+    // 4.1. URI autolinks: <scheme:rest>
+    let cmUriAutolinkRegex = /<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*)>/g;
+    text = text.replace(cmUriAutolinkRegex, function (wholeMatch, uri) {
+      // backslash escapes do not work inside autolinks, so restore them to literal backslash + char
+      let raw = showdown.subParser('makehtml.unescapeSpecialChars')(uri.replace(/(¨E\d+E)/g, '\\$1'), options, globals);
+      let otp = '<a href="' + cmEscapeHref(cmEncodeURI(raw)) + '">' + cmEscapeText(raw) + '</a>';
+      return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+    });
 
-    // backslash escaped characters do not work inside autolinks (according to commonmark spec... sure)
-    // so let's unescape them (and add a backslash html entity before)
-    url = url.replace(/(¨E\d+E)/g, '\\$1');
-    url = showdown.subParser('makehtml.unescapeSpecialChars')(url, options, globals);
-    let text = url;
+    // 4.2. Email autolinks: <foo@bar.example.com>
+    let cmEmailAutolinkRegex = /<([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)>/g;
+    text = text.replace(cmEmailAutolinkRegex, function (wholeMatch, email) {
+      let raw = showdown.subParser('makehtml.unescapeSpecialChars')(email.replace(/(¨E\d+E)/g, '\\$1'), options, globals);
+      let otp = '<a href="' + cmEscapeHref('mailto:' + raw) + '">' + cmEscapeText(raw) + '</a>';
+      return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+    });
 
-    // now let's replace some entities which should be properly url encoded
-    url = showdown.helper.urlASCIIEncoding(url);
+  } else {
+    // 4.1. Handle links first
+    let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
+    text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
 
-    url = (urlStart === 'www.') ? 'http://' + url : url;
-    return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
-  });
+      // backslash escaped characters do not work inside autolinks (according to commonmark spec... sure)
+      // so let's unescape them (and add a backslash html entity before)
+      url = url.replace(/(¨E\d+E)/g, '\\$1');
+      url = showdown.subParser('makehtml.unescapeSpecialChars')(url, options, globals);
+      let text = url;
 
-  // 4.2. Then mail adresses
-  let angleBracketsMailRegex = /<(?:mailto:)?([-.\w]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)>/gi;
-  text = text.replace(angleBracketsMailRegex, function (wholeMatch, mail) {
-    const m = parseMail(mail);
-    return writeAnchorTag ('angleBrackets', angleBracketsMailRegex, wholeMatch, m.mail, null, m.url);
-  });
+      // now let's replace some entities which should be properly url encoded
+      url = showdown.helper.urlASCIIEncoding(url);
+
+      url = (urlStart === 'www.') ? 'http://' + url : url;
+      return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
+    });
+
+    // 4.2. Then mail adresses
+    let angleBracketsMailRegex = /<(?:mailto:)?([-.\w]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)>/gi;
+    text = text.replace(angleBracketsMailRegex, function (wholeMatch, mail) {
+      const m = parseMail(mail);
+      return writeAnchorTag ('angleBrackets', angleBracketsMailRegex, wholeMatch, m.mail, null, m.url);
+    });
+  }
 
   // 5. Handle GithubMentions (if option is enabled)
   if (options.ghMentions) {
@@ -328,5 +349,44 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
       mail: mail,
       url: url
     };
+  }
+
+  // CommonMark URL normalization: percent-encode characters outside the "safe" set,
+  // preserving already-percent-encoded sequences. Mirrors mdurl.encode's default behavior.
+  function cmEncodeURI (uri) {
+    const safe = ';/?:@&=+$,-_.!~*\'()#';
+    let out = '';
+    for (let i = 0; i < uri.length; ++i) {
+      let ch = uri.charAt(i),
+          code = uri.charCodeAt(i);
+      if (ch === '%' && /^[0-9a-fA-F]{2}$/.test(uri.substr(i + 1, 2))) {
+        out += uri.substr(i, 3);
+        i += 2;
+      } else if ((code >= 48 && code <= 57) || (code >= 65 && code <= 90) ||
+                 (code >= 97 && code <= 122) || safe.indexOf(ch) !== -1) {
+        out += ch;
+      } else {
+        out += encodeURIComponent(ch);
+      }
+    }
+    return out;
+  }
+
+  // HTML-escape an autolink href (the URL is already percent-encoded)
+  function cmEscapeHref (url) {
+    return url
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // HTML-escape the visible autolink text (no percent-encoding)
+  function cmEscapeText (txt) {
+    return txt
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 });

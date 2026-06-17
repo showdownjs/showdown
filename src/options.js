@@ -186,6 +186,11 @@ function getDefaultOpts (simple) {
       describe: 'Parse emphasis and strong emphasis using the CommonMark delimiter-run algorithm (flanking rules)',
       type: 'boolean'
     },
+    commonmarkAutolinks: {
+      defaultValue: false,
+      describe: 'Recognize CommonMark autolinks: <scheme:uri> for any scheme and <email>, without entity-encoding',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

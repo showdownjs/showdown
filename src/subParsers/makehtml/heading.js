@@ -175,8 +175,13 @@
     startEvent = globals.converter.dispatch(startEvent);
     text = startEvent.output;
 
-    const setextRegexH1 = /^( {0,3}([^ \t\n]+.*\n)(.+\n)?(.+\n)?)( {0,3}=+[ \t]*)$/gm,
-        setextRegexH2 = /^( {0,3}([^ \t\n]+.*\n)(.+\n)?(.+\n)?)( {0,3}(-+)[ \t]*)$/gm;
+    // NOTE: the first line is `[^ \t\n].*` (single leading non-space + rest) rather
+    // than `[^ \t\n]+.*`. The latter has two overlapping greedy quantifiers that can
+    // consume the same characters, causing O(n^2) backtracking on a long line with no
+    // trailing underline (a DoS via any long whitespace-free input). The two forms
+    // match the same set of lines and capture the same substring.
+    const setextRegexH1 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}=+[ \t]*)$/gm,
+        setextRegexH2 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}(-+)[ \t]*)$/gm;
 
     text = text.replace(setextRegexH1, function (wholeMatch, headingText, line1, line2, line3, line4) {
       return parseSetextHeading(setextRegexH2, options.headerLevelStart, wholeMatch, headingText, line1, line2, line3, line4);

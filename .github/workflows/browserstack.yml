@@ -16,15 +16,12 @@ jobs:
         run: echo "COMMIT_MSG=$(printf "%s" "${{ github.event.head_commit.message }}" | head -n 1)" >> $GITHUB_ENV
 
       - name: '📦 Checkout the repository'
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: '🚚 Upgrade NPM'
-        run: npm install -g npm
-
-      - name: '⚙ Setup Node.js v16.x'
-        uses: actions/setup-node@v2
+      - name: '⚙ Setup Node.js v20.x'
+        uses: actions/setup-node@v4
         with:
-          node-version: 16.x
+          node-version: 20.x
           cache: 'npm'
 
       - name: '📖 Get current package version'

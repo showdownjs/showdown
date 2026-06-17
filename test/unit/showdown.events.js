@@ -47,6 +47,12 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '`foo`', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
+      ellipsis: [
+        { event: 'onCapture', text: '...', result: true },
+        { event: 'onCapture', text: 'foo', result: false },
+        { event: 'onHash', text: '...', result: true },
+        { event: 'onHash', text: 'foo', result: false }
+      ],
       emoji: [
         { event: 'onStart', text: ':smile:', result: true },
         { event: 'onStart', text: 'smile', result: true },
@@ -192,8 +198,8 @@ describe('showdown.Event', function () {
         { event: 'onEnd', text: 'foo', result: true },
         { event: 'onCapture', text: '1. foo\n2.bar\n', result: true },
         { event: 'onCapture', text: 'foo', result: false },
-        //{ event: 'onHash', text: '1. foo\n2.bar\n', result: true },
-        //{ event: 'onHash', text: 'foo', result: false }
+        { event: 'onHash', text: '1. foo\n2.bar\n', result: true },
+        { event: 'onHash', text: 'foo', result: false }
       ],
       'list.listItem': [
         { event: 'onCapture', text: '1. foo\n2.bar\n', result: true },
@@ -224,6 +230,12 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '«««yaml\nfoo: bar\n»»»\n', result: true },
         { event: 'onHash', text: '---yaml\nfoo: bar\n---\n', result: true },
         { event: 'onHash', text: 'foo', result: false }
+      ],
+      paragraphs: [
+        { event: 'onStart', text: 'foo\n\nbar', result: true },
+        { event: 'onStart', text: 'foo', result: true },
+        { event: 'onEnd', text: 'foo\n\nbar', result: true },
+        { event: 'onEnd', text: 'foo', result: true }
       ],
       strikethrough: [
         { event: 'onStart', text: '~~foo~~', result: true },

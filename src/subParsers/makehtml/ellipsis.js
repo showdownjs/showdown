@@ -24,7 +24,38 @@ showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  text = text.replace(/\.\.\./g, '…');
+  const ellipsisRegex = /\.\.\./g;
+  text = text.replace(ellipsisRegex, function (wholeMatch) {
+
+    let otp;
+    let captureStartEvent = new showdown.Event('makehtml.ellipsis.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(ellipsisRegex)
+      .setMatches({
+        _wholeMatch: wholeMatch,
+        ellipsis: wholeMatch
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '…';
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.ellipsis.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
+  });
 
   let afterEvent = new showdown.Event('makehtml.ellipsis.onEnd', text);
   afterEvent

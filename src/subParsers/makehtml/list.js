@@ -401,6 +401,13 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
         otp = '\n\n<' + listType + showdown.helper._populateAttributes(attrs) + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
       }
     }
-    return otp;
+
+    let beforeHashEvent = new showdown.Event('makehtml.list.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
   }
 });

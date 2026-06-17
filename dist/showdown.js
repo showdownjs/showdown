@@ -1,4 +1,4 @@
-;/*! showdown v 3.0.0-alpha - 25-04-2022 */
+;/*! showdown v 3.0.0-alpha - 17-06-2026 */
 (function(){
 /**
  * Created by Tivie on 13-07-2015.
@@ -235,21 +235,9 @@ var showdown = {},
         noHeaderId:                           true,
         ghCodeBlocks:                         false
       },
-      ghost: {
-        omitExtraWLInCodeBlocks:              true,
-        parseImgDimensions:                   true,
-        simplifiedAutoLink:                   true,
-        literalMidWordUnderscores:            true,
-        strikethrough:                        true,
-        tables:                               true,
-        tablesHeaderId:                       true,
-        ghCodeBlocks:                         true,
-        tasklists:                            true,
-        smoothLivePreview:                    true,
-        simpleLineBreaks:                     true,
-        requireSpaceBeforeHeadingText:        true,
-        ghMentions:                           false,
-        encodeEmails:                         true
+      commonmark: {
+        noHeaderId:                           true,
+        requireSpaceBeforeHeadingText:        true
       },
       vanilla: getDefaultOpts(true),
       allOn: allOptionsOn()
@@ -590,6 +578,8 @@ showdown.validateExtension = function (ext) {
   }
   return true;
 };
+
+// noinspection HtmlDeprecatedAttribute
 
 /**
  * showdownjs helper functions
@@ -1141,6 +1131,31 @@ showdown.helper.isAbsolutePath = function (path) {
   return /(^([a-z]+:)?\/\/)|(^#)/i.test(path);
 };
 
+
+/**
+ * Polyfill method for trimStart
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.trimStart = function (text) {
+  return (!String.prototype.trimStart) ?
+    text.replace(/^[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+/, '') :
+    text.trimStart();
+};
+
+/**
+ * Polyfill method for trimEnd
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.trimEnd = function (text) {
+  return (!String.prototype.trimEnd) ?
+    text.replace(/[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+$/, '') :
+    text.trimEnd();
+};
+
+
+
 showdown.helper.URLUtils = function (url, baseURL) {
   const pattern2 = /^([^:\/?#]+:)?(?:\/\/(?:([^:@\/?#]*)(?::([^:@\/?#]*))?@)?(([^:\/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
 
@@ -1203,6 +1218,19 @@ showdown.helper.URLUtils = function (url, baseURL) {
   this.pathname = pathname;
   this.search = search;
   this.hash = hash;
+};
+
+/**
+ *
+ * @param {string} url
+ * @returns {string}
+ */
+showdown.helper.urlASCIIEncoding = function (url) {
+  url = url
+    .replace(/\\/g, '%5C')
+    .replace(/ /g, '%20');
+
+  return url;
 };
 
 /**
@@ -1295,6 +1323,14 @@ showdown.helper._populateAttributes = function (attributes) {
     }
   }
 
+  return text;
+};
+
+showdown.helper.normalizeLeadingTabs = function (text) {
+  // 1. (1 to 3 spaces followed by a tab at the start of the line) becomes (1 tab)
+  text = text.replace(/^ {1,3}\t/gm, '\t');
+
+  // 2.
   return text;
 };
 
@@ -3445,8 +3481,10 @@ showdown.Event = class {
 ////
 
 
-showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
+showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip) {
   'use strict';
+
+  skip = skip || false;
 
   let startEvent = new showdown.Event('makehtml.blockGamut.onStart', text);
   startEvent
@@ -3456,24 +3494,28 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  // we parse blockquotes first so that we can have headings and hrs
-  // inside blockquotes
-  text = showdown.subParser('makehtml.blockquote')(text, options, globals);
-  text = showdown.subParser('makehtml.heading')(text, options, globals);
+  if (skip !== 'makehtml.heading.setext') {
+    text = showdown.subParser('makehtml.heading.setext')(text, options, globals);
+  }
+  if (skip !== 'makehtml.heading.atx') {
+    text = showdown.subParser('makehtml.heading.atx')(text, options, globals);
+  }
 
   // Do Horizontal Rules:
-  text = showdown.subParser('makehtml.horizontalRule')(text, options, globals);
+  if (skip !== 'makehtml.horizontalRule') {
+    text = showdown.subParser('makehtml.horizontalRule')(text, options, globals);
+  }
 
   text = showdown.subParser('makehtml.list')(text, options, globals);
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
   text = showdown.subParser('makehtml.table')(text, options, globals);
+  text = showdown.subParser('makehtml.blockquote')(text, options, globals);
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,
   // we're escaping the markup we've just created, so that we don't wrap
   // <p> tags around block-level tags.
   text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
-  text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
 
   let afterEvent = new showdown.Event('makehtml.blockGamut.onEnd', text);
   afterEvent
@@ -3510,9 +3552,6 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  // add a couple extra lines after the text and endtext mark
-  text = text + '\n\n';
-
   let pattern = /(^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+/gm;
 
   if (options.splitAdjacentBlockquotes) {
@@ -3523,11 +3562,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     let otp,
         attributes = {},
         wholeMatch = bq;
-    // attacklab: hack around Konqueror 3.5.4 bug:
-    // "----------bug".replace(/^-/g,"") == "bug"
     bq = bq.replace(/^[ \t]*>[ \t]?/gm, ''); // trim one level of quoting
-    // attacklab: clean up hack
-    bq = bq.replace(/¨0/g, '');
     bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
 
     let captureStartEvent = new showdown.Event('makehtml.blockquote.onCapture', bq);
@@ -3551,6 +3586,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
       bq = captureStartEvent.matches.blockquote;
       bq = showdown.subParser('makehtml.githubCodeBlock')(bq, options, globals);
       bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
+      bq = showdown.subParser('makehtml.paragraphs')(bq, options, globals);
       bq = bq.replace(/(^|\n)/g, '$1  ');
       // These leading spaces screw with <pre> content, so we need to fix that:
       bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wm, m1) {
@@ -3604,7 +3640,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
   // sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '¨0';
 
-  let pattern = /(?:\n\n|^)((?:(?:[ ]{4}|\t).*\n+)+)(\n*[ ]{0,3}[^ \t\n]|(?=¨0))/g;
+  let pattern = /(?:\n\n|^)((?:(?: {4}|\t).*\n+)+)(\n* {0,3}[^ \t\n]|(?=¨0))/g;
   text = text.replace(pattern, function (wholeMatch, m1, m2) {
     let codeblock = m1,
         nextChar = m2,
@@ -3636,7 +3672,7 @@ showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
       codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.helper.outdent(codeblock);
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
-      codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
+      //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
       codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
       codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing newlines
       attributes = captureStartEvent.attributes;
@@ -3732,6 +3768,8 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
 
     c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
     c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
+    // remove newlines
+    c = c.replace(/\n/g, ' ');
 
     let captureStartEvent = new showdown.Event('makehtml.codeSpan.onCapture', c);
     captureStartEvent
@@ -3765,8 +3803,7 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
     otp = beforeHashEvent.output;
     return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-  }
-  );
+  });
 
   let afterEvent = new showdown.Event('makehtml.codeSpan.onEnd', text);
   afterEvent
@@ -3860,60 +3897,6 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
 });
 
 ////
-// makehtml/detab.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Convert all tabs to spaces
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.detab', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.detab.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  // expand first n-1 tabs
-  text = text.replace(/\t(?=\t)/g, '    '); // g_tab_width
-
-  // replace the nth with two sentinels
-  text = text.replace(/\t/g, '¨A¨B');
-
-  // use the sentinel to anchor our regex so it doesn't explode
-  text = text.replace(/¨B(.+?)¨A/g, function (wholeMatch, m1) {
-    var leadingText = m1,
-        numSpaces = 4 - leadingText.length % 4;  // g_tab_width
-
-    // there *must* be a better way to do this:
-    for (var i = 0; i < numSpaces; i++) {
-      leadingText += ' ';
-    }
-
-    return leadingText;
-  });
-
-  // clean up sentinels
-  text = text.replace(/¨A/g, '    ');  // g_tab_width
-  text = text.replace(/¨B/g, '');
-
-  let afterEvent = new showdown.Event('makehtml.detab.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
 // makehtml/ellipsis.js
 // Copyright (c) 2018 ShowdownJS
 //
@@ -3939,7 +3922,38 @@ showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  text = text.replace(/\.\.\./g, '…');
+  const ellipsisRegex = /\.\.\./g;
+  text = text.replace(ellipsisRegex, function (wholeMatch) {
+
+    let otp;
+    let captureStartEvent = new showdown.Event('makehtml.ellipsis.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(ellipsisRegex)
+      .setMatches({
+        _wholeMatch: wholeMatch,
+        ellipsis: wholeMatch
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '…';
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.ellipsis.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
+  });
 
   let afterEvent = new showdown.Event('makehtml.ellipsis.onEnd', text);
   afterEvent
@@ -4110,18 +4124,23 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
       if (showdown.helper.isUndefined(attributes.strong)) {
         attributes.strong = {};
       }
+
       switch (tags) {
         case '<em>':
-          otp = '<em' + showdown.helper._populateAttributes(attributes.em) + '>' + txt + '</em>';
+          otp = '<em' + showdown.helper._populateAttributes(attributes.em) + '>' +
+                showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+                '</em>';
           break;
         case '<strong>':
-          otp = '<strong' + showdown.helper._populateAttributes(attributes.strong) + '>' + txt + '</strong>';
+          otp = '<strong' + showdown.helper._populateAttributes(attributes.strong) + '>' +
+                showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+                '</strong>';
           break;
         case '<strong><em>':
           otp = '<strong' + showdown.helper._populateAttributes(attributes.strong) + '>' +
-                  '<em' + showdown.helper._populateAttributes(attributes.em) + '>' +
-                    txt +
-                  '</em>' +
+                '<em' + showdown.helper._populateAttributes(attributes.em) + '>' +
+                showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+                '</em>' +
                 '</strong>';
           break;
       }
@@ -4134,10 +4153,11 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
       ._setOptions(options);
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
     otp = beforeHashEvent.output;
+    otp = showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
     return otp;
   }
 
-  // it's faster to have 3 separate regexes for each case than have just one
+  // it's faster to have separate regexes for each case than have just one
   // because of backtracking, in some cases, it could lead to an exponential effect
   // called "catastrophic backtrace". Ominous!
   const lmwuStrongEmRegex         = /\b___(\S[\s\S]*?)___\b/g,
@@ -4232,6 +4252,9 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
   // Encode >
   text = text.replace(/>/g, '&gt;');
 
+  // encode "
+  text = text.replace(/"/g, '&quot;');
+
   let afterEvent = new showdown.Event('makehtml.encodeAmpsAndAngles.onEnd', text);
   afterEvent
     .setOutput(text)
@@ -4272,8 +4295,14 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  text = text.replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback);
-  text = text.replace(/\\([`*_{}\[\]()>#+.!~=|:-])/g, showdown.helper.escapeCharactersCallback);
+  text = text
+    .replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback)
+    .replace(/\\([!#%'()*+,\-.\/:;=?@\[\]\\^_`{|}~])/g, showdown.helper.escapeCharactersCallback)
+    .replace(/\\¨D/g, '¨D') // escape $ (which was already escaped as ¨D) (charcode is 36)
+    .replace(/\\&/g, '&amp;') // escape &
+    .replace(/\\"/g, '&quot;') // escaping "
+    .replace(/\\</g, '&lt;') // escaping <
+    .replace(/\\>/g, '&gt;'); // escaping >
 
   let afterEvent = new showdown.Event('makehtml.encodeBackslashEscapes.onEnd', text);
   afterEvent
@@ -4315,6 +4344,8 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   // Do the angle bracket song and dance:
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+  // encode "
+    .replace(/"/g, '&quot;')
   // Now, escape characters that are magic in Markdown:
     .replace(/([*_{}\[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
 
@@ -4351,7 +4382,7 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
   text = startEvent.output;
 
   // Build a regex to find HTML tags.
-  let tags     = /<\/?[a-z\d_:-]+(?:[\s]+[\s\S]+?)?>/gi,
+  let tags     = /<\/?[a-z\d_:-]+(?:\s+[\s\S]+?)?>/gi,
       comments = /<!(--(([^>-]|-[^>])([^-]|-[^-])*)--)>/gi;
 
   text = text.replace(tags, function (wholeMatch) {
@@ -4408,9 +4439,36 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output + '¨0';
 
-  let pattern = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1/g;
+  //const accentRegex = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)(?:(\n {0,3}\1[`~]*)|¨0)/g;
+  const closedBlockRegex   = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1[`~]*/gm;
+  const unclosedBlockRegex = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)¨0/gm;
+  const emptyBlockRegex    = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n {0,3}\1[`~]*/gm;
 
-  text = text.replace(pattern, function (wholeMatch, delim, language, codeblock) {
+  text = text.replace(closedBlockRegex, function (wholeMatch, delim, language, codeblock) {
+    return parse(closedBlockRegex, wholeMatch, delim, language, codeblock);
+  });
+
+  text = text.replace(emptyBlockRegex, function (wholeMatch, delim, language) {
+    return parse(emptyBlockRegex, wholeMatch, delim, language, '');
+  });
+
+  text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
+    return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
+  });
+
+  // attacklab: strip sentinel
+  text = text.replace(/¨0/, '');
+
+  let afterEvent = new showdown.Event('makehtml.githubCodeBlock.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+
+  function parse (pattern, wholeMatch, delim, language, codeblock) {
     let end = (options.omitExtraWLInCodeBlocks) ? '' : '\n',
         otp,
         attributes = {
@@ -4444,7 +4502,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
       let lang = infostring.trim().split(' ')[0];
       codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
-      codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
+      //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
       codeblock = codeblock
         .replace(/^\n+/g, '')  // trim leading newlines
         .replace(/\n+$/g, ''); // trim trailing whitespace
@@ -4495,18 +4553,42 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
     // store the primitive text and the parsed text in a global var,
     // and then return a token
     return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: otp}) - 1) + 'G\n\n';
-  });
+  }
 
-  // attacklab: strip sentinel
-  text = text.replace(/¨0/, '');
 
-  let afterEvent = new showdown.Event('makehtml.githubCodeBlock.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
+});
+
+////
+// makehtml/emphasisAndStrong.js
+// Copyright (c) 2022 ShowdownJS
+//
+// Transforms MD emphasis and strong into `<em>` and `<strong>` html entities
+//
+// Markdown treats asterisks (*) and underscores (_) as indicators of emphasis.
+// Text wrapped with one * or _ will be wrapped with an HTML <em> tag;
+// double *’s or _’s will be wrapped with an HTML <strong> tag
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+showdown.subParser('makehtml.hardLineBreaks', function (text, options) {
+
+  // Do hard breaks
+  if (options.simpleLineBreaks) {
+    // GFM style hard breaks
+    // only add line breaks if the text does not contain a block (special case for lists)
+    if (!/\n\n¨K/.test(text)) {
+      text = text.replace(/\n+/gm, '<br />\n');
+    }
+  } else {
+    // Vanilla hard breaks
+    text = text.replace(/  +\n/g, '<br />\n');
+  }
+  text = text.replace(/\\\n/g, '<br />\n');
+
+  return text;
+
 });
 
 ////
@@ -4704,9 +4786,12 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
     showdown.subParser('makehtml.hashElement')(text, options, globals));
 
   // Special case for standalone HTML comments
+  // A comment is terminated by either `-->` or `--!>` (the HTML "comment end
+  // bang" state). Matching only `-->` lets content an author believes is
+  // commented-out leak through to the browser as live HTML (js/bad-tag-filter).
   text = showdown.helper.replaceRecursiveRegExp(text, function (txt) {
     return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
-  }, '^ {0,3}<!--', '-->', 'gm');
+  }, '^ {0,3}<!--', '--!?>', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)
   text = text.replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g,
@@ -4833,12 +4918,22 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
 // ***Author:***
 // - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
 ////
+(function () {
 
-showdown.subParser('makehtml.heading', function (text, options, globals) {
-  'use strict';
-
-  function parseHeader (pattern, wholeMatch, headingText, headingLevel, headingId) {
-    let captureStartEvent = new showdown.Event('makehtml.heading.onCapture', headingText),
+  /**
+   *
+   * @param {string} subEvtName Heading style ('atx' or 'setext'), used to namespace the dispatched events
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @param {string} headingText
+   * @param {string} headingLevel
+   * @param {string} headingId
+   * @param {{}} options
+   * @param {{}} globals
+   * @returns {string}
+   */
+  function parseHeader (subEvtName, pattern, wholeMatch, headingText, headingLevel, headingId, options, globals) {
+    let captureStartEvent = new showdown.Event('makehtml.heading.' + subEvtName + '.onCapture', headingText),
         otp;
 
     captureStartEvent
@@ -4866,7 +4961,7 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
       otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + spanGamut + '</h' + headingLevel + '>';
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.heading.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.heading.' + subEvtName + '.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)
@@ -4877,110 +4972,303 @@ showdown.subParser('makehtml.heading', function (text, options, globals) {
     return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
   }
 
-  let startEvent = new showdown.Event('makehtml.heading.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
+  showdown.subParser('makehtml.heading', function (text, options, globals) {
+    'use strict';
 
-  let setextRegexH1 = (options.smoothLivePreview) ? /^(.+)[ \t]*\n={2,}[ \t]*\n+/gm : /^(.+)[ \t]*\n=+[ \t]*\n+/gm,
-      setextRegexH2 = (options.smoothLivePreview) ? /^(.+)[ \t]*\n-{2,}[ \t]*\n+/gm : /^(.+)[ \t]*\n-+[ \t]*\n+/gm,
-      atxRegex      = (options.requireSpaceBeforeHeadingText) ? /^(#{1,6})[ \t]+(.+?)[ \t]*#*\n+/gm : /^(#{1,6})[ \t]*(.+?)[ \t]*#*\n+/gm;
+    let startEvent = new showdown.Event('makehtml.heading.onStart', text);
+    startEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    startEvent = globals.converter.dispatch(startEvent);
+    text = startEvent.output;
 
-  text = text.replace(setextRegexH1, function (wholeMatch, headingText) {
-    let id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(headingText, options, globals);
-    return parseHeader(setextRegexH1, wholeMatch, headingText, options.headerLevelStart, id);
+    text = showdown.subParser('makehtml.heading.setext')(text, options, globals);
+    text = showdown.subParser('makehtml.heading.atx')(text, options, globals);
+
+    let afterEvent = new showdown.Event('makehtml.heading.onEnd', text);
+    afterEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    afterEvent = globals.converter.dispatch(afterEvent);
+    return afterEvent.output;
+
   });
 
-  text = text.replace(setextRegexH2, function (wholeMatch, headingText) {
-    let id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(headingText, options, globals);
-    return parseHeader(setextRegexH2, wholeMatch, headingText, options.headerLevelStart + 1, id);
-  });
+  showdown.subParser('makehtml.heading.id', function (m, options, globals) {
+    let title,
+        prefix;
 
-  text = text.replace(atxRegex, function (wholeMatch, m1, m2) {
-    let headingLevel = options.headerLevelStart - 1 + m1.length,
-        headingText = (options.customizedHeaderId) ? m2.replace(/\s?{([^{]+?)}\s*$/, '') : m2,
-        id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(m2, options, globals);
-    return parseHeader(setextRegexH2, wholeMatch, headingText, headingLevel, id);
-  });
-
-
-  let afterEvent = new showdown.Event('makehtml.heading.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-showdown.subParser('makehtml.heading.id', function (m, options, globals) {
-  let title,
-      prefix;
-
-  // It is separate from other options to allow combining prefix and customized
-  if (options.customizedHeaderId) {
-    let match = m.match(/{([^{]+?)}\s*$/);
-    if (match && match[1]) {
-      m = match[1];
+    // It is separate from other options to allow combining prefix and customized
+    if (options.customizedHeaderId) {
+      let match = m.match(/{([^{]+?)}\s*$/);
+      if (match && match[1]) {
+        m = match[1];
+      }
     }
-  }
 
-  title = m;
+    title = m;
 
-  // Prefix id to prevent causing inadvertent pre-existing style matches.
-  if (showdown.helper.isString(options.prefixHeaderId)) {
-    prefix = options.prefixHeaderId;
-  } else if (options.prefixHeaderId === true) {
-    prefix = 'section-';
-  } else {
-    prefix = '';
-  }
+    // Prefix id to prevent causing inadvertent pre-existing style matches.
+    if (showdown.helper.isString(options.prefixHeaderId)) {
+      prefix = options.prefixHeaderId;
+    } else if (options.prefixHeaderId === true) {
+      prefix = 'section-';
+    } else {
+      prefix = '';
+    }
 
-  if (!options.rawPrefixHeaderId) {
-    title = prefix + title;
-  }
+    if (!options.rawPrefixHeaderId) {
+      title = prefix + title;
+    }
 
-  if (options.ghCompatibleHeaderId) {
-    title = title
-      .replace(/ /g, '-')
-      // replace previously escaped chars (&, ¨ and $)
-      .replace(/&amp;/g, '')
-      .replace(/¨T/g, '')
-      .replace(/¨D/g, '')
-      // replace rest of the chars (&~$ are repeated as they might have been escaped)
-      // borrowed from github's redcarpet (so they should produce similar results)
-      .replace(/[&+$,\/:;=?@"#{}|^¨~\[\]`\\*)(%.!'<>]/g, '')
-      .toLowerCase();
-  } else if (options.rawHeaderId) {
-    title = title
-      .replace(/ /g, '-')
-      // replace previously escaped chars (&, ¨ and $)
-      .replace(/&amp;/g, '&')
-      .replace(/¨T/g, '¨')
-      .replace(/¨D/g, '$')
-      // replace " and '
-      .replace(/["']/g, '-')
-      .toLowerCase();
-  } else {
-    title = title
-      .replace(/[^\w]/g, '')
-      .toLowerCase();
-  }
+    if (options.ghCompatibleHeaderId) {
+      title = title
+        .replace(/ /g, '-')
+        // replace previously escaped chars (&, ¨ and $)
+        .replace(/&amp;/g, '')
+        .replace(/¨T/g, '')
+        .replace(/¨D/g, '')
+        // replace rest of the chars (&~$ are repeated as they might have been escaped)
+        // borrowed from github's redcarpet (so they should produce similar results)
+        .replace(/[&+$,\/:;=?@"#{}|^¨¿？：~\[\]`、゠＝…‥『』〝〟「」\\*()｛｝（）［］【】%.。，¡!！'<>]/g, '')
+        .toLowerCase();
+    } else if (options.rawHeaderId) {
+      title = title
+        .replace(/ /g, '-')
+        // replace previously escaped chars (&, ¨ and $)
+        .replace(/&amp;/g, '&')
+        .replace(/¨T/g, '¨')
+        .replace(/¨D/g, '$')
+        // replace " and '
+        .replace(/["']/g, '-')
+        .toLowerCase();
+    } else {
+      title = title
+        .replace(/\W/g, '')
+        .toLowerCase();
+    }
 
-  if (options.rawPrefixHeaderId) {
-    title = prefix + title;
-  }
+    if (options.rawPrefixHeaderId) {
+      title = prefix + title;
+    }
 
-  if (globals.hashLinkCounts[title]) {
-    title = title + '-' + (globals.hashLinkCounts[title]++);
-  } else {
-    globals.hashLinkCounts[title] = 1;
-  }
-  return title;
-});
+    if (globals.hashLinkCounts[title]) {
+      title = title + '-' + (globals.hashLinkCounts[title]++);
+    } else {
+      globals.hashLinkCounts[title] = 1;
+    }
+    return title;
+  });
+
+  showdown.subParser('makehtml.heading.setext', function (text, options, globals) {
+
+    let startEvent = new showdown.Event('makehtml.heading.setext.onStart', text);
+    startEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    startEvent = globals.converter.dispatch(startEvent);
+    text = startEvent.output;
+
+    const setextRegexH1 = /^( {0,3}([^ \t\n]+.*\n)(.+\n)?(.+\n)?)( {0,3}=+[ \t]*)$/gm,
+        setextRegexH2 = /^( {0,3}([^ \t\n]+.*\n)(.+\n)?(.+\n)?)( {0,3}(-+)[ \t]*)$/gm;
+
+    text = text.replace(setextRegexH1, function (wholeMatch, headingText, line1, line2, line3, line4) {
+      return parseSetextHeading(setextRegexH2, options.headerLevelStart, wholeMatch, headingText, line1, line2, line3, line4);
+    });
+
+    text = text.replace(setextRegexH2, function (wholeMatch, headingText, line1, line2, line3, line4) {
+      return parseSetextHeading(setextRegexH2, options.headerLevelStart + 1, wholeMatch, headingText, line1, line2, line3, line4);
+    });
+
+    let afterEvent = new showdown.Event('makehtml.heading.setext.onEnd', text);
+    afterEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    afterEvent = globals.converter.dispatch(afterEvent);
+
+    return showdown.subParser('makehtml.hashHTMLBlocks')(afterEvent.output, options, globals);
+
+
+    function parseSetextHeading (pattern, headingLevel, wholeMatch, headingText, line1, line2, line3, line4) {
+
+      // count lines
+      let count = headingText.trim().split('\n').length;
+      let prepend = '';
+      let nPrepend;
+      const hrCheckRgx = /^ {0,3}[-_*]([-_*] ?){2,}$/;
+
+      // one liner edge cases
+      if (count === 1) {
+        // hr
+        // let's find the hr edge case first
+        if (showdown.helper.trimEnd(line1).match(hrCheckRgx)) {
+          // it's the edge case, so it's a false positive
+          prepend = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
+          if (prepend !== line1) {
+            // it's an oneliner list
+            return prepend.trim() + '\n' + line4;
+          }
+        }
+
+        // now check if it's an unordered list
+        if (line1.match(/^ {0,3}[-*+][ \t]/)) {
+          if (line4.trim().match(/^=+/)) {
+            line1 += line4;
+          }
+          prepend = showdown.subParser('makehtml.list')(line1, options, globals);
+          if (prepend !== line1) {
+            // it's an oneliner list
+            return prepend.trim() + '\n' + line4;
+          }
+        }
+
+        // check if it's a blockquote
+        if (line1.match(/^ {0,3}>[ \t]?[^ \t]/)) {
+          if (line4.trim().match(/^=+/)) {
+            line1 += line4;
+          }
+          prepend = showdown.subParser('makehtml.blockquote')(line1, options, globals);
+          if (prepend !== line1) {
+            // it's an oneliner blockquote
+            return prepend.trim() + '\n' + line4;
+          }
+        }
+
+        // no edge case let's proceed as usual
+      } else {
+        let multilineText = '';
+
+        // multiline is a bit trickier
+        // first we must take care of the edge cases of:
+        // case1: |  case2:
+        // ---    |  ---
+        // foo    |  foo
+        // ---    |  bar
+        //        |  ---
+        //
+        if (showdown.helper.trimEnd(line1).match(hrCheckRgx)) {
+          nPrepend  = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
+          if (nPrepend !== line1) {
+            line1 = '';
+            // we add the parsed block to prepend
+            prepend = nPrepend.trim();
+            // and remove the line from the headingText, so it doesn't appear repeated
+            headingText = line2 + ((line3) ? line3 : '');
+          }
+        }
+
+        // now we take care of these cases:
+        // case1: |  case2:
+        // foo    |  foo
+        // ***    |  ***
+        // ---    |  bar
+        //        |  ---
+        //
+        if (showdown.helper.trimEnd(line2).match(hrCheckRgx)) {
+          // This case sucks, because the first line could be anything!!!
+          // first let's make sure it's a hr
+          nPrepend  = showdown.subParser('makehtml.horizontalRule')(line2, options, globals);
+          if (nPrepend !== line2) {
+            line2 = nPrepend;
+            // it is, so now we must parse line1 also
+            if (line1) {
+              line1 = showdown.subParser('makehtml.blockGamut')(line1, options, globals);
+              line1 = showdown.subParser('makehtml.paragraphs')(line1, options, globals);
+              line1 = line1.trim() + '\n';
+              prepend = line1;
+              // and clear line1
+              line1 = '';
+            }
+            // we add the parsed blocks to prepend
+            prepend += line2.trim() + '\n';
+            line2 = '';
+            // and remove the lines from the headingText, so it doesn't appear repeated
+            headingText = (line3) ? line3 : '';
+          }
+        }
+
+        // all edge cases should be treated now
+        multilineText = line1 + line2 + ((line3) ? line3 : '');
+        //if (line4.trim().match(/^=+/)) {
+        //  multilineText += line4;
+        //}
+
+        nPrepend = showdown.subParser('makehtml.blockGamut')(multilineText, options, globals, 'makehtml.heading.setext');
+        if (nPrepend !== multilineText) {
+          // we found one or more blocks, so we need to reparse (blocks should take precendence though)
+          nPrepend = showdown.helper.trimEnd(nPrepend);
+          // let's check if the last line is a parsed block
+          let newLines = nPrepend.trim().split('\n');
+          let nLastLine = newLines.pop().toString();
+
+          if (/^¨K\d+K$/.test(nLastLine) || /^\s*$/gm.test(nLastLine)) {
+            // everything before --- or === is a block or empty line, so it's a false positive
+            prepend += nPrepend + '\n\n';
+            headingText = '';
+          } else {
+            // the last line is something else... so let's look at the line before that
+            let toHeading = nLastLine;
+            nLastLine = newLines.pop().toString();
+            if (/^¨K\d+K$/.test(nLastLine) === false && /^\s*$/gm.test(nLastLine) === false) {
+              toHeading = nLastLine + '\n' + toHeading;
+            }
+            headingText = toHeading;
+            prepend = newLines.join('\n').trim();
+          }
+        }
+      }
+
+      // trim stuff
+      headingText = headingText.trim();
+
+      // let's check if heading is empty
+      // after looking for blocks, heading text might be empty which is a false positive
+      if (!headingText) {
+        return prepend + line4;
+      }
+
+      // after this, we're pretty sure it's a heading so let's proceed
+      let id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(headingText, options, globals);
+      return prepend + parseHeader('setext', pattern, wholeMatch, headingText, headingLevel, id, options, globals);
+    }
+
+
+  });
+
+  showdown.subParser('makehtml.heading.atx', function (text, options, globals) {
+
+    let startEvent = new showdown.Event('makehtml.heading.atx.onStart', text);
+    startEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    startEvent = globals.converter.dispatch(startEvent);
+    text = startEvent.output;
+
+    const atxRegex = (options.requireSpaceBeforeHeadingText) ? /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm : /^ {0,3}(#{1,6})[ \t]*(.+?)[ \t]*#*[ \t]*$/gm;
+    text = text.replace(atxRegex, function (wholeMatch, m1, m2) {
+      let headingLevel = options.headerLevelStart - 1 + m1.length,
+          headingText = (options.customizedHeaderId) ? m2.replace(/\s?{([^{]+?)}\s*$/, '') : m2,
+          id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(m2, options, globals);
+      return parseHeader('atx', atxRegex, wholeMatch, headingText, headingLevel, id, options, globals);
+    });
+
+    let afterEvent = new showdown.Event('makehtml.heading.atx.onEnd', text);
+    afterEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    afterEvent = globals.converter.dispatch(afterEvent);
+
+    return showdown.subParser('makehtml.hashHTMLBlocks')(afterEvent.output, options, globals);
+
+  });
+
+})();
 
 ////
 // makehtml/blockquote.js
@@ -5005,19 +5293,49 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
   text = startEvent.output;
 
 
+  // parses: --- and - - -
   const rgx1 = /^ {0,2}( ?-){3,}[ \t]*$/gm;
-  text = text.replace(/^ {0,2}( ?-){3,}[ \t]*$/gm, function (wholeMatch) {
+  text = text.replace(rgx1, function (wholeMatch) {
     return parse(rgx1, wholeMatch);
   });
-
-  const rgx2 = /^ {0,2}( ?\*){3,}[ \t]*$/gm;
-  text = text.replace(/^ {0,2}( ?\*){3,}[ \t]*$/gm, function (wholeMatch) {
+  // parses: -\t-\t-
+  const rgx2 = /^ {0,3}-(\t?-){2,}[ \t]*$/gm;
+  text = text.replace(rgx2, function (wholeMatch) {
     return parse(rgx2, wholeMatch);
   });
 
   const rgx3 = /^ {0,2}( ?\*){3,}[ \t]*$/gm;
-  text = text.replace(/^ {0,2}( ?_){3,}[ \t]*$/gm, function (wholeMatch) {
+  text = text.replace(rgx3, function (wholeMatch) {
     return parse(rgx3, wholeMatch);
+  });
+  const rgx4 = /^ {0,3}\*(\t?\*){2,}[ \t]*$/gm;
+  text = text.replace(rgx4, function (wholeMatch) {
+    return parse(rgx4, wholeMatch);
+  });
+
+
+  const rgx5 = /^ {0,2}( ?_){3,}[ \t]*$/gm;
+  text = text.replace(rgx5, function (wholeMatch) {
+    return parse(rgx5, wholeMatch);
+  });
+  const rgx6 = /^ {0,3}_(\t?_){2,}[ \t]*$/gm;
+  text = text.replace(rgx6, function (wholeMatch) {
+    return parse(rgx6, wholeMatch);
+  });
+
+  // super weird horizontal rule
+
+  const rgx7 = /^ {0,3}(- *){2,}-[ \t]*$/gm;
+  text = text.replace(rgx7, function (wholeMatch) {
+    return parse(rgx7, wholeMatch);
+  });
+  const rgx8 = /^ {0,3}(\* *){2,}\*[ \t]*$/gm;
+  text = text.replace(rgx8, function (wholeMatch) {
+    return parse(rgx8, wholeMatch);
+  });
+  const rgx9 = /^ {0,3}(_ *){2,}_[ \t]*$/gm;
+  text = text.replace(rgx9, function (wholeMatch) {
+    return parse(rgx9, wholeMatch);
   });
 
   let afterEvent = new showdown.Event('makehtml.horizontalRule.onEnd', text);
@@ -5337,7 +5655,16 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   // 4.1. Handle links first
   let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
   text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
+
+    // backslash escaped characters do not work inside autolinks (according to commonmark spec... sure)
+    // so let's unescape them (and add a backslash html entity before)
+    url = url.replace(/(¨E\d+E)/g, '\\$1');
+    url = showdown.subParser('makehtml.unescapeSpecialChars')(url, options, globals);
     let text = url;
+
+    // now let's replace some entities which should be properly url encoded
+    url = showdown.helper.urlASCIIEncoding(url);
+
     url = (urlStart === 'www.') ? 'http://' + url : url;
     return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
   });
@@ -5985,7 +6312,14 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
         otp = '\n\n<' + listType + showdown.helper._populateAttributes(attrs) + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
       }
     }
-    return otp;
+
+    let beforeHashEvent = new showdown.Event('makehtml.list.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
   }
 });
 
@@ -6101,6 +6435,14 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
 showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   'use strict';
 
+  let startEvent = new showdown.Event('makehtml.paragraphs.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
@@ -6112,7 +6454,7 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   for (var i = 0; i < end; i++) {
     var str = grafs[i];
     // if this is an HTML marker, copy it
-    if (str.search(/¨(K|G)(\d+)\1/g) >= 0) {
+    if (str.search(/¨([KG])(\d+)\1/g) >= 0) {
       grafsOut.push(str);
 
     // test for presence of characters to prevent empty lines being parsed
@@ -6162,7 +6504,14 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   // Strip leading and trailing lines:
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
-  return text;
+
+  let afterEvent = new showdown.Event('makehtml.paragraphs.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 });
 
 /**
@@ -6222,17 +6571,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   // now we encode amps and angles
   text = showdown.subParser('makehtml.encodeAmpsAndAngles')(text, options, globals);
 
-  // Do hard breaks
-  if (options.simpleLineBreaks) {
-    // GFM style hard breaks
-    // only add line breaks if the text does not contain a block (special case for lists)
-    if (!/\n\n¨K/.test(text)) {
-      text = text.replace(/\n+/g, '<br />\n');
-    }
-  } else {
-    // Vanilla hard breaks
-    text = text.replace(/  +\n/g, '<br />\n');
-  }
+  text = showdown.subParser('makehtml.hardLineBreaks')(text, options, globals);
 
   let afterEvent = new showdown.Event('makehtml.spanGamut.onEnd', text);
   afterEvent
@@ -6278,7 +6617,9 @@ showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       otp = captureStartEvent.output;
     } else {
-      otp = '<del' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' + txt + '</del>';
+      otp = '<del' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' +
+            showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+            '</del>';
     }
 
     let beforeHashEvent = new showdown.Event('makehtml.strikethrough.onHash', otp);
@@ -6763,7 +7104,9 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       otp = captureStartEvent.output;
     } else {
-      otp = '<u' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' + txt + '</u>';
+      otp = '<u' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' +
+        showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
+        '</u>';
     }
     let beforeHashEvent = new showdown.Event('makehtml.underline.onHash', otp);
     beforeHashEvent
@@ -6851,7 +7194,7 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
   return afterEvent.output;
 });
 
-showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
+showdown.subParser('makeMarkdown.blockquote', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -6860,7 +7203,7 @@ showdown.subParser('makeMarkdown.blockquote', function (node, globals) {
         childrenLength = children.length;
 
     for (var i = 0; i < childrenLength; ++i) {
-      var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], globals);
+      var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], options, globals);
 
       if (innerTxt === '') {
         continue;
@@ -6880,7 +7223,7 @@ showdown.subParser('makeMarkdown.break', function () {
   return '  \n';
 });
 
-showdown.subParser('makeMarkdown.codeBlock', function (node, globals) {
+showdown.subParser('makeMarkdown.codeBlock', function (node, options, globals) {
   'use strict';
 
   var lang = node.getAttribute('language'),
@@ -6894,7 +7237,7 @@ showdown.subParser('makeMarkdown.codeSpan', function (node) {
   return '`' + node.innerHTML + '`';
 });
 
-showdown.subParser('makeMarkdown.emphasis', function (node, globals) {
+showdown.subParser('makeMarkdown.emphasis', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -6903,14 +7246,14 @@ showdown.subParser('makeMarkdown.emphasis', function (node, globals) {
     var children = node.childNodes,
         childrenLength = children.length;
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
     txt += '*';
   }
   return txt;
 });
 
-showdown.subParser('makeMarkdown.header', function (node, globals, headerLevel) {
+showdown.subParser('makeMarkdown.header', function (node, options, globals, headerLevel) {
   'use strict';
 
   var headerMark = new Array(headerLevel + 1).join('#'),
@@ -6922,7 +7265,7 @@ showdown.subParser('makeMarkdown.header', function (node, globals, headerLevel) 
         childrenLength = children.length;
 
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
   }
   return txt;
@@ -6938,11 +7281,13 @@ showdown.subParser('makeMarkdown.image', function (node) {
   'use strict';
 
   var txt = '';
-  if (node.hasAttribute('src')) {
+  if (node.hasAttribute('src') && node.getAttribute('src') !== '') {
     txt += '![' + node.getAttribute('alt') + '](';
     txt += '<' + node.getAttribute('src') + '>';
     if (node.hasAttribute('width') && node.hasAttribute('height')) {
-      txt += ' =' + node.getAttribute('width') + 'x' + node.getAttribute('height');
+      var width = node.getAttribute('width');
+      var height = node.getAttribute('height');
+      txt += ' =' + (width === 'auto' ? '*' : width) + 'x' + (height === 'auto' ? '*' : height);
     }
 
     if (node.hasAttribute('title')) {
@@ -6953,7 +7298,7 @@ showdown.subParser('makeMarkdown.image', function (node) {
   return txt;
 });
 
-showdown.subParser('makeMarkdown.input', function (node, globals) {
+showdown.subParser('makeMarkdown.input', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -6965,33 +7310,49 @@ showdown.subParser('makeMarkdown.input', function (node, globals) {
   var children = node.childNodes,
       childrenLength = children.length;
   for (var i = 0; i < childrenLength; ++i) {
-    txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
   }
   return txt;
 });
 
-showdown.subParser('makeMarkdown.links', function (node, globals) {
+showdown.subParser('makeMarkdown.links', function (node, options, globals) {
   'use strict';
 
   var txt = '';
   if (node.hasChildNodes() && node.hasAttribute('href')) {
     var children = node.childNodes,
         childrenLength = children.length;
-    txt = '[';
-    for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+
+    // special case for mentions
+    // to simplify (and not make stuff really complicated) mentions will only work in this circumstance:
+    // <a class="user-mention" href="https://github.com/user">@user</a>
+    // that is, if there's a "user-mention" class and option ghMentions is true
+    // otherwise is ignored
+    var classes = node.getAttribute('class');
+    if (options.ghMentions && /(?:^| )user-mention\b/.test(classes)) {
+      for (var ii = 0; ii < childrenLength; ++ii) {
+        txt += showdown.subParser('makeMarkdown.node')(children[ii], options, globals);
+      }
+
+    } else {
+      txt = '[';
+      for (var i = 0; i < childrenLength; ++i) {
+        txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+      }
+      txt += '](';
+      txt += '<' + node.getAttribute('href') + '>';
+      if (node.hasAttribute('title')) {
+        txt += ' "' + node.getAttribute('title') + '"';
+      }
+      txt += ')';
     }
-    txt += '](';
-    txt += '<' + node.getAttribute('href') + '>';
-    if (node.hasAttribute('title')) {
-      txt += ' "' + node.getAttribute('title') + '"';
-    }
-    txt += ')';
+
+
   }
   return txt;
 });
 
-showdown.subParser('makeMarkdown.list', function (node, globals, type) {
+showdown.subParser('makeMarkdown.list', function (node, options, globals, type) {
   'use strict';
 
   var txt = '';
@@ -7016,14 +7377,14 @@ showdown.subParser('makeMarkdown.list', function (node, globals, type) {
     }
 
     // parse list item
-    txt += bullet + showdown.subParser('makeMarkdown.listItem')(listItems[i], globals);
+    txt += bullet + showdown.subParser('makeMarkdown.listItem')(listItems[i], options, globals);
     ++listNum;
   }
 
   return txt.trim();
 });
 
-showdown.subParser('makeMarkdown.listItem', function (node, globals) {
+showdown.subParser('makeMarkdown.listItem', function (node, options, globals) {
   'use strict';
 
   var listItemTxt = '';
@@ -7032,7 +7393,7 @@ showdown.subParser('makeMarkdown.listItem', function (node, globals) {
       childrenLenght = children.length;
 
   for (var i = 0; i < childrenLenght; ++i) {
-    listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+    listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
   }
   // if it's only one liner, we need to add a newline at the end
   if (!/\n$/.test(listItemTxt)) {
@@ -7051,7 +7412,7 @@ showdown.subParser('makeMarkdown.listItem', function (node, globals) {
 
 
 
-showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
+showdown.subParser('makeMarkdown.node', function (node, options, globals, spansOnly) {
   'use strict';
 
   spansOnly = spansOnly || false;
@@ -7060,7 +7421,7 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
 
   // edge case of text without wrapper paragraph
   if (node.nodeType === 3) {
-    return showdown.subParser('makeMarkdown.txt')(node, globals);
+    return showdown.subParser('makeMarkdown.txt')(node, options, globals);
   }
 
   // HTML comment
@@ -7081,91 +7442,91 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
     // BLOCKS
     //
     case 'h1':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 1) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 1) + '\n\n'; }
       break;
     case 'h2':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 2) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 2) + '\n\n'; }
       break;
     case 'h3':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 3) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 3) + '\n\n'; }
       break;
     case 'h4':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 4) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 4) + '\n\n'; }
       break;
     case 'h5':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 5) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 5) + '\n\n'; }
       break;
     case 'h6':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, globals, 6) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 6) + '\n\n'; }
       break;
 
     case 'p':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.paragraph')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.paragraph')(node, options, globals) + '\n\n'; }
       break;
 
     case 'blockquote':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.blockquote')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.blockquote')(node, options, globals) + '\n\n'; }
       break;
 
     case 'hr':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.hr')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.hr')(node, options, globals) + '\n\n'; }
       break;
 
     case 'ol':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, globals, 'ol') + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, options, globals, 'ol') + '\n\n'; }
       break;
 
     case 'ul':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, globals, 'ul') + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, options, globals, 'ul') + '\n\n'; }
       break;
 
     case 'precode':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.codeBlock')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.codeBlock')(node, options, globals) + '\n\n'; }
       break;
 
     case 'pre':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.pre')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.pre')(node, options, globals) + '\n\n'; }
       break;
 
     case 'table':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.table')(node, globals) + '\n\n'; }
+      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.table')(node, options, globals) + '\n\n'; }
       break;
 
     //
     // SPANS
     //
     case 'code':
-      txt = showdown.subParser('makeMarkdown.codeSpan')(node, globals);
+      txt = showdown.subParser('makeMarkdown.codeSpan')(node, options, globals);
       break;
 
     case 'em':
     case 'i':
-      txt = showdown.subParser('makeMarkdown.emphasis')(node, globals);
+      txt = showdown.subParser('makeMarkdown.emphasis')(node, options, globals);
       break;
 
     case 'strong':
     case 'b':
-      txt = showdown.subParser('makeMarkdown.strong')(node, globals);
+      txt = showdown.subParser('makeMarkdown.strong')(node, options, globals);
       break;
 
     case 'del':
-      txt = showdown.subParser('makeMarkdown.strikethrough')(node, globals);
+      txt = showdown.subParser('makeMarkdown.strikethrough')(node, options, globals);
       break;
 
     case 'a':
-      txt = showdown.subParser('makeMarkdown.links')(node, globals);
+      txt = showdown.subParser('makeMarkdown.links')(node, options, globals);
       break;
 
     case 'img':
-      txt = showdown.subParser('makeMarkdown.image')(node, globals);
+      txt = showdown.subParser('makeMarkdown.image')(node, options, globals);
       break;
 
     case 'br':
-      txt = showdown.subParser('makeMarkdown.break')(node, globals);
+      txt = showdown.subParser('makeMarkdown.break')(node, options, globals);
       break;
 
     case 'input':
-      txt = showdown.subParser('makeMarkdown.input')(node, globals);
+      txt = showdown.subParser('makeMarkdown.input')(node, options, globals);
       break;
 
     default:
@@ -7178,7 +7539,7 @@ showdown.subParser('makeMarkdown.node', function (node, globals, spansOnly) {
   return txt;
 });
 
-showdown.subParser('makeMarkdown.paragraph', function (node, globals) {
+showdown.subParser('makeMarkdown.paragraph', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -7186,7 +7547,7 @@ showdown.subParser('makeMarkdown.paragraph', function (node, globals) {
     var children = node.childNodes,
         childrenLength = children.length;
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
   }
 
@@ -7196,14 +7557,14 @@ showdown.subParser('makeMarkdown.paragraph', function (node, globals) {
   return txt;
 });
 
-showdown.subParser('makeMarkdown.pre', function (node, globals) {
+showdown.subParser('makeMarkdown.pre', function (node, options, globals) {
   'use strict';
 
   var num  = node.getAttribute('prenum');
   return '<pre>' + globals.preList[num] + '</pre>';
 });
 
-showdown.subParser('makeMarkdown.strikethrough', function (node, globals) {
+showdown.subParser('makeMarkdown.strikethrough', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -7212,14 +7573,14 @@ showdown.subParser('makeMarkdown.strikethrough', function (node, globals) {
     var children = node.childNodes,
         childrenLength = children.length;
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
     txt += '~~';
   }
   return txt;
 });
 
-showdown.subParser('makeMarkdown.strong', function (node, globals) {
+showdown.subParser('makeMarkdown.strong', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -7228,22 +7589,22 @@ showdown.subParser('makeMarkdown.strong', function (node, globals) {
     var children = node.childNodes,
         childrenLength = children.length;
     for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], globals);
+      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
     }
     txt += '**';
   }
   return txt;
 });
-
 
 showdown.subParser('makeMarkdown.table',
   /**
    *
    * @param {DocumentFragment} node
+   * @param {{}} options
    * @param {{}} globals
    * @returns {string}
    */
-  function (node, globals) {
+  function (node, options, globals) {
     'use strict';
 
     var txt = '',
@@ -7397,7 +7758,7 @@ showdown.subParser('makeMarkdown.table',
   }
 );
 
-showdown.subParser('makeMarkdown.tableCell', function (node, globals) {
+showdown.subParser('makeMarkdown.tableCell', function (node, options, globals) {
   'use strict';
 
   var txt = '';
@@ -7408,7 +7769,7 @@ showdown.subParser('makeMarkdown.tableCell', function (node, globals) {
       childrenLength = children.length;
 
   for (var i = 0; i < childrenLength; ++i) {
-    txt += showdown.subParser('makeMarkdown.node')(children[i], globals, true);
+    txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals, true);
   }
   return txt.trim();
 });
@@ -7752,7 +8113,7 @@ showdown.Converter = function (converterOptions) {
     text = text.replace(/\r/g, '\n'); // Mac to Unix
 
     // Stardardize line spaces
-    text = text.replace(/\u00A0/g, '&nbsp;');
+    //text = text.replace(/\u00A0/g, '&nbsp;');
 
     if (options.smartIndentationFix) {
       text = rTrimInputText(text);
@@ -7762,7 +8123,8 @@ showdown.Converter = function (converterOptions) {
     text = '\n\n' + text + '\n\n';
 
     // detab
-    text = showdown.subParser('makehtml.detab')(text, options, globals);
+    //text = showdown.subParser('makehtml.detab')(text, options, globals);
+    text = showdown.helper.normalizeLeadingTabs(text);
 
     /**
      * Strip any lines consisting only of spaces and tabs.
@@ -7785,6 +8147,7 @@ showdown.Converter = function (converterOptions) {
     text = showdown.subParser('makehtml.hashCodeTags')(text, options, globals);
     text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);
     text = showdown.subParser('makehtml.blockGamut')(text, options, globals);
+    text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
     text = showdown.subParser('makehtml.unhashHTMLSpans')(text, options, globals);
     text = showdown.subParser('makehtml.unescapeSpecialChars')(text, options, globals);
 
@@ -7841,7 +8204,7 @@ showdown.Converter = function (converterOptions) {
         mdDoc = '';
 
     for (var i = 0; i < nodes.length; i++) {
-      mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], globals);
+      mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], options, globals);
     }
 
     function clean (node) {

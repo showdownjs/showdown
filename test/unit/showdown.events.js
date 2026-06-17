@@ -267,6 +267,51 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '__foo__', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ]
+    },
+    makeMarkdown: {
+      header: [
+        { event: 'onStart', text: '<h1>foo</h1>', result: true },
+        { event: 'onStart', text: '<p>foo</p>', result: false },
+        { event: 'onEnd', text: '<h2>foo</h2>', result: true }
+      ],
+      paragraph: [
+        { event: 'onStart', text: '<p>foo</p>', result: true },
+        { event: 'onStart', text: '<h1>foo</h1>', result: false },
+        { event: 'onEnd', text: '<p>foo</p>', result: true }
+      ],
+      blockquote: [
+        { event: 'onStart', text: '<blockquote>foo</blockquote>', result: true },
+        { event: 'onEnd', text: '<blockquote>foo</blockquote>', result: true }
+      ],
+      emphasis: [
+        { event: 'onStart', text: '<p><em>foo</em></p>', result: true },
+        { event: 'onStart', text: '<p>foo</p>', result: false },
+        { event: 'onEnd', text: '<p><em>foo</em></p>', result: true }
+      ],
+      strong: [
+        { event: 'onStart', text: '<p><strong>foo</strong></p>', result: true },
+        { event: 'onEnd', text: '<p><strong>foo</strong></p>', result: true }
+      ],
+      links: [
+        { event: 'onStart', text: '<p><a href="bar.jpg">foo</a></p>', result: true },
+        { event: 'onEnd', text: '<p><a href="bar.jpg">foo</a></p>', result: true }
+      ],
+      image: [
+        { event: 'onStart', text: '<p><img src="bar.jpg" alt="foo"></p>', result: true },
+        { event: 'onEnd', text: '<p><img src="bar.jpg" alt="foo"></p>', result: true }
+      ],
+      codeSpan: [
+        { event: 'onStart', text: '<p><code>foo</code></p>', result: true },
+        { event: 'onEnd', text: '<p><code>foo</code></p>', result: true }
+      ],
+      list: [
+        { event: 'onStart', text: '<ul><li>foo</li></ul>', result: true },
+        { event: 'onEnd', text: '<ul><li>foo</li></ul>', result: true }
+      ],
+      table: [
+        { event: 'onStart', text: '<table><thead><tr><th>foo</th></tr></thead><tbody><tr><td>bar</td></tr></tbody></table>', result: true },
+        { event: 'onEnd', text: '<table><thead><tr><th>foo</th></tr></thead><tbody><tr><td>bar</td></tr></tbody></table>', result: true }
+      ]
     }
   };
 
@@ -314,6 +359,54 @@ describe('showdown.Event', function () {
         });
       }
       /* jshint +W083*/
+    });
+
+    describe('makeMarkdown', function () {
+      /* jshint -W083*/
+      for (let parser in testSpec.makeMarkdown) {
+
+        describe(parser, function () {
+          for (let ts in testSpec.makeMarkdown[parser]) {
+            let event = 'makeMarkdown.' + parser + '.' + testSpec.makeMarkdown[parser][ts].event;
+
+            let html = testSpec.makeMarkdown[parser][ts].text;
+            let title = '«' + html + '» ';
+            title += (testSpec.makeMarkdown[parser][ts].result) ? 'should ' : 'should NOT ';
+            title += 'trigger "' + event + ' event"';
+            let expected = testSpec.makeMarkdown[parser][ts].result;
+            let actual = false;
+
+            it(title, function () {
+              converter.listen(event, function () {
+                actual = true;
+              });
+              converter.makeMarkdown(html);
+              expected.should.equal(actual);
+            });
+          }
+        });
+      }
+      /* jshint +W083*/
+    });
+
+    describe('makeMarkdown (document level)', function () {
+      it('should trigger "makeMarkdown.onStart" event', function () {
+        let actual = false;
+        converter.listen('makeMarkdown.onStart', function () {
+          actual = true;
+        });
+        converter.makeMarkdown('<p>foo</p>');
+        actual.should.equal(true);
+      });
+
+      it('should trigger "makeMarkdown.onEnd" event', function () {
+        let actual = false;
+        converter.listen('makeMarkdown.onEnd', function () {
+          actual = true;
+        });
+        converter.makeMarkdown('<p>foo</p>');
+        actual.should.equal(true);
+      });
     });
   });
 });

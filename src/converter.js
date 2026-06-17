@@ -361,6 +361,14 @@ showdown.Converter = function (converterOptions) {
     src = src.replace(/\r\n/g, '\n');
     src = src.replace(/\r/g, '\n'); // old macs
 
+    // document level onStart event (lets listeners rewrite the raw html before parsing)
+    let mdStartEvent = new showdown.Event('makeMarkdown.onStart', src);
+    mdStartEvent
+      .setOutput(src)
+      ._setOptions(options);
+    mdStartEvent = this.dispatch(mdStartEvent);
+    src = mdStartEvent.output;
+
     // due to an edge case, we need to find this: > <
     // to prevent removing of non silent white spaces
     // ex: <em>this is</em> <strong>sparta</strong>
@@ -370,7 +378,8 @@ showdown.Converter = function (converterOptions) {
     doc.innerHTML = src;
 
     var globals = {
-      preList: substitutePreCodeTags(doc)
+      preList: substitutePreCodeTags(doc),
+      converter: this
     };
 
     // remove all newlines and collapse spaces
@@ -443,6 +452,15 @@ showdown.Converter = function (converterOptions) {
       }
       return presPH;
     }
+
+    // document level onEnd event (lets listeners post-process the generated markdown)
+    let mdEndEvent = new showdown.Event('makeMarkdown.onEnd', mdDoc);
+    mdEndEvent
+      .setOutput(mdDoc)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    mdEndEvent = this.dispatch(mdEndEvent);
+    mdDoc = mdEndEvent.output;
 
     return mdDoc;
   };

@@ -9,18 +9,20 @@ In short, the Event System lifecycle looks as follows:
     !!! note ""
         Each sub-parser can emit a batch of events (see the list below)
 
-1. Extension A (which is a _Listener Extension_) registers and listens to a specific event.
+2. Extension A (which is a _Listener Extension_) registers and listens to a specific event.
 
     !!! note ""
         An extension can only register for a specific event
 
-1. Extension A receives an event object and modifies it.
+3. Extension A receives an event object and modifies it.
 
     !!! note ""
         Certain properties of the event object can be changed, which will change the behavior or output of the sub-parser
 
-1. Extension A returns the event object to the converter.
-1. The converter passes the received event object to the next extension in the chain.
+4. Extension A returns the event object to the converter.
+
+5. The converter passes the received event object to the next extension in the chain.
+
 
 ## Event Object
 
@@ -189,7 +191,7 @@ Event names follow the same `<converter>.<subparser>.<event>` convention, with `
 * **`makeMarkdown.<subparser>.onStart`**
 * **`makeMarkdown.<subparser>.onEnd`**
 
-emitted by each of these sub-parsers: `blockquote`, `break`, `codeBlock`, `codeSpan`, `emphasis`, `header`, `hr`, `image`, `input`, `links`, `list`, `listItem`, `paragraph`, `pre`, `strikethrough`, `strong`, `table`, `tableCell`, `txt`.
+emitted by each of these sub-parsers: `blockquote`, `break`, `codeBlock`, `codeSpan`, `emphasis`, `header`, `hr`, `image`, `input`, `links`, `list`, `listItem`, `paragraph`, `pre`, `strikethrough`, `strong`, `table`, `tableCell`, `txt`, `underline`.
 
 In addition, two **document-level** events wrap the whole conversion:
 

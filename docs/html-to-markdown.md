@@ -1,0 +1,91 @@
+# HTML to Markdown
+
+Besides the usual Markdown → HTML direction, a `Converter` can also run **in reverse** —
+turning an HTML string back into Markdown — via `makeMarkdown()`:
+
+```js
+var converter = new showdown.Converter(),
+    md        = converter.makeMarkdown('<h1>Hello</h1><p>Some <strong>bold</strong> text.</p>');
+
+// # Hello
+//
+// Some **bold** text.
+```
+
+Unlike `makeHtml()`, the reverse converter parses the input into a **DOM** (using the browser's
+DOM in the browser, and `jsdom` in Node) and walks the node tree one construct at a time. Each
+node is dispatched to a dedicated sub-parser. (These sub-parsers also emit
+[events](event-system.md#makemarkdown-html-to-markdown-events) you can hook from a listener
+extension.)
+
+!!! note
+    `makeMarkdown()` is a best-effort converter, not a full HTML parser. It targets the HTML that
+    Markdown itself produces (so content round-trips) plus the most common hand-written markup.
+    Anything it does not recognize is preserved as raw HTML rather than dropped (see
+    [Unknown tags](#unknown-tags-and-wrappers)).
+
+## Supported elements
+
+### Block-level
+
+| HTML            | Markdown                                                                        |
+|-----------------|---------------------------------------------------------------------------------|
+| `<h1>`…`<h6>`   | `#` … `######` headings                                                         |
+| `<p>`           | paragraph                                                                       |
+| `<blockquote>`  | `>` blockquote                                                                  |
+| `<hr>`          | `---` thematic break                                                            |
+| `<ul>` / `<ol>` | bullet / numbered list (honors the `start` attribute)                           |
+| `<li>`          | list item (nested lists and multi-paragraph items are indented)                 |
+| `<pre><code>`   | fenced code block (language taken from `data-language` or a `language-*` class) |
+| `<pre>`         | raw `<pre>` passthrough                                                         |
+| `<table>`       | pipe table — see [Tables](#tables)                                              |
+
+### Inline
+
+| HTML                         | Markdown                                                                                 |
+|------------------------------|------------------------------------------------------------------------------------------|
+| `<code>`                     | `` `code` `` (back-tick fence widened when the content itself contains back-ticks)       |
+| `<em>` / `<i>`               | `*emphasis*`                                                                             |
+| `<strong>` / `<b>`           | `**strong**`                                                                             |
+| `<del>` / `<s>` / `<strike>` | `~~strikethrough~~`                                                                      |
+| `<u>`                        | `__underline__` &nbsp;<sup>[1](#fn-underline)</sup>                                      |
+| `<a href>`                   | `[text](<href> "title")`, or a bare `<href>` autolink when the link text equals the href |
+| `<img>`                      | `![alt](<src> "title")` (also supports the `=WxH` size syntax)                           |
+| `<br>`                       | hard line break                                                                          |
+| `<input type="checkbox">`    | `[ ]` / `[x]` task-list marker (inside a list, with the `tasklists` option)              |
+
+<sup id="fn-underline">1</sup> `<u>` is emitted as `__…__`, which is showdown's underline syntax.
+This only round-trips back to `<u>` through a converter that has the
+[`underline`](available-options.md) option enabled; otherwise `__…__` is standard-Markdown
+**strong**.
+
+## Tables
+
+`<thead>`, `<tbody>`, `<tfoot>` and bare `<tr>` rows are all collected, and `<th>`/`<td>` may be
+mixed in any order. Column alignment is detected from either an inline `style="text-align:…"`
+or the (deprecated) `align="left|center|right"` attribute. `<caption>` and `<colgroup>` are
+currently ignored, and — since Markdown tables are single-header — only the first heading row is
+treated as the header.
+
+## Unknown tags and wrappers
+
+Tags without a dedicated sub-parser are handled by a fallback:
+
+* **Wrapper elements with children** (e.g. `<div>`, `<span>`, `<section>`, `<figure>`,
+  `<details>`, `<hgroup>`) keep their opening/closing tag as raw HTML, but their **children are
+  still converted to Markdown**. So `<div><p>**hi**</p></div>` becomes `<div>**hi**</div>`,
+  not a verbatim HTML dump.
+* **Embedded / replaced-content elements** — `script`, `style`, `canvas`, `audio`, `video`,
+  `iframe`, `object`, `svg`, `math`, `noscript`, `template`, `picture` — are passed through
+  **verbatim** (their contents are not flowing Markdown text, so recursing into them would
+  corrupt them, e.g. by unescaping entities).
+* **Void / empty unknown elements** are passed through verbatim.
+
+HTML comments (`<!-- … -->`) are preserved.
+
+## Round-trip caveats
+
+* `<u>` → `__…__` round-trips only with the `underline` option enabled (see the note above).
+* Autolinks: `<a href="u">u</a>` is emitted as `<u>` only when the visible text is identical to
+  the `href` and there is no `title`; otherwise the full `[text](<href>)` form is used.
+* Tables, captions, and any HTML feature with no Markdown equivalent are lossy by nature.

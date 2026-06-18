@@ -5,7 +5,7 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **486 passing / 161 failing** (started at 413/234).
+Optional suite: `npx grunt test-commonmark`. **527 passing / 120 failing** (started at 413/234).
 
 Done this far (each a separate, gated, tested commit):
 | Commit | Phase | CM cases |
@@ -13,10 +13,22 @@ Done this far (each a separate, gated, tested commit):
 | `37de87e` | Entities (`decodeEntities`) | +9 |
 | `c25d9ed` | Emphasis/strong delimiter-run (`commonmarkEmphasis`) | +56 |
 | `d0d5662` | Autolinks (`commonmarkAutolinks`) | +8 |
+| Phase 3b | Links + Images + Reference definitions (`commonmarkLinks`) | +41 |
 
-Remaining failures by section: Links 37, HTML blocks 27, List items 23, Lists 16,
-Link reference definitions 13, Raw HTML 10, Images 9, Block quotes 8, Autolinks 6,
-Entity-in-URL 4, Code spans 3, Backslash escapes 3, Tabs 2.
+Phase 3b shipped as 5 gated commits behind `commonmarkLinks` (added to the `commonmark`
+flavor): shared URL helpers; URL normalization + in-URL entity decoding; a manual
+inline-link scanner (balanced parens, `<…>`, titles, escapes, arbitrary bracket nesting);
+a block-aware reference-definition parser (multiline, `<>`, first-wins, escapes); and
+CommonMark images (alt-text flattening + a symmetric inline-image scanner). Unit coverage
+in `test/unit/showdown.commonmarkLinks.js`.
+
+Remaining failures by section: List items 36, HTML blocks 28, Lists 21, Links 18,
+Fenced code blocks 11, Tabs 10, Raw HTML 10, Block quotes 8, Code spans 8, Autolinks 6,
+Backslash escapes 3, Entity 3, Setext headings 2, Indented code 2, Link reference defs 2.
+The remaining ~18 Links failures need the full delimiter-stack inline parser (link/image
+precedence with emphasis, nested-link deactivation, reference-vs-inline shortest-match) —
+the deliberately deferred hard core; the current scanner handles destinations/labels but
+not the cross-construct precedence cases (#517/#518/#519/#531/#532/#568/#570, …).
 
 ## HARD RULES (do not break)
 
@@ -42,39 +54,44 @@ For each CommonMark-divergent feature `X`:
 - Add an add-only unit test `test/unit/showdown.X.js` (see `showdown.commonmarkEmphasis.js` as a
   template): assert default-off behavior is unchanged AND on-behavior is correct.
 
-Reusable helper already in place: `cmEncodeURI` in `src/subParsers/makehtml/link.js`
-(mdurl-style percent-encoding) — use it for all URL normalization in Phase 3b.
+Reusable helpers now in place (in `src/helpers.js`): `cmEncodeURI`, `cmDecodeEntities`,
+`cmNormalizeURL`, `cmEscapeTitle`, `cmNormalizeLabel`, `cmScanDestination`, `cmScanTitle`
+— the shared CommonMark URL/label/destination machinery used by `link.js`, `image.js` and
+`stripLinkDefinitions.js`.
 
-## NEXT: Phase 3b — Links + Images + Reference definitions (~59 cases)
+## DONE: Phase 3b — Links + Images + Reference definitions (`commonmarkLinks`, +41)
 
-This is the largest/riskiest phase (link parsing is the most-used feature — high blast radius).
-Gate behind a flag such as `commonmarkLinks` in the `commonmark` flavor. Files:
-`src/subParsers/makehtml/link.js`, `image.js`, `stripLinkDefinitions.js`.
+Shipped as 5 gated commits (see the table above). What is implemented:
+1. URL normalization + in-URL entity decoding (`cmNormalizeURL`): `&ouml;`→`ö`→`%C3%B6`,
+   percent-encoding, backslash-escape placeholder restoration. Closed Entity-in-URL #31–34.
+2. Manual inline-link scanner in `link.js`: balanced parens, `<…>`, the three title delimiters,
+   backslash escapes, innermost-bracket matching, arbitrary label nesting depth. Single-pass O(n).
+3. Block-aware reference-definition parser in `stripLinkDefinitions.js`: multiline defs, `<…>` and
+   empty `<>` destinations, multiline titles, first-definition-wins, escapes, label normalization;
+   defs recognized only at block boundaries (start / blank line / ATX heading / thematic break) so
+   they cannot interrupt a paragraph.
+4. CommonMark images in `image.js`: alt-text flattening (`![foo *bar*]`→`alt="foo bar"`, nested
+   image→its alt, nested link→its text) + a symmetric manual inline-image scanner.
+5. Precedence with `commonmarkEmphasis` verified (covered in the unit tests).
 
-Sub-pieces (roughly in dependency order):
-1. **URL normalization** — extend the autolink `cmEncodeURI` into the link/image/ref paths:
-   percent-encode destinations AND **decode entities inside URLs** (`&ouml;`→`ö`→`%C3%B6`),
-   which also closes the 4 deferred Entity-in-URL cases (refs #31–34).
-2. **Inline link/image destination parsing** — balanced parens `foo(and(bar))`, `<…>`
-   destinations (no spaces/unescaped `<>`), titles in `"…"`/`'…'`/`(…)`, backslash escapes in
-   destination/title. See failing Links #488–#506, #495/#496 (paren balance), #501/#502 (escapes).
-3. **Reference definitions** (`stripLinkDefinitions.js`) — multiline defs, `<my url>` destinations,
-   first-definition-wins for duplicates (#204), backslash escapes in id/url/title (#194, #202),
-   `[foo]: <>` empty destination (#200). Note ref-def parsing currently happens block-level.
-4. **Image alt-text flattening** — `![foo *bar*]` must yield `alt="foo bar"` (strip inline
-   markup to plain text). Images #572–#588.
-5. **Precedence** — links/images interact with the new `commonmarkEmphasis`; test together.
+### Deferred hard core (the remaining ~18 Links failures)
+These need a **full delimiter-stack inline parser** (the CommonMark "process emphasis" + link
+bracket algorithm) rather than the current per-construct scanners, because they hinge on
+cross-construct precedence: a link cannot contain another link (outer brackets deactivate),
+reference-vs-inline shortest-match, and emphasis spans interleaving with brackets. Examples:
+#517, #518, #519, #523, #525, #531, #532, #535, #537, #555, #568, #570. Showdown's architecture
+runs `image` and `link` as separate sequential subparsers, so a faithful fix likely means a
+single unified inline scanner — a larger structural change, best done as its own phase.
 
-Sanity-check current failures any time with:
+Sanity-check current failures any time with (refresh `.build` first via `npx grunt concat:test`):
 ```
 node -e 'const s=require("./.build/showdown.js"),cm=require("commonmark-spec");
 const c=new s.Converter(s.getFlavorOptions("commonmark"));const n=x=>x.replace(/\s+/g," ").trim();
 for(const t of cm.tests){if(t.section!=="Links")continue;const g=c.makeHtml(t.markdown);
 if(n(g)!==n(t.html))console.log("#"+(t.example||t.number)+" "+JSON.stringify(t.markdown)+"\n  EXP "+JSON.stringify(t.html)+"\n  GOT "+JSON.stringify(g));}'
 ```
-(run `npx grunt concat:test` first to refresh `.build/showdown.js`).
 
-## Then: Phase 4 (HTML) and Phase 5 (block containers)
+## NEXT: Phase 4 (HTML) and Phase 5 (block containers)
 
 - **Phase 4 — HTML (~37):** Raw HTML inline (the 6 remaining Autolink escaping cases #607–#609
   depend on stricter invalid-`<…>` recognition here) + the 7 CommonMark HTML block types.

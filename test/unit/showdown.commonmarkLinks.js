@@ -170,5 +170,15 @@ describe('showdown.Converter commonmarkLinks option', function () {
       converter.makeHtml('[foo]\n\n[foo]: /f&ouml;&ouml; "f&ouml;&ouml;"')
         .should.equal('<p><a href="/f%C3%B6%C3%B6" title="föö">foo</a></p>');
     });
+
+    it('should let emphasis nest inside link text', function () {
+      converter.makeHtml('[foo *bar*](/url)')
+        .should.equal('<p><a href="/url">foo <em>bar</em></a></p>');
+    });
+
+    it('should let a link nest inside emphasis', function () {
+      converter.makeHtml('**[foo](/url)**')
+        .should.equal('<p><strong><a href="/url">foo</a></strong></p>');
+    });
   });
 });

@@ -38,7 +38,8 @@ var showdown = {},
         commonmarkAutolinks:                  true,
         commonmarkLinks:                      true,
         commonmarkRawHTML:                    true,
-        commonmarkHTMLBlocks:                 true
+        commonmarkHTMLBlocks:                 true,
+        commonmarkBlockquotes:                true
       },
       vanilla: getDefaultOpts(true),
       allOn: allOptionsOn()

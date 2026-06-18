@@ -206,6 +206,11 @@ function getDefaultOpts (simple) {
       describe: 'Recognize HTML blocks using the 7 CommonMark block types (start/end conditions, line based) instead of Showdown\'s balanced-tag matching',
       type: 'boolean'
     },
+    commonmarkBlockquotes: {
+      defaultValue: false,
+      describe: 'Parse block quotes as CommonMark container blocks (empty `>`, splitting at blank lines, lazy continuation) instead of Showdown\'s regex matching',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

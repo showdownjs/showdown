@@ -121,6 +121,13 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
         content = [m.firstContent],
         internalBlank = false;
     i++;
+    // a list item may begin with at most one blank line: an empty marker followed
+    // by a blank line is an empty item; later indented content is not part of it
+    if (m.firstContent === '' && i < n && isBlank(lines[i])) {
+      let j = i;
+      while (j < n && isBlank(lines[j])) { j++; }
+      return {content: [''], end: i, blanksFollow: j - i, internalBlank: false};
+    }
     while (i < n) {
       let line = lines[i];
       if (isBlank(line)) {
@@ -188,6 +195,10 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
       }
     }
     let body = out.join('\n');
+    // an empty item is always `<li></li>`, regardless of loose/tight
+    if (body.trim() === '') {
+      return '<li></li>\n';
+    }
     // CommonMark serialization: a loose item, or a tight item whose content begins
     // with a block-level child (e.g. a nested list), opens its content on a new
     // line; a tight item with a trailing block closes `</li>` on a new line.

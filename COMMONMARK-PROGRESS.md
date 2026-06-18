@@ -5,7 +5,7 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **568 passing / 79 failing** (started at 413/234).
+Optional suite: `npx grunt test-commonmark`. **575 passing / 72 failing** (started at 413/234).
 
 Done this far (each a separate, gated, tested commit):
 | Commit | Phase | CM cases |
@@ -16,6 +16,7 @@ Done this far (each a separate, gated, tested commit):
 | Phase 3b | Links + Images + Reference definitions (`commonmarkLinks`) | +41 |
 | Phase 4a | Inline raw HTML (`commonmarkRawHTML`) | +15 |
 | Phase 4b | HTML blocks (`commonmarkHTMLBlocks`) | +26 |
+| Phase 5a | Container block quotes (`commonmarkBlockquotes`) | +7 |
 
 Phase 3b shipped as 5 gated commits behind `commonmarkLinks` (added to the `commonmark`
 flavor): shared URL helpers; URL normalization + in-URL entity decoding; a manual
@@ -109,17 +110,30 @@ for(const t of cm.tests){if(t.section!=="Links")continue;const g=c.makeHtml(t.ma
 if(n(g)!==n(t.html))console.log("#"+(t.example||t.number)+" "+JSON.stringify(t.markdown)+"\n  EXP "+JSON.stringify(t.html)+"\n  GOT "+JSON.stringify(g));}'
 ```
 
-## NEXT: Phase 5 (block containers)
+## NEXT: Phase 5b (lists) and the rest
 
 - **Phase 4a — inline raw HTML: DONE** (`commonmarkRawHTML`, +15).
-- **Phase 4b — HTML blocks: DONE** (`commonmarkHTMLBlocks`, +26). Remaining HTML-block failures
-  are container-nested and roll into Phase 5.
-- **Phase 5 — block containers (~67):** List items ~36 + Lists ~21 + Block quotes 8 + Tabs +
-  the container-nested HTML blocks (#148/#174/#175/#191), and the remaining ~18 Links cases that
-  need the unified delimiter-stack inline parser. The hardest: container-block parsing, lazy
-  continuation, 4-column tab expansion. Likely needs structural rework of
-  `list.js`/`blockquote.js`. Highest regression risk — gate carefully and diff every step
-  against a fresh `.cmpass.json` snapshot (the technique used throughout phases 3b–4b).
+- **Phase 4b — HTML blocks: DONE** (`commonmarkHTMLBlocks`, +26).
+- **Phase 5a — container block quotes: DONE** (`commonmarkBlockquotes`, +7). Line-based scanner
+  in `blockquote.js` (`parseCmBlockquotes`): empty `>`, blank-line splitting, lazy continuation
+  through nested block quotes. Remaining block-quote failures (#236/#237) involve indented-code /
+  fenced-code interaction inside the quote and roll into the list/container work.
+- **Phase 5b — lists + list items (~57, the big one):** This is the hardest remaining cluster
+  and needs a **structural rewrite of `list.js`** (currently a recursive regex parser). Measured
+  breakdown of the 57 failures: **13 are formatting-only** (loose/tight: `<li><p>x</p></li>` vs
+  `<li>\n<p>x</p>\n</li>` — inter-tag whitespace), **44 are structural**:
+  - bullet-marker change starts a new list (`- … + …`, #301) and ordered-delimiter change
+    (`1. … 3) …`, #302) — `list.js`'s item regex doesn't even recognize `)` delimiters;
+  - an ordered list may interrupt a paragraph only if it starts with 1 (#304);
+  - loose vs tight list detection (blank line between/within items → `<p>`-wrap, #306/#311/#314);
+  - indentation-based nesting & lazy continuation (#307/#312/#313), code-vs-list at 4 spaces.
+  Recommend a dedicated effort: a gated CommonMark list container parser (line-based, tracking
+  marker type/width, item indent, and blank-line state for loose/tight), behind a
+  `commonmarkLists` flag. High regression risk (list.js is central and recurses into every block
+  construct) — gate strictly and diff every step against a fresh `.cmpass.json` snapshot.
+- **Then:** container-nested HTML blocks (#148/#174/#175/#191, depend on the container parser),
+  Tabs (4-column expansion), and the ~18 Links cases needing the unified delimiter-stack inline
+  parser (link/image/emphasis precedence).
 
 The full roadmap with rationale lives in
 `C:\Users\estev\.claude\plans\implement-the-following-missing-serialized-minsky.md`.

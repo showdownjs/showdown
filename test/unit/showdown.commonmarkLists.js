@@ -84,5 +84,15 @@ describe('showdown.Converter commonmarkLists option', function () {
       norm(converter.makeHtml('> 1. > Blockquote\ncontinued here.'))
         .should.equal(norm('<blockquote>\n<ol>\n<li>\n<blockquote>\n<p>Blockquote\ncontinued here.</p>\n</blockquote>\n</li>\n</ol>\n</blockquote>'));
     });
+
+    it('should keep outer lists tight when only a nested item is loose', function () {
+      norm(converter.makeHtml('- foo\n  - bar\n    - baz\n\n\n      bim'))
+        .should.equal(norm('<ul>\n<li>foo\n<ul>\n<li>bar\n<ul>\n<li>\n<p>baz</p>\n<p>bim</p>\n</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>'));
+    });
+
+    it('should make only the nested list loose for an inner blank line', function () {
+      norm(converter.makeHtml('- a\n  - b\n\n    c\n- d'))
+        .should.equal(norm('<ul>\n<li>a\n<ul>\n<li>\n<p>b</p>\n<p>c</p>\n</li>\n</ul>\n</li>\n<li>d</li>\n</ul>'));
+    });
   });
 });

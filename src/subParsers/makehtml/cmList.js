@@ -155,6 +155,37 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
   }
 
+  // Whether an item's content has a blank line separating two of its *top-level*
+  // blocks (which makes the list loose). A blank line inside a nested list/block
+  // quote does not count - it makes the nested list loose, not this one. We track
+  // the content-indent of the deepest open nested container and ignore lines (and
+  // blanks) inside it.
+  function itemLoose (content) {
+    let containerIndent = -1, // content indent of the open nested container (-1 = none)
+        topBlockSeen = false,
+        blank = false;
+    for (let li = 0; li < content.length; ++li) {
+      let line = content[li];
+      if (line.trim() === '') { blank = true; continue; }
+      let ind = leadingSpaces(line);
+      if (containerIndent >= 0 && ind >= containerIndent) {
+        continue; // inside the nested container - not a top-level line of this item
+      }
+      if (blank && topBlockSeen) { return true; } // blank between two top-level blocks
+      blank = false;
+      topBlockSeen = true;
+      let mk = matchMarker(line);
+      if (mk) {
+        containerIndent = mk.contentIndent;
+      } else if (/^ {0,3}>/.test(line)) {
+        containerIndent = ind + 1;
+      } else {
+        containerIndent = -1; // a plain top-level block (paragraph / indented code)
+      }
+    }
+    return false;
+  }
+
   // whether the last content line is an open paragraph (so a lazy continuation line
   // may be appended). Nested block-quote / list markers are peeled first, so lazy
   // continuation propagates through container nesting (e.g. `1. > Blockquote`
@@ -270,7 +301,7 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
         if (type === 'ol' && mm.delim !== delim) { break; }
 
         let item = gatherItem(lines, i, mm);
-        if (item.internalBlank) { loose = true; }
+        if (itemLoose(item.content)) { loose = true; }
         items.push(item.content);
         i = item.end;
 

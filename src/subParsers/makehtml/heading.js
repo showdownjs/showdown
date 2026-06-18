@@ -183,11 +183,24 @@
     const setextRegexH1 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}=+[ \t]*)$/gm,
         setextRegexH2 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}(-+)[ \t]*)$/gm;
 
+    // CommonMark: a setext heading's text is a paragraph, so the line(s) before the
+    // underline may not begin another kind of block. Since setext runs before the
+    // list/block-quote parsers in blockGamut, a `-` underline would otherwise steal
+    // list-item lines (e.g. `- foo\n-`). When commonmarkLists is enabled, skip the
+    // match if the heading text starts a list item or block quote; the container
+    // parsers then handle those lines (and any genuine underline inside an item).
+    function cmSkipSetext (headingText) {
+      let first = headingText.split('\n')[0];
+      return /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(first) || /^ {0,3}>/.test(first);
+    }
+
     text = text.replace(setextRegexH1, function (wholeMatch, headingText, line1, line2, line3, line4) {
+      if (options.commonmarkLists && cmSkipSetext(headingText)) { return wholeMatch; }
       return parseSetextHeading(setextRegexH2, options.headerLevelStart, wholeMatch, headingText, line1, line2, line3, line4);
     });
 
     text = text.replace(setextRegexH2, function (wholeMatch, headingText, line1, line2, line3, line4) {
+      if (options.commonmarkLists && cmSkipSetext(headingText)) { return wholeMatch; }
       return parseSetextHeading(setextRegexH2, options.headerLevelStart + 1, wholeMatch, headingText, line1, line2, line3, line4);
     });
 

@@ -64,5 +64,20 @@ describe('showdown.Converter commonmarkLists option', function () {
       norm(converter.makeHtml('- - foo'))
         .should.equal(norm('<ul>\n<li>\n<ul>\n<li>foo</li>\n</ul>\n</li>\n</ul>'));
     });
+
+    it('should not let a setext dash underline steal an empty list item', function () {
+      norm(converter.makeHtml('- foo\n-\n- bar'))
+        .should.equal(norm('<ul>\n<li>foo</li>\n<li></li>\n<li>bar</li>\n</ul>'));
+    });
+
+    it('should treat an indented dash line inside an item as a setext underline', function () {
+      norm(converter.makeHtml('- # Foo\n- Bar\n  ---\n  baz'))
+        .should.equal(norm('<ul>\n<li>\n<h1>Foo</h1>\n</li>\n<li>\n<h2>Bar</h2>\nbaz</li>\n</ul>'));
+    });
+
+    it('should keep an unindented dash line after a list item as a thematic break', function () {
+      norm(converter.makeHtml('- Foo\n---'))
+        .should.equal(norm('<ul>\n<li>Foo</li>\n</ul>\n<hr />'));
+    });
   });
 });

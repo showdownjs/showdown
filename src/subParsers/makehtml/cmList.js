@@ -199,16 +199,13 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     if (body.trim() === '') {
       return '<li></li>\n';
     }
-    // CommonMark serialization: a loose item, or a tight item whose content begins
-    // with a block-level child (e.g. a nested list), opens its content on a new
-    // line; a tight item with a trailing block closes `</li>` on a new line.
-    if (loose || /^¨[KG]\d+[KG]/.test(body)) {
-      return '<li>\n' + body + '\n</li>\n';
-    }
-    if (/¨[KG]\d+[KG]/.test(body)) {
-      return '<li>' + body + '\n</li>\n';
-    }
-    return '<li>' + body + '</li>\n';
+    // CommonMark serialization: a loose item opens/closes on its own lines; a tight
+    // item opens on a new line only when its content begins with a block child, and
+    // closes on a new line only when its content ends with a block child (so trailing
+    // inline text hugs `</li>`).
+    let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li>\n' : '<li>',
+        close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
+    return open + body + close;
   }
 
   // a line that is open paragraph text (so a following list marker would have to

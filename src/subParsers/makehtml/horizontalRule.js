@@ -21,14 +21,26 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
   text = startEvent.output;
 
 
+  // CommonMark: an *indented* line of consecutive dashes that directly follows a
+  // non-blank line is a setext underline inside a list item (e.g. `- Bar\n  ---`),
+  // not a thematic break. When commonmarkLists is on, leave it for the list/setext
+  // parsers. An unindented `---` after a list item is still a real thematic break
+  // (it ends the list), and a spaced form like `- - -` is never an underline.
+  function isSetextUnderlineDash (wholeMatch, args) {
+    if (!options.commonmarkLists || !/^ +-+[ \t]*$/.test(wholeMatch)) { return false; }
+    return precededByNonBlank(args[args.length - 1], args[args.length - 2]);
+  }
+
   // parses: --- and - - -
   const rgx1 = /^ {0,2}( ?-){3,}[ \t]*$/gm;
   text = text.replace(rgx1, function (wholeMatch) {
+    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
     return parse(rgx1, wholeMatch);
   });
   // parses: -\t-\t-
   const rgx2 = /^ {0,3}-(\t?-){2,}[ \t]*$/gm;
   text = text.replace(rgx2, function (wholeMatch) {
+    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
     return parse(rgx2, wholeMatch);
   });
 
@@ -55,6 +67,7 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
 
   const rgx7 = /^ {0,3}(- *){2,}-[ \t]*$/gm;
   text = text.replace(rgx7, function (wholeMatch) {
+    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
     return parse(rgx7, wholeMatch);
   });
   const rgx8 = /^ {0,3}(\* *){2,}\*[ \t]*$/gm;
@@ -73,6 +86,19 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
     ._setOptions(options);
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
+
+  /**
+   * Whether the line preceding the match at `offset` is non-blank.
+   * @param {string} str
+   * @param {number} offset start index of the matched line (a line start)
+   * @returns {boolean}
+   */
+  function precededByNonBlank (str, offset) {
+    if (offset === 0) { return false; }
+    let end = offset - 1, // index of the newline ending the previous line
+        start = str.lastIndexOf('\n', end - 1) + 1;
+    return str.slice(start, end).trim() !== '';
+  }
 
   /**
    *

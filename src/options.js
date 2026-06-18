@@ -211,6 +211,11 @@ function getDefaultOpts (simple) {
       describe: 'Parse block quotes as CommonMark container blocks (empty `>`, splitting at blank lines, lazy continuation) instead of Showdown\'s regex matching',
       type: 'boolean'
     },
+    commonmarkLists: {
+      defaultValue: false,
+      describe: 'Parse lists with a CommonMark container-block parser (marker/delimiter splitting, ordered start, loose/tight, indentation-based nesting) instead of Showdown\'s regex matching',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

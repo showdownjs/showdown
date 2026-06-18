@@ -21,6 +21,12 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
   const mainListRgx = /(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
   const listTypeRgx = /[*+-]/g;
 
+  // CommonMark list parsing is a separate container-block parser, invoked only when
+  // the commonmark flavor selects it. The regex parser below stays the default path.
+  if (options.commonmarkLists) {
+    return showdown.subParser('makehtml.cmList')(text, options, globals);
+  }
+
   let startEvent = new showdown.Event('makehtml.list.onStart', text);
   startEvent
     .setOutput(text)

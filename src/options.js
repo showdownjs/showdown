@@ -221,6 +221,11 @@ function getDefaultOpts (simple) {
       describe: 'Parse inline content (code spans, autolinks, raw HTML, links, images, emphasis) with a single unified CommonMark parser (one delimiter stack) instead of Showdown\'s sequential passes',
       type: 'boolean'
     },
+    commonmarkTabs: {
+      defaultValue: false,
+      describe: 'Expand tabs to 4-column tab stops in block-structure indentation (CommonMark), so tab-indented content, list items and code blocks are recognized; content tabs are preserved',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

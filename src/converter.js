@@ -323,6 +323,11 @@ showdown.Converter = function (converterOptions) {
     text = showdown.subParser('makehtml.metadata')(text, options, globals);
     text = showdown.subParser('makehtml.hashPreCodeTags')(text, options, globals);
     text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
+    // CommonMark tab expansion runs after fenced/pre code is hashed (so their content
+    // tabs are protected) and before the block parsers, which key off indentation.
+    if (options.commonmarkTabs) {
+      text = showdown.helper.expandCmTabs(text);
+    }
     text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals, true);
     text = showdown.subParser('makehtml.hashCodeTags')(text, options, globals);
     text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);

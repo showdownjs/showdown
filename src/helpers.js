@@ -939,6 +939,48 @@ showdown.helper.normalizeLeadingTabs = function (text) {
 };
 
 /**
+ * CommonMark tab expansion: tabs are expanded to spaces using 4-column tab stops,
+ * but only in the part of a line that defines block structure - the leading
+ * whitespace plus an optional single list/block-quote marker and the whitespace
+ * after it. Tabs in content (after that prefix) are preserved. Lines without a tab
+ * in their prefix are returned unchanged.
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.expandCmTabs = function (text) {
+  if (text.indexOf('\t') === -1) {
+    return text;
+  }
+  const prefixRgx = /^[ \t]*(?:(?:[-+*]|\d{1,9}[.)]|>)[ \t]*)?/;
+  const thematicBreakRgx = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/;
+  return text.split('\n').map(function (line) {
+    // a thematic break (e.g. `*\t*\t*`) is not a list item: do not let the marker
+    // branch of the prefix expansion mangle it
+    if (thematicBreakRgx.test(line)) {
+      return line;
+    }
+    let prefix = prefixRgx.exec(line)[0];
+    if (prefix.indexOf('\t') === -1) {
+      return line;
+    }
+    let out = '',
+        col = 0;
+    for (let k = 0; k < prefix.length; ++k) {
+      let ch = prefix.charAt(k);
+      if (ch === '\t') {
+        let adv = 4 - (col % 4);
+        out += new Array(adv + 1).join(' ');
+        col += adv;
+      } else {
+        out += ch;
+        col++;
+      }
+    }
+    return out + line.slice(prefix.length);
+  }).join('\n');
+};
+
+/**
  * Remove one level of line-leading tabs or spaces
  * @param {string} text
  * @returns {string}

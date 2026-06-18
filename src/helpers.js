@@ -718,9 +718,11 @@ showdown.helper.cmEncodeURI = function (uri) {
  * Full CommonMark URL normalization for a link/image destination:
  * 1. restore showdown's `¨E<code>E` backslash-escape placeholders to their literal
  *    characters (so escaped punctuation is treated literally, not re-processed);
- * 2. resolve HTML character references (`&ouml;` -> `ö`);
- * 3. percent-encode the result;
- * 4. HTML-escape any residual bare `&` so the href stays valid HTML.
+ * 2. resolve raw backslash escapes of ASCII punctuation (`\*` -> `*`); a backslash
+ *    before a non-punctuation character stays literal (and is later percent-encoded);
+ * 3. resolve HTML character references (`&ouml;` -> `ö`);
+ * 4. percent-encode the result;
+ * 5. HTML-escape any residual bare `&` so the href stays valid HTML.
  * @param {string} url
  * @returns {string}
  */
@@ -728,6 +730,7 @@ showdown.helper.cmNormalizeURL = function (url) {
   url = url.replace(/¨E(\d+)E/g, function (wholeMatch, code) {
     return String.fromCharCode(parseInt(code, 10));
   });
+  url = url.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
   url = showdown.helper.cmDecodeEntities(url);
   url = showdown.helper.cmEncodeURI(url);
   return url.replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;');

@@ -132,6 +132,16 @@ describe('showdown.Converter commonmarkLinks option', function () {
       converter.makeHtml('[foo]: /url')
         .should.equal('');
     });
+
+    it('should resolve a backslash-escaped punctuation char in a definition url', function () {
+      converter.makeHtml('[foo]: /bar\\*baz\n\n[foo]')
+        .should.equal('<p><a href="/bar*baz">foo</a></p>');
+    });
+
+    it('should keep a backslash before a non-punctuation char as percent-encoded', function () {
+      converter.makeHtml('[foo]: /url\\bar\\*baz\n\n[foo]')
+        .should.equal('<p><a href="/url%5Cbar*baz">foo</a></p>');
+    });
   });
 
   describe('enabled - image alt-text flattening', function () {
@@ -179,6 +189,11 @@ describe('showdown.Converter commonmarkLinks option', function () {
     it('should let a link nest inside emphasis', function () {
       converter.makeHtml('**[foo](/url)**')
         .should.equal('<p><strong><a href="/url">foo</a></strong></p>');
+    });
+
+    it('should resolve backslash escapes in a definition url and title', function () {
+      converter.makeHtml('[foo]\n\n[foo]: /bar\\* "ti\\*tle"')
+        .should.equal('<p><a href="/bar*" title="ti*tle">foo</a></p>');
     });
   });
 });

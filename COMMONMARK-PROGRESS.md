@@ -5,7 +5,7 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **627 passing / 20 failing** (started at 413/234).
+Optional suite: `npx grunt test-commonmark`. **631 passing / 16 failing** (started at 413/234).
 
 Done this far (each a separate, gated, tested commit):
 | Commit | Phase | CM cases |
@@ -21,6 +21,7 @@ Done this far (each a separate, gated, tested commit):
 | Phase 5b+ | setext/thematic-break vs list-item interference | +3 |
 | Phase 5b+ | lazy continuation through block-quote+list nesting | +2 |
 | Phase 6 | Unified inline parser (`commonmarkInline`) | +22 |
+| Phase 7 | Tab expansion (`commonmarkTabs`) | +4 |
 
 Phase 6 (`commonmarkInline`): a single CommonMark inline parser in
 `src/subParsers/makehtml/cmInline.js` (subparser `makehtml.cmInline`), built on the same
@@ -148,7 +149,9 @@ tight/loose-aware paragraph wrap. Unit coverage in `test/unit/showdown.commonmar
   CommonMark HTML-block recognition on the *recursed* content; currently `hashHTMLBlocks`'
   `sourceMode` only fires at the converter level, so item/quote content uses the balanced-tag
   path. Thread source-mode (or run the CM HTML-block scanner) through the container recursion.
-- **Tabs (~10):** 4-column tab-stop expansion (a pre-pass), interacts with list/code indent.
+- **Tabs: DONE** (`commonmarkTabs`, +4). `showdown.helper.expandCmTabs` expands tabs to 4-column
+  stops in the block-structure prefix (leading whitespace + one marker + its whitespace),
+  preserving content tabs.
 - **Fenced code blocks (~11), Code spans (~8):** info-string/closing-fence and backtick-run
   edge cases — independent of containers.
 - **Links: DONE** via the unified inline parser (Phase 6). Only #539 remains — Unicode case-fold

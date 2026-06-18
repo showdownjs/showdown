@@ -79,5 +79,10 @@ describe('showdown.Converter commonmarkLists option', function () {
       norm(converter.makeHtml('- Foo\n---'))
         .should.equal(norm('<ul>\n<li>Foo</li>\n</ul>\n<hr />'));
     });
+
+    it('should lazily continue a paragraph through nested block quote + list + block quote', function () {
+      norm(converter.makeHtml('> 1. > Blockquote\ncontinued here.'))
+        .should.equal(norm('<blockquote>\n<ol>\n<li>\n<blockquote>\n<p>Blockquote\ncontinued here.</p>\n</blockquote>\n</li>\n</ol>\n</blockquote>'));
+    });
   });
 });

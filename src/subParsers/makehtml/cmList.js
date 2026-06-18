@@ -155,15 +155,24 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
   }
 
-  // whether the last non-stripped content line is an open paragraph (so a lazy
-  // continuation line may be appended)
+  // whether the last content line is an open paragraph (so a lazy continuation line
+  // may be appended). Nested block-quote / list markers are peeled first, so lazy
+  // continuation propagates through container nesting (e.g. `1. > Blockquote`
+  // followed by a markerless line continues the inner block quote's paragraph).
   function lastIsParagraph (content) {
     let last = content[content.length - 1];
-    if (last === undefined || last.trim() === '' || /^ {4}/.test(last)) { return false; }
+    if (last === undefined) { return false; }
+    let s = last,
+        indentedCode = /^ {4}/.test(last),
+        m;
+    while ((m = s.match(/^ {0,3}>[ \t]?/) || s.match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/))) {
+      s = s.slice(m[0].length);
+      indentedCode = false;
+    }
+    if (s.trim() === '' || indentedCode) { return false; }
     return !(
-      /^ {0,3}(?:```|~~~)/.test(last) ||
-      /^ {0,3}#{1,6}(?:[ \t]|$)/.test(last) ||
-      /^ {0,3}>/.test(last)
+      /^ {0,3}(?:```|~~~)/.test(s) ||
+      /^ {0,3}#{1,6}(?:[ \t]|$)/.test(s)
     );
   }
 

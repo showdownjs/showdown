@@ -5,7 +5,7 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **605 passing / 42 failing** (started at 413/234).
+Optional suite: `npx grunt test-commonmark`. **627 passing / 20 failing** (started at 413/234).
 
 Done this far (each a separate, gated, tested commit):
 | Commit | Phase | CM cases |
@@ -20,6 +20,19 @@ Done this far (each a separate, gated, tested commit):
 | Phase 5b | Lists + list items (`commonmarkLists`) | +25 |
 | Phase 5b+ | setext/thematic-break vs list-item interference | +3 |
 | Phase 5b+ | lazy continuation through block-quote+list nesting | +2 |
+| Phase 6 | Unified inline parser (`commonmarkInline`) | +22 |
+
+Phase 6 (`commonmarkInline`): a single CommonMark inline parser in
+`src/subParsers/makehtml/cmInline.js` (subparser `makehtml.cmInline`), built on the same
+node-list/delimiter-stack/`processEmphasis` design as `emphasisAndStrong`'s CommonMark path. It
+resolves code spans, backslash escapes, entities, autolinks, raw HTML, links, images and emphasis
+together on one delimiter stack — so a link cannot contain a link (forming a link deactivates
+earlier `[` openers), emphasis interleaves with link brackets, and code spans/autolinks/raw HTML
+bind before links. `spanGamut` routes inline content through it when `commonmarkInline` is on (the
+Showdown extras + `encodeAmpsAndAngles`/`hardLineBreaks` still run after). Developed behind the
+flag to whole-suite parity (+28 / 0 regressions) before being added to the flavor. This cleared
+the entire Links cluster (17→1) and the code-span precedence cases. Unit coverage in
+`test/unit/showdown.commonmarkInline.js`.
 
 Phase 3b shipped as 5 gated commits behind `commonmarkLinks` (added to the `commonmark`
 flavor): shared URL helpers; URL normalization + in-URL entity decoding; a manual
@@ -138,8 +151,9 @@ tight/loose-aware paragraph wrap. Unit coverage in `test/unit/showdown.commonmar
 - **Tabs (~10):** 4-column tab-stop expansion (a pre-pass), interacts with list/code indent.
 - **Fenced code blocks (~11), Code spans (~8):** info-string/closing-fence and backtick-run
   edge cases — independent of containers.
-- **Links (~17):** the unified delimiter-stack inline parser (link/image/emphasis precedence,
-  nested-link deactivation, reference-vs-inline shortest-match) — the deferred hard core.
+- **Links: DONE** via the unified inline parser (Phase 6). Only #539 remains — Unicode case-fold
+  of reference labels (`[ẞ]`/`[SS]`); JS `toLowerCase` does not fold `ẞ`→`ss`, so it needs a
+  case-folding table.
 
 The full roadmap with rationale lives in
 `C:\Users\estev\.claude\plans\implement-the-following-missing-serialized-minsky.md`.

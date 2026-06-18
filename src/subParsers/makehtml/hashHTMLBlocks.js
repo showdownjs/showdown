@@ -9,7 +9,7 @@
 ////
 
 
-showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) {
+showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, sourceMode) {
   'use strict';
   let startEvent = new showdown.Event('makehtml.hashHTMLBlocks.onStart', text);
   startEvent
@@ -73,6 +73,22 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
     });
   }
 
+  // The CommonMark block scanner only applies to the original Markdown source
+  // (the converter-level pass). blockGamut re-invokes this subparser on the markup
+  // it has just generated to prevent <p>-wrapping; there the existing balanced-tag
+  // hashing is correct (and must not over-consume generated block tags).
+  if (options.commonmarkHTMLBlocks && sourceMode) {
+    text = parseCmHTMLBlocks(text);
+
+    let cmAfterEvent = new showdown.Event('makehtml.hashHTMLBlocks.onEnd', text);
+    cmAfterEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    cmAfterEvent = globals.converter.dispatch(cmAfterEvent);
+    return cmAfterEvent.output;
+  }
+
   // hash HTML Blocks
   for (let i = 0; i < blockTags.length; ++i) {
 
@@ -121,4 +137,88 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
     ._setOptions(options);
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
+
+  /**
+   * CommonMark HTML blocks (spec section 4.6): a line-based scanner implementing the
+   * 7 block types, each with its own start and end condition. Block content is hashed
+   * verbatim (not parsed as Markdown). Types 1-6 may interrupt a paragraph; type 7
+   * may only start at a block boundary (document start or after a blank line).
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmHTMLBlocks (str) {
+    const blockNames = 'address|article|aside|base|basefont|blockquote|body|caption|' +
+      'center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|' +
+      'footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hr|html|iframe|legend|' +
+      'li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|section|' +
+      'summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul';
+
+    let type1Start = /^ {0,3}<(?:script|pre|style|textarea)(?:[ \t>]|$)/i,
+        type1End   = /<\/(?:script|pre|style|textarea)>/i,
+        type2Start = /^ {0,3}<!--/,
+        type2End   = /-->/,
+        type3Start = /^ {0,3}<\?/,
+        type3End   = /\?>/,
+        type4Start = /^ {0,3}<![A-Za-z]/,
+        type4End   = />/,
+        type5Start = /^ {0,3}<!\[CDATA\[/,
+        type5End   = /]]>/,
+        type6Start = new RegExp('^ {0,3}</?(?:' + blockNames + ')(?:[ \\t/>]|$)', 'i'),
+        type7Start = new RegExp('^ {0,3}(?:' + showdown.helper.regexes.cmOpenTagSource + '|' +
+                      showdown.helper.regexes.cmCloseTagSource + ')[ \\t]*$'),
+        isBlank    = /^[ \t]*$/;
+
+    function startType (line, prevBlank) {
+      if (type1Start.test(line)) { return 1; }
+      if (type2Start.test(line)) { return 2; }
+      if (type3Start.test(line)) { return 3; }
+      if (type5Start.test(line)) { return 5; }
+      if (type4Start.test(line)) { return 4; }
+      if (type6Start.test(line)) { return 6; }
+      // type 7 cannot interrupt a paragraph
+      if (prevBlank && type7Start.test(line)) { return 7; }
+      return 0;
+    }
+
+    let lines = str.split('\n'),
+        out = [],
+        i = 0,
+        prevBlank = true; // document start behaves like "after a blank line"
+
+    while (i < lines.length) {
+      let type = startType(lines[i], prevBlank);
+      if (type === 0) {
+        out.push(lines[i]);
+        prevBlank = isBlank.test(lines[i]);
+        i++;
+        continue;
+      }
+
+      let blockLines = [];
+      if (type >= 1 && type <= 5) {
+        // ends on (and includes) the line matching the end condition; may be the
+        // start line itself
+        let endRe = [null, type1End, type2End, type3End, type4End, type5End][type];
+        while (i < lines.length) {
+          let l = lines[i];
+          blockLines.push(l);
+          i++;
+          if (endRe.test(l)) { break; }
+        }
+      } else {
+        // types 6 and 7 end before the first following blank line (or at EOF)
+        while (i < lines.length && !isBlank.test(lines[i])) {
+          blockLines.push(lines[i]);
+          i++;
+        }
+      }
+
+      // wrap the placeholder in blank lines so later block parsing treats it as its
+      // own block
+      out.push('\n¨K' + (globals.gHtmlBlocks.push(blockLines.join('\n')) - 1) + 'K\n');
+      prevBlank = false;
+    }
+
+    return out.join('\n');
+  }
 });

@@ -1053,7 +1053,11 @@ showdown.helper.regexes = {
   // subparser runs re-entrantly and a shared stateful /g regex would corrupt its
   // lastIndex between nested invocations.
   cmHTMLTagSource:           '(?:' + cmOpenTag + '|' + cmCloseTag + '|' + cmHTMLComment +
-                               '|' + cmProcessingInstruction + '|' + cmDeclaration + '|' + cmCDATA + ')'
+                               '|' + cmProcessingInstruction + '|' + cmDeclaration + '|' + cmCDATA + ')',
+  // Open and close tag sources on their own, used for the CommonMark "type 7" HTML
+  // block start condition (a complete tag that fills the line).
+  cmOpenTagSource:           cmOpenTag,
+  cmCloseTagSource:          cmCloseTag
 };
 
 /**

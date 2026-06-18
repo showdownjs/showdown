@@ -201,6 +201,11 @@ function getDefaultOpts (simple) {
       describe: 'Recognize inline raw HTML using the strict CommonMark grammar; malformed tags (e.g. <33>, <a h*#ref>) are escaped instead of passed through',
       type: 'boolean'
     },
+    commonmarkHTMLBlocks: {
+      defaultValue: false,
+      describe: 'Recognize HTML blocks using the 7 CommonMark block types (start/end conditions, line based) instead of Showdown\'s balanced-tag matching',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

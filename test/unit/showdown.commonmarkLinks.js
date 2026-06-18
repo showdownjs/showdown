@@ -134,6 +134,35 @@ describe('showdown.Converter commonmarkLinks option', function () {
     });
   });
 
+  describe('enabled - image alt-text flattening', function () {
+    let converter = new showdown.Converter({commonmarkLinks: true});
+
+    it('should strip emphasis markup from the alt text', function () {
+      converter.makeHtml('![foo *bar*](/u)')
+        .should.equal('<p><img src="/u" alt="foo bar" /></p>');
+    });
+
+    it('should flatten a nested image to its alt text', function () {
+      converter.makeHtml('![foo ![bar](/url)](/url2)')
+        .should.equal('<p><img src="/url2" alt="foo bar" /></p>');
+    });
+
+    it('should flatten a nested link to its text', function () {
+      converter.makeHtml('![foo [bar](/url)](/url2)')
+        .should.equal('<p><img src="/url2" alt="foo bar" /></p>');
+    });
+
+    it('should parse an inline image with extra whitespace around the title', function () {
+      converter.makeHtml('My ![foo bar](/path/x.jpg  "title"   )')
+        .should.equal('<p>My <img src="/path/x.jpg" alt="foo bar" title="title" /></p>');
+    });
+
+    it('should flatten alt text of a reference image', function () {
+      converter.makeHtml('![*foo* bar]\n\n[*foo* bar]: /url "title"')
+        .should.equal('<p><img src="/url" alt="foo bar" title="title" /></p>');
+    });
+  });
+
   describe('enabled via the commonmark flavor', function () {
     let converter = new showdown.Converter(showdown.getFlavorOptions('commonmark'));
 

@@ -13,6 +13,31 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
+  if (options.commonmarkInline) {
+    // Unified CommonMark inline parser: code spans, backslash escapes, entities,
+    // autolinks, raw HTML, links, images and emphasis resolved together on one
+    // delimiter stack (replaces the sequential codeSpan/link/image/emphasis passes
+    // and the raw-HTML hashing below). The Showdown-only extras (emoji, underline,
+    // strikethrough, ellipsis) and the final encodeAmpsAndAngles/hardLineBreaks still
+    // run after, on the non-hashed text.
+    text = showdown.subParser('makehtml.cmInline')(text, options, globals);
+
+    text = showdown.subParser('makehtml.emoji')(text, options, globals);
+    text = showdown.subParser('makehtml.underline')(text, options, globals);
+    text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
+    text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
+    text = showdown.subParser('makehtml.encodeAmpsAndAngles')(text, options, globals);
+    text = showdown.subParser('makehtml.hardLineBreaks')(text, options, globals);
+
+    let cmAfterEvent = new showdown.Event('makehtml.spanGamut.onEnd', text);
+    cmAfterEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    cmAfterEvent = globals.converter.dispatch(cmAfterEvent);
+    return cmAfterEvent.output;
+  }
+
   text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
   text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('makehtml.encodeBackslashEscapes')(text, options, globals);

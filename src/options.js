@@ -216,6 +216,11 @@ function getDefaultOpts (simple) {
       describe: 'Parse lists with a CommonMark container-block parser (marker/delimiter splitting, ordered start, loose/tight, indentation-based nesting) instead of Showdown\'s regex matching',
       type: 'boolean'
     },
+    commonmarkInline: {
+      defaultValue: false,
+      describe: 'Parse inline content (code spans, autolinks, raw HTML, links, images, emphasis) with a single unified CommonMark parser (one delimiter stack) instead of Showdown\'s sequential passes',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

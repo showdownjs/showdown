@@ -5,7 +5,7 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **603 passing / 44 failing** (started at 413/234).
+Optional suite: `npx grunt test-commonmark`. **605 passing / 42 failing** (started at 413/234).
 
 Done this far (each a separate, gated, tested commit):
 | Commit | Phase | CM cases |
@@ -19,6 +19,7 @@ Done this far (each a separate, gated, tested commit):
 | Phase 5a | Container block quotes (`commonmarkBlockquotes`) | +7 |
 | Phase 5b | Lists + list items (`commonmarkLists`) | +25 |
 | Phase 5b+ | setext/thematic-break vs list-item interference | +3 |
+| Phase 5b+ | lazy continuation through block-quote+list nesting | +2 |
 
 Phase 3b shipped as 5 gated commits behind `commonmarkLinks` (added to the `commonmark`
 flavor): shared URL helpers; URL normalization + in-URL entity decoding; a manual
@@ -126,9 +127,10 @@ tight/loose-aware paragraph wrap. Unit coverage in `test/unit/showdown.commonmar
 
 ## NEXT: the remaining ~47
 
-- **Lists, the hard tail (~8):** setext/thematic-break interference is now fixed
-  (#281/#282/#300). Remaining: container laziness across block-quote+list (#292/#293), and
-  loose-detection inside items containing fenced code / blank lines (#307/#318/#319/#321/#324).
+- **Lists, the hard tail (~6):** setext/thematic-break interference (#281/#282/#300) and
+  block-quote+list lazy continuation (#292/#293) are now fixed. Remaining: loose-detection
+  inside items containing fenced code / blank lines (#307/#318/#319/#321/#324) and similar
+  multi-block item edge cases.
 - **Container-nested HTML blocks (#148/#174/#175):** HTML inside a list item / block quote needs
   CommonMark HTML-block recognition on the *recursed* content; currently `hashHTMLBlocks`'
   `sourceMode` only fires at the converter level, so item/quote content uses the balanced-tag

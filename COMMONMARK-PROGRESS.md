@@ -5,7 +5,7 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **527 passing / 120 failing** (started at 413/234).
+Optional suite: `npx grunt test-commonmark`. **542 passing / 105 failing** (started at 413/234).
 
 Done this far (each a separate, gated, tested commit):
 | Commit | Phase | CM cases |
@@ -14,6 +14,7 @@ Done this far (each a separate, gated, tested commit):
 | `c25d9ed` | Emphasis/strong delimiter-run (`commonmarkEmphasis`) | +56 |
 | `d0d5662` | Autolinks (`commonmarkAutolinks`) | +8 |
 | Phase 3b | Links + Images + Reference definitions (`commonmarkLinks`) | +41 |
+| Phase 4a | Inline raw HTML (`commonmarkRawHTML`) | +15 |
 
 Phase 3b shipped as 5 gated commits behind `commonmarkLinks` (added to the `commonmark`
 flavor): shared URL helpers; URL normalization + in-URL entity decoding; a manual
@@ -22,9 +23,16 @@ a block-aware reference-definition parser (multiline, `<>`, first-wins, escapes)
 CommonMark images (alt-text flattening + a symmetric inline-image scanner). Unit coverage
 in `test/unit/showdown.commonmarkLinks.js`.
 
+Phase 4a (`commonmarkRawHTML`): strict CommonMark inline raw-HTML recognition
+(`showdown.helper.regexes.cmHTMLTagSource`). Valid tags/comments/PIs/declarations/CDATA are
+hashed early in `spanGamut` (after backslash escapes + link/image destinations, before
+emphasis); malformed `<…>` falls through to `encodeAmpsAndAngles` to be escaped.
+`escapeSpecialCharsWithinTagAttributes` and the single-tag `hashHTMLSpans` passes are skipped
+in this mode. Unit coverage in `test/unit/showdown.commonmarkRawHTML.js`.
+
 Remaining failures by section: List items 36, HTML blocks 28, Lists 21, Links 18,
-Fenced code blocks 11, Tabs 10, Raw HTML 10, Block quotes 8, Code spans 8, Autolinks 6,
-Backslash escapes 3, Entity 3, Setext headings 2, Indented code 2, Link reference defs 2.
+Fenced code blocks 11, Tabs 10, Block quotes 8, Code spans 8, Backslash escapes 3, Entity 3,
+Setext headings 2, Indented code 2, Link reference defs 2, Images 1, others 1 each.
 The remaining ~18 Links failures need the full delimiter-stack inline parser (link/image
 precedence with emphasis, nested-link deactivation, reference-vs-inline shortest-match) —
 the deliberately deferred hard core; the current scanner handles destinations/labels but
@@ -91,14 +99,17 @@ for(const t of cm.tests){if(t.section!=="Links")continue;const g=c.makeHtml(t.ma
 if(n(g)!==n(t.html))console.log("#"+(t.example||t.number)+" "+JSON.stringify(t.markdown)+"\n  EXP "+JSON.stringify(t.html)+"\n  GOT "+JSON.stringify(g));}'
 ```
 
-## NEXT: Phase 4 (HTML) and Phase 5 (block containers)
+## NEXT: Phase 4b (HTML blocks) and Phase 5 (block containers)
 
-- **Phase 4 — HTML (~37):** Raw HTML inline (the 6 remaining Autolink escaping cases #607–#609
-  depend on stricter invalid-`<…>` recognition here) + the 7 CommonMark HTML block types.
-  Files: `hashHTMLSpans.js`, `hashHTMLBlocks.js`, `encodeAmpsAndAngles.js`.
-- **Phase 5 — block containers (~49):** Lists + List items + Block quotes + Tabs. The hardest:
-  container-block parsing, lazy continuation, 4-column tab expansion. Likely needs structural
-  rework of `list.js`/`blockquote.js`. Do last; highest regression risk.
+- **Phase 4a — inline raw HTML: DONE** (`commonmarkRawHTML`, +15). This also closed the
+  invalid-`<…>` Autolink escaping cases.
+- **Phase 4b — HTML blocks (~28):** the 7 CommonMark HTML block types. Files:
+  `hashHTMLBlocks.js`, `encodeAmpsAndAngles.js`. Gate behind a flag (e.g. `commonmarkHTMLBlocks`).
+  Block-level, so higher blast radius than 4a — measure against the snapshot carefully.
+- **Phase 5 — block containers (~67):** List items 36 + Lists 21 + Block quotes 8 + Tabs (and
+  the remaining ~18 Links cases that need the unified delimiter-stack inline parser). The
+  hardest: container-block parsing, lazy continuation, 4-column tab expansion. Likely needs
+  structural rework of `list.js`/`blockquote.js`. Do last; highest regression risk.
 
 The full roadmap with rationale lives in
 `C:\Users\estev\.claude\plans\implement-the-following-missing-serialized-minsky.md`.

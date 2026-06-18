@@ -56,6 +56,55 @@ describe('showdown.Converter commonmarkLinks option', function () {
     });
   });
 
+  describe('enabled - inline destination/title parsing', function () {
+    let converter = new showdown.Converter({commonmarkLinks: true});
+
+    it('should allow balanced parentheses in a bare destination', function () {
+      converter.makeHtml('[link](foo(and(bar)))')
+        .should.equal('<p><a href="foo(and(bar))">link</a></p>');
+    });
+
+    it('should not form a link when destination parens are unbalanced', function () {
+      converter.makeHtml('[link](foo(and(bar))')
+        .should.equal('<p>[link](foo(and(bar))</p>');
+    });
+
+    it('should parse an angle-bracket destination and percent-encode spaces', function () {
+      converter.makeHtml('[link](</my uri>)')
+        .should.equal('<p><a href="/my%20uri">link</a></p>');
+    });
+
+    it('should percent-encode a literal backslash in the destination', function () {
+      converter.makeHtml('[link](foo\\bar)')
+        .should.equal('<p><a href="foo%5Cbar">link</a></p>');
+    });
+
+    it('should treat a quoted-only destination as the destination, not a title', function () {
+      converter.makeHtml('[link]("title")')
+        .should.equal('<p><a href="%22title%22">link</a></p>');
+    });
+
+    it('should accept a title wrapped in parentheses', function () {
+      converter.makeHtml('[link](/url (title))')
+        .should.equal('<p><a href="/url" title="title">link</a></p>');
+    });
+
+    it('should require whitespace between destination and title', function () {
+      converter.makeHtml('[link] (/uri)')
+        .should.equal('<p>[link] (/uri)</p>');
+    });
+
+    it('should match the innermost opening bracket', function () {
+      converter.makeHtml('[link [bar](/uri)')
+        .should.equal('<p>[link <a href="/uri">bar</a></p>');
+    });
+
+    it('should handle multiple levels of nested brackets in the label', function () {
+      converter.makeHtml('[link [foo [bar]]](/uri)')
+        .should.equal('<p><a href="/uri">link [foo [bar]]</a></p>');
+    });
+  });
+
   describe('enabled via the commonmark flavor', function () {
     let converter = new showdown.Converter(showdown.getFlavorOptions('commonmark'));
 

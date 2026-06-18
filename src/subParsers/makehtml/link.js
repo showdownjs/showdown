@@ -37,31 +37,37 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   });
 
   // 2. Handle inline-style links: [link text](url "optional title")
-  // 2.1. Look for empty cases: []() and [empty]() and []("title")
-  let inlineEmptyRegex = /\[(.*?)]\(<? ?>? ?(["'](.*)["'])?\)/g;
-  text = text.replace(inlineEmptyRegex, function (wholeMatch, text, m1, title) {
-    return writeAnchorTag ('inline', inlineEmptyRegex, wholeMatch, text, null, null, title, true);
-  });
+  if (options.commonmarkLinks) {
+    // CommonMark inline-link parsing: a manual scanner that handles balanced-paren
+    // and `<...>` destinations, titles in "...", '...' or (...), and backslash escapes.
+    text = parseCmInlineLinks(text);
+  } else {
+    // 2.1. Look for empty cases: []() and [empty]() and []("title")
+    let inlineEmptyRegex = /\[(.*?)]\(<? ?>? ?(["'](.*)["'])?\)/g;
+    text = text.replace(inlineEmptyRegex, function (wholeMatch, text, m1, title) {
+      return writeAnchorTag ('inline', inlineEmptyRegex, wholeMatch, text, null, null, title, true);
+    });
 
-  // 2.2. Look for cases with crazy urls like ./image/cat1).png
-  // the url mus be enclosed in <>
-  let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
-  text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
-    return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
-  });
+    // 2.2. Look for cases with crazy urls like ./image/cat1).png
+    // the url mus be enclosed in <>
+    let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
+    text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
+      return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
+    });
 
-  // 2.3. inline links with no title or titles wrapped in ' or ":
-  // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
-  let inlineNormalRegex1 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s*(?:(['"])(.*?)\3)? *\)/g;
-  text = text.replace(inlineNormalRegex1, function (wholeMatch, text, url, m1, title) {
-    return writeAnchorTag ('inline', inlineNormalRegex1, wholeMatch, text, null, url, title);
-  });
+    // 2.3. inline links with no title or titles wrapped in ' or ":
+    // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
+    let inlineNormalRegex1 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s*(?:(['"])(.*?)\3)? *\)/g;
+    text = text.replace(inlineNormalRegex1, function (wholeMatch, text, url, m1, title) {
+      return writeAnchorTag ('inline', inlineNormalRegex1, wholeMatch, text, null, url, title);
+    });
 
-  // 2.4. inline links with titles wrapped in (): [foo](bar.com (title))
-  let inlineNormalRegex2 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s+\((.*?)\) *\)/g;
-  text = text.replace(inlineNormalRegex2, function (wholeMatch, text, url, title) {
-    return writeAnchorTag ('inline', inlineNormalRegex2, wholeMatch, text, null, url, title);
-  });
+    // 2.4. inline links with titles wrapped in (): [foo](bar.com (title))
+    let inlineNormalRegex2 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s+\((.*?)\) *\)/g;
+    text = text.replace(inlineNormalRegex2, function (wholeMatch, text, url, title) {
+      return writeAnchorTag ('inline', inlineNormalRegex2, wholeMatch, text, null, url, title);
+    });
+  }
 
 
   // 3. Handle reference-style shortcuts: [link text]
@@ -226,6 +232,133 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   return afterEvent.output;
 
 
+
+  /**
+   * CommonMark inline-link scanner. Finds `[label](destination "title")` spans,
+   * parsing the destination and title with a hand-written cursor so that balanced
+   * parentheses, `<...>` destinations, the three title delimiters and backslash
+   * escapes are handled per the spec. Anything that does not parse as a valid
+   * inline link is left untouched (to be handled by the reference/shortcut passes).
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmInlineLinks (str) {
+    let inlineLinkRegexp = /\[[\s\S]*?]\([\s\S]*?\)/, // representative pattern (for event metadata only)
+        n = str.length,
+        out = '',
+        last = 0,
+        i = 0;
+    while (i < n) {
+      if (str.charAt(i) !== '[') { i++; continue; }
+      // find the matching `]`, counting nested brackets and honoring backslash escapes
+      let depth = 1, k = i + 1, labelEnd = -1;
+      while (k < n) {
+        let c = str.charAt(k);
+        if (c === '\\' && k + 1 < n) { k += 2; continue; }
+        if (c === '[') { depth++; } else if (c === ']') {
+          depth--;
+          if (depth === 0) { labelEnd = k; break; }
+        }
+        k++;
+      }
+      if (labelEnd !== -1 && str.charAt(labelEnd + 1) === '(') {
+        let parsed = parseCmDestTitle(str, labelEnd + 2);
+        if (parsed) {
+          let label = str.slice(i + 1, labelEnd);
+          out += str.slice(last, i);
+          out += writeAnchorTag('inline', inlineLinkRegexp, str.slice(i, parsed.end + 1), label, null, parsed.url, parsed.title, parsed.emptyCase);
+          i = parsed.end + 1;
+          last = i;
+          continue;
+        }
+      }
+      // not a valid inline link here; advance past this `[` so a nested `[...]( )`
+      // still gets a chance to match
+      i++;
+    }
+    out += str.slice(last);
+    return out;
+  }
+
+  /**
+   * Parse a CommonMark link destination and optional title starting just after the
+   * opening `(`. Returns `{url, title, emptyCase, end}` where `end` is the index of
+   * the closing `)`, or `null` if the span is not a valid destination/title.
+   * @param {string} str
+   * @param {number} j index right after the opening `(`
+   * @returns {{url: string, title: (string|null), emptyCase: boolean, end: number}|null}
+   */
+  function parseCmDestTitle (str, j) {
+    let n = str.length,
+        isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; },
+        url = '',
+        emptyCase = false;
+
+    // optional leading whitespace
+    while (j < n && isWs(str.charAt(j))) { j++; }
+
+    if (str.charAt(j) === '<') {
+      // angle-bracket destination: up to an unescaped `>`, no raw newline or `<`
+      j++;
+      let buf = '';
+      while (j < n && str.charAt(j) !== '>') {
+        let c = str.charAt(j);
+        if (c === '\n' || c === '<') { return null; }
+        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+        buf += c; j++;
+      }
+      if (j >= n || str.charAt(j) !== '>') { return null; }
+      j++; // consume `>`
+      url = buf;
+      if (url === '') { emptyCase = true; }
+    } else {
+      // bare destination: balanced parentheses, ends at whitespace or an unbalanced `)`
+      let depth = 0, buf = '';
+      while (j < n) {
+        let c = str.charAt(j);
+        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+        if (isWs(c)) { break; }
+        if (c === '(') { depth++; buf += c; j++; continue; }
+        if (c === ')') {
+          if (depth === 0) { break; }
+          depth--; buf += c; j++; continue;
+        }
+        buf += c; j++;
+      }
+      if (depth !== 0) { return null; } // unbalanced parens -> not a link
+      url = buf;
+      if (url === '') { emptyCase = true; }
+    }
+
+    // optional whitespace separating destination and title
+    let hadWs = false;
+    while (j < n && isWs(str.charAt(j))) { hadWs = true; j++; }
+
+    let title = null,
+        tc = str.charAt(j);
+    if (j < n && (tc === '"' || tc === '\'' || tc === '(')) {
+      // a title must be separated from the destination by whitespace
+      if (!hadWs) { return null; }
+      let close = (tc === '(') ? ')' : tc,
+          buf = '';
+      j++;
+      let closed = false;
+      while (j < n) {
+        let c = str.charAt(j);
+        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+        if (tc === '(' && c === '(') { return null; } // unescaped `(` invalid in (...) title
+        if (c === close) { closed = true; j++; break; }
+        buf += c; j++;
+      }
+      if (!closed) { return null; }
+      title = buf;
+    }
+
+    // optional trailing whitespace, then the required closing `)`
+    while (j < n && isWs(str.charAt(j))) { j++; }
+    if (j >= n || str.charAt(j) !== ')') { return null; }
+    return {url: url, title: title, emptyCase: emptyCase, end: j};
+  }
 
   /**
    *

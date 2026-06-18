@@ -386,7 +386,11 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
     title = title || null;
     url = url || null;
-    linkId = (linkId) ? linkId.toLowerCase() : null;
+    if (linkId) {
+      linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(linkId) : linkId.toLowerCase();
+    } else {
+      linkId = null;
+    }
     emptyCase = !!emptyCase;
 
     if (emptyCase) {
@@ -394,7 +398,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     } else if (!url) {
       if (!linkId) {
         // lower-case and turn embedded newlines into spaces
-        linkId = text.toLowerCase().replace(/ ?\n/g, ' ');
+        linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(text) : text.toLowerCase().replace(/ ?\n/g, ' ');
       }
       url = '#' + linkId;
 

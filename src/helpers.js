@@ -748,6 +748,95 @@ showdown.helper.cmEscapeTitle = function (title) {
 };
 
 /**
+ * Normalize a CommonMark link label for reference matching: resolve backslash
+ * escapes (both raw `\x` and showdown's `¨E<code>E` placeholders), collapse
+ * internal whitespace runs to a single space, trim and case-fold. The same
+ * normalization must be applied to both the definition label and the use label
+ * so that they compare equal.
+ * @param {string} label
+ * @returns {string}
+ */
+showdown.helper.cmNormalizeLabel = function (label) {
+  return label
+    .replace(/¨E(\d+)E/g, function (wholeMatch, code) {
+      return String.fromCharCode(parseInt(code, 10));
+    })
+    .replace(/\\([!-\/:-@\[-`{-~])/g, '$1')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+};
+
+/**
+ * Scan a CommonMark link destination starting at index `j`. Handles both
+ * `<...>` destinations (no raw newline or unescaped `<`) and bare destinations
+ * with balanced parentheses. Returns `{url, end, angle}` (url may be empty for
+ * `<>`) or `null` when the destination is malformed.
+ * @param {string} str
+ * @param {number} j
+ * @returns {{url: string, end: number, angle: boolean}|null}
+ */
+showdown.helper.cmScanDestination = function (str, j) {
+  let n = str.length;
+  if (str.charAt(j) === '<') {
+    j++;
+    let buf = '';
+    while (j < n && str.charAt(j) !== '>') {
+      let c = str.charAt(j);
+      if (c === '\n' || c === '<') { return null; }
+      if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+      buf += c; j++;
+    }
+    if (j >= n || str.charAt(j) !== '>') { return null; }
+    return {url: buf, end: j + 1, angle: true};
+  }
+  let depth = 0, buf = '';
+  while (j < n) {
+    let c = str.charAt(j),
+        code = str.charCodeAt(j);
+    if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+    if (c === ' ' || c === '\t' || c === '\n') { break; }
+    if (code < 0x20 || code === 0x7f) { break; }
+    if (c === '(') { depth++; buf += c; j++; continue; }
+    if (c === ')') {
+      if (depth === 0) { break; }
+      depth--; buf += c; j++; continue;
+    }
+    buf += c; j++;
+  }
+  if (depth !== 0) { return null; }
+  return {url: buf, end: j, angle: false};
+};
+
+/**
+ * Scan a CommonMark link title starting at index `j` (which must point at the
+ * opening delimiter `"`, `'` or `(`). The title may span multiple lines but not
+ * contain a blank line. Returns `{title, end}` or `null` if malformed.
+ * @param {string} str
+ * @param {number} j
+ * @returns {{title: string, end: number}|null}
+ */
+showdown.helper.cmScanTitle = function (str, j) {
+  let n = str.length,
+      open = str.charAt(j),
+      close = (open === '(') ? ')' : open;
+  if (open !== '"' && open !== '\'' && open !== '(') { return null; }
+  j++;
+  let buf = '';
+  while (j < n) {
+    let c = str.charAt(j);
+    if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+    if (open === '(' && c === '(') { return null; }
+    if (c === close) {
+      if (/\n[ \t]*\n/.test(buf)) { return null; }
+      return {title: buf, end: j + 1};
+    }
+    buf += c; j++;
+  }
+  return null;
+};
+
+/**
  * Clones an object . If the second parameter is true, it deep clones the object.
  * Note: It should not be used in other contexts than showdown, since this algorithm might fail for
  * cyclic references, and dataypes such as Dates, RegExps, Typed Arrays, etc...

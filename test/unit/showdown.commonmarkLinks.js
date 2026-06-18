@@ -105,6 +105,35 @@ describe('showdown.Converter commonmarkLinks option', function () {
     });
   });
 
+  describe('enabled - reference definitions', function () {
+    let converter = new showdown.Converter({commonmarkLinks: true});
+
+    it('should use the first definition when a label is defined twice', function () {
+      converter.makeHtml('[foo]\n\n[foo]: first\n[foo]: second')
+        .should.equal('<p><a href="first">foo</a></p>');
+    });
+
+    it('should support an empty <> destination', function () {
+      converter.makeHtml('[foo]: <>\n\n[foo]')
+        .should.equal('<p><a href="">foo</a></p>');
+    });
+
+    it('should support a multi-line definition with an angle-bracket destination', function () {
+      converter.makeHtml('[Foo bar]:\n<my url>\n\'title\'\n\n[Foo bar]')
+        .should.equal('<p><a href="my%20url" title="title">Foo bar</a></p>');
+    });
+
+    it('should not treat a line with trailing junk after the title as a definition title', function () {
+      converter.makeHtml('[foo]: /url\n"title" ok')
+        .should.equal('<p>&quot;title&quot; ok</p>');
+    });
+
+    it('should consume an unreferenced definition entirely', function () {
+      converter.makeHtml('[foo]: /url')
+        .should.equal('');
+    });
+  });
+
   describe('enabled via the commonmark flavor', function () {
     let converter = new showdown.Converter(showdown.getFlavorOptions('commonmark'));
 

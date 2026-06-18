@@ -5,7 +5,7 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **631 passing / 16 failing** (started at 413/234).
+Optional suite: `npx grunt test-commonmark`. **633 passing / 14 failing** (started at 413/234).
 
 Done this far (each a separate, gated, tested commit):
 | Commit | Phase | CM cases |
@@ -22,6 +22,7 @@ Done this far (each a separate, gated, tested commit):
 | Phase 5b+ | lazy continuation through block-quote+list nesting | +2 |
 | Phase 6 | Unified inline parser (`commonmarkInline`) | +22 |
 | Phase 7 | Tab expansion (`commonmarkTabs`) | +4 |
+| Phase 7+ | Per-list loose/tight respects container nesting (`itemLoose`) | +2 |
 
 Phase 6 (`commonmarkInline`): a single CommonMark inline parser in
 `src/subParsers/makehtml/cmInline.js` (subparser `makehtml.cmInline`), built on the same
@@ -141,10 +142,17 @@ tight/loose-aware paragraph wrap. Unit coverage in `test/unit/showdown.commonmar
 
 ## NEXT: the remaining ~47
 
-- **Lists, the hard tail (~6):** setext/thematic-break interference (#281/#282/#300) and
-  block-quote+list lazy continuation (#292/#293) are now fixed. Remaining: loose-detection
-  inside items containing fenced code / blank lines (#307/#318/#319/#321/#324) and similar
-  multi-block item edge cases.
+- **Lists, the hard tail (~3):** #307/#319 (loose/tight nesting) now fixed via `itemLoose`.
+  Remaining #318/#321/#324 plus container-nested HTML (#174), indented code in a block quote
+  (#236) and fenced/indented code in an empty item (#278) all share ONE root cause: the
+  converter-level leaf-block parsers (`githubCodeBlock`, and `hashHTMLBlocks` source mode) run
+  *before* the container parsers, so a list item's indented fence is mis-read as a top-level
+  fence (its closing ``` is treated as a new opening fence and consumes following lines). The fix
+  is **container-first parsing** — run lists/block quotes before the leaf-block parsers — but
+  those run at the converter level before `stripLinkDefinitions`, so reordering risks breaking
+  link references and is high blast radius. Best done as a dedicated, carefully-gated effort
+  (e.g. restrict converter-level fenced code to indent 0 and handle indented fences inside
+  `blockGamut` after the container parsers, diffing every step).
 - **Container-nested HTML blocks (#148/#174/#175):** HTML inside a list item / block quote needs
   CommonMark HTML-block recognition on the *recursed* content; currently `hashHTMLBlocks`'
   `sourceMode` only fires at the converter level, so item/quote content uses the balanced-tag

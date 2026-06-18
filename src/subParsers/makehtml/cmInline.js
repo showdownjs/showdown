@@ -185,13 +185,13 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
 
       if (ch === '!' && str.charAt(i + 1) === '[') {
         let node = appendText('![');
-        pushBracket(node, true);
+        pushBracket(node, true, i + 2);
         i += 2;
         continue;
       }
       if (ch === '[') {
         let node = appendText('[');
-        pushBracket(node, false);
+        pushBracket(node, false, i + 1);
         i++;
         continue;
       }
@@ -249,13 +249,14 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
 
     // ---- bracket stack ---------------------------------------------------------
 
-    function pushBracket (node, image) {
+    function pushBracket (node, image, sourceStart) {
       brackets = {
         node: node,
         prev: brackets,
         prevDelim: delimiters,
         image: image,
-        active: true
+        active: true,
+        sourceStart: sourceStart // index in `str` where the label text begins
       };
     }
 
@@ -291,8 +292,10 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
       }
 
       if (!matched) {
-        // reference: full [label], collapsed [] or shortcut
-        let labelText = nodesToText(opener.node.next, null),
+        // reference: full [label], collapsed [] or shortcut. Use the RAW source label
+        // (backslash escapes intact) - CommonMark matches labels by case-fold +
+        // whitespace only, so `[foo\!]` must not match a `[foo!]` definition.
+        let labelText = s.slice(opener.sourceStart, idx),
             refKey = null;
         if (s.charAt(idx + 1) === '[') {
           let close = findRefClose(s, idx + 2);
@@ -353,14 +356,6 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
       let out = '';
       for (let n = from; n !== null && n !== to; n = n.next) {
         out += n.raw ? n.literal : escapeText(n.literal);
-      }
-      return out;
-    }
-    // concatenate the raw text of nodes [from .. to) (for reference labels)
-    function nodesToText (from, to) {
-      let out = '';
-      for (let n = from; n !== null && n !== to; n = n.next) {
-        out += n.literal;
       }
       return out;
     }

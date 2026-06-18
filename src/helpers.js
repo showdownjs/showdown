@@ -757,11 +757,12 @@ showdown.helper.cmEscapeTitle = function (title) {
  * @returns {string}
  */
 showdown.helper.cmNormalizeLabel = function (label) {
+  // CommonMark matches labels by case-fold + whitespace collapse only; backslash
+  // escapes are NOT resolved (so `[foo\!]` does not match a `[foo!]` definition).
   return label
     .replace(/¨E(\d+)E/g, function (wholeMatch, code) {
       return String.fromCharCode(parseInt(code, 10));
     })
-    .replace(/\\([!-\/:-@\[-`{-~])/g, '$1')
     .replace(/\s+/g, ' ')
     .trim()
     .toLowerCase();

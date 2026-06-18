@@ -5,7 +5,7 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **633 passing / 14 failing** (started at 413/234).
+Optional suite: `npx grunt test-commonmark`. **635 passing / 12 failing** (started at 413/234).
 
 Done this far (each a separate, gated, tested commit):
 | Commit | Phase | CM cases |
@@ -23,6 +23,7 @@ Done this far (each a separate, gated, tested commit):
 | Phase 6 | Unified inline parser (`commonmarkInline`) | +22 |
 | Phase 7 | Tab expansion (`commonmarkTabs`) | +4 |
 | Phase 7+ | Per-list loose/tight respects container nesting (`itemLoose`) | +2 |
+| Phase 7+ | Backslash escapes in normalized URLs (`cmNormalizeURL`) | +2 |
 
 Phase 6 (`commonmarkInline`): a single CommonMark inline parser in
 `src/subParsers/makehtml/cmInline.js` (subparser `makehtml.cmInline`), built on the same

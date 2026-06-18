@@ -276,13 +276,20 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     }
 
     url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    if (options.commonmarkLinks) {
+      url = showdown.helper.cmNormalizeURL(url);
+    }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     attributes.href = url;
 
     if (title && showdown.helper.isString(title)) {
-      title = title
-        .replace(/"/g, '&quot;')
-        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      if (options.commonmarkLinks) {
+        title = showdown.helper.cmEscapeTitle(title);
+      } else {
+        title = title
+          .replace(/"/g, '&quot;');
+      }
+      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
       attributes.title = title;
     }
 

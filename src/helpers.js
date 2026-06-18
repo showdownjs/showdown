@@ -734,6 +734,20 @@ showdown.helper.cmNormalizeURL = function (url) {
 };
 
 /**
+ * CommonMark link/image title processing: resolve character references, then
+ * HTML-escape the significant characters so the title attribute is valid HTML.
+ * @param {string} title
+ * @returns {string}
+ */
+showdown.helper.cmEscapeTitle = function (title) {
+  return showdown.helper.cmDecodeEntities(title)
+    .replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+};
+
+/**
  * Clones an object . If the second parameter is true, it deep clones the object.
  * Note: It should not be used in other contexts than showdown, since this algorithm might fail for
  * cyclic references, and dataypes such as Dates, RegExps, Typed Arrays, etc...

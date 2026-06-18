@@ -653,6 +653,87 @@ showdown.helper.urlASCIIEncoding = function (url) {
 };
 
 /**
+ * Resolve HTML5 named (`&ouml;`), decimal (`&#246;`) and hexadecimal (`&#xf6;`)
+ * character references to their corresponding characters (CommonMark behavior).
+ * Unlike makehtml.decodeEntities, this returns the raw decoded characters (no
+ * HTML re-escaping) so the result can be percent-encoded for a URL or further
+ * processed. Invalid references are left verbatim.
+ * @param {string} str
+ * @returns {string}
+ */
+showdown.helper.cmDecodeEntities = function (str) {
+  let entities = showdown.helper.htmlEntities || {};
+  function fromCodePoint (cp) {
+    if (cp === 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) {
+      return '�';
+    }
+    try {
+      return String.fromCodePoint(cp);
+    } catch (e) {
+      return '�';
+    }
+  }
+  return str.replace(/&([#0-9a-zA-Z]+);/g, function (wholeMatch, body) {
+    let m;
+    if ((m = /^#([0-9]{1,7})$/.exec(body))) {
+      return fromCodePoint(parseInt(m[1], 10));
+    }
+    if ((m = /^#[xX]([0-9a-fA-F]{1,6})$/.exec(body))) {
+      return fromCodePoint(parseInt(m[1], 16));
+    }
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && entities.hasOwnProperty(body)) {
+      return entities[body];
+    }
+    return wholeMatch;
+  });
+};
+
+/**
+ * CommonMark URL percent-encoding: percent-encode every character outside the
+ * "safe" set, while preserving sequences that are already percent-encoded.
+ * Mirrors mdurl.encode's default behavior.
+ * @param {string} uri
+ * @returns {string}
+ */
+showdown.helper.cmEncodeURI = function (uri) {
+  const safe = ';/?:@&=+$,-_.!~*\'()#';
+  let out = '';
+  for (let i = 0; i < uri.length; ++i) {
+    let ch = uri.charAt(i),
+        code = uri.charCodeAt(i);
+    if (ch === '%' && /^[0-9a-fA-F]{2}$/.test(uri.substr(i + 1, 2))) {
+      out += uri.substr(i, 3);
+      i += 2;
+    } else if ((code >= 48 && code <= 57) || (code >= 65 && code <= 90) ||
+               (code >= 97 && code <= 122) || safe.indexOf(ch) !== -1) {
+      out += ch;
+    } else {
+      out += encodeURIComponent(ch);
+    }
+  }
+  return out;
+};
+
+/**
+ * Full CommonMark URL normalization for a link/image destination:
+ * 1. restore showdown's `¨E<code>E` backslash-escape placeholders to their literal
+ *    characters (so escaped punctuation is treated literally, not re-processed);
+ * 2. resolve HTML character references (`&ouml;` -> `ö`);
+ * 3. percent-encode the result;
+ * 4. HTML-escape any residual bare `&` so the href stays valid HTML.
+ * @param {string} url
+ * @returns {string}
+ */
+showdown.helper.cmNormalizeURL = function (url) {
+  url = url.replace(/¨E(\d+)E/g, function (wholeMatch, code) {
+    return String.fromCharCode(parseInt(code, 10));
+  });
+  url = showdown.helper.cmDecodeEntities(url);
+  url = showdown.helper.cmEncodeURI(url);
+  return url.replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;');
+};
+
+/**
  * Clones an object . If the second parameter is true, it deep clones the object.
  * Note: It should not be used in other contexts than showdown, since this algorithm might fail for
  * cyclic references, and dataypes such as Dates, RegExps, Typed Arrays, etc...

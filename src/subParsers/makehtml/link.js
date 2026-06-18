@@ -81,7 +81,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     text = text.replace(cmUriAutolinkRegex, function (wholeMatch, uri) {
       // backslash escapes do not work inside autolinks, so restore them to literal backslash + char
       let raw = showdown.subParser('makehtml.unescapeSpecialChars')(uri.replace(/(¨E\d+E)/g, '\\$1'), options, globals);
-      let otp = '<a href="' + cmEscapeHref(cmEncodeURI(raw)) + '">' + cmEscapeText(raw) + '</a>';
+      let otp = '<a href="' + cmEscapeHref(showdown.helper.cmEncodeURI(raw)) + '">' + cmEscapeText(raw) + '</a>';
       return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
     });
 
@@ -349,27 +349,6 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
       mail: mail,
       url: url
     };
-  }
-
-  // CommonMark URL normalization: percent-encode characters outside the "safe" set,
-  // preserving already-percent-encoded sequences. Mirrors mdurl.encode's default behavior.
-  function cmEncodeURI (uri) {
-    const safe = ';/?:@&=+$,-_.!~*\'()#';
-    let out = '';
-    for (let i = 0; i < uri.length; ++i) {
-      let ch = uri.charAt(i),
-          code = uri.charCodeAt(i);
-      if (ch === '%' && /^[0-9a-fA-F]{2}$/.test(uri.substr(i + 1, 2))) {
-        out += uri.substr(i, 3);
-        i += 2;
-      } else if ((code >= 48 && code <= 57) || (code >= 65 && code <= 90) ||
-                 (code >= 97 && code <= 122) || safe.indexOf(ch) !== -1) {
-        out += ch;
-      } else {
-        out += encodeURIComponent(ch);
-      }
-    }
-    return out;
   }
 
   // HTML-escape an autolink href (the URL is already percent-encoded)

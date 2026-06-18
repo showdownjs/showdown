@@ -191,6 +191,11 @@ function getDefaultOpts (simple) {
       describe: 'Recognize CommonMark autolinks: <scheme:uri> for any scheme and <email>, without entity-encoding',
       type: 'boolean'
     },
+    commonmarkLinks: {
+      defaultValue: false,
+      describe: 'Parse links, images and link reference definitions per the CommonMark spec (balanced-paren and <...> destinations, backslash escapes, in-URL entity decoding, alt-text flattening)',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

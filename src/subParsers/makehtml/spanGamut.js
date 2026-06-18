@@ -22,6 +22,23 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   text = showdown.subParser('makehtml.image')(text, options, globals);
   text = showdown.subParser('makehtml.link')(text, options, globals);
 
+  if (options.commonmarkRawHTML) {
+    // CommonMark inline raw HTML: recognize well-formed tags/comments/PIs/
+    // declarations/CDATA and hash them now - after backslash escapes and link/image
+    // destinations are resolved, but before emphasis - so that markup characters
+    // inside a tag (e.g. `<a href="**">`) are not parsed as emphasis. Malformed
+    // `<…>` is left for encodeAmpsAndAngles to escape. Fresh regex per call (this
+    // subparser runs re-entrantly).
+    text = text.replace(new RegExp(showdown.helper.regexes.cmHTMLTagSource, 'g'), function (wm) {
+      // Backslash escapes are not processed inside raw HTML, so restore any escape
+      // placeholders that encodeBackslashEscapes produced back to literal `\<char>`.
+      wm = wm.replace(/¨E(\d+)E/g, function (m, code) {
+        return '\\' + String.fromCharCode(parseInt(code, 10));
+      });
+      return showdown.helper._hashHTMLSpan(wm, globals);
+    });
+  }
+
   text = showdown.subParser('makehtml.emoji')(text, options, globals);
   text = showdown.subParser('makehtml.underline')(text, options, globals);
   text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);

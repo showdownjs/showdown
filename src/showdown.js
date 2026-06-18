@@ -36,7 +36,8 @@ var showdown = {},
         decodeEntities:                       true,
         commonmarkEmphasis:                   true,
         commonmarkAutolinks:                  true,
-        commonmarkLinks:                      true
+        commonmarkLinks:                      true,
+        commonmarkRawHTML:                    true
       },
       vanilla: getDefaultOpts(true),
       allOn: allOptionsOn()

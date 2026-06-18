@@ -21,20 +21,26 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  // Build a regex to find HTML tags.
-  let tags     = /<\/?[a-z\d_:-]+(?:\s+[\s\S]+?)?>/gi,
-      comments = /<!(--(([^>-]|-[^>])([^-]|-[^-])*)--)>/gi;
+  // In CommonMark raw-HTML mode this escaping is skipped: inline raw HTML is instead
+  // recognized with the strict grammar and hashed in spanGamut (makehtml.hashCmRawHTML),
+  // after backslash escapes and link/image destinations have been resolved. Escaping
+  // `=`/`_`/etc. here would corrupt that later strict tag recognition.
+  if (!options.commonmarkRawHTML) {
+    // Build a regex to find HTML tags.
+    let tags     = /<\/?[a-z\d_:-]+(?:\s+[\s\S]+?)?>/gi,
+        comments = /<!(--(([^>-]|-[^>])([^-]|-[^-])*)--)>/gi;
 
-  text = text.replace(tags, function (wholeMatch) {
-    return wholeMatch
-      .replace(/(.)<\/?code>(?=.)/g, '$1`')
-      .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
-  });
+    text = text.replace(tags, function (wholeMatch) {
+      return wholeMatch
+        .replace(/(.)<\/?code>(?=.)/g, '$1`')
+        .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
+    });
 
-  text = text.replace(comments, function (wholeMatch) {
-    return wholeMatch
-      .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
-  });
+    text = text.replace(comments, function (wholeMatch) {
+      return wholeMatch
+        .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
+    });
+  }
 
   let afterEvent = new showdown.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onEnd', text);
   afterEvent

@@ -196,6 +196,11 @@ function getDefaultOpts (simple) {
       describe: 'Parse links, images and link reference definitions per the CommonMark spec (balanced-paren and <...> destinations, backslash escapes, in-URL entity decoding, alt-text flattening)',
       type: 'boolean'
     },
+    commonmarkRawHTML: {
+      defaultValue: false,
+      describe: 'Recognize inline raw HTML using the strict CommonMark grammar; malformed tags (e.g. <33>, <a h*#ref>) are escaped instead of passed through',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

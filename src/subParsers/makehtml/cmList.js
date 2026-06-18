@@ -166,7 +166,9 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
    * blocks (sub-lists, block quotes, code) are produced by blockGamut.
    */
   function renderItem (content, loose) {
-    let str = content.join('\n');
+    // trailing newline so the recursive block parsers (esp. indented code, which
+    // requires each line to end in \n) see a complete final line
+    let str = content.join('\n') + '\n';
     str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
     str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
     str = str.replace(/^\n+/, '').replace(/\n+$/, '');
@@ -186,9 +188,10 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
       }
     }
     let body = out.join('\n');
-    // CommonMark serialization: a loose item, or a tight item that contains a
-    // block-level child (e.g. a sub-list), puts its content on its own lines
-    if (loose) {
+    // CommonMark serialization: a loose item, or a tight item whose content begins
+    // with a block-level child (e.g. a nested list), opens its content on a new
+    // line; a tight item with a trailing block closes `</li>` on a new line.
+    if (loose || /^¨[KG]\d+[KG]/.test(body)) {
       return '<li>\n' + body + '\n</li>\n';
     }
     if (/¨[KG]\d+[KG]/.test(body)) {

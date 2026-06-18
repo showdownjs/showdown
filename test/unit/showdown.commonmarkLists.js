@@ -54,5 +54,15 @@ describe('showdown.Converter commonmarkLists option', function () {
       norm(converter.makeHtml('- foo\n  - bar\n    - baz'))
         .should.equal(norm('<ul>\n<li>foo\n<ul>\n<li>bar\n<ul>\n<li>baz</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>'));
     });
+
+    it('should render content indented past the item as a code block', function () {
+      norm(converter.makeHtml('- foo\n\n      bar'))
+        .should.equal(norm('<ul>\n<li>\n<p>foo</p>\n<pre><code>bar\n</code></pre>\n</li>\n</ul>'));
+    });
+
+    it('should nest a list whose marker is on the same line', function () {
+      norm(converter.makeHtml('- - foo'))
+        .should.equal(norm('<ul>\n<li>\n<ul>\n<li>foo</li>\n</ul>\n</li>\n</ul>'));
+    });
   });
 });

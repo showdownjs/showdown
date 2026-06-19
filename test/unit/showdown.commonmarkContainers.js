@@ -92,5 +92,12 @@ describe('showdown.Converter commonmarkContainers option', function () {
       norm(converter.makeHtml('-\n      baz'))
         .should.equal(norm('<ul>\n<li>\n<pre><code>baz\n</code></pre>\n</li>\n</ul>'));
     });
+
+    it('blank lines inside an item fence do not make the list loose (spec #318)', function () {
+      // the blank lines belong to the fenced code block, so the surrounding items stay
+      // tight (`a` and `c` are not wrapped in <p>)
+      norm(converter.makeHtml('- a\n- ```\n  b\n\n\n  ```\n- c'))
+        .should.equal(norm('<ul>\n<li>a</li>\n<li>\n<pre><code>b\n</code></pre>\n</li>\n<li>c</li>\n</ul>'));
+    });
   });
 });

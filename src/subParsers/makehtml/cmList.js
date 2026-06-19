@@ -181,6 +181,15 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
         containerIndent = ind + 1;
       } else {
         containerIndent = -1; // a plain top-level block (paragraph / indented code)
+        // a fenced code block is a single block: skip its interior (including blank
+        // lines) so blanks inside the fence are not counted as separators between two
+        // top-level blocks (which would wrongly make the list loose)
+        let fence = line.match(/^ {0,3}(```+|~~~+)/);
+        if (fence) {
+          let closeRe = new RegExp('^ {0,3}[' + fence[1][0] + ']{' + fence[1].length + ',}[ \\t]*$');
+          while (li + 1 < content.length && !closeRe.test(content[li + 1])) { li++; }
+          if (li + 1 < content.length) { li++; } // consume the closing fence line
+        }
       }
     }
     return false;

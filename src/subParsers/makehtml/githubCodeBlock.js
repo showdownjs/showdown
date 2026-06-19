@@ -16,7 +16,7 @@
 ////
 
 
-showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals) {
+showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals, topLevelOnly) {
   'use strict';
 
   // early exit if option is not enabled
@@ -32,10 +32,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output + '¨0';
 
+  // In CommonMark container mode the converter-level pass restricts the *opening* fence to
+  // indent 0; indent 1-3 opening fences are owned by the container parsers (a list item's /
+  // block quote's own fence) or handled by a later blockGamut pass for true top-level ones.
+  // This stops an item's indented opening/closing fence from being mistaken for a new
+  // top-level opening fence. The closing fence keeps its 0-3 indent allowance either way.
+  const open = topLevelOnly ? '' : ' {0,3}';
   //const accentRegex = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)(?:(\n {0,3}\1[`~]*)|¨0)/g;
-  const closedBlockRegex   = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1[`~]*/gm;
-  const unclosedBlockRegex = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)¨0/gm;
-  const emptyBlockRegex    = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n {0,3}\1[`~]*/gm;
+  const closedBlockRegex   = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)\\n {0,3}\\1[`~]*', 'gm');
+  const unclosedBlockRegex = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)¨0', 'gm');
+  const emptyBlockRegex    = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n {0,3}\\1[`~]*', 'gm');
 
   text = text.replace(closedBlockRegex, function (wholeMatch, delim, language, codeblock) {
     return parse(closedBlockRegex, wholeMatch, delim, language, codeblock);

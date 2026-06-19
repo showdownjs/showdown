@@ -322,7 +322,10 @@ showdown.Converter = function (converterOptions) {
     // run the sub parsers
     text = showdown.subParser('makehtml.metadata')(text, options, globals);
     text = showdown.subParser('makehtml.hashPreCodeTags')(text, options, globals);
-    text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
+    // In CommonMark container mode, only fences at indent 0 are claimed here; indent 1-3
+    // fences nested in list items / block quotes are handled by the container parsers (and
+    // a later blockGamut pass for genuinely top-level indented fences).
+    text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals, options.commonmarkContainers);
     // CommonMark tab expansion runs after fenced/pre code is hashed (so their content
     // tabs are protected) and before the block parsers, which key off indentation.
     if (options.commonmarkTabs) {

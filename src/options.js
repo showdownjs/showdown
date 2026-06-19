@@ -231,6 +231,11 @@ function getDefaultOpts (simple) {
       describe: 'Expand tabs to 4-column tab stops in block-structure indentation (CommonMark), so tab-indented content, list items and code blocks are recognized; content tabs are preserved',
       type: 'boolean'
     },
+    commonmarkContainers: {
+      defaultValue: false,
+      describe: 'Parse leaf blocks (fenced code, HTML blocks, link reference definitions, indented code) in the context of their containing block quote/list item, so constructs nested inside a container are no longer mis-parsed at the top level',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

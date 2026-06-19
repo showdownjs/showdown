@@ -191,7 +191,13 @@
     // parsers then handle those lines (and any genuine underline inside an item).
     function cmSkipSetext (headingText) {
       let first = headingText.split('\n')[0];
-      return /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(first) || /^ {0,3}>/.test(first);
+      return /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(first) ||
+             /^ {0,3}>/.test(first) ||
+             // a fenced-code opener is a leaf block, not setext paragraph text. In container
+             // mode the converter-level fence pass leaves indent 1-3 fences for the block
+             // parsers, so they can reach setext here; let the fence (and any container
+             // marker below it) be claimed by the block/container parsers instead.
+             /^ {0,3}(?:```|~~~)/.test(first);
     }
 
     text = text.replace(setextRegexH1, function (wholeMatch, headingText, line1, line2, line3, line4) {

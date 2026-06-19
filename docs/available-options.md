@@ -21,6 +21,92 @@ Support escaping of HTML tags.
     <p>&lt;div&gt;foo&lt;/div&gt;</p>
     ```
 
+### commonmarkAutolinks
+
+Recognize CommonMark autolinks: `<scheme:uri>` for any scheme and `<email>`, without entity-encoding.
+
+!!! hint ""
+    The `commonmark*` options (and [`decodeEntities`](#decodeentities)) implement
+    [CommonMark](https://spec.commonmark.org/) compliance. They are designed to work together
+    and are best enabled all at once via the `commonmark` flavor. See
+    [Spec compliance](spec-compliance.md) for the full picture.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+### commonmarkBlockquotes
+
+Parse block quotes as CommonMark container blocks (empty `>`, splitting at blank lines, lazy continuation) instead of Showdown's regex matching.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+### commonmarkContainers
+
+Parse leaf blocks (fenced code, HTML blocks, link reference definitions, indented code) in the context of their containing block quote / list item, so constructs nested inside a container are no longer mis-parsed at the top level.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+### commonmarkEmphasis
+
+Parse emphasis and strong emphasis using the CommonMark delimiter-run algorithm (flanking rules).
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+### commonmarkHTMLBlocks
+
+Recognize HTML blocks using the 7 CommonMark block types (start/end conditions, line based) instead of Showdown's balanced-tag matching.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+### commonmarkInline
+
+Parse inline content (code spans, autolinks, raw HTML, links, images, emphasis) with a single unified CommonMark parser (one delimiter stack) instead of Showdown's sequential passes.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+### commonmarkLinks
+
+Parse links, images and link reference definitions per the CommonMark spec (balanced-paren and `<...>` destinations, backslash escapes, in-URL entity decoding, alt-text flattening).
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+### commonmarkLists
+
+Parse lists with a CommonMark container-block parser (marker/delimiter splitting, ordered start, loose/tight, indentation-based nesting) instead of Showdown's regex matching.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+### commonmarkRawHTML
+
+Recognize inline raw HTML using the strict CommonMark grammar; malformed tags (e.g. `<33>`, `<a h*#ref>`) are escaped instead of passed through.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+### commonmarkTabs
+
+Expand tabs to 4-column tab stops in block-structure indentation (CommonMark), so tab-indented content, list items and code blocks are recognized; content tabs are preserved.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
 ### completeHTMLDocument
 
 Output a complete HTML document, including `<html>`, `<head>`, and `<body>` tags instead of an HTML fragment.
@@ -54,6 +140,35 @@ Set custom ID for a heading.
 
 !!! hint ""
     For better readability and human-friendliness of the heading IDs, it is also recommended to set the [`ghCompatibleHeaderId`](#ghcompatibleheaderid) option to `true`.
+
+### decodeEntities
+
+Resolve HTML5 named (`&copy;`), decimal (`&#35;`) and hexadecimal (`&#xcab;`) character references to their corresponding characters (CommonMark behavior). By default, Showdown preserves entities verbatim.
+
+!!! hint ""
+    This is one of the CommonMark compliance options. See [Spec compliance](spec-compliance.md).
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+=== "input"
+
+    ```
+    AT&amp;T &copy; 2024
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <p>AT&amp;T &copy; 2024</p>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>AT&amp;T © 2024</p>
+    ```
 
 ### disableForced4SpacesIndentedSublists
 

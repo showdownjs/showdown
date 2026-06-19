@@ -372,6 +372,25 @@ var defaultOptions = showdown.getDefaultOptions();
     
     - Tasklists: Adds the class `task-list-item-complete` to completed tasks items in GFM tasklists.
 
+#### CommonMark options **(since v3.0.0)**
+
+These options make Showdown follow the [CommonMark spec](https://spec.commonmark.org/). They are all
+`boolean` and default to `false`. They are designed to work together and are best enabled all at once
+via the [`commonmark` flavor](#flavors). See the
+[Spec compliance docs](docs/spec-compliance.md) for details.
+
+ * **decodeEntities**: Resolve HTML5 named and numeric character references (`&copy;`, `&#35;`, `&#xcab;`) to their characters.
+ * **commonmarkEmphasis**: Parse emphasis / strong emphasis with the CommonMark delimiter-run (flanking) algorithm.
+ * **commonmarkAutolinks**: Recognize CommonMark autolinks `<scheme:uri>` and `<email>` without entity-encoding.
+ * **commonmarkLinks**: Parse links, images and link reference definitions per the spec.
+ * **commonmarkRawHTML**: Recognize inline raw HTML with the strict CommonMark grammar; escape malformed tags.
+ * **commonmarkHTMLBlocks**: Recognize HTML blocks using the 7 CommonMark block types.
+ * **commonmarkBlockquotes**: Parse block quotes as CommonMark container blocks (empty `>`, blank-line splitting, lazy continuation).
+ * **commonmarkLists**: Parse lists with a CommonMark container-block parser (ordered start, loose/tight, indentation-based nesting).
+ * **commonmarkInline**: Parse all inline content with a single unified CommonMark parser (one delimiter stack).
+ * **commonmarkTabs**: Expand tabs to 4-column tab stops in block-structure indentation (content tabs preserved).
+ * **commonmarkContainers**: Parse leaf blocks (fenced code, HTML blocks, link reference definitions, indented code) in the context of their containing block quote / list item.
+
 **NOTE**: Please note that until **version 1.6.0**, all of these options are ***DISABLED*** by default in the cli tool.
 
 
@@ -384,6 +403,7 @@ Currently, the following flavors are available:
  * original - original markdown flavor as in [John Gruber's spec](https://daringfireball.net/projects/markdown/)
  * vanilla  - showdown base flavor (as from v1.3.1)
  * github   - GFM (GitHub Flavored Markdown)
+ * commonmark - [CommonMark](https://spec.commonmark.org/) (as from v3.0.0), enables the full set of `commonmark*` options
 
 
 ### Global

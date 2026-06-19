@@ -7,6 +7,7 @@ Currently, the following flavors are available:
  * `original`: Original Markdown flavor as in [John Gruber's spec](https://daringfireball.net/projects/markdown/)
  * `vanilla`:  Showdown base flavor (v1.3.1 onwards)
  * `github`: [GitHub Flavored Markdown, or GFM](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
+ * `commonmark`: [CommonMark](https://spec.commonmark.org/) (v3.0.0 onwards). Enables the full set of `commonmark*` options — see [Spec compliance](spec-compliance.md).
 
 ## Set flavor
 

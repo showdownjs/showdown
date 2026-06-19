@@ -54,5 +54,15 @@ describe('showdown.Converter commonmarkContainers option', function () {
       norm(converter.makeHtml('```\naaa\n  ```'))
         .should.equal(norm('<pre><code>aaa\n</code></pre>'));
     });
+
+    it('an HTML block inside a block quote stays verbatim (spec #174)', function () {
+      norm(converter.makeHtml('> <div>\n> foo\n\nbar'))
+        .should.equal(norm('<blockquote>\n<div>\nfoo\n</blockquote>\n<p>bar</p>'));
+    });
+
+    it('a link reference definition inside a block quote is collected (spec #218)', function () {
+      norm(converter.makeHtml('[foo]\n\n> [foo]: /url'))
+        .should.equal(norm('<p><a href="/url">foo</a></p>\n<blockquote>\n</blockquote>'));
+    });
   });
 });

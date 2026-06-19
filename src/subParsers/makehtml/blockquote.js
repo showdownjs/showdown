@@ -81,6 +81,14 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     } else {
       bq = captureStartEvent.matches.blockquote;
       bq = showdown.subParser('makehtml.githubCodeBlock')(bq, options, globals);
+      // CommonMark container mode: run the source-level leaf-block passes on the quote's
+      // own (marker-stripped) content, mirroring the converter pipeline, so an HTML block
+      // or a link reference definition nested inside the block quote is recognized in the
+      // quote's context instead of only at the top level.
+      if (options.commonmarkContainers) {
+        bq = showdown.subParser('makehtml.hashHTMLBlocks')(bq, options, globals, true);
+        bq = showdown.subParser('makehtml.stripLinkDefinitions')(bq, options, globals);
+      }
       bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
       bq = showdown.subParser('makehtml.paragraphs')(bq, options, globals);
       bq = bq.replace(/(^|\n)/g, '$1  ');

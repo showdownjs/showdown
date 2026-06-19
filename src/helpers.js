@@ -762,13 +762,24 @@ showdown.helper.cmEscapeTitle = function (title) {
 showdown.helper.cmNormalizeLabel = function (label) {
   // CommonMark matches labels by case-fold + whitespace collapse only; backslash
   // escapes are NOT resolved (so `[foo\!]` does not match a `[foo!]` definition).
-  return label
+  return showdown.helper.caseFold(label
     .replace(/¨E(\d+)E/g, function (wholeMatch, code) {
       return String.fromCharCode(parseInt(code, 10));
     })
     .replace(/\s+/g, ' ')
-    .trim()
-    .toLowerCase();
+    .trim());
+};
+
+/**
+ * Unicode case folding for case-insensitive matching of link reference labels.
+ * Uses `toLowerCase().toUpperCase()` (the round-trip used by commonmark.js) so that
+ * characters like `ß`, `ẞ` and `SS` all fold together - which plain `toLowerCase`
+ * does not (`ẞ` -> `ß`, not `ss`).
+ * @param {string} str
+ * @returns {string}
+ */
+showdown.helper.caseFold = function (str) {
+  return str.toLowerCase().toUpperCase();
 };
 
 /**

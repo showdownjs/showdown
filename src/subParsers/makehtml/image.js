@@ -101,7 +101,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
         attributes = {};
 
     if (linkId) {
-      linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(linkId) : linkId.toLowerCase();
+      linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
     } else {
       linkId = null;
     }
@@ -116,7 +116,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     } else if (showdown.helper.isUndefined(url) || url === '' || url === null) {
       if (linkId === '' || linkId === null) {
         // lower-case and turn embedded newlines into spaces
-        linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(altText) : altText.toLowerCase().replace(/ ?\n/g, ' ');
+        linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(altText) : showdown.helper.caseFold(altText).replace(/ ?\n/g, ' ');
       }
       url = '#' + linkId;
 

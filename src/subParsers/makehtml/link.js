@@ -387,7 +387,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     title = title || null;
     url = url || null;
     if (linkId) {
-      linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(linkId) : linkId.toLowerCase();
+      linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
     } else {
       linkId = null;
     }
@@ -398,7 +398,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     } else if (!url) {
       if (!linkId) {
         // lower-case and turn embedded newlines into spaces
-        linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(text) : text.toLowerCase().replace(/ ?\n/g, ' ');
+        linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
       }
       url = '#' + linkId;
 

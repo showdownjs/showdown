@@ -25,6 +25,14 @@ describe('showdown.Converter commonmarkLinks option', function () {
       converter.makeHtml('[foo](/f&ouml;&ouml; "f&ouml;&ouml;")')
         .should.equal('<p><a href="/f&ouml;&ouml;" title="f&ouml;&ouml;">foo</a></p>');
     });
+
+    it('should match reference labels case-insensitively (ASCII)', function () {
+      converter.makeHtml('[Foo]\n\n[FOO]: /u').should.equal('<p><a href="/u">Foo</a></p>');
+    });
+
+    it('should case-fold reference labels so ẞ matches SS', function () {
+      converter.makeHtml('[ẞ]\n\n[SS]: /url').should.equal('<p><a href="/url">ẞ</a></p>');
+    });
   });
 
   describe('enabled - URL normalization', function () {

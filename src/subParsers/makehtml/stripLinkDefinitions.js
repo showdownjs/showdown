@@ -23,8 +23,8 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
   let replaceFunc = function (wholeMatch, linkId, url, width, height, blankLines, title) {
 
     // if there aren't two instances of linkId it must not be a reference link so back out
-    linkId = linkId.toLowerCase();
-    if (text.toLowerCase().split(linkId).length - 1 < 2) {
+    linkId = showdown.helper.caseFold(linkId);
+    if (showdown.helper.caseFold(text).split(linkId).length - 1 < 2) {
       return wholeMatch;
     }
 

@@ -93,6 +93,10 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
       // First parse the github code block
       let infostring = captureStartEvent.matches.infostring;
       let lang = infostring.trim().split(' ')[0];
+      // CommonMark resolves backslash escapes of ASCII punctuation in the info string
+      if (options.decodeEntities) {
+        lang = lang.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
+      }
       codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
       //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);

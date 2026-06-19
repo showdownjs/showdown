@@ -37,6 +37,14 @@ describe('makeHtml() commonmark testsuite', function () {
               testsuite[section][i].expected = testsuite[section][i].expected.replace('language-;', '; language-;');
               break;
 
+            case 'Entity and numeric character references_34': // we use different classes to mark languages in fenced code blocks
+              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-föö', 'föö language-föö');
+              break;
+
+            case 'Backslash escapes_24': // we use different classes to mark languages in fenced code blocks
+              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-foo+bar', 'foo+bar language-foo+bar');
+              break;
+
 
           }
           it(name, assertion(testsuite[section][i], converter, true));

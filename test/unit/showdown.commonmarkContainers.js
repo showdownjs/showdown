@@ -69,5 +69,15 @@ describe('showdown.Converter commonmarkContainers option', function () {
       norm(converter.makeHtml('>     foo\n    bar'))
         .should.equal(norm('<blockquote>\n<pre><code>foo\n</code></pre>\n</blockquote>\n<pre><code>bar\n</code></pre>'));
     });
+
+    it('an open HTML block absorbs a following fence (spec #161)', function () {
+      norm(converter.makeHtml('<div></div>\n``` c\nint x = 33;\n```'))
+        .should.equal(norm('<div></div>\n``` c\nint x = 33;\n```'));
+    });
+
+    it('a fenced block still escapes HTML-like lines inside it', function () {
+      norm(converter.makeHtml('```\n<div>\n```'))
+        .should.equal(norm('<pre><code>&lt;div&gt;\n</code></pre>'));
+    });
   });
 });

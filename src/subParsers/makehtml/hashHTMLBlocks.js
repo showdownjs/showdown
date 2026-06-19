@@ -180,6 +180,11 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, 
       return 0;
     }
 
+    // a fenced-code opener (mirrors githubCodeBlock: an info string carries no backtick,
+    // tilde or tab). A fenced code block takes precedence over an HTML block start, so its
+    // interior lines must not be scanned for HTML block starts.
+    let fenceOpen = /^ {0,3}(```+|~~~+) *[^`~\t]*$/;
+
     let lines = str.split('\n'),
         out = [],
         i = 0,
@@ -188,6 +193,22 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, 
     while (i < lines.length) {
       let type = startType(lines[i], prevBlank);
       if (type === 0) {
+        let fence = lines[i].match(fenceOpen);
+        if (fence) {
+          // consume the whole fenced region verbatim (closing fence inclusive, or EOF) so
+          // an HTML-block-like line inside the fence cannot open an HTML block. The fence
+          // itself is hashed later by githubCodeBlock.
+          let closeRe = new RegExp('^ {0,3}[' + fence[1][0] + ']{' + fence[1].length + ',}[ \\t]*$');
+          out.push(lines[i]);
+          i++;
+          while (i < lines.length) {
+            out.push(lines[i]);
+            if (closeRe.test(lines[i])) { i++; break; }
+            i++;
+          }
+          prevBlank = false;
+          continue;
+        }
         out.push(lines[i]);
         prevBlank = isBlank.test(lines[i]);
         i++;

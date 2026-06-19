@@ -22,8 +22,9 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
 
   for (var i = 0; i < end; i++) {
     var str = grafs[i];
-    // if this is an HTML marker, copy it
-    if (str.search(/¨([KG])(\d+)\1/g) >= 0) {
+    // if this is an HTML marker, copy it (¨R = a raw CommonMark HTML block, deferred past
+    // decodeEntities and restored later - it must not be <p>-wrapped or unhashed here)
+    if (str.search(/¨([KGR])(\d+)\1/g) >= 0) {
       grafsOut.push(str);
 
     // test for presence of characters to prevent empty lines being parsed

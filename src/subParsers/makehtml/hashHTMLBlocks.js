@@ -235,8 +235,11 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, 
       }
 
       // wrap the placeholder in blank lines so later block parsing treats it as its
-      // own block
-      out.push('\n¨K' + (globals.gHtmlBlocks.push(blockLines.join('\n')) - 1) + 'K\n');
+      // own block. A CommonMark HTML block is raw verbatim source: its content (including
+      // any entities) must NOT be decoded, so it gets a distinct `¨R` marker and a separate
+      // store, and is restored late - after decodeEntities - rather than being unhashed in
+      // paragraphs like generated `¨K`/`¨G` blocks (which legitimately decode).
+      out.push('\n¨R' + (globals.gHtmlRawBlocks.push(blockLines.join('\n')) - 1) + 'R\n');
       prevBlank = false;
     }
 

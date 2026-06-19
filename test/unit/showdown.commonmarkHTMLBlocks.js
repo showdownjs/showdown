@@ -55,5 +55,20 @@ describe('showdown.Converter commonmarkHTMLBlocks option', function () {
       converter.makeHtml('- Foo\n---')
         .should.equal('<ul>\n<li>Foo</li>\n</ul>\n<hr />');
     });
+
+    it('should keep entities in a raw HTML block verbatim, not decode them (spec #31)', function () {
+      converter.makeHtml('<a href="&ouml;&ouml;.html">')
+        .should.equal('<a href="&ouml;&ouml;.html">');
+    });
+
+    it('should keep a raw HTML block inside a block quote verbatim', function () {
+      converter.makeHtml('> <a href="&amp;x">')
+        .should.equal('<blockquote>\n  <a href="&amp;x">\n</blockquote>');
+    });
+
+    it('should still decode entities in a generated fenced-code class (spec #34)', function () {
+      converter.makeHtml('``` f&ouml;&ouml;\nfoo\n```')
+        .should.equal('<pre><code class="föö language-föö">foo\n</code></pre>');
+    });
   });
 });

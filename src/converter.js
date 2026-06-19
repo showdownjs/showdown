@@ -260,6 +260,7 @@ showdown.Converter = function (converterOptions) {
 
     var globals = {
       gHtmlBlocks:     [],
+      gHtmlRawBlocks:  [],
       gHtmlMdBlocks:   [],
       gHtmlSpans:      [],
       gUrls:           {},
@@ -350,6 +351,13 @@ showdown.Converter = function (converterOptions) {
     // decode character references (gated by the decodeEntities option) after inline parsing,
     // while code spans/blocks are still hashed, so decoded chars are not re-parsed
     text = showdown.subParser('makehtml.decodeEntities')(text, options, globals);
+    // restore raw CommonMark HTML blocks now, after decodeEntities, so their verbatim
+    // content (e.g. `<a href="&ouml;&ouml;.html">`) keeps its entities undecoded
+    if (globals.gHtmlRawBlocks.length) {
+      text = text.replace(/¨R(\d+)R/g, function (wm, n) {
+        return globals.gHtmlRawBlocks[n];
+      });
+    }
     text = showdown.subParser('makehtml.unhashHTMLSpans')(text, options, globals);
     text = showdown.subParser('makehtml.unescapeSpecialChars')(text, options, globals);
 

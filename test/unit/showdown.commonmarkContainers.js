@@ -64,5 +64,10 @@ describe('showdown.Converter commonmarkContainers option', function () {
       norm(converter.makeHtml('[foo]\n\n> [foo]: /url'))
         .should.equal(norm('<p><a href="/url">foo</a></p>\n<blockquote>\n</blockquote>'));
     });
+
+    it('indented code revealed after a block quote is a separate code block (spec #236)', function () {
+      norm(converter.makeHtml('>     foo\n    bar'))
+        .should.equal(norm('<blockquote>\n<pre><code>foo\n</code></pre>\n</blockquote>\n<pre><code>bar\n</code></pre>'));
+    });
   });
 });

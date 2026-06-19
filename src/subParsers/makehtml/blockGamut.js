@@ -47,6 +47,13 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
   text = showdown.subParser('makehtml.table')(text, options, globals);
   text = showdown.subParser('makehtml.blockquote')(text, options, globals);
+  // The block quote container can reveal top-level content that the earlier codeBlock pass
+  // never saw (e.g. an indented-code line that followed a `>` line and so was not yet at the
+  // start of a block). Re-run codeBlock in container mode so that revealed indented code is
+  // recognized instead of falling through to a paragraph.
+  if (options.commonmarkContainers) {
+    text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
+  }
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,

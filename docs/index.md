@@ -16,7 +16,7 @@ Showdown can be used on the client-side (in the browser) or server-side (with No
 
 ## Live demo
 
-<http://demo.showdownjs.com/>
+<http://demo.showdownjs.eu/>
 
 ## Who uses Showdown (or a fork)
 

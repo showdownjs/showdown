@@ -3,7 +3,7 @@
   "version": "3.0.0-alpha",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
-  "homepage": "https://showdownjs.com/",
+  "homepage": "https://showdownjs.eu/",
   "keywords": [
     "markdown",
     "converter"

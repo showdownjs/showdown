@@ -55,6 +55,14 @@ describe('showdown.Converter commonmarkContainers option', function () {
         .should.equal(norm('<pre><code>aaa\n</code></pre>'));
     });
 
+    it('an indented opener with an indent-0 closing fence is paired correctly (spec #131)', function () {
+      // the indent-0 closing fence must not be mistaken for a new opener (which used to
+      // run to EOF and leak the sentinel); content kept unindented to avoid the unrelated
+      // fence-content de-indentation convention.
+      norm(converter.makeHtml(' ```\naaa\naaa\n```'))
+        .should.equal(norm('<pre><code>aaa\naaa\n</code></pre>'));
+    });
+
     it('an HTML block inside a block quote stays verbatim (spec #174)', function () {
       norm(converter.makeHtml('> <div>\n> foo\n\nbar'))
         .should.equal(norm('<blockquote>\n<div>\nfoo\n</blockquote>\n<p>bar</p>'));

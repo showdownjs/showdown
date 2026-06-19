@@ -51,9 +51,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
     return parse(emptyBlockRegex, wholeMatch, delim, language, '');
   });
 
-  text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
-    return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
-  });
+  // In topLevelOnly mode, skip the unclosed (run-to-EOF) pass: a genuine indent-0 opener
+  // pairs via the closed/empty passes above, whereas a lone indent-0 *closing* fence of an
+  // indent 1-3 top-level block would otherwise be mistaken for an opener and swallow the
+  // rest of the document. Such an indented top-level fence (and any truly unclosed one) is
+  // handled by the 0-3 blockGamut pass that runs after the container parsers.
+  if (!topLevelOnly) {
+    text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
+      return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
+    });
+  }
 
   // attacklab: strip sentinel
   text = text.replace(/¨0/, '');

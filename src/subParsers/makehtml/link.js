@@ -113,7 +113,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
       // now let's replace some entities which should be properly url encoded
       url = showdown.helper.urlASCIIEncoding(url);
 
-      url = (urlStart === 'www.') ? 'http://' + url : url;
+      url = (urlStart === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
       return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
     });
 
@@ -200,8 +200,8 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
       // we copy the treated url to the text variable
       let txt = url;
-      // finally, if it's a www shortcut, we prepend http
-      url = (urlPrefix === 'www.') ? 'http://' + url : url;
+      // finally, if it's a www shortcut, we prepend http(s)
+      url = (urlPrefix === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
 
       // url part is done so let's take care of text now
       // we need to escape the text (because of links such as www.example.com/foo__bar__baz)

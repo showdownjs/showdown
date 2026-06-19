@@ -5,9 +5,9 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Source of truth: `npx grunt test-commonmark`. **646 passing / 1 failing** (started at 413/234).
-The only remaining failure is `#31` (Group B, below). `npx grunt test` (lint + unit + functional)
-is green and must stay green at every step.
+Source of truth: `npx grunt test-commonmark`. **647 passing / 0 failing** (started at 413/234).
+The full CommonMark spec suite passes. `npx grunt test` (lint + unit + functional) is green and
+must stay green at every step.
 
 Everything is gated: each CommonMark-divergent feature is a per-feature boolean option (default
 `false`) added to the `commonmark` flavor preset (`src/showdown.js`). The default converter is
@@ -41,6 +41,7 @@ verified per change with the snapshot diff described under "How to work" below.
 | 7+ | Info-string class convention + backslash (#24/#34, harness adjust) | +2 |
 | 7+ | Unicode case-fold for reference labels (`caseFold`, default behavior) | +1 |
 | A | Container-first leaf parsing (`commonmarkContainers`) — see below | +8 |
+| B | Raw HTML block entities kept verbatim (`¨R`/`gHtmlRawBlocks`) | +1 |
 
 **Group A (`commonmarkContainers`)** landed the whole container-first leaf-block group as small
 gated commits (all behind the new `commonmarkContainers` flag, on in the `commonmark` flavor):
@@ -138,11 +139,10 @@ order: setext → atx → horizontalRule → list → codeBlock → table → bl
    after the snapshot diff is regression-free AND `grunt test` is green. `rm -f .cmpass.json` before
    committing. ReDoS-check any new scanner on long inputs (`'['.repeat(80000)`, etc.).
 
-## NEXT: the remaining 1 failure
+## NEXT: nothing — the spec suite is fully passing (647/0)
 
-`#31` (group B). **Group A (container-first parsing) is done** — see the `commonmarkContainers`
-entry under "Completed work" above. All eight cases (`#161, #174, #218, #236, #278, #318, #321,
-#324`) now pass, gated and regression-free.
+Both Group A (container-first parsing, `commonmarkContainers`) and Group B (raw HTML block
+entities) are done — see "Completed work" above. The whole CommonMark spec suite passes.
 
 > **Watch-out learned in Group A:** the quick raw-`cm.tests` snapshot diff (collapse-all
 > `\s+→" "`) under-reports indentation-sensitive cases — it masked a #131 regression that the
@@ -156,17 +156,16 @@ entry under "Completed work" above. All eight cases (`#161, #174, #218, #236, #2
 > blank-line difference), so the add-back was dropped. Only revisit if the `paragraphs` quadratic
 > is fixed first.
 
-### Group B — entity inside a raw HTML block (#31): not cleanly separable from #34
+### Group B — entity inside a raw HTML block (#31): DONE
 `<a href="&ouml;&ouml;.html">` is a raw HTML block whose content must stay verbatim, but
-`decodeEntities` (running after `paragraphs` unhashes the block) decodes it to `öö`. **Tried and
-reverted:** skipping entities inside `cmHTMLTagSource` matches in `decodeEntities` fixes #31 but
-**regresses #34** — the fenced-code class `<code class="f&ouml;…">` is *generated* HTML whose
-info-string entity *should* decode, and after unhashing it is byte-identical to a raw `<a>` tag.
-The two trade. A clean fix must distinguish raw-HTML-block `¨K` entries (from `parseCmHTMLBlocks`)
-from generated `¨G`/blockquote/list/hr `¨K` blocks and defer **only** the raw-HTML ones past
-`decodeEntities` — which means giving them a distinct marker and teaching `paragraphs`' graf loop
-+ a late unhash step about it. Bounded but invasive for one case; do it only alongside group A or
-when touching `paragraphs` anyway.
+`decodeEntities` (running after `paragraphs` unhashed the block) decoded it to `öö`. The trap was
+#34: the fenced-code class `<code class="f&ouml;…">` is *generated* HTML whose info-string entity
+*should* decode, and after unhashing it is byte-identical to a raw `<a>` tag — so a blanket
+"skip entities in tags" rule traded #31 for #34. **Fix (landed):** `parseCmHTMLBlocks` now hashes
+raw HTML blocks with a distinct `¨R` marker backed by a separate `globals.gHtmlRawBlocks` store;
+`paragraphs` treats `¨R` grafs as blocks (no `<p>`-wrap, not unhashed there); the converter
+restores them right after `decodeEntities`. Generated `¨K`/`¨G` blocks (incl. the fenced-code
+class) still decode as before.
 
 ## Out of scope / known non-wins
 - **#24/#34 (info-string class):** Showdown emits `lang language-lang`; the harness rewrites the

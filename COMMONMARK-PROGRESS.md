@@ -1,193 +1,188 @@
 # CommonMark compliance — progress & handoff
 
 Working notes for the incremental CommonMark-compliance effort on branch
-`922-commonmark-compliance`. Delete this file before opening the final PR.
+`922-commonmark-compliance`. **Delete this file before opening the final PR.**
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **638 passing / 9 failing** (started at 413/234).
+Source of truth: `npx grunt test-commonmark`. **638 passing / 9 failing** (started at 413/234).
+`npx grunt test` (lint + unit + functional) is green and must stay green at every step.
 
-Done this far (each a separate, gated, tested commit):
-| Commit | Phase | CM cases |
+Everything is gated: each CommonMark-divergent feature is a per-feature boolean option (default
+`false`) added to the `commonmark` flavor preset (`src/showdown.js`). The default converter is
+untouched (the only intentional *default*-behavior change is the Unicode case-fold of reference
+labels, see `caseFold` below). Zero CommonMark regressions have been introduced at any step —
+verified per change with the snapshot diff described under "How to work" below.
+
+### Flags now in the `commonmark` flavor (`src/showdown.js`)
+`noHeaderId`, `requireSpaceBeforeHeadingText`, `decodeEntities`, `commonmarkEmphasis`,
+`commonmarkAutolinks`, `commonmarkLinks`, `commonmarkRawHTML`, `commonmarkHTMLBlocks`,
+`commonmarkBlockquotes`, `commonmarkLists`, `commonmarkInline`, `commonmarkTabs`.
+
+### Completed work (each a separate, gated, tested commit)
+| Phase | Feature / flag | CM cases |
 |---|---|---|
-| `37de87e` | Entities (`decodeEntities`) | +9 |
-| `c25d9ed` | Emphasis/strong delimiter-run (`commonmarkEmphasis`) | +56 |
-| `d0d5662` | Autolinks (`commonmarkAutolinks`) | +8 |
-| Phase 3b | Links + Images + Reference definitions (`commonmarkLinks`) | +41 |
-| Phase 4a | Inline raw HTML (`commonmarkRawHTML`) | +15 |
-| Phase 4b | HTML blocks (`commonmarkHTMLBlocks`) | +26 |
-| Phase 5a | Container block quotes (`commonmarkBlockquotes`) | +7 |
-| Phase 5b | Lists + list items (`commonmarkLists`) | +25 |
-| Phase 5b+ | setext/thematic-break vs list-item interference | +3 |
-| Phase 5b+ | lazy continuation through block-quote+list nesting | +2 |
-| Phase 6 | Unified inline parser (`commonmarkInline`) | +22 |
-| Phase 7 | Tab expansion (`commonmarkTabs`) | +4 |
-| Phase 7+ | Per-list loose/tight respects container nesting (`itemLoose`) | +2 |
-| Phase 7+ | Backslash escapes in normalized URLs (`cmNormalizeURL`) | +2 |
-| Phase 7+ | Info-string class convention + backslash (#24/#34, harness adjust) | +2 |
-| Phase 7+ | Unicode case-fold for reference labels (`caseFold`, default) | +1 |
-
-Phase 6 (`commonmarkInline`): a single CommonMark inline parser in
-`src/subParsers/makehtml/cmInline.js` (subparser `makehtml.cmInline`), built on the same
-node-list/delimiter-stack/`processEmphasis` design as `emphasisAndStrong`'s CommonMark path. It
-resolves code spans, backslash escapes, entities, autolinks, raw HTML, links, images and emphasis
-together on one delimiter stack — so a link cannot contain a link (forming a link deactivates
-earlier `[` openers), emphasis interleaves with link brackets, and code spans/autolinks/raw HTML
-bind before links. `spanGamut` routes inline content through it when `commonmarkInline` is on (the
-Showdown extras + `encodeAmpsAndAngles`/`hardLineBreaks` still run after). Developed behind the
-flag to whole-suite parity (+28 / 0 regressions) before being added to the flavor. This cleared
-the entire Links cluster (17→1) and the code-span precedence cases. Unit coverage in
-`test/unit/showdown.commonmarkInline.js`.
-
-Phase 3b shipped as 5 gated commits behind `commonmarkLinks` (added to the `commonmark`
-flavor): shared URL helpers; URL normalization + in-URL entity decoding; a manual
-inline-link scanner (balanced parens, `<…>`, titles, escapes, arbitrary bracket nesting);
-a block-aware reference-definition parser (multiline, `<>`, first-wins, escapes); and
-CommonMark images (alt-text flattening + a symmetric inline-image scanner). Unit coverage
-in `test/unit/showdown.commonmarkLinks.js`.
-
-Phase 4a (`commonmarkRawHTML`): strict CommonMark inline raw-HTML recognition
-(`showdown.helper.regexes.cmHTMLTagSource`). Valid tags/comments/PIs/declarations/CDATA are
-hashed early in `spanGamut` (after backslash escapes + link/image destinations, before
-emphasis); malformed `<…>` falls through to `encodeAmpsAndAngles` to be escaped.
-`escapeSpecialCharsWithinTagAttributes` and the single-tag `hashHTMLSpans` passes are skipped
-in this mode. Unit coverage in `test/unit/showdown.commonmarkRawHTML.js`.
-
-Phase 4b (`commonmarkHTMLBlocks`): the 7 CommonMark HTML block types via a line-based scanner
-in `hashHTMLBlocks.js` (`parseCmHTMLBlocks`). It runs only on the original source — the
-converter passes a new `sourceMode` arg; `blockGamut` re-invokes `hashHTMLBlocks` on generated
-markup and there the existing balanced-tag hashing is kept so generated block tags aren't
-over-consumed (e.g. `<ul>…</ul>` followed by `---`). Type 7 cannot interrupt a paragraph.
-Unit coverage in `test/unit/showdown.commonmarkHTMLBlocks.js`. The remaining HTML-block
-failures (#148, #174, #175, #191) are container-nested (HTML inside list items / block quotes /
-indented) — they need the CommonMark container-block parser (Phase 5).
-
-Remaining failures by section: List items ~36, Lists ~21, Links 18, Fenced code blocks 11,
-Tabs 10, Block quotes 8, Code spans 8, HTML blocks 4 (container-nested), Backslash escapes 3,
-Entity 3, Setext headings 2, Indented code 2, Link reference defs 2, others 1 each.
-The remaining ~18 Links failures need the full delimiter-stack inline parser (link/image
-precedence with emphasis, nested-link deactivation, reference-vs-inline shortest-match) —
-the deliberately deferred hard core; the current scanner handles destinations/labels but
-not the cross-construct precedence cases (#517/#518/#519/#531/#532/#568/#570, …).
+| — | Entities (`decodeEntities`) | +9 |
+| — | Emphasis/strong delimiter-run (`commonmarkEmphasis`) | +56 |
+| — | Autolinks (`commonmarkAutolinks`) | +8 |
+| 3b | Links + images + reference definitions (`commonmarkLinks`) | +41 |
+| 4a | Inline raw HTML (`commonmarkRawHTML`) | +15 |
+| 4b | HTML blocks (`commonmarkHTMLBlocks`) | +26 |
+| 5a | Container block quotes (`commonmarkBlockquotes`) | +7 |
+| 5b | Lists + list items (`commonmarkLists`) | +25 |
+| 5b+ | setext/thematic-break vs list-item interference | +3 |
+| 5b+ | lazy continuation through block-quote+list nesting | +2 |
+| 6 | Unified inline parser (`commonmarkInline`) | +22 |
+| 7 | Tab expansion (`commonmarkTabs`) | +4 |
+| 7+ | Per-list loose/tight respects container nesting (`itemLoose`) | +2 |
+| 7+ | Backslash escapes in normalized URLs (`cmNormalizeURL`) | +2 |
+| 7+ | Info-string class convention + backslash (#24/#34, harness adjust) | +2 |
+| 7+ | Unicode case-fold for reference labels (`caseFold`, default behavior) | +1 |
 
 ## HARD RULES (do not break)
 
-1. **Divergence policy.** Where Showdown's flavor has no defined behavior → adopt CommonMark as
-   the default. Where CommonMark **conflicts** with Showdown's default → DO NOT change the
-   default; gate the new behavior behind a per-feature boolean option (default `false`) and add
-   it to the `commonmark` flavor preset. When unsure whether something changes default output →
-   **gate it** (it can never regress the default suite then).
-2. **Never modify existing tests — add only.** New coverage = new fixtures / new unit files.
-   The only exception is fixing a CommonMark spec test case that is genuinely wrong.
-3. **`grunt test` (lint + 392 unit + 397 functional) must stay green** at every step. Because of
-   rule 1 it stays green by construction. Track progress with `grunt test-commonmark`.
+1. **Divergence policy.** Where Showdown has no defined behavior → adopt CommonMark as default.
+   Where CommonMark **conflicts** with Showdown's default → gate behind a per-feature boolean
+   option (default `false`) added to the `commonmark` flavor. When unsure whether something changes
+   default output → **gate it** (then it can never regress the default suite).
+2. **Never modify existing tests — add only.** New coverage = new `test/unit/showdown.<flag>.js`
+   files (assert default-off unchanged AND on-behavior correct). The *only* exception is the
+   CommonMark harness adjustment file (`test/functional/makehtml/extra.testsuite.commonmark.js`),
+   which legitimately rewrites a few expected outputs for Showdown's class-naming convention — and
+   only with explicit maintainer direction.
+3. **`grunt test` must stay green** at every step. By rule 1 it stays green by construction; track
+   CommonMark progress with `grunt test-commonmark`.
+4. **Attribution / stealth (see `CLAUDE.md`).** Nothing that leaves this machine — commit messages,
+   code, comments, docs, filenames — may reveal AI/assistant involvement. No co-author trailers, no
+   "prompt"/"Claude"/"Anthropic"/"AI" markers. Do not commit AI scratch artifacts (e.g. a stray
+   `.cmpass.json`, agent transcripts). Write as the maintainer.
 
 ## The established gating pattern (follow it exactly)
 
 For each CommonMark-divergent feature `X`:
-- Add option `X: {defaultValue:false, describe:'…', type:'boolean'}` in `src/options.js`.
+- Add `X: {defaultValue:false, describe:'…', type:'boolean'}` in `src/options.js`.
 - Add `X: true` to `flavor.commonmark` in `src/showdown.js`.
-- In the relevant subparser: `if (options.X) { …commonmark path… } else { …existing default… }`.
-- The CommonMark harness already builds its converter from the flavor
-  (`extra.testsuite.commonmark.js` → `getFlavorOptions('commonmark')`), so new flavor flags are
-  picked up automatically — **do not hand-edit the harness assertions.**
-- Add an add-only unit test `test/unit/showdown.X.js` (see `showdown.commonmarkEmphasis.js` as a
-  template): assert default-off behavior is unchanged AND on-behavior is correct.
+- In the subparser: `if (options.X) { …commonmark path… } else { …existing default… }`. For large
+  rewrites, put the new code in its own file/subparser and have the existing one delegate when the
+  flag is on (e.g. `cmList.js`, `cmInline.js`).
+- The harness builds its converter from the flavor, so new flags are picked up automatically — do
+  not hand-edit harness assertions.
+- Develop high-blast-radius changes *behind the flag, not yet in the flavor*; only add to the
+  flavor once a whole-suite diff shows **zero regressions** (this is how Phase 6 was landed).
 
-Reusable helpers now in place (in `src/helpers.js`): `cmEncodeURI`, `cmDecodeEntities`,
-`cmNormalizeURL`, `cmEscapeTitle`, `cmNormalizeLabel`, `cmScanDestination`, `cmScanTitle`
-— the shared CommonMark URL/label/destination machinery used by `link.js`, `image.js` and
-`stripLinkDefinitions.js`.
+## Key infrastructure already in place
 
-## DONE: Phase 3b — Links + Images + Reference definitions (`commonmarkLinks`, +41)
+**Subparsers** (`src/subParsers/makehtml/`): `cmInline.js` (unified inline parser), `cmList.js`
+(`parseCmList` container list parser), `blockquote.js` (`parseCmBlockquotes`), `hashHTMLBlocks.js`
+(`parseCmHTMLBlocks`, 7 HTML-block types; takes a `sourceMode` arg from `converter.js`),
+`stripLinkDefinitions.js` (`parseCmLinkDefinitions`), `link.js`/`image.js` (legacy per-construct CM
+scanners, used when `commonmarkLinks` is on but `commonmarkInline` is off).
 
-Shipped as 5 gated commits (see the table above). What is implemented:
-1. URL normalization + in-URL entity decoding (`cmNormalizeURL`): `&ouml;`→`ö`→`%C3%B6`,
-   percent-encoding, backslash-escape placeholder restoration. Closed Entity-in-URL #31–34.
-2. Manual inline-link scanner in `link.js`: balanced parens, `<…>`, the three title delimiters,
-   backslash escapes, innermost-bracket matching, arbitrary label nesting depth. Single-pass O(n).
-3. Block-aware reference-definition parser in `stripLinkDefinitions.js`: multiline defs, `<…>` and
-   empty `<>` destinations, multiline titles, first-definition-wins, escapes, label normalization;
-   defs recognized only at block boundaries (start / blank line / ATX heading / thematic break) so
-   they cannot interrupt a paragraph.
-4. CommonMark images in `image.js`: alt-text flattening (`![foo *bar*]`→`alt="foo bar"`, nested
-   image→its alt, nested link→its text) + a symmetric manual inline-image scanner.
-5. Precedence with `commonmarkEmphasis` verified (covered in the unit tests).
+**Helpers** (`src/helpers.js`): `cmEncodeURI`, `cmDecodeEntities`, `cmNormalizeURL`,
+`cmEscapeTitle`, `cmNormalizeLabel`, `cmScanDestination`, `cmScanTitle`, `caseFold`
+(`toLowerCase().toUpperCase()` — Unicode label folding), `expandCmTabs` (4-column tab-stop
+expansion of the block-structure prefix). Regex sources: `showdown.helper.regexes.cmHTMLTagSource`
+/ `cmOpenTagSource` / `cmCloseTagSource`.
 
-### Deferred hard core (the remaining ~18 Links failures)
-These need a **full delimiter-stack inline parser** (the CommonMark "process emphasis" + link
-bracket algorithm) rather than the current per-construct scanners, because they hinge on
-cross-construct precedence: a link cannot contain another link (outer brackets deactivate),
-reference-vs-inline shortest-match, and emphasis spans interleaving with brackets. Examples:
-#517, #518, #519, #523, #525, #531, #532, #535, #537, #555, #568, #570. Showdown's architecture
-runs `image` and `link` as separate sequential subparsers, so a faithful fix likely means a
-single unified inline scanner — a larger structural change, best done as its own phase.
+**Pipeline order** (`src/converter.js`): `metadata → hashPreCodeTags → githubCodeBlock →
+expandCmTabs (gated) → hashHTMLBlocks(sourceMode) → hashCodeTags → stripLinkDefinitions →
+blockGamut → paragraphs → decodeEntities → unhashHTMLSpans → unescapeSpecialChars`. `blockGamut`
+order: setext → atx → horizontalRule → list → codeBlock → table → blockquote → hashHTMLBlocks
+(generated-markup pass). `spanGamut` routes inline through `cmInline` when `commonmarkInline` is on.
 
-Sanity-check current failures any time with (refresh `.build` first via `npx grunt concat:test`):
-```
-node -e 'const s=require("./.build/showdown.js"),cm=require("commonmark-spec");
-const c=new s.Converter(s.getFlavorOptions("commonmark"));const n=x=>x.replace(/\s+/g," ").trim();
-for(const t of cm.tests){if(t.section!=="Links")continue;const g=c.makeHtml(t.markdown);
-if(n(g)!==n(t.html))console.log("#"+(t.example||t.number)+" "+JSON.stringify(t.markdown)+"\n  EXP "+JSON.stringify(t.html)+"\n  GOT "+JSON.stringify(g));}'
-```
+## How to work (verification — read this, it has real gotchas)
 
-## DONE: Phase 5b — lists + list items (`commonmarkLists`, +25)
+1. **`grunt test-commonmark` is the source of truth.** It runs the generated
+   `cases/commonmark.testsuite.json` through `extra.testsuite.commonmark.js`, which *excludes* a few
+   cases and rewrites a few expected outputs (Showdown's `lang language-lang` class convention). A
+   raw `commonmark-spec` `cm.tests` probe will **over/under-count** vs the official harness.
+2. **Tabs gotcha:** the `commonmark-spec` npm package renders tabs as `→` (U+2192) in
+   `cm.tests[].markdown`. A `cm.tests`-based probe therefore tests *arrows, not tabs* — tab cases
+   must be checked via `grunt test-commonmark` (real tabs) or hand-written `\t` strings.
+3. **`grunt test` / `grunt test-commonmark` clean `.build/` on exit.** Rebuild with
+   `npx grunt concat:test` before any `node -e 'require("./.build/showdown.js")'` probe.
+4. **Snapshot/FIXED-REGRESSED diff** (used throughout, asserts zero regressions across the *whole*
+   suite, not just the section you touched). Either save a baseline and diff, or compare a flag-on
+   vs flag-off converter:
+   ```
+   node -e 'const s=require("./.build/showdown.js"),cm=require("commonmark-spec");
+   const n=x=>x.replace(/\s+/g," ").trim();
+   const on=new s.Converter(s.getFlavorOptions("commonmark"));
+   const o=s.getFlavorOptions("commonmark");o.<FLAG>=false;const off=new s.Converter(o);
+   let fix=[],reg=[];for(const t of cm.tests){const id=t.example||t.number;
+   const a=n(off.makeHtml(t.markdown))===n(t.html),b=n(on.makeHtml(t.markdown))===n(t.html);
+   if(b&&!a)fix.push(id);if(!b&&a)reg.push(id);}
+   console.log("FIXED",fix,"REGRESSED",reg);'
+   ```
+   List official failures by section:
+   `npx grunt test-commonmark 2>&1 | grep -oE "[0-9]+\) [A-Za-z].*_[0-9]+" | sed -E 's/^[0-9]+\) //'`
+5. **Commit cadence:** one feature per commit, `feat(commonmark): …`/`fix(commonmark): …`, only
+   after the snapshot diff is regression-free AND `grunt test` is green. `rm -f .cmpass.json` before
+   committing. ReDoS-check any new scanner on long inputs (`'['.repeat(80000)`, etc.).
 
-New line-based parser `src/subParsers/makehtml/cmList.js` (subparser `makehtml.cmList`),
-invoked only via the gate in `makehtml.list` when `commonmarkLists` is on (the regex parser
-stays the untouched default). Implements: bullet-marker / ordered-delimiter change splits a
-list (#301/#302), ordered `start` + `)` delimiter, per-list loose/tight (`<p>`-wrap vs inline,
-with the exact `<li>\n…\n</li>` serialization), paragraph-interruption rules (empty / non-1
-ordered may not interrupt, #304), indentation-based nesting and same-line nesting (`- - foo`),
-indented-code in items (trailing-newline so the recursive code parser fires), and empty-item
-edge cases (#280/#315). Item content is rendered by recursing through `blockGamut` + a
-tight/loose-aware paragraph wrap. Unit coverage in `test/unit/showdown.commonmarkLists.js`.
+## NEXT: the remaining 9 failures
 
-## NEXT: the remaining ~47
+`#161, #174, #218, #236, #278, #318, #321, #324` (group A) and `#31` (group B).
 
-- **Lists, the hard tail (~3):** #307/#319 (loose/tight nesting) now fixed via `itemLoose`.
-  Remaining #318/#321/#324 plus container-nested HTML (#174), indented code in a block quote
-  (#236) and fenced/indented code in an empty item (#278) all share ONE root cause: the
-  converter-level leaf-block parsers (`githubCodeBlock`, and `hashHTMLBlocks` source mode) run
-  *before* the container parsers, so a list item's indented fence is mis-read as a top-level
-  fence (its closing ``` is treated as a new opening fence and consumes following lines). The fix
-  is **container-first parsing** — run lists/block quotes before the leaf-block parsers — but
-  those run at the converter level before `stripLinkDefinitions`, so reordering risks breaking
-  link references and is high blast radius. Best done as a dedicated, carefully-gated effort
-  (e.g. restrict converter-level fenced code to indent 0 and handle indented fences inside
-  `blockGamut` after the container parsers, diffing every step).
-- **Container-nested HTML blocks (#148/#174/#175):** HTML inside a list item / block quote needs
-  CommonMark HTML-block recognition on the *recursed* content; currently `hashHTMLBlocks`'
-  `sourceMode` only fires at the converter level, so item/quote content uses the balanced-tag
-  path. Thread source-mode (or run the CM HTML-block scanner) through the container recursion.
-- **Tabs: DONE** (`commonmarkTabs`, +4). `showdown.helper.expandCmTabs` expands tabs to 4-column
-  stops in the block-structure prefix (leading whitespace + one marker + its whitespace),
-  preserving content tabs.
-- **Fenced code blocks (~11), Code spans (~8):** info-string/closing-fence and backtick-run
-  edge cases — independent of containers.
-- **Links: DONE** (unified inline parser, Phase 6; #539 Unicode case-fold via `caseFold`).
-- **Entity in a raw HTML block (#31): not cleanly fixable.** Skipping entities inside
-  `cmHTMLTagSource` matches in `decodeEntities` fixes #31 but regresses #34 — the fenced-code
-  class `<code class="f&ouml;…">` is *generated* HTML whose info-string entity *should* decode,
-  and after `paragraphs` unhashes the blocks it is indistinguishable from a raw `<a>` tag. A clean
-  fix must distinguish raw-HTML-block `¨K` entries from generated `¨G`/blockquote/list blocks and
-  defer **only** the raw-HTML ones past `decodeEntities` (touches the `paragraphs` graf-marker
-  logic) — bounded but invasive for one case.
+### Group A — container-first parsing (8 cases): the dominant remaining lever
+`#161, #174, #218, #236, #278, #318, #321, #324`. **One shared root cause:** the converter-level
+*leaf-block* parsers (`githubCodeBlock`, `hashHTMLBlocks` source-mode, `stripLinkDefinitions`) run
+**before** the *container* parsers (`cmList`, `blockquote`, which live in `blockGamut`). So a
+construct nested inside a container is parsed at the top level without the container's indentation
+context:
+- #318/#321/#324/#278 — a list item's *indented* fence: its closing ` ``` ` (at line start,
+  indented to the item) is mistaken for a new *opening* fence and swallows following lines
+  (trace: `githubCodeBlock.onEnd` hashes `   ```…` into a stray `¨G` block). Confirmed root cause.
+- #161 — a fence right after `<div></div>`: parsed instead of staying part of the HTML block.
+- #174 — `<div>` inside a block quote: not recognized as an HTML block within the quote
+  (`hashHTMLBlocks` source-mode only fires at the top level, not on recursed container content).
+- #236 — indented code in a block quote: markerless `bar` wrongly joined instead of being a
+  separate code block.
+- #218 — `> [foo]: /url`: `stripLinkDefinitions` only collects *top-level* defs.
 
-The full roadmap with rationale lives in
-`C:\Users\estev\.claude\plans\implement-the-following-missing-serialized-minsky.md`.
+**Fix = container-first parsing** (run lists/block quotes before the leaf-block parsers). The
+obstacle: those leaf parsers run before `stripLinkDefinitions`, and reordering risks breaking link
+references document-wide — high blast radius, so it must be gated and diffed at every step. A
+sketch that keeps the default path intact:
+- Restrict the converter-level `githubCodeBlock` (in CM mode) to fences at indent 0 only; handle
+  indented fences inside `blockGamut` **after** the container parsers have claimed item/quote
+  content (so `cmList`/`blockquote` `renderItem`/`renderBlockquote` — which already call
+  `githubCodeBlock` on the stripped content — own the item's fence). Verify top-level indented
+  fences (e.g. spec #131/#133, currently passing via harness normalization) don't regress.
+- Thread `sourceMode` (or run `parseCmHTMLBlocks`) through the container recursion for #174.
+- Collect reference definitions from inside containers for #218.
+This is the biggest single remaining win and the right candidate for the next dedicated session.
+
+### Group B — entity inside a raw HTML block (#31): not cleanly separable from #34
+`<a href="&ouml;&ouml;.html">` is a raw HTML block whose content must stay verbatim, but
+`decodeEntities` (running after `paragraphs` unhashes the block) decodes it to `öö`. **Tried and
+reverted:** skipping entities inside `cmHTMLTagSource` matches in `decodeEntities` fixes #31 but
+**regresses #34** — the fenced-code class `<code class="f&ouml;…">` is *generated* HTML whose
+info-string entity *should* decode, and after unhashing it is byte-identical to a raw `<a>` tag.
+The two trade. A clean fix must distinguish raw-HTML-block `¨K` entries (from `parseCmHTMLBlocks`)
+from generated `¨G`/blockquote/list/hr `¨K` blocks and defer **only** the raw-HTML ones past
+`decodeEntities` — which means giving them a distinct marker and teaching `paragraphs`' graf loop
++ a late unhash step about it. Bounded but invasive for one case; do it only alongside group A or
+when touching `paragraphs` anyway.
+
+## Out of scope / known non-wins
+- **#24/#34 (info-string class):** Showdown emits `lang language-lang`; the harness rewrites the
+  expected for the explicit `Fenced code blocks` cases (#142/143/144) and now #24/#34 too. The
+  doubling itself is intentional Showdown behavior — don't "fix" it (would trade #142/143/144).
+- The raw `cm.tests` probe shows extra Fenced-code-blocks "failures" (#126/#127/#130/#131/#133) that
+  are **passing** in the official harness (whitespace/class normalization). Not real failures.
 
 ---
 
 ## Ready-to-paste prompt for the next session
 
 > Continue the CommonMark-compliance work on branch `922-commonmark-compliance`. Read
-> `COMMONMARK-PROGRESS.md` first — follow its HARD RULES and the established gating pattern
-> exactly (per-feature boolean option, off by default, added to the `commonmark` flavor; never
-> modify existing tests, add only; `grunt test` must stay green). Implement **Phase 3b: Links +
-> Images + Reference definitions**, gated behind a `commonmarkLinks` flag, reusing `cmEncodeURI`
-> in `link.js`. Work through the sub-pieces in order (URL normalization with in-URL entity
-> decoding, inline destination/title parsing with balanced parens and `<…>`, reference
-> definitions, image alt-text flattening), verifying each against `npx grunt test-commonmark` and
-> keeping `npx grunt test` green. Add add-only unit tests. Commit in small, verified increments
-> (no "Claude" attribution in messages).
+> `COMMONMARK-PROGRESS.md` first — follow its HARD RULES (gate per-feature, off by default, added to
+> the `commonmark` flavor; add-only tests; `grunt test` stays green; stealth/attribution rule) and
+> the verification workflow exactly (`grunt test-commonmark` is the source of truth; the snapshot
+> FIXED/REGRESSED diff must show zero regressions; rebuild `.build` with `grunt concat:test` before
+> node probes; tabs render as `→` in the `cm.tests` probe). Take on **Group A: container-first
+> parsing** (#161/#174/#218/#236/#278/#318/#321/#324) — the converter-level leaf-block parsers run
+> before the container parsers, so a list item's indented fence is mis-read as a top-level fence.
+> Implement it gated and incrementally per the sketch in the doc, diffing every step. Commit in
+> small, verified increments.

@@ -5,8 +5,9 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Source of truth: `npx grunt test-commonmark`. **638 passing / 9 failing** (started at 413/234).
-`npx grunt test` (lint + unit + functional) is green and must stay green at every step.
+Source of truth: `npx grunt test-commonmark`. **646 passing / 1 failing** (started at 413/234).
+The only remaining failure is `#31` (Group B, below). `npx grunt test` (lint + unit + functional)
+is green and must stay green at every step.
 
 Everything is gated: each CommonMark-divergent feature is a per-feature boolean option (default
 `false`) added to the `commonmark` flavor preset (`src/showdown.js`). The default converter is
@@ -17,7 +18,8 @@ verified per change with the snapshot diff described under "How to work" below.
 ### Flags now in the `commonmark` flavor (`src/showdown.js`)
 `noHeaderId`, `requireSpaceBeforeHeadingText`, `decodeEntities`, `commonmarkEmphasis`,
 `commonmarkAutolinks`, `commonmarkLinks`, `commonmarkRawHTML`, `commonmarkHTMLBlocks`,
-`commonmarkBlockquotes`, `commonmarkLists`, `commonmarkInline`, `commonmarkTabs`.
+`commonmarkBlockquotes`, `commonmarkLists`, `commonmarkInline`, `commonmarkTabs`,
+`commonmarkContainers`.
 
 ### Completed work (each a separate, gated, tested commit)
 | Phase | Feature / flag | CM cases |
@@ -38,6 +40,22 @@ verified per change with the snapshot diff described under "How to work" below.
 | 7+ | Backslash escapes in normalized URLs (`cmNormalizeURL`) | +2 |
 | 7+ | Info-string class convention + backslash (#24/#34, harness adjust) | +2 |
 | 7+ | Unicode case-fold for reference labels (`caseFold`, default behavior) | +1 |
+| A | Container-first leaf parsing (`commonmarkContainers`) — see below | +8 |
+
+**Group A (`commonmarkContainers`)** landed the whole container-first leaf-block group as small
+gated commits (all behind the new `commonmarkContainers` flag, on in the `commonmark` flavor):
+- Converter-level `githubCodeBlock` only claims indent-0 *opening* fences (and skips its
+  run-to-EOF pass) so a list item's indented fence — or the indent-0 closing fence of an indent
+  1-3 top-level block — is never mistaken for a new opener; a `blockGamut` pass after the
+  container parsers handles genuinely top-level indented fences (#321/#324/#131).
+- `renderBlockquote` runs the source-level HTML-block and link-definition passes on the quote's
+  stripped content (#174/#218); a `codeBlock` re-run after the block-quote parser recognizes
+  indented code revealed once the quote is extracted (#236).
+- The HTML-block scan runs before `githubCodeBlock` (and is fence-aware) so an open HTML block
+  absorbs a following fence while a fence still escapes HTML-like lines inside it (#161).
+- `cmList`: strip an empty marker's leading line so an indented-code first block is recognized
+  (#278); `itemLoose` skips a fenced block's interior so blank lines inside an item fence don't
+  make the list loose (#318).
 
 ## HARD RULES (do not break)
 
@@ -120,38 +138,23 @@ order: setext → atx → horizontalRule → list → codeBlock → table → bl
    after the snapshot diff is regression-free AND `grunt test` is green. `rm -f .cmpass.json` before
    committing. ReDoS-check any new scanner on long inputs (`'['.repeat(80000)`, etc.).
 
-## NEXT: the remaining 9 failures
+## NEXT: the remaining 1 failure
 
-`#161, #174, #218, #236, #278, #318, #321, #324` (group A) and `#31` (group B).
+`#31` (group B). **Group A (container-first parsing) is done** — see the `commonmarkContainers`
+entry under "Completed work" above. All eight cases (`#161, #174, #218, #236, #278, #318, #321,
+#324`) now pass, gated and regression-free.
 
-### Group A — container-first parsing (8 cases): the dominant remaining lever
-`#161, #174, #218, #236, #278, #318, #321, #324`. **One shared root cause:** the converter-level
-*leaf-block* parsers (`githubCodeBlock`, `hashHTMLBlocks` source-mode, `stripLinkDefinitions`) run
-**before** the *container* parsers (`cmList`, `blockquote`, which live in `blockGamut`). So a
-construct nested inside a container is parsed at the top level without the container's indentation
-context:
-- #318/#321/#324/#278 — a list item's *indented* fence: its closing ` ``` ` (at line start,
-  indented to the item) is mistaken for a new *opening* fence and swallows following lines
-  (trace: `githubCodeBlock.onEnd` hashes `   ```…` into a stray `¨G` block). Confirmed root cause.
-- #161 — a fence right after `<div></div>`: parsed instead of staying part of the HTML block.
-- #174 — `<div>` inside a block quote: not recognized as an HTML block within the quote
-  (`hashHTMLBlocks` source-mode only fires at the top level, not on recursed container content).
-- #236 — indented code in a block quote: markerless `bar` wrongly joined instead of being a
-  separate code block.
-- #218 — `> [foo]: /url`: `stripLinkDefinitions` only collects *top-level* defs.
-
-**Fix = container-first parsing** (run lists/block quotes before the leaf-block parsers). The
-obstacle: those leaf parsers run before `stripLinkDefinitions`, and reordering risks breaking link
-references document-wide — high blast radius, so it must be gated and diffed at every step. A
-sketch that keeps the default path intact:
-- Restrict the converter-level `githubCodeBlock` (in CM mode) to fences at indent 0 only; handle
-  indented fences inside `blockGamut` **after** the container parsers have claimed item/quote
-  content (so `cmList`/`blockquote` `renderItem`/`renderBlockquote` — which already call
-  `githubCodeBlock` on the stripped content — own the item's fence). Verify top-level indented
-  fences (e.g. spec #131/#133, currently passing via harness normalization) don't regress.
-- Thread `sourceMode` (or run `parseCmHTMLBlocks`) through the container recursion for #174.
-- Collect reference definitions from inside containers for #218.
-This is the biggest single remaining win and the right candidate for the next dedicated session.
+> **Watch-out learned in Group A:** the quick raw-`cm.tests` snapshot diff (collapse-all
+> `\s+→" "`) under-reports indentation-sensitive cases — it masked a #131 regression that the
+> official harness (per-line trim) caught. Always confirm each step with `npx grunt test-commonmark`,
+> not just the raw diff.
+>
+> **Known non-win deferred from #318:** CommonMark keeps blank lines that are part of a fenced
+> code block (`b\n\n\n`); Showdown's `githubCodeBlock` trims trailing newlines. Adding them back
+> in CM mode feeds a *pre-existing* O(n²) in `paragraphs`' newline handling, so an all-blank fence
+> (`` ``` `` + 100k blank lines) becomes a DoS. #318 passes anyway (the harness normalizes the
+> blank-line difference), so the add-back was dropped. Only revisit if the `paragraphs` quadratic
+> is fixed first.
 
 ### Group B — entity inside a raw HTML block (#31): not cleanly separable from #34
 `<a href="&ouml;&ouml;.html">` is a raw HTML block whose content must stay verbatim, but

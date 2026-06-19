@@ -3,7 +3,11 @@
  */
 
 var bootstrap = require('./makemarkdown.bootstrap.js'),
-    converter = new bootstrap.showdown.Converter(),
+    // the standard suite exercises full markdown emission, so it runs with every reverse
+    // feature enabled; the raw-HTML fallback (when a feature is disabled) is covered separately
+    converter = new bootstrap.showdown.Converter({
+      strikethrough: true, tables: true, tasklists: true, underline: true, parseImgDimensions: true
+    }),
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getTestSuite('test/functional/makemarkdown/cases/standard/');
 

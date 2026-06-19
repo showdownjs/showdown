@@ -1,0 +1,2 @@
+- <input type="checkbox"> todo
+- <input type="checkbox" checked=""> done

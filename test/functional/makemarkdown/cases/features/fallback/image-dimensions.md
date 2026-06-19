@@ -1,0 +1,1 @@
+<img src="pic.png" alt="x" width="100" height="50">

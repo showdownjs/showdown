@@ -87,5 +87,10 @@ describe('showdown.Converter commonmarkContainers option', function () {
       norm(converter.makeHtml('```\n<div>\n```'))
         .should.equal(norm('<pre><code>&lt;div&gt;\n</code></pre>'));
     });
+
+    it('an empty marker with indented code on the next line is a code block (spec #278)', function () {
+      norm(converter.makeHtml('-\n      baz'))
+        .should.equal(norm('<ul>\n<li>\n<pre><code>baz\n</code></pre>\n</li>\n</ul>'));
+    });
   });
 });

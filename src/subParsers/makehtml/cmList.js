@@ -216,6 +216,10 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     // trailing newline so the recursive block parsers (esp. indented code, which
     // requires each line to end in \n) see a complete final line
     let str = content.join('\n') + '\n';
+    // drop the empty leading line that an empty marker (`-` with content on the next
+    // line) contributes, so an indented-code first block sees a clean block start
+    // (codeBlock keys off `^`/a preceding blank line) instead of a lone leading newline
+    str = str.replace(/^\n+/, '');
     str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
     str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
     str = str.replace(/^\n+/, '').replace(/\n+$/, '');

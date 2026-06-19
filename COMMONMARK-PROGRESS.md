@@ -5,7 +5,7 @@ Working notes for the incremental CommonMark-compliance effort on branch
 
 ## Where things stand
 
-Optional suite: `npx grunt test-commonmark`. **637 passing / 10 failing** (started at 413/234).
+Optional suite: `npx grunt test-commonmark`. **638 passing / 9 failing** (started at 413/234).
 
 Done this far (each a separate, gated, tested commit):
 | Commit | Phase | CM cases |
@@ -25,6 +25,7 @@ Done this far (each a separate, gated, tested commit):
 | Phase 7+ | Per-list loose/tight respects container nesting (`itemLoose`) | +2 |
 | Phase 7+ | Backslash escapes in normalized URLs (`cmNormalizeURL`) | +2 |
 | Phase 7+ | Info-string class convention + backslash (#24/#34, harness adjust) | +2 |
+| Phase 7+ | Unicode case-fold for reference labels (`caseFold`, default) | +1 |
 
 Phase 6 (`commonmarkInline`): a single CommonMark inline parser in
 `src/subParsers/makehtml/cmInline.js` (subparser `makehtml.cmInline`), built on the same
@@ -164,9 +165,14 @@ tight/loose-aware paragraph wrap. Unit coverage in `test/unit/showdown.commonmar
   preserving content tabs.
 - **Fenced code blocks (~11), Code spans (~8):** info-string/closing-fence and backtick-run
   edge cases — independent of containers.
-- **Links: DONE** via the unified inline parser (Phase 6). Only #539 remains — Unicode case-fold
-  of reference labels (`[ẞ]`/`[SS]`); JS `toLowerCase` does not fold `ẞ`→`ss`, so it needs a
-  case-folding table.
+- **Links: DONE** (unified inline parser, Phase 6; #539 Unicode case-fold via `caseFold`).
+- **Entity in a raw HTML block (#31): not cleanly fixable.** Skipping entities inside
+  `cmHTMLTagSource` matches in `decodeEntities` fixes #31 but regresses #34 — the fenced-code
+  class `<code class="f&ouml;…">` is *generated* HTML whose info-string entity *should* decode,
+  and after `paragraphs` unhashes the blocks it is indistinguishable from a raw `<a>` tag. A clean
+  fix must distinguish raw-HTML-block `¨K` entries from generated `¨G`/blockquote/list blocks and
+  defer **only** the raw-HTML ones past `decodeEntities` (touches the `paragraphs` graf-marker
+  logic) — bounded but invasive for one case.
 
 The full roadmap with rationale lives in
 `C:\Users\estev\.claude\plans\implement-the-following-missing-serialized-minsky.md`.

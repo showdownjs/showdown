@@ -37,6 +37,7 @@ nav:
     - Quickstart: quickstart.md
     - Showdown's Markdown syntax: markdown-syntax.md
     - HTML to Markdown: html-to-markdown.md
+    - XSS vulnerability: xss.md
     - Compatibility: compatibility.md
   - Configuration:
     - Showdown options: configuration.md

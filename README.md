@@ -15,7 +15,7 @@ Showdown can be used client side (in the browser) or server side (with Node.js).
 
 ## Live DEMO
 
-
+<http://demo.showdownjs.eu/>
 
 As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
 
@@ -23,7 +23,7 @@ If you like our work and find our library useful, please donate through [PayPal]
 
 ## License
 
-ShowdownJS v 2.0 is released under the MIT license.
+ShowdownJS (from v2.0 onwards) is released under the MIT license.
 Previous versions are released under BSD.
 
 ## Who uses Showdown (or a fork)
@@ -261,10 +261,10 @@ var defaultOptions = showdown.getDefaultOptions();
    ```html
    <p>some text <a href="www.google.com">www.google.com</a>
    ```
- 
- * ~~**excludeTrailingPunctuationFromURLs**: (boolean) [default false] This option excludes trailing punctuation from autolinking urls.
-   Punctuation excluded: `. !  ? ( )`. Only applies if **simplifiedAutoLink** option is set to `true`.~~
-   
+
+ * **httpsAutoLinks**: (boolean) [default false] Use `https://` instead of `http://` for the protocol added to
+   autolinked `www.` urls. Only applies if **simplifiedAutoLink** option is set to `true`. **(since v3.0.0)**
+
  * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting
    underscores in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores.
 
@@ -278,9 +278,9 @@ var defaultOptions = showdown.getDefaultOptions();
    <p>some text with__underscores__in middle</p>
    ```
 
- * ~~**literalMidWordAsterisks**: (boolean) [default false] Turning this on will stop showdown from interpreting asterisks
-   in the middle of words as `<em>` and `<strong>` and instead treat them as literal asterisks.~~
-   
+ * **literalMidWordAsterisks**: (boolean) [default false] Turning this on will stop showdown from interpreting asterisks
+   in the middle of words as `<em>` and `<strong>` and instead treat them as literal asterisks. **(since v1.7.0)**
+
  * **strikethrough**: (boolean) [default false] Enable support for strikethrough syntax.
    `~~strikethrough~~` as `<del>strikethrough</del>`
    
@@ -368,9 +368,12 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **splitAdjacentBlockquotes**: (boolean) [default false] Split adjacent blockquote blocks.(since v.1.8.6)
 
- * **moreStyling**: (boolean) [default false] Adds some useful classes for css styling. (since v2.0.1)
+ * **moreStyling**: (boolean) [default false] Adds some useful classes for css styling. (since v3.0.0)
     
     - Tasklists: Adds the class `task-list-item-complete` to completed tasks items in GFM tasklists.
+
+ * **relativePathBaseUrl**: (string) [default ''] Prepends a base URL to relative paths (in links and images).
+   Absolute paths (starting with a protocol, `//`, or `#`) are left untouched. (since v3.0.0)
 
 #### CommonMark options **(since v3.0.0)**
 
@@ -391,7 +394,7 @@ via the [`commonmark` flavor](#flavors). See the
  * **commonmarkTabs**: Expand tabs to 4-column tab stops in block-structure indentation (content tabs preserved).
  * **commonmarkContainers**: Parse leaf blocks (fenced code, HTML blocks, link reference definitions, indented code) in the context of their containing block quote / list item.
 
-**NOTE**: Please note that until **version 1.6.0**, all of these options are ***DISABLED*** by default in the cli tool.
+**NOTE**: In the CLI tool, **all** options are ***disabled*** by default — including those (like `ghCodeBlocks`) that are enabled by default in the Node and browser builds.
 
 
 ## Flavors
@@ -471,7 +474,7 @@ var showdown    = require('showdown'),
 ## Building
 
 Building your clone of the repository is easy.
-> Prerequesites: [Node.js](https://nodejs.org/) v12, [npm](https://www.npmjs.com/package/npm) and [npx](https://www.npmjs.com/package/npx) must be installed.
+> Prerequesites: a [currently supported](https://nodejs.org/en/about/previous-releases) [Node.js](https://nodejs.org/), [npm](https://www.npmjs.com/package/npm) and [npx](https://www.npmjs.com/package/npx) must be installed.
 
 1. run `npm install`.
 2. run `npx grunt build` (see [`Gruntfile.js`](/Gruntfile.js)). This command:
@@ -479,7 +482,7 @@ Building your clone of the repository is easy.
     1. Cleans the repo.
     2. Checks code quality ([JSHint](https://jshint.com/) and [ESLint](https://eslint.org/)).
     3. Runs tests.
-    4. Creates the [distributable](/showdown.js) and [minified](/showdown.min.js) files in the [`dist`](/dist) folder.
+    4. Creates the [distributable](/dist/showdown.js) and [minified](/dist/showdown.min.js) files in the [`dist`](/dist) folder.
 
 ## Tests
 

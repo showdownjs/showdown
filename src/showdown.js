@@ -45,8 +45,7 @@ var showdown = {},
         commonmarkTabs:                       true,
         commonmarkContainers:                 true
       },
-      vanilla: getDefaultOpts(true),
-      allOn: allOptionsOn()
+      vanilla: getDefaultOpts(true)
     };
 
 /**

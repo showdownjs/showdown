@@ -14,7 +14,6 @@ Currently, the following flavors are available:
 A flavor is simply a bundle of [option](available-options.md) overrides applied on top of Showdown's defaults. The table below lists every option that at least one flavor sets:
 
  * `vanilla` applies no overrides of its own — its column shows the plain Showdown defaults.
- * `allOn` (not shown) turns **every** boolean option `on`.
 
 Legend: ✅ = `on` · ❌ = `off` · _(blank)_ = `off` (default).
 

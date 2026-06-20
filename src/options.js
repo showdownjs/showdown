@@ -248,15 +248,3 @@ function getDefaultOpts (simple) {
   }
   return ret;
 }
-
-function allOptionsOn () {
-  'use strict';
-  let options = getDefaultOpts(true),
-      ret = {};
-  for (let opt in options) {
-    if (options.hasOwnProperty(opt)) {
-      ret[opt] = true;
-    }
-  }
-  return ret;
-}

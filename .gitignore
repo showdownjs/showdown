@@ -6,3 +6,5 @@ npm-debug.log
 /*.test.*
 *.log
 CLAUDE.md
+.claude
+deliverables

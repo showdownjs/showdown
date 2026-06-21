@@ -519,4 +519,87 @@ describe('showdown.Event', function () {
       });
     });
   });
+
+  // Generic coverage sweep: every subparser that emits lifecycle events must fire its onStart
+  // at least once across a feature-rich conversion. This guards against a subparser being added
+  // (or silently losing its event dispatch) without a corresponding test. A failure lists the
+  // subparser names whose onStart never fired.
+  describe('event coverage sweep', function () {
+
+    let makehtmlSubparsers = [
+      'blockGamut', 'blockquote', 'cmInline', 'codeBlock', 'codeSpan', 'completeHTMLDocument',
+      'decodeEntities', 'ellipsis', 'emoji', 'emphasisAndStrong', 'encodeAmpsAndAngles',
+      'encodeBackslashEscapes', 'encodeCode', 'escapeSpecialCharsWithinTagAttributes',
+      'githubCodeBlock', 'hardLineBreaks', 'hashBlock', 'hashCodeTags', 'hashHTMLBlocks',
+      'hashHTMLSpans', 'hashPreCodeTags', 'heading', 'heading.atx', 'heading.setext',
+      'horizontalRule', 'image', 'link', 'list', 'metadata', 'paragraphs', 'spanGamut',
+      'strikethrough', 'stripLinkDefinitions', 'table', 'underline', 'unescapeSpecialChars',
+      'unhashHTMLSpans'
+    ];
+
+    let makeMarkdownSubparsers = [
+      'blockquote', 'break', 'codeBlock', 'codeSpan', 'emphasis', 'header', 'hr', 'image',
+      'input', 'links', 'list', 'listItem', 'node', 'paragraph', 'pre', 'strikethrough',
+      'strong', 'table', 'tableCell', 'txt', 'underline'
+    ];
+
+    // a feature-rich document that, across the two converters below, exercises every makehtml
+    // subparser. The loose list with a heading reaches the `heading` wrapper (list.js); the
+    // commonmark run reaches cmInline and decodeEntities (which the default flavor skips).
+    let richMd = [
+      '---', 'title: x', '---', '',
+      '# ATX heading', '',
+      'Setext heading', '==============', '',
+      'Para with `codespan`, **strong**, *em*, ~~strike~~, __under__, ...ellipsis, ',
+      'a [ref][1], an [inline](http://example.com "t"), <http://angle.com>, http://naked.com, ',
+      'an ![img](pic.png), an emoji :smile:, a @mention, and <span title="a&b">html</span>.', '',
+      '    indented code', '',
+      '```', 'fenced', '```', '',
+      '- list item', '', '- [ ] task', '', '- # heading in item', '',
+      '> blockquote', '',
+      '| h1 | h2 |', '|----|----|', '| a  | b  |', '',
+      '---', '', '[1]: http://ref.com', ''
+    ].join('\n');
+
+    let richHtml = '<h1>h</h1><p>para <em>em</em> <strong>s</strong> <code>c</code> ' +
+      '<a href="x">l</a> <img src="y" alt="z"> <u>u</u> <del>d</del> <br> text</p>' +
+      '<blockquote>bq</blockquote><pre><code>block</code></pre><pre>raw pre</pre><hr>' +
+      '<ul><li>item</li><li><input type="checkbox" checked> task</li></ul>' +
+      '<table><thead><tr><th>h</th></tr></thead><tbody><tr><td>c</td></tr></tbody></table>';
+
+    function collectMakehtml (opts) {
+      let fired = {},
+          conv = new showdown.Converter(opts);
+      makehtmlSubparsers.forEach(function (name) {
+        conv.listen('makehtml.' + name + '.onStart', function (e) { fired[name] = true; return e; });
+      });
+      conv.makeHtml(richMd);
+      return fired;
+    }
+
+    it('every makehtml subparser should emit its onStart event', function () {
+      let kitchen = {
+            strikethrough: true, tables: true, ghCodeBlocks: true, tasklists: true,
+            ghMentions: true, emoji: true, underline: true, ellipsis: true, metadata: true,
+            simplifiedAutoLink: true, completeHTMLDocument: true
+          },
+          firedDefault = collectMakehtml(kitchen),
+          firedCm = collectMakehtml(showdown.getFlavorOptions('commonmark')),
+          missing = makehtmlSubparsers.filter(function (name) {
+            return !firedDefault[name] && !firedCm[name];
+          });
+      missing.should.eql([]);
+    });
+
+    it('every makeMarkdown subparser should emit its onStart event', function () {
+      let fired = {},
+          conv = new showdown.Converter({tables: true, tasklists: true, strikethrough: true, underline: true});
+      makeMarkdownSubparsers.forEach(function (name) {
+        conv.listen('makeMarkdown.' + name + '.onStart', function (e) { fired[name] = true; return e; });
+      });
+      conv.makeMarkdown(richHtml);
+      let missing = makeMarkdownSubparsers.filter(function (name) { return !fired[name]; });
+      missing.should.eql([]);
+    });
+  });
 });

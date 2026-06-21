@@ -44,6 +44,7 @@ nav:
     - Available options: available-options.md
     - Flavors: flavors.md
     - Spec compliance: spec-compliance.md
+    - API reference: api-reference.md
   - CLI: cli.md
   - Integrations: integrations.md
   - Event system: event-system.md

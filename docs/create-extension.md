@@ -18,11 +18,14 @@ Each sub-extension (`myext1` and `myext2` in the example above) should be an obj
 
 ## Sub-extension object properties
 
-A sub-extension object should have a [`type` property](#type) that defines the type of the sub-extension, and either [`regex` and `replace` properties](#regex-and-replace) or a [`filter` property](#filter).
+A sub-extension object should have a [`type` property](#type) that defines the type of the sub-extension, plus:
+
+* for `lang`/`output` types: either [`regex` and `replace` properties](#regex-and-replace) or a [`filter` property](#filter);
+* for the `listener` type: a [`listeners` property](#listener-extensions).
 
 ### Type
 
-**Type** is a **required** property that defines the nature of the corresponding sub-extensions. It takes one of the two values:
+**Type** is a **required** property that defines the nature of the corresponding sub-extensions. It takes one of three values:
 
 * **`lang`**: language extension to add new Markdown syntax to Showdown.
 
@@ -39,6 +42,14 @@ A sub-extension object should have a [`type` property](#type) that defines the t
     !!! example "When to use `output` type"
 
         For example, if you want the `<div class="header">` to become `<header>`.
+
+* **`listener`**: listener extension to hook the [event system](event-system.md) and inspect or modify a sub-parser's captures, matches, attributes, or output mid-conversion.
+
+    Unlike `lang`/`output` extensions, a `listener` extension does not use `regex`/`replace` or `filter`. Instead, it defines a [`listeners`](#listeners) object. See [Listener extensions](#listener-extensions) below.
+
+    !!! example "When to use `listener` type"
+
+        For example, if you want to add a `class` attribute to every blockquote, or rewrite the captured text of a specific construct without re-implementing its sub-parser.
 
 ### Regex and replace
 
@@ -110,6 +121,35 @@ This property should be used as a function that acts as a callback. The callback
     };
     ```
 
+### Listener extensions
+
+A `listener` sub-extension hooks the [event system](event-system.md). Instead of `regex`/`replace` or `filter`, it defines a **`listeners`** property: an object that maps [event names](event-system.md#event-types) to callback functions.
+
+```js
+showdown.extension('addBlockquoteClass', function () {
+  return [{
+    type: 'listener',
+    listeners: {
+      'makehtml.blockquote.onCapture': function (evt) {
+        // add a class attribute to every blockquote
+        evt.attributes['class'] = 'fancy-quote';
+        return evt;
+      }
+    }
+  }];
+});
+
+var converter = new showdown.Converter({ extensions: ['addBlockquoteClass'] });
+```
+
+Each callback receives a [`showdown.Event`](event-system.md#event-object) object and **must return it** (after any modifications). What you can read or change depends on the event — see the [event types](event-system.md#event-types) and their property tables.
+
+!!! warning ""
+    The `listeners` property is **required** for `listener` extensions and must be a hash of `[event name]: [callback function]`. An invalid shape throws on registration.
+
+!!! hint "`converter.listen()` vs a `listener` extension"
+    A `listener` extension is the **reusable, registrable** form. If you only need to attach a one-off handler to a single converter, you can call [`converter.listen(eventName, callback)`](api-reference.md#converterlistenname-callback) directly instead.
+
 ## Register an extension
 
 
@@ -123,12 +163,25 @@ showdown.extension('myext', myext);
 
 ## Test an extension
 
-The Showdown test runner is configured to automatically test cases for extensions.
+An extension is tested the same way as any other Showdown behavior: instantiate a
+`Converter` configured with the extension and assert on the output of
+[`makeHtml()`](api-reference.md#convertermakehtmltext).
 
-To add test cases for an extension:
+```js
+var showdown = require('showdown');
 
-1. Create a new folder under `./test/extensions` that matches with the name of the `.js` file in `./src/extensions`.
-1. Place any test cases into the filter using the `md/html` format. These cases will automatically be executed when running tests.
+showdown.extension('myext', myExtension);
+var converter = new showdown.Converter({ extensions: ['myext'] });
+
+converter.makeHtml('markdown') === '<p>showdown</p>'; // assert this
+```
+
+!!! hint ""
+    The project's own behavioral tests are **data-driven fixture pairs**: for every
+    `<name>.md` file there is a sibling `<name>.html` with the expected output (see the
+    suites under `test/functional/makehtml/`). If you contribute an extension to Showdown,
+    follow that pattern by adding a fixture pair and wiring up a converter configured with
+    your extension.
 
 ## Additional information
 

@@ -405,6 +405,68 @@ describe('showdown.Event', function () {
       /* jshint +W083*/
     });
 
+    describe('makeHtml (document level)', function () {
+      it('should trigger "makehtml.onStart" event', function () {
+        let actual = false;
+        new showdown.Converter()
+          .listen('makehtml.onStart', function () { actual = true; })
+          .makeHtml('foo');
+        actual.should.equal(true);
+      });
+
+      it('should trigger "makehtml.onPreParse" event', function () {
+        let actual = false;
+        new showdown.Converter()
+          .listen('makehtml.onPreParse', function () { actual = true; })
+          .makeHtml('foo');
+        actual.should.equal(true);
+      });
+
+      it('should trigger "makehtml.onEnd" event', function () {
+        let actual = false;
+        new showdown.Converter()
+          .listen('makehtml.onEnd', function () { actual = true; })
+          .makeHtml('foo');
+        actual.should.equal(true);
+      });
+
+      it('onStart should see the raw (unescaped) source but onPreParse the escaped source', function () {
+        let onStartInput, onPreParseInput;
+        new showdown.Converter()
+          .listen('makehtml.onStart', function (event) { onStartInput = event.input; return event; })
+          .listen('makehtml.onPreParse', function (event) { onPreParseInput = event.input; return event; })
+          .makeHtml('price is $5');
+        // before escaping, the dollar sign is literal
+        onStartInput.should.contain('$');
+        // after escaping, `$` becomes the `¨D` placeholder
+        onPreParseInput.should.contain('¨D');
+        onPreParseInput.should.not.contain('$');
+      });
+
+      it('onStart listener can rewrite the raw markdown source', function () {
+        let result = new showdown.Converter()
+          .listen('makehtml.onStart', function () { return '# replaced'; })
+          .makeHtml('original');
+        result.should.match(/<h1[^>]*>replaced<\/h1>/);
+      });
+
+      it('onEnd listener can post-process the final HTML', function () {
+        let result = new showdown.Converter()
+          .listen('makehtml.onEnd', function (event) { return event.input.replace('<p>', '<p class="x">'); })
+          .makeHtml('foo');
+        result.should.contain('<p class="x">');
+      });
+
+      it('a lang extension and an onPreParse listener chain in registration order', function () {
+        let converter = new showdown.Converter();
+        // lang extension is registered first (turns `a` into `b`) ...
+        converter.addExtension({type: 'lang', regex: /a/g, replace: 'b'});
+        // ... then a hand-written listener turns `b` into `c`
+        converter.listen('makehtml.onPreParse', function (event) { return event.input.replace(/b/g, 'c'); });
+        converter.makeHtml('a').should.match(/c/);
+      });
+    });
+
     describe('makeMarkdown (document level)', function () {
       it('should trigger "makeMarkdown.onStart" event', function () {
         let actual = false;

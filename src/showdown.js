@@ -55,12 +55,6 @@ var showdown = {},
 showdown.helper = {};
 
 /**
- * TODO LEGACY SUPPORT CODE
- * @type {{}}
- */
-showdown.extensions = {};
-
-/**
  * Set a global option
  * @static
  * @param {string} key

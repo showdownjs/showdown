@@ -61,23 +61,21 @@ Add an [extension](extensions.md) (object, function or array) to this converter.
 
 Add a previously [registered](api-reference.md#showdownextensionname-ext) extension to this converter, by name.
 
-### `converter.removeExtension(extension)`
-
-Remove a `lang`/`output` extension from this converter.
-
-!!! warning ""
-    `removeExtension()` only affects `lang` and `output` extensions. **Listener** extensions are registered into the [event system](event-system.md) and are not removed by this method. (Removing is also a costly operation — prefer creating a fresh converter with only the extensions you want.)
-
-### `converter.getAllExtensions()`
-
-Return the extensions registered on this converter as `{ language: [...], output: [...] }`.
-
-!!! warning ""
-    The returned object only contains `lang` (`language`) and `output` extensions. **Listener** extensions are not included.
-
 ### `converter.listen(name, callback)`
 
-Attach a listener `callback` to a single [event](event-system.md#event-types) on this converter. The callback receives a [`showdown.Event`](event-system.md#event-object) and must return it. This is the one-off equivalent of a [`listener` extension](create-extension.md#listener-extensions).
+Attach a listener `callback` to a single [event](event-system.md#event-types) on this converter. The callback receives a [`showdown.Event`](event-system.md#event-object) and must return it. This is the one-off equivalent of a [`listener` extension](create-extension.md#listener-extensions). Returns the converter (chainable).
+
+Because `lang` and `output` extensions are themselves [registered as listeners](create-extension.md#type) (on `makehtml.onPreParse` and `makehtml.onEnd` respectively), this is the underlying mechanism behind every extension that modifies conversion.
+
+### `converter.unlisten(name, [callback])`
+
+Detach a listener previously added with [`listen()`](#converterlistenname-callback) (or by an extension) from an [event](event-system.md#event-types) on this converter. Pass the same `callback` reference to remove that specific listener; omit `callback` to remove **every** listener for `name`. Unknown event names are a no-op. Returns the converter (chainable).
+
+```js
+function addClass (event) { event.attributes.class = 'h'; return event; }
+converter.listen('makehtml.heading.atx.onCapture', addClass);
+converter.unlisten('makehtml.heading.atx.onCapture', addClass); // detach
+```
 
 ### `converter.dispatch(event)`
 

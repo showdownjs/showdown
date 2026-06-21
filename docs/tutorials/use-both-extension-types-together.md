@@ -59,4 +59,34 @@ In this example, you created a [`lang` extension](../create-extension.md#type) t
 
 and an [`output` extension](../create-extension.md#type) that replaces the placeholder with the saved content, once Showdown is finished parsing.
 
+!!! note "Modern equivalent"
+    `lang`/`output` extensions are [deprecated](../create-extension.md#type) in favor of `listener` extensions. The same pattern can be written as listeners on the document-level [`makehtml.onPreParse`](../event-system.md#makehtml-document-level-events) and [`makehtml.onEnd`](../event-system.md#makehtml-document-level-events) events — they receive a `showdown.Event` whose `input` holds the text and which you transform by returning the new string:
+
+    ```js
+    showdown.extension('myExt', function () {
+      var matches = [];
+      return [{
+        type: 'listener',
+        listeners: {
+          // capture + placeholder, before parsing
+          'makehtml.onPreParse': function (evt) {
+            return evt.input.replace(/%start%([^]+?)%end%/gi, function (s, match) {
+              matches.push(match);
+              return '%PLACEHOLDER' + (matches.length - 1) + '%';
+            });
+          },
+          // restore, after parsing
+          'makehtml.onEnd': function (evt) {
+            var text = evt.input;
+            for (var i = 0; i < matches.length; ++i) {
+              text = text.replace(new RegExp('<p>%PLACEHOLDER' + i + '% *<\/p>', 'gi'), matches[i]);
+            }
+            matches = [];
+            return text;
+          }
+        }
+      }];
+    });
+    ```
+
 [1]: http://jsfiddle.net/tivie/1rqr7xy8/

@@ -20,20 +20,6 @@ showdown.Converter = function (converterOptions) {
       options = {},
 
       /**
-       * Language extensions used by this converter
-       * @private
-       * @type {Array}
-       */
-      langExtensions = [],
-
-      /**
-       * Output modifiers extensions used by this converter
-       * @private
-       * @type {Array}
-       */
-      outputModifiers = [],
-
-      /**
        * Event listeners
        * @private
        * @type {{}}
@@ -103,15 +89,7 @@ showdown.Converter = function (converterOptions) {
       ext = showdown.helper.stdExtName(ext);
       name = ext;
 
-      // LEGACY_SUPPORT CODE
-      if (showdown.extensions[ext]) {
-        console.warn('DEPRECATION WARNING: ' + ext + ' is an old extension that uses a deprecated loading method.' +
-          'Please inform the developer that the extension should be updated!');
-        legacyExtensionLoading(showdown.extensions[ext], ext);
-        return;
-        // END LEGACY SUPPORT CODE
-
-      } else if (!showdown.helper.isUndefined(extensions[ext])) {
+      if (!showdown.helper.isUndefined(extensions[ext])) {
         ext = extensions[ext];
 
       } else {
@@ -133,14 +111,22 @@ showdown.Converter = function (converterOptions) {
     }
 
     for (var i = 0; i < ext.length; ++i) {
+      // `lang` and `output` extensions are sugar over the event system: a `lang`
+      // extension is a listener on `makehtml.onPreParse` (runs after escaping, before the
+      // subparsers) and an `output` extension a listener on `makehtml.onEnd` (runs on the
+      // final HTML). They are deprecated in favor of writing listener extensions directly.
       switch (ext[i].type) {
 
         case 'lang':
-          langExtensions.push(ext[i]);
+          console.warn('DEPRECATION WARNING: "lang" extensions are deprecated and will be removed in a future ' +
+            'version. Use a "listener" extension on the "makehtml.onPreParse" event instead.');
+          listen('makehtml.onPreParse', _wrapLegacyExtension(ext[i]));
           break;
 
         case 'output':
-          outputModifiers.push(ext[i]);
+          console.warn('DEPRECATION WARNING: "output" extensions are deprecated and will be removed in a future ' +
+            'version. Use a "listener" extension on the "makehtml.onEnd" event instead.');
+          listen('makehtml.onEnd', _wrapLegacyExtension(ext[i]));
           break;
       }
       if (ext[i].hasOwnProperty('listeners')) {
@@ -155,35 +141,16 @@ showdown.Converter = function (converterOptions) {
   }
 
   /**
-   * LEGACY_SUPPORT
-   * @param {*} ext
-   * @param {string} name
+   * Adapt a legacy `lang`/`output` extension to an event listener.
+   * Returning a string makes `dispatch` update both `event.input` and `event.output`, so
+   * several legacy extensions on the same event chain exactly like the old forEach did.
+   * @param {{}} ext
+   * @returns {function(showdown.Event): string}
    */
-  function legacyExtensionLoading (ext, name) {
-    if (typeof ext === 'function') {
-      ext = ext(new showdown.Converter());
-    }
-    if (!showdown.helper.isArray(ext)) {
-      ext = [ext];
-    }
-    var valid = validate(ext, name);
-
-    if (!valid.valid) {
-      throw Error(valid.error);
-    }
-
-    for (var i = 0; i < ext.length; ++i) {
-      switch (ext[i].type) {
-        case 'lang':
-          langExtensions.push(ext[i]);
-          break;
-        case 'output':
-          outputModifiers.push(ext[i]);
-          break;
-        default:// should never reach here
-          throw Error('Extension loader error: Type unrecognized!!!');
-      }
-    }
+  function _wrapLegacyExtension (ext) {
+    return function (event) {
+      return showdown.subParser('makehtml.runExtension')(ext, event.input, event.options, { converter: event.converter });
+    };
   }
 
   /**
@@ -204,6 +171,37 @@ showdown.Converter = function (converterOptions) {
       listeners[name] = [];
     }
     listeners[name].push(callback);
+  }
+
+  /**
+   * Stop listening to an event
+   * @param {string} name
+   * @param {function} [callback] If omitted, removes every listener for the event
+   */
+  function unlisten (name, callback) {
+    if (!showdown.helper.isString(name)) {
+      throw Error('Invalid argument in converter.unlisten() method: name must be a string, but ' + typeof name + ' given');
+    }
+    name = name.toLowerCase();
+    if (!listeners.hasOwnProperty(name)) {
+      return;
+    }
+    // no callback given: remove every listener registered for this event
+    if (typeof callback === 'undefined') {
+      delete listeners[name];
+      return;
+    }
+    if (typeof callback !== 'function') {
+      throw Error('Invalid argument in converter.unlisten() method: callback must be a function, but ' + typeof callback + ' given');
+    }
+    var idx = listeners[name].indexOf(callback);
+    while (idx > -1) {
+      listeners[name].splice(idx, 1);
+      idx = listeners[name].indexOf(callback);
+    }
+    if (listeners[name].length === 0) {
+      delete listeners[name];
+    }
   }
 
   function rTrimInputText (text) {
@@ -248,6 +246,17 @@ showdown.Converter = function (converterOptions) {
   };
 
   /**
+   * Stop listening to an event
+   * @param {string} name
+   * @param {function} [callback] If omitted, removes every listener for the event
+   * @returns {showdown.Converter}
+   */
+  this.unlisten = function (name, callback) {
+    unlisten(name, callback);
+    return this;
+  };
+
+  /**
    * Converts a markdown string into HTML string
    * @param {string} text
    * @returns {*}
@@ -268,8 +277,6 @@ showdown.Converter = function (converterOptions) {
       gDimensions:     {},
       gListLevel:      0,
       hashLinkCounts:  {},
-      langExtensions:  langExtensions,
-      outputModifiers: outputModifiers,
       converter:       this,
       ghCodeBlocks:    [],
       metadata: {
@@ -278,6 +285,17 @@ showdown.Converter = function (converterOptions) {
         format: ''
       }
     };
+
+    // document level onStart event, emitted with the raw markdown before any escaping or
+    // normalization. Listeners here see literal `$`/`¨` (unlike onPreParse, which runs after
+    // escaping) and can rewrite the source wholesale.
+    let startEvent = new showdown.Event('makehtml.onStart', text);
+    startEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    startEvent = this.dispatch(startEvent);
+    text = startEvent.output;
 
     // This lets us use ¨ trema as an escape char to avoid md5 hashes
     // The choice of character is arbitrary; anything that isn't
@@ -315,10 +333,16 @@ showdown.Converter = function (converterOptions) {
      */
     text = text.replace(/^[ \t]+$/mg, '');
 
-    //run languageExtensions
-    showdown.helper.forEach(langExtensions, function (ext) {
-      text = showdown.subParser('makehtml.runExtension')(ext, text, options, globals);
-    });
+    // document level onPreParse event, emitted after escaping/normalization and immediately
+    // before the subparsers run. This is where `lang` extensions are invoked (as listeners).
+    // Input here contains the `¨D`/`¨T` placeholders for escaped `$`/`¨`.
+    let preParseEvent = new showdown.Event('makehtml.onPreParse', text);
+    preParseEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    preParseEvent = this.dispatch(preParseEvent);
+    text = preParseEvent.output;
 
     // run the sub parsers
     text = showdown.subParser('makehtml.metadata')(text, options, globals);
@@ -370,10 +394,15 @@ showdown.Converter = function (converterOptions) {
     // render a complete html document instead of a partial if the option is enabled
     text = showdown.subParser('makehtml.completeHTMLDocument')(text, options, globals);
 
-    // Run output modifiers
-    showdown.helper.forEach(outputModifiers, function (ext) {
-      text = showdown.subParser('makehtml.runExtension')(ext, text, options, globals);
-    });
+    // document level onEnd event, emitted with the final HTML. This is where `output`
+    // extensions are invoked (as listeners) and where listeners can post-process the output.
+    let endEvent = new showdown.Event('makehtml.onEnd', text);
+    endEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    endEvent = this.dispatch(endEvent);
+    text = endEvent.output;
 
     // update metadata
     metadata = globals.metadata;
@@ -562,42 +591,6 @@ showdown.Converter = function (converterOptions) {
    */
   this.getFlavor = function () {
     return setConvFlavor;
-  };
-
-  /**
-   * Remove an extension from THIS converter.
-   * Note: This is a costly operation. It's better to initialize a new converter
-   * and specify the extensions you wish to use
-   * @param {Array} extension
-   */
-  this.removeExtension = function (extension) {
-    if (!showdown.helper.isArray(extension)) {
-      extension = [extension];
-    }
-    for (var a = 0; a < extension.length; ++a) {
-      var ext = extension[a];
-      for (var i = 0; i < langExtensions.length; ++i) {
-        if (langExtensions[i] === ext) {
-          langExtensions.splice(i, 1);
-        }
-      }
-      for (var ii = 0; ii < outputModifiers.length; ++ii) {
-        if (outputModifiers[ii] === ext) {
-          outputModifiers.splice(ii, 1);
-        }
-      }
-    }
-  };
-
-  /**
-   * Get all extension of THIS converter
-   * @returns {{language: Array, output: Array}}
-   */
-  this.getAllExtensions = function () {
-    return {
-      language: langExtensions,
-      output: outputModifiers
-    };
   };
 
   /**

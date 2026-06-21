@@ -91,9 +91,12 @@ describe('showdown.Converter', function () {
   });
 
   describe('extension methods', function () {
+    // `lang`/`output` extensions are sugar over the event system, so they are asserted by
+    // the effect they have on the converted output rather than by introspection.
     let extObjMock = {
           type: 'lang',
-          filter: function () {}
+          regex: /markdown/g,
+          replace: 'showdown'
         },
         extObjFunc = function () {
           return extObjMock;
@@ -102,14 +105,14 @@ describe('showdown.Converter', function () {
     it('addExtension() should add an extension Object', function () {
       let converter = new showdown.Converter();
       converter.addExtension(extObjMock);
-      converter.getAllExtensions().language.should.contain(extObjMock);
+      converter.makeHtml('markdown').should.match(/showdown/);
     });
 
     it('addExtension() should unwrap an extension wrapped in a function', function () {
       let converter = new showdown.Converter();
 
       converter.addExtension(extObjFunc);
-      converter.getAllExtensions().language.should.contain(extObjMock);
+      converter.makeHtml('markdown').should.match(/showdown/);
     });
 
     it('useExtension() should use a previous registered extension in showdown', function () {
@@ -117,16 +120,8 @@ describe('showdown.Converter', function () {
       let converter = new showdown.Converter();
 
       converter.useExtension('foo');
-      converter.getAllExtensions().language.should.contain(extObjMock);
+      converter.makeHtml('markdown').should.match(/showdown/);
       showdown.resetExtensions();
-    });
-
-    it('removeExtension() should remove an added extension', function () {
-      let converter = new showdown.Converter();
-      converter.addExtension(extObjMock);
-
-      converter.removeExtension(extObjMock);
-      converter.getAllExtensions().language.should.not.contain(extObjMock);
     });
   });
 

@@ -182,6 +182,33 @@ Emitted when the sub-parser has finished its work and is about to exit.
 | `regexp`  | `null`   |         |                                                             |
 | `matches` | `null`   |         |                                                             |
 
+## makeHtml document-level events
+
+Besides the per-sub-parser events above, `makeHtml()` emits three **document-level** events that wrap the whole conversion. They are the place to transform the entire document before or after parsing, and are what `lang`/`output` extensions are built on:
+
+* **`makehtml.onStart`** — emitted once with the **raw** Markdown, *before* any escaping or line-ending normalization. Listeners here see the literal source (real `$`, `¨`, `\r\n`, …) and can rewrite it wholesale.
+* **`makehtml.onPreParse`** — emitted once *after* escaping/normalization and immediately *before* the sub-parsers run. This is where [`lang` extensions](create-extension.md#type) run (as listeners). The input at this stage contains Showdown's internal placeholders — e.g. an escaped `$` appears as `¨D` and an escaped `¨` as `¨T` — so prefer `onStart` if you need the untouched source.
+* **`makehtml.onEnd`** — emitted once with the **final HTML**, after every sub-parser and the optional complete-document wrapping. This is where [`output` extensions](create-extension.md#type) run (as listeners); use it to post-process the generated HTML.
+
+### Properties
+
+| property     | type     | access  | description                                                                                  |
+|--------------|----------|---------|----------------------------------------------------------------------------------------------|
+| `input`      | `string` | `read`  | `onStart`: raw Markdown. `onPreParse`: escaped/normalized Markdown. `onEnd`: the final HTML.  |
+| `output`     | `string` | `write` | The text that will be passed along (return a string from the listener, or set this and return the event). |
+| `regexp`     | `null`   |         |                                                                                              |
+| `matches`    | `null`   |         |                                                                                              |
+| `attributes` | `null`   |         |                                                                                              |
+
+!!! example ""
+
+    ```js
+    // Add a class to every paragraph in the final HTML
+    converter.listen('makehtml.onEnd', function (evt) {
+      return evt.input.replace(/<p>/g, '<p class="md">');
+    });
+    ```
+
 ## makeMarkdown (HTML to Markdown) events
 
 The reverse converter — `<converter>.makeMarkdown()`, which turns HTML back into Markdown — also emits namespaced events. Because its sub-parsers operate on **DOM nodes** (one construct at a time) rather than running regular expressions over text, they emit only two of the lifecycle events: [`onStart`](#onstart) and [`onEnd`](#onend). There is no `onCapture`/`onHash` phase, since there is no regex capture step.

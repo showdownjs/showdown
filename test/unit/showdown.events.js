@@ -183,6 +183,12 @@ describe('showdown.Event', function () {
         { event: 'onEnd', text: '[foo](bar.jpg)', result: true },
         { event: 'onEnd', text: 'foo', result: true }
       ],
+      'link.angleBrackets': [
+        { event: 'onCapture', text: '<http://foo.com>', result: true },
+        { event: 'onCapture', text: 'foo', result: false },
+        { event: 'onHash', text: '<http://foo.com>', result: true },
+        { event: 'onHash', text: 'foo', result: false }
+      ],
       'link.inline': [
         { event: 'onCapture', text: '[foo](bar.jpg)', result: true },
         { event: 'onCapture', text: 'foo', result: false },
@@ -264,6 +270,18 @@ describe('showdown.Event', function () {
         { event: 'onStart', text: 'foo', result: true },
         { event: 'onEnd', text: '|foo|bar|\n|---|---|\n|1|2|', result: true },
         { event: 'onEnd', text: 'foo', result: true },
+        { event: 'onCapture', text: '|foo|bar|\n|---|---|\n|1|2|', result: true },
+        { event: 'onCapture', text: 'foo', result: false },
+        { event: 'onHash', text: '|foo|bar|\n|---|---|\n|1|2|', result: true },
+        { event: 'onHash', text: 'foo', result: false }
+      ],
+      'table.header': [
+        { event: 'onCapture', text: '|foo|bar|\n|---|---|\n|1|2|', result: true },
+        { event: 'onCapture', text: 'foo', result: false },
+        { event: 'onHash', text: '|foo|bar|\n|---|---|\n|1|2|', result: true },
+        { event: 'onHash', text: 'foo', result: false }
+      ],
+      'table.cell': [
         { event: 'onCapture', text: '|foo|bar|\n|---|---|\n|1|2|', result: true },
         { event: 'onCapture', text: 'foo', result: false },
         { event: 'onHash', text: '|foo|bar|\n|---|---|\n|1|2|', result: true },
@@ -464,6 +482,20 @@ describe('showdown.Event', function () {
         // ... then a hand-written listener turns `b` into `c`
         converter.listen('makehtml.onPreParse', function (event) { return event.input.replace(/b/g, 'c'); });
         converter.makeHtml('a').should.match(/c/);
+      });
+    });
+
+    // autoLink capture/hash events need a converter with simplifiedAutoLink enabled, which the
+    // shared converter above does not have, so they get their own dedicated converters here.
+    describe('makehtml link.autoLink (requires simplifiedAutoLink)', function () {
+      ['onCapture', 'onHash'].forEach(function (evt) {
+        it('should trigger "makehtml.link.autoLink.' + evt + '" event', function () {
+          let fired = false;
+          new showdown.Converter({simplifiedAutoLink: true})
+            .listen('makehtml.link.autoLink.' + evt, function (e) { fired = true; return e; })
+            .makeHtml('http://foo.com');
+          fired.should.equal(true);
+        });
       });
     });
 

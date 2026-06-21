@@ -123,44 +123,43 @@ describe('showdown.Converter', function () {
       converter.makeHtml('markdown').should.match(/showdown/);
       showdown.resetExtensions();
     });
+
+    it('should warn at most once per process for a deprecated extension type', function () {
+      // robust to global ordering: an earlier suite may already have tripped the per-process
+      // flag, so we assert "at most once". The old per-load behavior would have warned twice.
+      let orig = console.warn,
+          count = 0;
+      console.warn = function () { count++; };
+      try {
+        new showdown.Converter({extensions: [{type: 'lang', regex: /a/g, replace: 'b'}]});
+        new showdown.Converter({extensions: [{type: 'lang', regex: /a/g, replace: 'b'}]});
+      } finally {
+        console.warn = orig;
+      }
+      count.should.be.at.most(1);
+    });
   });
 
   describe('events', function () {
-    let events = [
-      'makehtml.anchors',
-      'makehtml.autoLinks',
-      'makehtml.blockGamut',
-      'makehtml.blockQuotes',
-      'makehtml.codeBlocks',
-      'makehtml.codeSpans',
-      'makehtml.githubCodeBlocks',
-      'makehtml.headers',
-      'makehtml.images',
-      'makehtml.italicsAndBold',
-      'makehtml.lists',
-      'makehtml.paragraph',
-      'makehtml.spanGamut'
-      //'strikeThrough',
-      //'tables'
-    ];
-
-    for (let i = 0; i < events.length; ++i) {
-      runListener(events[i] + '.before');
-      runListener(events[i] + '.after');
-    }
-
-    function runListener (name) {
-      it('should listen to ' + name, function () {
-        let converter = new showdown.Converter();
-        converter.listen(name, function (event) {
-          let evtName = event.name;
-          let text = event.input;
-          evtName.should.equal(name.toLowerCase());
-          text.should.match(/^[\s\S]*foo[\s\S]*$/);
-          return text;
-        })
-          .makeHtml('foo');
+    it('should fire a listener on a real event and let it modify the output', function () {
+      let fired = false,
+          converter = new showdown.Converter();
+      converter.listen('makehtml.heading.atx.onCapture', function (event) {
+        fired = true;
+        event.attributes.class = 'x';
+        return event;
       });
-    }
+      let html = converter.makeHtml('# foo');
+      fired.should.equal(true);
+      html.should.match(/class="x"/);
+    });
+
+    it('should NOT fire the removed .before/.after special events', function () {
+      let fired = false;
+      new showdown.Converter()
+        .listen('makehtml.heading.before', function (e) { fired = true; return e; })
+        .makeHtml('# foo');
+      fired.should.equal(false);
+    });
   });
 });

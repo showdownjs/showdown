@@ -3,6 +3,28 @@
  */
 
 /**
+ * Module scope (shared across all converter instances): warn at most once per process per
+ * deprecated extension type, rather than once per extension load.
+ * @type {{}}
+ */
+var deprecatedExtTypeWarned = {};
+
+/**
+ * Emit a one-time deprecation warning for a legacy (`lang`/`output`) extension type
+ * @param {string} type
+ * @param {string} event
+ */
+function warnDeprecatedExtType (type, event) {
+  'use strict';
+  if (deprecatedExtTypeWarned[type]) {
+    return;
+  }
+  deprecatedExtTypeWarned[type] = true;
+  console.warn('DEPRECATION WARNING: "' + type + '" extensions are deprecated and will be ' +
+    'removed in a future version. Use a "listener" extension on the "' + event + '" event instead.');
+}
+
+/**
  * Showdown Converter class
  * @class
  * @param {object} [converterOptions]
@@ -118,14 +140,12 @@ showdown.Converter = function (converterOptions) {
       switch (ext[i].type) {
 
         case 'lang':
-          console.warn('DEPRECATION WARNING: "lang" extensions are deprecated and will be removed in a future ' +
-            'version. Use a "listener" extension on the "makehtml.onPreParse" event instead.');
+          warnDeprecatedExtType('lang', 'makehtml.onPreParse');
           listen('makehtml.onPreParse', _wrapLegacyExtension(ext[i]));
           break;
 
         case 'output':
-          console.warn('DEPRECATION WARNING: "output" extensions are deprecated and will be removed in a future ' +
-            'version. Use a "listener" extension on the "makehtml.onEnd" event instead.');
+          warnDeprecatedExtType('output', 'makehtml.onEnd');
           listen('makehtml.onEnd', _wrapLegacyExtension(ext[i]));
           break;
       }

@@ -90,9 +90,10 @@ function addConversionOptions (cmd, inputDesc, outputDesc) {
     .option('-y, --output-encoding <encoding>', 'Sets the output encoding', 'utf8')
     .option('-a, --append', 'Append data to output instead of overwriting. Ignored if writing to stdout', false)
     .option('-e, --extensions <extensions...>', 'Load the specified extensions. Should be valid paths to node compatible extensions')
-    .option('-p, --flavor <flavor>', 'Run with a predetermined flavor of options. Default is vanilla', 'vanilla')
+    .option('-p, --flavor <flavor>', 'Run with a predetermined flavor of options. Default is vanilla. Run with --list-flavors to see the available flavors', 'vanilla')
     .option('-c, --config <config...>', 'Enables showdown parser config options. Overrides flavor')
-    .option('--config-help', 'Shows configuration options for showdown parser');
+    .option('--config-help', 'Shows configuration options for showdown parser')
+    .option('--list-flavors', 'Lists the available flavors');
 }
 
 /**
@@ -156,6 +157,32 @@ function showShowdownOptions () {
   }
   console.log('\n\nBoolean options can be enabled with `-c <option>` or `-c <option>=true`, and disabled with `-c <option>=false`.');
   console.log('Example: showdown makehtml -c openLinksInNewWindow -c headerLevelStart=2 -c ghMentionsLink="https://google.com"');
+}
+
+/**
+ * Returns the list of available flavor names.
+ * Falls back to the known flavors if the loaded showdown build predates getFlavors().
+ * @returns {string[]}
+ */
+function getAvailableFlavors () {
+  'use strict';
+  if (typeof showdown.getFlavors === 'function') {
+    return showdown.getFlavors();
+  }
+  return ['github', 'original', 'commonmark', 'vanilla'];
+}
+
+/**
+ * Helper function to list the available flavors
+ */
+function showFlavors () {
+  'use strict';
+  console.log('\nAvailable flavors:');
+  var flavors = getAvailableFlavors();
+  for (var i = 0; i < flavors.length; ++i) {
+    console.log('  ' + flavors[i] + ((flavors[i] === 'vanilla') ? ' (default)' : ''));
+  }
+  console.log('\nExample: showdown makehtml -i foo.md -o bar.html -p github');
 }
 
 /**
@@ -344,6 +371,12 @@ function writeToFile (output, file, append, encoding) {
 function conversionCommand (method, srcFormat, options, cmd) {
   'use strict';
 
+  // list the available flavors if listFlavors was passed
+  if (options.listFlavors) {
+    showFlavors();
+    return;
+  }
+
   // show configuration options for showdown helper if configHelp was passed
   if (options.configHelp) {
     showShowdownOptions();
@@ -365,7 +398,7 @@ function conversionCommand (method, srcFormat, options, cmd) {
     messenger.printMsg('Enabling flavor ' + options.flavor + '...');
     var flavorOptions = showdown.getFlavorOptions(options.flavor);
     if (!flavorOptions) {
-      messenger.errorExit(new Error('Flavor ' + options.flavor + ' is not recognised'));
+      messenger.errorExit(new Error('Flavor ' + options.flavor + ' is not recognised. Available flavors: ' + getAvailableFlavors().join(', ')));
       return;
     }
     defaultOptions = flavorOptions;

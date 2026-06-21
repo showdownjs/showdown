@@ -138,6 +138,16 @@ showdown.getFlavorOptions = function (name) {
 };
 
 /**
+ * Get the list of available flavor names
+ * @static
+ * @returns {string[]}
+ */
+showdown.getFlavors = function () {
+  'use strict';
+  return Object.keys(flavor);
+};
+
+/**
  * Get the default options
  * @static
  * @param {boolean} [simple=true]

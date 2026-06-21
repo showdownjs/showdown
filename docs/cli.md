@@ -167,6 +167,22 @@ showdown makehtml [options]
         showdown makehtml -e ~/twitter.js -e ~/youtube.js
         ```
 
+###### `-p/--flavor`
+
+* Short format: `-p`
+* Alias: `--flavor`
+* Description: Run with a predetermined [flavor](available-options.md) of options. Defaults to `vanilla`.
+* Available flavors: `github`, `original`, `commonmark`, `vanilla`. Use `--list-flavors` to print the
+  list at any time. An unrecognised flavor is reported as an error listing the valid flavors.
+* Example:
+
+    !!! example ""
+
+        ```sh
+        showdown makehtml -i foo.md -o bar.html -p github
+        showdown makehtml --list-flavors
+        ```
+
 ###### `-c/--config`
 
 * Short format: `-c`

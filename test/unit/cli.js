@@ -106,6 +106,26 @@ describe('showdown cli', function () {
         });
         proc.status.should.equal(1);
       });
+
+      it('should list the available flavors in the error of an unrecognised flavor', function () {
+        var proc = spawnCLI('makehtml', ['-p', 'foobar'], {
+          input: '**foo**',
+          encoding: 'utf-8'
+        });
+        proc.status.should.equal(1);
+        proc.stderr.should.contain('Available flavors:');
+        proc.stderr.should.contain('vanilla');
+      });
+    });
+
+    describe('makehtml --list-flavors', function () {
+      it('should list the available flavors and exit cleanly', function () {
+        var proc = spawnCLI('makehtml', ['--list-flavors'], {encoding: 'utf-8'});
+        proc.status.should.equal(0);
+        proc.stdout.should.contain('Available flavors:');
+        proc.stdout.should.contain('github');
+        proc.stdout.should.contain('vanilla');
+      });
     });
 
     describe('makehtml -c', function () {

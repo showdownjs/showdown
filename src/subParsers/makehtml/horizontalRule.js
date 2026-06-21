@@ -27,7 +27,7 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
   // parsers. An unindented `---` after a list item is still a real thematic break
   // (it ends the list), and a spaced form like `- - -` is never an underline.
   function isSetextUnderlineDash (wholeMatch, args) {
-    if (!options.commonmarkLists || !/^ +-+[ \t]*$/.test(wholeMatch)) { return false; }
+    if (!options.cmSpec || !/^ +-+[ \t]*$/.test(wholeMatch)) { return false; }
     return precededByNonBlank(args[args.length - 1], args[args.length - 2]);
   }
 

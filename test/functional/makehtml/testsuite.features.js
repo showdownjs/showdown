@@ -10,17 +10,14 @@ const bootstrap = require('./makehtml.bootstrap.js'),
     openLinksInNewWindowSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/openLinksInNewWindow/'),
     disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/disableForced4SpacesIndentedSublists/'),
     rawHeaderIdSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/rawHeaderId/'),
-    rawPrefixHeaderIdSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/rawPrefixHeaderId/'),
     emojisSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/emojis/'),
     underlineSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/underline/'),
     ellipsisSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/ellipsis/'),
     literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/literalMidWordUnderscores/'),
-    //literalMidWordAsterisksSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/literalMidWordAsterisks/'),
     completeHTMLOutputSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/completeHTMLOutput/'),
     metadataSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/metadata/'),
     splitAdjacentBlockquotesSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/splitAdjacentBlockquotes/'),
     moreStyling = bootstrap.getTestSuite('test/functional/makehtml/cases/features/moreStyling/'),
-    customizedHeaderId = bootstrap.getTestSuite('test/functional/makehtml/cases/features/customizedHeaderId/'),
     http = require('http'),
     https = require('https'),
     expect = require('chai').expect;
@@ -73,8 +70,6 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({simplifiedAutoLink: true});
       } else if (testsuite[i].name === 'requireSpaceBeforeHeadingText') {
         converter = new showdown.Converter({requireSpaceBeforeHeadingText: true});
-      } else if (testsuite[i].name === '#320.github-compatible-generated-header-id') {
-        converter = new showdown.Converter({ghCompatibleHeaderId: true});
       } else if (testsuite[i].name === 'ghMentions') {
         converter = new showdown.Converter({ghMentions: true});
       } else if (testsuite[i].name === 'disable-email-encoding') {
@@ -88,13 +83,11 @@ describe('makeHtml() features testsuite', function () {
       } else if (testsuite[i].name === 'prefixHeaderId-string') {
         converter = new showdown.Converter({prefixHeaderId: 'my-prefix-'});
       } else if (testsuite[i].name === 'prefixHeaderId-string-and-ghCompatibleHeaderId') {
-        converter = new showdown.Converter({prefixHeaderId: 'my-prefix-', ghCompatibleHeaderId: true});
+        converter = new showdown.Converter({prefixHeaderId: 'my-prefix-'});
       } else if (testsuite[i].name === 'prefixHeaderId-string-and-ghCompatibleHeaderId2') {
-        converter = new showdown.Converter({prefixHeaderId: 'my prefix ', ghCompatibleHeaderId: true});
+        converter = new showdown.Converter({prefixHeaderId: 'my prefix '});
       } else if (testsuite[i].name === 'simplifiedAutoLink') {
         converter = new showdown.Converter({simplifiedAutoLink: true, strikethrough: true});
-      } else if (testsuite[i].name === 'customizedHeaderId-simple') {
-        converter = new showdown.Converter({customizedHeaderId: true});
       } else if (testsuite[i].name === '#378.simplifiedAutoLinks-with-excludeTrailingPunctuationFromURLs') {
         converter = new showdown.Converter({simplifiedAutoLink: true});
       } else if (testsuite[i].name === '#374.escape-html-tags') {
@@ -139,8 +132,6 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({simplifiedAutoLink: true, strikethrough: true});
       } else if (suite[i].name === 'disallow-underscores') {
         converter = new showdown.Converter({literalMidWordUnderscores: true, simplifiedAutoLink: true});
-      } else if (suite[i].name === 'disallow-asterisks') {
-        converter = new showdown.Converter({literalMidWordAsterisks: true, simplifiedAutoLink: true});
       } else {
         converter = new showdown.Converter({simplifiedAutoLink: true});
       }
@@ -182,16 +173,6 @@ describe('makeHtml() features testsuite', function () {
       } else {
         converter = new showdown.Converter({rawHeaderId: true});
       }
-      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
-    }
-  });
-
-  /** test rawPrefixHeaderId support **/
-  describe('rawPrefixHeaderId support', function () {
-    let converter,
-        suite = rawPrefixHeaderIdSuite;
-    for (let i = 0; i < suite.length; ++i) {
-      converter = new showdown.Converter({rawPrefixHeaderId: true, prefixHeaderId: '/prefix/'});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });
@@ -274,18 +255,6 @@ describe('makeHtml() features testsuite', function () {
     }
   });
 
-  /** test literalMidWordAsterisks option **/
-  /*
-  describe('literalMidWordAsterisks option', function () {
-    let converter,
-        suite = literalMidWordAsterisksSuite;
-    for (let i = 0; i < suite.length; ++i) {
-      converter = new showdown.Converter({literalMidWordAsterisks: true});
-      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
-    }
-  });
-  */
-
   /** test completeHTMLDocument option **/
   describe('completeHTMLDocument option', function () {
     let converter,
@@ -334,16 +303,6 @@ describe('makeHtml() features testsuite', function () {
 
     for (let i = 0; i < suite.length; ++i) {
       converter = new showdown.Converter({moreStyling: true, tasklists: true});
-      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
-    }
-  });
-
-  describe('customizedHeaderId option', function () {
-    let converter,
-        suite = customizedHeaderId;
-
-    for (let i = 0; i < suite.length; ++i) {
-      converter = new showdown.Converter({customizedHeaderId: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

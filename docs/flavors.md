@@ -7,7 +7,7 @@ Currently, the following flavors are available:
  * `original`: Original Markdown flavor as in [John Gruber's spec](https://daringfireball.net/projects/markdown/)
  * `vanilla`:  Showdown base flavor (v1.3.1 onwards)
  * `github`: [GitHub Flavored Markdown, or GFM](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
- * `commonmark`: [CommonMark](https://spec.commonmark.org/) (v3.0.0 onwards). Enables the full set of `commonmark*` options — see [Spec compliance](spec-compliance.md).
+ * `commonmark`: [CommonMark](https://spec.commonmark.org/) (v3.0.0 onwards). Enables the `cmSpec` option — see [Spec compliance](spec-compliance.md).
 
 ## Options activated by each flavor
 
@@ -20,7 +20,6 @@ Legend: ✅ = `on` · ❌ = `off` · _(blank)_ = `off` (default).
 | Option                                 | `vanilla` | `original` | `github` | `commonmark` |
 |----------------------------------------|:---------:|:----------:|:--------:|:------------:|
 | `noHeaderId`                           |           |     ✅     |          |      ✅      |
-| `ghCompatibleHeaderId`                 |           |            |    ✅    |              |
 | `requireSpaceBeforeHeadingText`        |           |            |    ✅    |      ✅      |
 | `ghCodeBlocks`                         |    ✅     |     ❌     |    ✅    |      ✅      |
 | `omitExtraWLInCodeBlocks`              |           |            |    ✅    |              |
@@ -37,16 +36,7 @@ Legend: ✅ = `on` · ❌ = `off` · _(blank)_ = `off` (default).
 | `emoji`                                |           |            |    ✅    |              |
 | `splitAdjacentBlockquotes`             |           |            |    ✅    |              |
 | `decodeEntities`                       |           |            |          |      ✅      |
-| `commonmarkEmphasis`                   |           |            |          |      ✅      |
-| `commonmarkAutolinks`                  |           |            |          |      ✅      |
-| `commonmarkLinks`                      |           |            |          |      ✅      |
-| `commonmarkRawHTML`                    |           |            |          |      ✅      |
-| `commonmarkHTMLBlocks`                 |           |            |          |      ✅      |
-| `commonmarkBlockquotes`                |           |            |          |      ✅      |
-| `commonmarkLists`                      |           |            |          |      ✅      |
-| `commonmarkInline`                     |           |            |          |      ✅      |
-| `commonmarkTabs`                       |           |            |          |      ✅      |
-| `commonmarkContainers`                 |           |            |          |      ✅      |
+| `cmSpec`                               |           |            |          |      ✅      |
 
 !!! note
     `ghCodeBlocks` defaults to `on`, so `vanilla`, `github` and `commonmark` all keep GFM fenced code blocks enabled; only `original` turns them off.

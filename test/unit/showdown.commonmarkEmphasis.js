@@ -1,10 +1,10 @@
 /**
- * Unit tests for the `commonmarkEmphasis` option (CommonMark delimiter-run emphasis).
+ * Unit tests for the `cmSpec` option (CommonMark delimiter-run emphasis).
  * The behavior is gated: it is off by default and enabled by the `commonmark` flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkEmphasis option', function () {
+describe('showdown.Converter cmSpec option (Emphasis)', function () {
   'use strict';
 
   describe('disabled (default)', function () {
@@ -20,7 +20,7 @@ describe('showdown.Converter commonmarkEmphasis option', function () {
   });
 
   describe('enabled', function () {
-    let converter = new showdown.Converter({commonmarkEmphasis: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should not treat intraword underscores as emphasis', function () {
       converter.makeHtml('foo_bar_').should.equal('<p>foo_bar_</p>');

@@ -20,7 +20,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
   text = startEvent.output;
 
   // Hash Self Closing tags
-  if (!options.commonmarkRawHTML) {
+  if (!options.cmSpec) {
     text = text.replace(/<[^>]+?\/>/gi, function (wm) {
       return showdown.helper._hashHTMLSpan(wm, globals);
     });
@@ -39,7 +39,7 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
   // Hash self closing tags without />. In CommonMark raw-HTML mode the valid inline
   // raw HTML has already been hashed earlier (spanGamut); any `<…>` left here is
   // malformed and must NOT be hashed (it is escaped by encodeAmpsAndAngles instead).
-  if (!options.commonmarkRawHTML) {
+  if (!options.cmSpec) {
     text = text.replace(/<[^>]+?>/gi, function (wm) {
       return showdown.helper._hashHTMLSpan(wm, globals);
     });

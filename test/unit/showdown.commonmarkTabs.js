@@ -1,11 +1,11 @@
 /**
- * Unit tests for the `commonmarkTabs` option (CommonMark 4-column tab-stop expansion
+ * Unit tests for the `cmSpec` option (CommonMark 4-column tab-stop expansion
  * in block-structure indentation). Gated: off by default, enabled by the `commonmark`
  * flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkTabs option', function () {
+describe('showdown.Converter cmSpec option (Tabs)', function () {
   'use strict';
 
   let norm = function (s) { return s.replace(/\s+/g, ' ').trim(); };
@@ -19,7 +19,7 @@ describe('showdown.Converter commonmarkTabs option', function () {
   });
 
   describe('enabled', function () {
-    let converter = new showdown.Converter({commonmarkTabs: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should expand a leading tab to a 4-space indent (indented code)', function () {
       norm(converter.makeHtml('\tfoo')).should.equal(norm('<pre><code>foo\n</code></pre>'));

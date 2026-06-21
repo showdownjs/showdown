@@ -3,17 +3,17 @@
 
 ## Options
 
-- [ ] **ghCompatibleHeaderId** (removal)
+- [X] **ghCompatibleHeaderId** (removal)
 
     Will be removed and **will become the default behavior**.
     
-- [ ] **customizedHeaderId** (removal)
+- [X] **customizedHeaderId** (removal)
 
     This option introduced non compliant syntax so it really belongs in an extension.
     The new **listener extension system** allows users to directly modify and customize
     the HTML and add any attributes they wish. 
 
-- [ ] **rawPrefixHeaderId** (removal)
+- [X] **rawPrefixHeaderId** (removal)
 
     This option will be superseeded by the option `rawHeaderId`. So basically activating `rawHeaderId` will make
     showdown only to replace spaces, ', ", > and < with dashes (-) from generated header ids, including prefixes.

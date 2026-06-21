@@ -131,7 +131,7 @@ var converter = new showdown.Converter(),
 Both examples should output...
 
 ```html
-    <h1 id="hellomarkdown">hello, markdown!</h1>
+    <h1 id="hello-markdown">hello, markdown!</h1>
 ```
 
 ## Options
@@ -211,26 +211,17 @@ var defaultOptions = showdown.getDefaultOptions();
     ```
 
  * **noHeaderId**: (boolean) [default false] Disable the automatic generation of header ids.
-   Setting to true overrides **prefixHeaderId**
-
- * **customizedHeaderId**: (boolean) [default false] Use text in curly braces as header id. **(since v1.7.0)**
-   Example:
-   ```
-   ## Sample header {real-id}     will use real-id as id
-   ```
-
- * **ghCompatibleHeaderId**: (boolean) [default false] Generate header ids compatible with github style
-   (spaces are replaced with dashes and a bunch of non alphanumeric chars are removed) **(since v1.5.5)**
+   Setting to true overrides **prefixHeaderId** and **rawHeaderId**
 
  * **prefixHeaderId**: (string/boolean) [default false] Add a prefix to the generated header ids.
    Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
 
- * **rawPrefixHeaderId**: (boolean) [default false] Setting this option to true will prevent showdown from modifying the prefix.
-   This might result in malformed IDs (if, for instance, the " char is used in the prefix).
-   Has no effect if prefixHeaderId is set to false. **(since v 1.7.3)**
+ * **rawHeaderId**: (boolean) [default false] Use minimal sanitization for generated header ids instead of the
+   default github-compatible style: replace only spaces, `'`, `"`, `>` and `<` with dashes (-), including in any prefix.
+   WARNING: This might result in malformed ids **(since v1.7.3)**
 
- * **rawHeaderId**: (boolean) [default false] Remove only spaces, ' and " from generated header ids (including prefixes),
-    replacing them with dashes (-). WARNING: This might result in malformed ids **(since v1.7.3)**
+ > **NOTE**: Header ids are **github-compatible by default** (spaces become dashes and most non-alphanumeric chars are
+ > stripped). Use **rawHeaderId** for minimal sanitization, or **noHeaderId** to disable ids entirely.
  
  * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that
 
@@ -277,9 +268,6 @@ var defaultOptions = showdown.getDefaultOptions();
    ```html
    <p>some text with__underscores__in middle</p>
    ```
-
- * **literalMidWordAsterisks**: (boolean) [default false] Turning this on will stop showdown from interpreting asterisks
-   in the middle of words as `<em>` and `<strong>` and instead treat them as literal asterisks. **(since v1.7.0)**
 
  * **strikethrough**: (boolean) [default false] Enable support for strikethrough syntax.
    `~~strikethrough~~` as `<del>strikethrough</del>`
@@ -377,22 +365,12 @@ var defaultOptions = showdown.getDefaultOptions();
 
 #### CommonMark options **(since v3.0.0)**
 
-These options make Showdown follow the [CommonMark spec](https://spec.commonmark.org/). They are all
-`boolean` and default to `false`. They are designed to work together and are best enabled all at once
-via the [`commonmark` flavor](#flavors). See the
+These options make Showdown follow the [CommonMark spec](https://spec.commonmark.org/). They are
+`boolean` and default to `false`, and are best enabled via the [`commonmark` flavor](#flavors). See the
 [Spec compliance docs](docs/spec-compliance.md) for details.
 
- * **decodeEntities**: Resolve HTML5 named and numeric character references (`&copy;`, `&#35;`, `&#xcab;`) to their characters.
- * **commonmarkEmphasis**: Parse emphasis / strong emphasis with the CommonMark delimiter-run (flanking) algorithm.
- * **commonmarkAutolinks**: Recognize CommonMark autolinks `<scheme:uri>` and `<email>` without entity-encoding.
- * **commonmarkLinks**: Parse links, images and link reference definitions per the spec.
- * **commonmarkRawHTML**: Recognize inline raw HTML with the strict CommonMark grammar; escape malformed tags.
- * **commonmarkHTMLBlocks**: Recognize HTML blocks using the 7 CommonMark block types.
- * **commonmarkBlockquotes**: Parse block quotes as CommonMark container blocks (empty `>`, blank-line splitting, lazy continuation).
- * **commonmarkLists**: Parse lists with a CommonMark container-block parser (ordered start, loose/tight, indentation-based nesting).
- * **commonmarkInline**: Parse all inline content with a single unified CommonMark parser (one delimiter stack).
- * **commonmarkTabs**: Expand tabs to 4-column tab stops in block-structure indentation (content tabs preserved).
- * **commonmarkContainers**: Parse leaf blocks (fenced code, HTML blocks, link reference definitions, indented code) in the context of their containing block quote / list item.
+ * **cmSpec**: Enable CommonMark spec compliance — parse both block-level constructs (lists, block quotes, HTML blocks, container nesting, tab expansion) and inline constructs (emphasis, links, images, autolinks, raw HTML) per the CommonMark spec instead of Showdown's legacy matching.
+ * **decodeEntities**: Resolve HTML5 named and numeric character references (`&copy;`, `&#35;`, `&#xcab;`) to their characters. Kept separate from `cmSpec` because it is also useful on its own.
 
 **NOTE**: In the CLI tool, **all** options are ***disabled*** by default — including those (like `ghCodeBlocks`) that are enabled by default in the Node and browser builds.
 
@@ -406,7 +384,7 @@ Currently, the following flavors are available:
  * original - original markdown flavor as in [John Gruber's spec](https://daringfireball.net/projects/markdown/)
  * vanilla  - showdown base flavor (as from v1.3.1)
  * github   - GFM (GitHub Flavored Markdown)
- * commonmark - [CommonMark](https://spec.commonmark.org/) (as from v3.0.0), enables the full set of `commonmark*` options
+ * commonmark - [CommonMark](https://spec.commonmark.org/) CommonMark flavor (as from v3.0.0)
 
 
 ### Global

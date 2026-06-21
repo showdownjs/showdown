@@ -1,11 +1,11 @@
 /**
- * Unit tests for the `commonmarkLinks` option (CommonMark links, images and link
+ * Unit tests for the `cmSpec` option (CommonMark links, images and link
  * reference definitions). The behavior is gated: off by default, enabled by the
  * `commonmark` flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkLinks option', function () {
+describe('showdown.Converter cmSpec option (Links)', function () {
   'use strict';
 
   describe('disabled (default)', function () {
@@ -36,7 +36,7 @@ describe('showdown.Converter commonmarkLinks option', function () {
   });
 
   describe('enabled - URL normalization', function () {
-    let converter = new showdown.Converter({commonmarkLinks: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should decode entities inside the destination and percent-encode them', function () {
       converter.makeHtml('[link](foo%20b&auml;)')
@@ -65,7 +65,7 @@ describe('showdown.Converter commonmarkLinks option', function () {
   });
 
   describe('enabled - inline destination/title parsing', function () {
-    let converter = new showdown.Converter({commonmarkLinks: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should allow balanced parentheses in a bare destination', function () {
       converter.makeHtml('[link](foo(and(bar)))')
@@ -114,7 +114,7 @@ describe('showdown.Converter commonmarkLinks option', function () {
   });
 
   describe('enabled - reference definitions', function () {
-    let converter = new showdown.Converter({commonmarkLinks: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should use the first definition when a label is defined twice', function () {
       converter.makeHtml('[foo]\n\n[foo]: first\n[foo]: second')
@@ -153,7 +153,7 @@ describe('showdown.Converter commonmarkLinks option', function () {
   });
 
   describe('enabled - image alt-text flattening', function () {
-    let converter = new showdown.Converter({commonmarkLinks: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should strip emphasis markup from the alt text', function () {
       converter.makeHtml('![foo *bar*](/u)')

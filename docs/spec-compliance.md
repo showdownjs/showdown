@@ -33,27 +33,31 @@ options at once:
 
 ### CommonMark options
 
-CommonMark compliance is built from a set of individually-gated options. They are all
-`boolean`, all default to `false`, and were all introduced in `3.0.0`. The `commonmark` flavor
-enables every one of them.
+CommonMark compliance is controlled by a single option, [`cmSpec`](available-options.md#cmspec)
+(`boolean`, default `false`, introduced in `3.0.0`), plus the companion
+[`decodeEntities`](available-options.md#decodeentities) option. The `commonmark` flavor turns
+both on (along with `noHeaderId` and `requireSpaceBeforeHeadingText`). Prefer the flavor unless
+you have a specific reason to set the options yourself.
 
-You *can* enable them individually if you only want part of the CommonMark behavior, but they
-are designed to work together — enabling only some may produce inconsistent results. Prefer the
-flavor unless you have a specific reason not to.
+`cmSpec` switches both block-level and inline parsing from Showdown's legacy matching to the
+CommonMark spec. What it covers:
 
-| Option | What it does |
+| Area | What it does |
 |---|---|
-| [`decodeEntities`](available-options.md#decodeentities) | Resolve HTML5 named and numeric character references (`&copy;`, `&#35;`, `&#xcab;`) to their characters. |
-| [`commonmarkEmphasis`](available-options.md#commonmarkemphasis) | Parse emphasis / strong emphasis with the CommonMark delimiter-run (flanking) algorithm. |
-| [`commonmarkAutolinks`](available-options.md#commonmarkautolinks) | Recognize CommonMark autolinks `<scheme:uri>` and `<email>` without entity-encoding. |
-| [`commonmarkLinks`](available-options.md#commonmarklinks) | Parse links, images and link reference definitions per the spec (balanced-paren and `<...>` destinations, backslash escapes, in-URL entity decoding, alt-text flattening). |
-| [`commonmarkRawHTML`](available-options.md#commonmarkrawhtml) | Recognize inline raw HTML with the strict CommonMark grammar; malformed tags are escaped instead of passed through. |
-| [`commonmarkHTMLBlocks`](available-options.md#commonmarkhtmlblocks) | Recognize HTML blocks using the 7 CommonMark block types instead of Showdown's balanced-tag matching. |
-| [`commonmarkBlockquotes`](available-options.md#commonmarkblockquotes) | Parse block quotes as CommonMark container blocks (empty `>`, splitting at blank lines, lazy continuation). |
-| [`commonmarkLists`](available-options.md#commonmarklists) | Parse lists with a CommonMark container-block parser (marker/delimiter splitting, ordered start, loose/tight, indentation-based nesting). |
-| [`commonmarkInline`](available-options.md#commonmarkinline) | Parse all inline content with a single unified CommonMark parser (one delimiter stack). |
-| [`commonmarkTabs`](available-options.md#commonmarktabs) | Expand tabs to 4-column tab stops in block-structure indentation (content tabs are preserved). |
-| [`commonmarkContainers`](available-options.md#commonmarkcontainers) | Parse leaf blocks (fenced code, HTML blocks, link reference definitions, indented code) in the context of their containing block quote / list item. |
+| Emphasis | Parse emphasis / strong emphasis with the CommonMark delimiter-run (flanking) algorithm. |
+| Autolinks | Recognize CommonMark autolinks `<scheme:uri>` and `<email>` without entity-encoding. |
+| Links & images | Parse links, images and link reference definitions per the spec (balanced-paren and `<...>` destinations, backslash escapes, in-URL entity decoding, alt-text flattening). |
+| Inline raw HTML | Recognize inline raw HTML with the strict CommonMark grammar; malformed tags are escaped instead of passed through. |
+| HTML blocks | Recognize HTML blocks using the 7 CommonMark block types instead of Showdown's balanced-tag matching. |
+| Block quotes | Parse block quotes as CommonMark container blocks (empty `>`, splitting at blank lines, lazy continuation). |
+| Lists | Parse lists with a CommonMark container-block parser (marker/delimiter splitting, ordered start, loose/tight, indentation-based nesting). |
+| Unified inline | Parse all inline content with a single unified CommonMark parser (one delimiter stack). |
+| Tabs | Expand tabs to 4-column tab stops in block-structure indentation (content tabs are preserved). |
+| Containers | Parse leaf blocks (fenced code, HTML blocks, link reference definitions, indented code) in the context of their containing block quote / list item. |
+
+The separate [`decodeEntities`](available-options.md#decodeentities) option resolves HTML5 named
+and numeric character references (`&copy;`, `&#35;`, `&#xcab;`) to their characters. It is kept
+independent of `cmSpec` because it is also useful on its own.
 
 ### Known differences
 

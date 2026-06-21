@@ -77,7 +77,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, 
   // (the converter-level pass). blockGamut re-invokes this subparser on the markup
   // it has just generated to prevent <p>-wrapping; there the existing balanced-tag
   // hashing is correct (and must not over-consume generated block tags).
-  if (options.commonmarkHTMLBlocks && sourceMode) {
+  if (options.cmSpec && sourceMode) {
     text = parseCmHTMLBlocks(text);
 
     let cmAfterEvent = new showdown.Event('makehtml.hashHTMLBlocks.onEnd', text);

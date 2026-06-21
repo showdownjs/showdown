@@ -97,7 +97,7 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
     return beforeHashEvent.output;
   };
 
-  if (options.commonmarkLinks) {
+  if (options.cmSpec) {
     text = parseCmLinkDefinitions(text);
   } else {
     // first we try to find base64 link references

@@ -32,7 +32,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
   });
 
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
-  if (options.commonmarkLinks) {
+  if (options.cmSpec) {
     // CommonMark inline-image parsing, symmetric to the link scanner: balanced-paren
     // and `<...>` destinations, titles, backslash escapes, arbitrary label nesting.
     text = parseCmInlineImages(text);
@@ -101,7 +101,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
         attributes = {};
 
     if (linkId) {
-      linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
+      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
     } else {
       linkId = null;
     }
@@ -116,7 +116,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     } else if (showdown.helper.isUndefined(url) || url === '' || url === null) {
       if (linkId === '' || linkId === null) {
         // lower-case and turn embedded newlines into spaces
-        linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(altText) : showdown.helper.caseFold(altText).replace(/ ?\n/g, ' ');
+        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(altText) : showdown.helper.caseFold(altText).replace(/ ?\n/g, ' ');
       }
       url = '#' + linkId;
 
@@ -134,7 +134,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       }
     }
 
-    if (options.commonmarkLinks) {
+    if (options.cmSpec) {
       // CommonMark: the alt text is the plain-text rendering of the label, with
       // inline markup stripped (`![foo *bar*]` -> alt="foo bar").
       altText = flattenAltText(altText);
@@ -144,13 +144,13 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       //altText = showdown.helper.escapeCharacters(altText, '*_', false);
       .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     //url = showdown.helper.escapeCharacters(url, '*_', false);
-    if (options.commonmarkLinks) {
+    if (options.cmSpec) {
       url = showdown.helper.cmNormalizeURL(url);
     }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
 
     if (title && showdown.helper.isString(title)) {
-      if (options.commonmarkLinks) {
+      if (options.cmSpec) {
         title = showdown.helper.cmEscapeTitle(title);
       } else {
         title = title

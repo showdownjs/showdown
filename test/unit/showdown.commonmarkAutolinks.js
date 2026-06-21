@@ -1,10 +1,10 @@
 /**
- * Unit tests for the `commonmarkAutolinks` option (CommonMark autolinks).
+ * Unit tests for the `cmSpec` option (CommonMark autolinks).
  * The behavior is gated: it is off by default and enabled by the `commonmark` flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkAutolinks option', function () {
+describe('showdown.Converter cmSpec option (Autolinks)', function () {
   'use strict';
 
   describe('disabled (default)', function () {
@@ -16,7 +16,7 @@ describe('showdown.Converter commonmarkAutolinks option', function () {
   });
 
   describe('enabled', function () {
-    let converter = new showdown.Converter({commonmarkAutolinks: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should autolink arbitrary URI schemes', function () {
       converter.makeHtml('<irc://foo.bar:2233/baz>')

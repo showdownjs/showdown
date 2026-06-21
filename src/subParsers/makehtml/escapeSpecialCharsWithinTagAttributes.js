@@ -25,7 +25,7 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
   // recognized with the strict grammar and hashed in spanGamut (makehtml.hashCmRawHTML),
   // after backslash escapes and link/image destinations have been resolved. Escaping
   // `=`/`_`/etc. here would corrupt that later strict tag recognition.
-  if (!options.commonmarkRawHTML) {
+  if (!options.cmSpec) {
     // Build a regex to find HTML tags.
     let tags     = /<\/?[a-z\d_:-]+(?:\s+[\s\S]+?)?>/gi,
         comments = /<!(--(([^>-]|-[^>])([^-]|-[^-])*)--)>/gi;

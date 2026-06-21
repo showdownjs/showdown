@@ -13,7 +13,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  if (options.commonmarkInline) {
+  if (options.cmSpec) {
     // Unified CommonMark inline parser: code spans, backslash escapes, entities,
     // autolinks, raw HTML, links, images and emphasis resolved together on one
     // delimiter stack (replaces the sequential codeSpan/link/image/emphasis passes
@@ -47,7 +47,7 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   text = showdown.subParser('makehtml.image')(text, options, globals);
   text = showdown.subParser('makehtml.link')(text, options, globals);
 
-  if (options.commonmarkRawHTML) {
+  if (options.cmSpec) {
     // CommonMark inline raw HTML: recognize well-formed tags/comments/PIs/
     // declarations/CDATA and hash them now - after backslash escapes and link/image
     // destinations are resolved, but before emphasis - so that markup characters

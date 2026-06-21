@@ -1,10 +1,10 @@
 /**
- * Unit tests for the `commonmarkBlockquotes` option (CommonMark container block quotes).
+ * Unit tests for the `cmSpec` option (CommonMark container block quotes).
  * The behavior is gated: off by default and enabled by the `commonmark` flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkBlockquotes option', function () {
+describe('showdown.Converter cmSpec option (Blockquotes)', function () {
   'use strict';
 
   let norm = function (s) { return s.replace(/\s+/g, ' ').trim(); };
@@ -18,7 +18,7 @@ describe('showdown.Converter commonmarkBlockquotes option', function () {
   });
 
   describe('enabled', function () {
-    let converter = new showdown.Converter({commonmarkBlockquotes: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should treat a bare > as an empty block quote', function () {
       norm(converter.makeHtml('>')).should.equal(norm('<blockquote>\n</blockquote>'));

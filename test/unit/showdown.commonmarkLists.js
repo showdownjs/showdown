@@ -1,10 +1,10 @@
 /**
- * Unit tests for the `commonmarkLists` option (the CommonMark list container parser).
+ * Unit tests for the `cmSpec` option (the CommonMark list container parser).
  * The behavior is gated: off by default and enabled by the `commonmark` flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkLists option', function () {
+describe('showdown.Converter cmSpec option (Lists)', function () {
   'use strict';
 
   let norm = function (s) { return s.replace(/\s+/g, ' ').trim(); };
@@ -19,7 +19,7 @@ describe('showdown.Converter commonmarkLists option', function () {
   });
 
   describe('enabled', function () {
-    let converter = new showdown.Converter({commonmarkLists: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should start a new list when the bullet character changes', function () {
       norm(converter.makeHtml('- foo\n- bar\n+ baz'))

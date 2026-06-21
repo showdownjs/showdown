@@ -24,7 +24,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  if (options.commonmarkBlockquotes) {
+  if (options.cmSpec) {
     text = parseCmBlockquotes(text);
   } else {
     let pattern = /(^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+/gm;
@@ -85,7 +85,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
       // own (marker-stripped) content, mirroring the converter pipeline, so an HTML block
       // or a link reference definition nested inside the block quote is recognized in the
       // quote's context instead of only at the top level.
-      if (options.commonmarkContainers) {
+      if (options.cmSpec) {
         bq = showdown.subParser('makehtml.hashHTMLBlocks')(bq, options, globals, true);
         bq = showdown.subParser('makehtml.stripLinkDefinitions')(bq, options, globals);
       }

@@ -1,10 +1,10 @@
 /**
- * Unit tests for the `commonmarkHTMLBlocks` option (the 7 CommonMark HTML block types).
+ * Unit tests for the `cmSpec` option (the 7 CommonMark HTML block types).
  * The behavior is gated: off by default and enabled by the `commonmark` flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkHTMLBlocks option', function () {
+describe('showdown.Converter cmSpec option (HTMLBlocks)', function () {
   'use strict';
 
   describe('disabled (default)', function () {
@@ -17,7 +17,7 @@ describe('showdown.Converter commonmarkHTMLBlocks option', function () {
   });
 
   describe('enabled', function () {
-    let converter = new showdown.Converter({commonmarkHTMLBlocks: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should end a type 6 block at a blank line and parse following markdown', function () {
       converter.makeHtml('<div>\n*foo*\n\n*bar*')

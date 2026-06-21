@@ -347,14 +347,14 @@ showdown.Converter = function (converterOptions) {
     // run the sub parsers
     text = showdown.subParser('makehtml.metadata')(text, options, globals);
     text = showdown.subParser('makehtml.hashPreCodeTags')(text, options, globals);
-    if (options.commonmarkContainers) {
+    if (options.cmSpec) {
       // Container mode parses leaf blocks in document order: an open HTML block (e.g. a
       // `<div>` with no following blank line) absorbs a fence that follows it, so the
       // (fence-aware) HTML-block scan must run before githubCodeBlock. githubCodeBlock then
       // only claims fences at indent 0; indent 1-3 fences nested in list items / block
       // quotes are handled by the container parsers (and a later blockGamut pass for
       // genuinely top-level indented fences).
-      if (options.commonmarkTabs) {
+      if (options.cmSpec) {
         text = showdown.helper.expandCmTabs(text);
       }
       text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals, true);
@@ -363,7 +363,7 @@ showdown.Converter = function (converterOptions) {
       text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
       // CommonMark tab expansion runs after fenced/pre code is hashed (so their content
       // tabs are protected) and before the block parsers, which key off indentation.
-      if (options.commonmarkTabs) {
+      if (options.cmSpec) {
         text = showdown.helper.expandCmTabs(text);
       }
       text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals, true);

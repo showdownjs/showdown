@@ -124,7 +124,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
   // CommonMark-compliant emphasis/strong parsing (delimiter-run algorithm).
   // Gated behind the `commonmarkEmphasis` option (enabled by the commonmark flavor) because
   // it diverges from Showdown's default behavior (e.g. intraword underscores, flanking rules).
-  if (options.commonmarkEmphasis) {
+  if (options.cmSpec) {
     text = parseCommonmarkEmphasis(text);
 
     let cmAfterEvent = new showdown.Event('makehtml.emphasisAndStrong.onEnd', text);

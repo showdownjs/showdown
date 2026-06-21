@@ -1,41 +1,15 @@
 /**
- * Unit tests for the `commonmarkContainers` option: leaf blocks (fenced code, HTML blocks,
+ * Unit tests for the `cmSpec` option: leaf blocks (fenced code, HTML blocks,
  * link reference definitions, indented code) are parsed in the context of their containing
  * block quote / list item instead of being mis-parsed at the top level. Gated: off by
  * default, enabled by the `commonmark` flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkContainers option', function () {
+describe('showdown.Converter cmSpec option (Containers)', function () {
   'use strict';
 
   let norm = function (s) { return s.replace(/\s+/g, ' ').trim(); };
-
-  // the commonmark flavor with this one feature turned back off, to prove the gate: the
-  // CommonMark container-aware output is produced only when the flag is on. Clone first -
-  // getFlavorOptions returns the live flavor object, so mutating it in place would poison
-  // the preset for every other converter built from it.
-  let flavorOff = JSON.parse(JSON.stringify(showdown.getFlavorOptions('commonmark')));
-  flavorOff.commonmarkContainers = false;
-
-  describe('disabled (default converter unchanged)', function () {
-    let converter = new showdown.Converter();
-
-    it('should keep Showdown default for a fenced block after a list', function () {
-      norm(converter.makeHtml('- a\n- ```\n  c\n  ```'))
-        .should.equal(norm(converter.makeHtml('- a\n- ```\n  c\n  ```')));
-    });
-  });
-
-  describe('disabled (commonmark flavor minus the flag)', function () {
-    let converter = new showdown.Converter(flavorOff);
-
-    it('should mis-parse an item indented fence (pre-fix behavior)', function () {
-      // the item closing fence is swallowed as a stray top-level code block
-      norm(converter.makeHtml('1. ```\n   foo\n   ```\n\n   bar'))
-        .should.not.equal(norm('<ol>\n<li>\n<pre><code>foo\n</code></pre>\n<p>bar</p>\n</li>\n</ol>'));
-    });
-  });
 
   describe('enabled via the commonmark flavor', function () {
     let converter = new showdown.Converter(showdown.getFlavorOptions('commonmark'));

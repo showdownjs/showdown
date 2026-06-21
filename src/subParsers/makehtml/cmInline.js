@@ -518,7 +518,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   }
 
   function parseAutolink (str, i) {
-    if (!options.commonmarkAutolinks) { return null; }
+    if (!options.cmSpec) { return null; }
     reAutoUri.lastIndex = i;
     let uri = reAutoUri.exec(str);
     if (uri) {
@@ -540,7 +540,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   }
 
   function parseRawHTML (str, i) {
-    if (!options.commonmarkRawHTML) { return null; }
+    if (!options.cmSpec) { return null; }
     reRawHtml.lastIndex = i;
     let m = reRawHtml.exec(str);
     if (!m) { return null; }

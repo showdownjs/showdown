@@ -1,10 +1,10 @@
 /**
- * Unit tests for the `commonmarkInline` option (the unified CommonMark inline parser).
+ * Unit tests for the `cmSpec` option (the unified CommonMark inline parser).
  * The behavior is gated: off by default and enabled by the `commonmark` flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkInline option', function () {
+describe('showdown.Converter cmSpec option (Inline)', function () {
   'use strict';
 
   let norm = function (s) { return s.replace(/\s+/g, ' ').trim(); };
@@ -19,7 +19,7 @@ describe('showdown.Converter commonmarkInline option', function () {
   });
 
   describe('enabled', function () {
-    let converter = new showdown.Converter({commonmarkInline: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should not nest a link inside a link (inner link wins)', function () {
       norm(converter.makeHtml('[foo [bar](/uri)](/uri)'))

@@ -37,7 +37,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   });
 
   // 2. Handle inline-style links: [link text](url "optional title")
-  if (options.commonmarkLinks) {
+  if (options.cmSpec) {
     // CommonMark inline-link parsing: a manual scanner that handles balanced-paren
     // and `<...>` destinations, titles in "...", '...' or (...), and backslash escapes.
     text = parseCmInlineLinks(text);
@@ -80,7 +80,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   // 4. Handle angle brackets links -> `<http://example.com/>`
   // Must come after links, because you can use < and > delimiters in inline links like [this](<url>).
 
-  if (options.commonmarkAutolinks) {
+  if (options.cmSpec) {
     // CommonMark autolinks: any scheme (2-32 chars) URI, and emails, with no entity encoding.
     // 4.1. URI autolinks: <scheme:rest>
     let cmUriAutolinkRegex = /<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*)>/g;
@@ -387,7 +387,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     title = title || null;
     url = url || null;
     if (linkId) {
-      linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
+      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
     } else {
       linkId = null;
     }
@@ -398,7 +398,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     } else if (!url) {
       if (!linkId) {
         // lower-case and turn embedded newlines into spaces
-        linkId = options.commonmarkLinks ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
+        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
       }
       url = '#' + linkId;
 
@@ -413,14 +413,14 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     }
 
     url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    if (options.commonmarkLinks) {
+    if (options.cmSpec) {
       url = showdown.helper.cmNormalizeURL(url);
     }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     attributes.href = url;
 
     if (title && showdown.helper.isString(title)) {
-      if (options.commonmarkLinks) {
+      if (options.cmSpec) {
         title = showdown.helper.cmEscapeTitle(title);
       } else {
         title = title

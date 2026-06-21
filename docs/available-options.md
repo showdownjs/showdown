@@ -21,87 +21,14 @@ Support escaping of HTML tags.
     <p>&lt;div&gt;foo&lt;/div&gt;</p>
     ```
 
-### commonmarkAutolinks
+### cmSpec
 
-Recognize CommonMark autolinks: `<scheme:uri>` for any scheme and `<email>`, without entity-encoding.
+Enable [CommonMark](https://spec.commonmark.org/) spec compliance. With this single option on, both block-level constructs (lists, block quotes, HTML blocks, container nesting, tab expansion) and inline constructs (emphasis, links, images, autolinks, raw HTML) are parsed per the CommonMark spec instead of Showdown's legacy matching.
 
 !!! hint ""
-    The `commonmark*` options (and [`decodeEntities`](#decodeentities)) implement
-    [CommonMark](https://spec.commonmark.org/) compliance. They are designed to work together
-    and are best enabled all at once via the `commonmark` flavor. See
-    [Spec compliance](spec-compliance.md) for the full picture.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `3.0.0`
-
-### commonmarkBlockquotes
-
-Parse block quotes as CommonMark container blocks (empty `>`, splitting at blank lines, lazy continuation) instead of Showdown's regex matching.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `3.0.0`
-
-### commonmarkContainers
-
-Parse leaf blocks (fenced code, HTML blocks, link reference definitions, indented code) in the context of their containing block quote / list item, so constructs nested inside a container are no longer mis-parsed at the top level.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `3.0.0`
-
-### commonmarkEmphasis
-
-Parse emphasis and strong emphasis using the CommonMark delimiter-run algorithm (flanking rules).
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `3.0.0`
-
-### commonmarkHTMLBlocks
-
-Recognize HTML blocks using the 7 CommonMark block types (start/end conditions, line based) instead of Showdown's balanced-tag matching.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `3.0.0`
-
-### commonmarkInline
-
-Parse inline content (code spans, autolinks, raw HTML, links, images, emphasis) with a single unified CommonMark parser (one delimiter stack) instead of Showdown's sequential passes.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `3.0.0`
-
-### commonmarkLinks
-
-Parse links, images and link reference definitions per the CommonMark spec (balanced-paren and `<...>` destinations, backslash escapes, in-URL entity decoding, alt-text flattening).
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `3.0.0`
-
-### commonmarkLists
-
-Parse lists with a CommonMark container-block parser (marker/delimiter splitting, ordered start, loose/tight, indentation-based nesting) instead of Showdown's regex matching.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `3.0.0`
-
-### commonmarkRawHTML
-
-Recognize inline raw HTML using the strict CommonMark grammar; malformed tags (e.g. `<33>`, `<a h*#ref>`) are escaped instead of passed through.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `3.0.0`
-
-### commonmarkTabs
-
-Expand tabs to 4-column tab stops in block-structure indentation (CommonMark), so tab-indented content, list items and code blocks are recognized; content tabs are preserved.
+    This option (together with [`decodeEntities`](#decodeentities)) is what the `commonmark`
+    flavor turns on. Rather than setting it directly, you will usually want
+    `showdown.setFlavor('commonmark')`. See [Spec compliance](spec-compliance.md) for the full picture.
 
 * type: `boolean`
 * default value: `false`
@@ -114,32 +41,6 @@ Output a complete HTML document, including `<html>`, `<head>`, and `<body>` tags
 * type: `boolean`
 * default value: `false`
 * introduced in: `1.8.5`
-
-### customizedHeaderId
-
-Set custom ID for a heading.
-
-!!! warning ""
-    This option can be overridden with the [`noHeaderId`](#noheaderid) option.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `1.7.0`
-
-=== "code"
-
-    ```html
-    ## Sample heading {mycustomid}
-    ```
-
-=== "output"
-
-    ```html
-    <h1 id="mycustomid">This is a heading</h1>
-    ```
-
-!!! hint ""
-    For better readability and human-friendliness of the heading IDs, it is also recommended to set the [`ghCompatibleHeaderId`](#ghcompatibleheaderid) option to `true`.
 
 ### decodeEntities
 
@@ -325,35 +226,6 @@ Enable support for GFM code block style syntax (fenced codeblocks).
 	 ```
     ```
 
-### ghCompatibleHeaderId
-
-Generate heading IDs compatible with GitHub style: spaces are replaced with dashes, and certain non-alphanumeric chars are removed.
-
-!!! warning ""
-    This option can be overridden with the [`noHeaderId`](#noheaderid) option.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `1.5.5`
-
-=== "input"
-    
-    ```
-    # This is a heading with @#$%
-    ```
-
-=== "output (value is `false`)"
-
-    ```html
-    <h1 id="thisisaheading">This is a heading</h1>
-    ```
-
-=== "output (value is `true`)"
-
-    ```html
-    <h1 id="this-is-a-heading-with-">This is a heading with @#$%</h1>
-    ```
-
 ### ghMentions
 
 Enables support for GitHub `@mentions` that allows you to link to the GitHub profile page of the mentioned username.
@@ -458,34 +330,6 @@ Use `https://` (instead of `http://`) when generating the protocol for autolinke
     <p>Lorem ipsum <a href="https://www.google.com">www.google.com</a></p>
     ```
 
-### literalMidWordAsterisks
-
-Treat asterisks in the middle of words as literal characters.
-
-Like [`literalMidWordUnderscores`](#literalmidwordunderscores), but for asterisks. With this option enabled, asterisks in the middle of words will no longer be interpreted as `<em>` and `<strong>`, but as literal asterisks.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `1.7.0`
-
-=== "input"
-    
-    ```
-    some text with**asterisks**in the middle
-    ```
-
-=== "output (value is `false`)"
-
-    ```html
-    <p>some text with<strong>asterisks</strong>in the middle</p>
-    ```
-
-=== "output (value is `true`)"
-
-    ```html
-    <p>some text with**asterisks**in the middle</p>
-    ```
-
 ### literalMidWordUnderscores
 
 Treat underscores in the middle of words as literal characters.
@@ -584,12 +428,14 @@ Currently, this adds the class `task-list-item-complete` to completed task items
 
 Disable automatic generation of heading IDs.
 
+!!! note ""
+    By default Showdown generates **GitHub-compatible** heading IDs (spaces become dashes, most non-alphanumeric characters are stripped, lower-cased). Use [`rawHeaderId`](#rawheaderid) for minimal sanitization instead, or `noHeaderId` to disable IDs entirely.
+
 !!! warning ""
     Setting the option to `true` overrides the following options:
-    
+
     * [`prefixHeaderId`](#prefixheaderid)
-    * [`customizedHeaderId`](#customizedheaderid)
-    * [`ghCompatibleHeaderId`](#ghcompatibleheaderid)
+    * [`rawHeaderId`](#rawheaderid)
 
 * type: `boolean`
 * default value: `false`
@@ -604,7 +450,7 @@ Disable automatic generation of heading IDs.
 === "output (value is `false`)"
 
     ```html
-    <h1 id="thisisaheading">This is a heading</h1>
+    <h1 id="this-is-a-heading">This is a heading</h1>
     ```
 
 === "output (value is `true`)"
@@ -704,38 +550,27 @@ Add a prefix to the generated heading ID:
 === "output (value is `false`)"
 
     ```html
-    <h1 id="thisisaheading">This is a heading</h1>
+    <h1 id="this-is-a-heading">This is a heading</h1>
     ```
 
 === "output (value is `true`)"
 
     ```html
-    <h1 id="sectionthisisaheading">This is a heading</h1>
+    <h1 id="section-this-is-a-heading">This is a heading</h1>
     ```
 
 === "output (value is `showdown`)"
 
      ```html
-     <h1 id="showdownthisisaheading">This is a heading</h1>
+     <h1 id="showdownthis-is-a-heading">This is a heading</h1>
      ```
 
 ### rawHeaderId
 
-Replace ` ` (space), `'` (single quote), and `"` (double quote) with `-` (dash) in the generated heading IDs, including prefixes.
+Use minimal sanitization for generated heading IDs instead of the default GitHub-compatible style: only ` ` (space), `'`, `"`, `>` and `<` are replaced with `-` (dash), including in any prefix. All other characters are kept verbatim (and the result is lower-cased).
 
 !!! danger ""
     **Use with caution** as it might result in malformed IDs.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `1.7.3`
-
-### rawPrefixHeaderId
-
-Prevent Showndown from modifying the prefix. Works only when [`prefixHeaderId`](#prefixheaderid) is set to a string value.
-
-!!! danger ""
-    **Use with caution** as it might result in malformed IDs. For example, when the prefix contains special characters like `"` `\` `/` or others.
 
 * type: `boolean`
 * default value: `false`

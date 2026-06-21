@@ -103,14 +103,6 @@
     let title,
         prefix;
 
-    // It is separate from other options to allow combining prefix and customized
-    if (options.customizedHeaderId) {
-      let match = m.match(/{([^{]+?)}\s*$/);
-      if (match && match[1]) {
-        m = match[1];
-      }
-    }
-
     title = m;
 
     // Prefix id to prevent causing inadvertent pre-existing style matches.
@@ -122,11 +114,23 @@
       prefix = '';
     }
 
-    if (!options.rawPrefixHeaderId) {
-      title = prefix + title;
-    }
+    title = prefix + title;
 
-    if (options.ghCompatibleHeaderId) {
+    if (options.rawHeaderId) {
+      // minimal sanitization: only spaces, ', ", > and < become dashes (the prefix is
+      // included, so it gets the same treatment). WARNING: may produce malformed ids.
+      title = title
+        .replace(/ /g, '-')
+        // replace previously escaped chars (&, ¨ and $)
+        .replace(/&amp;/g, '&')
+        .replace(/¨T/g, '¨')
+        .replace(/¨D/g, '$')
+        // replace ", ', > and <
+        .replace(/["'><]/g, '-')
+        .toLowerCase();
+    } else {
+      // default: GitHub-compatible ids (spaces become dashes, non-alphanumeric chars
+      // are stripped). Borrowed from github's redcarpet so results are similar.
       title = title
         .replace(/ /g, '-')
         // replace previously escaped chars (&, ¨ and $)
@@ -134,27 +138,8 @@
         .replace(/¨T/g, '')
         .replace(/¨D/g, '')
         // replace rest of the chars (&~$ are repeated as they might have been escaped)
-        // borrowed from github's redcarpet (so they should produce similar results)
         .replace(/[&+$,\/:;=?@"#{}|^¨¿？：~\[\]`、゠＝…‥『』〝〟「」\\*()｛｝（）［］【】%.。，¡!！'<>]/g, '')
         .toLowerCase();
-    } else if (options.rawHeaderId) {
-      title = title
-        .replace(/ /g, '-')
-        // replace previously escaped chars (&, ¨ and $)
-        .replace(/&amp;/g, '&')
-        .replace(/¨T/g, '¨')
-        .replace(/¨D/g, '$')
-        // replace " and '
-        .replace(/["']/g, '-')
-        .toLowerCase();
-    } else {
-      title = title
-        .replace(/\W/g, '')
-        .toLowerCase();
-    }
-
-    if (options.rawPrefixHeaderId) {
-      title = prefix + title;
     }
 
     if (globals.hashLinkCounts[title]) {
@@ -201,12 +186,12 @@
     }
 
     text = text.replace(setextRegexH1, function (wholeMatch, headingText, line1, line2, line3, line4) {
-      if (options.commonmarkLists && cmSkipSetext(headingText)) { return wholeMatch; }
+      if (options.cmSpec && cmSkipSetext(headingText)) { return wholeMatch; }
       return parseSetextHeading(setextRegexH2, options.headerLevelStart, wholeMatch, headingText, line1, line2, line3, line4);
     });
 
     text = text.replace(setextRegexH2, function (wholeMatch, headingText, line1, line2, line3, line4) {
-      if (options.commonmarkLists && cmSkipSetext(headingText)) { return wholeMatch; }
+      if (options.cmSpec && cmSkipSetext(headingText)) { return wholeMatch; }
       return parseSetextHeading(setextRegexH2, options.headerLevelStart + 1, wholeMatch, headingText, line1, line2, line3, line4);
     });
 
@@ -379,7 +364,7 @@
     const atxRegex = (options.requireSpaceBeforeHeadingText) ? /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm : /^ {0,3}(#{1,6})[ \t]*(.+?)[ \t]*#*[ \t]*$/gm;
     text = text.replace(atxRegex, function (wholeMatch, m1, m2) {
       let headingLevel = options.headerLevelStart - 1 + m1.length,
-          headingText = (options.customizedHeaderId) ? m2.replace(/\s?{([^{]+?)}\s*$/, '') : m2,
+          headingText = m2,
           id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(m2, options, globals);
       return parseHeader('atx', atxRegex, wholeMatch, headingText, headingLevel, id, options, globals);
     });

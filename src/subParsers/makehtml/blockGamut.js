@@ -41,7 +41,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip
   // githubCodeBlock on the de-indented content). This pass picks up genuinely top-level
   // indented (1-3) fences here, after the list parser has claimed item content and before
   // codeBlock could mistake their content lines for indented code.
-  if (options.commonmarkContainers) {
+  if (options.cmSpec) {
     text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
   }
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
@@ -51,7 +51,7 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip
   // never saw (e.g. an indented-code line that followed a `>` line and so was not yet at the
   // start of a block). Re-run codeBlock in container mode so that revealed indented code is
   // recognized instead of falling through to a paragraph.
-  if (options.commonmarkContainers) {
+  if (options.cmSpec) {
     text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
   }
 

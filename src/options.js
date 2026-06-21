@@ -21,19 +21,9 @@ function getDefaultOpts (simple) {
       describe: 'Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to true will add a generic \'section-\' prefix',
       type: 'string'
     },
-    rawPrefixHeaderId: {
-      defaultValue: false,
-      describe: 'Setting this option to true will prevent showdown from modifying the prefix. This might result in malformed IDs (if, for instance, the " char is used in the prefix)',
-      type: 'boolean'
-    },
-    ghCompatibleHeaderId: {
-      defaultValue: false,
-      describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, a bunch of non alphanumeric chars are removed)',
-      type: 'boolean'
-    },
     rawHeaderId: {
       defaultValue: false,
-      describe: 'Remove only spaces, \' and " from generated header ids (including prefixes), replacing them with dashes (-). WARNING: This might result in malformed ids',
+      describe: 'Remove only spaces, \', ", > and < from generated header ids (including any prefix), replacing them with dashes (-), instead of the default github-compatible sanitization. WARNING: This might result in malformed ids',
       type: 'boolean'
     },
     headerLevelStart: {
@@ -59,11 +49,6 @@ function getDefaultOpts (simple) {
     literalMidWordUnderscores: {
       defaultValue: false,
       describe: 'Parse midword underscores as literal underscores',
-      type: 'boolean'
-    },
-    literalMidWordAsterisks: {
-      defaultValue: false,
-      describe: 'Parse midword asterisks as literal asterisks',
       type: 'boolean'
     },
     strikethrough: {
@@ -186,54 +171,9 @@ function getDefaultOpts (simple) {
       describe: 'Resolve HTML5 named and numeric character references to their characters (CommonMark behavior)',
       type: 'boolean'
     },
-    commonmarkEmphasis: {
+    cmSpec: {
       defaultValue: false,
-      describe: 'Parse emphasis and strong emphasis using the CommonMark delimiter-run algorithm (flanking rules)',
-      type: 'boolean'
-    },
-    commonmarkAutolinks: {
-      defaultValue: false,
-      describe: 'Recognize CommonMark autolinks: <scheme:uri> for any scheme and <email>, without entity-encoding',
-      type: 'boolean'
-    },
-    commonmarkLinks: {
-      defaultValue: false,
-      describe: 'Parse links, images and link reference definitions per the CommonMark spec (balanced-paren and <...> destinations, backslash escapes, in-URL entity decoding, alt-text flattening)',
-      type: 'boolean'
-    },
-    commonmarkRawHTML: {
-      defaultValue: false,
-      describe: 'Recognize inline raw HTML using the strict CommonMark grammar; malformed tags (e.g. <33>, <a h*#ref>) are escaped instead of passed through',
-      type: 'boolean'
-    },
-    commonmarkHTMLBlocks: {
-      defaultValue: false,
-      describe: 'Recognize HTML blocks using the 7 CommonMark block types (start/end conditions, line based) instead of Showdown\'s balanced-tag matching',
-      type: 'boolean'
-    },
-    commonmarkBlockquotes: {
-      defaultValue: false,
-      describe: 'Parse block quotes as CommonMark container blocks (empty `>`, splitting at blank lines, lazy continuation) instead of Showdown\'s regex matching',
-      type: 'boolean'
-    },
-    commonmarkLists: {
-      defaultValue: false,
-      describe: 'Parse lists with a CommonMark container-block parser (marker/delimiter splitting, ordered start, loose/tight, indentation-based nesting) instead of Showdown\'s regex matching',
-      type: 'boolean'
-    },
-    commonmarkInline: {
-      defaultValue: false,
-      describe: 'Parse inline content (code spans, autolinks, raw HTML, links, images, emphasis) with a single unified CommonMark parser (one delimiter stack) instead of Showdown\'s sequential passes',
-      type: 'boolean'
-    },
-    commonmarkTabs: {
-      defaultValue: false,
-      describe: 'Expand tabs to 4-column tab stops in block-structure indentation (CommonMark), so tab-indented content, list items and code blocks are recognized; content tabs are preserved',
-      type: 'boolean'
-    },
-    commonmarkContainers: {
-      defaultValue: false,
-      describe: 'Parse leaf blocks (fenced code, HTML blocks, link reference definitions, indented code) in the context of their containing block quote/list item, so constructs nested inside a container are no longer mis-parsed at the top level',
+      describe: 'Enable CommonMark spec compliance: parse blocks (lists, block quotes, HTML blocks, containers, tabs) and inlines (emphasis, links, images, autolinks, raw HTML) per the CommonMark spec instead of Showdown\'s legacy matching',
       type: 'boolean'
     },
   };

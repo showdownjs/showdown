@@ -46,14 +46,14 @@ describe('showdown.Converter', function () {
     it('should prefix header id with "section"', function () {
       converter.setOption('prefixHeaderId', true);
       let html = converter.makeHtml('# ' + text),
-          expectedHtml = '<h1 id="sectionfooheader">' + text + '</h1>';
+          expectedHtml = '<h1 id="section-foo-header">' + text + '</h1>';
       html.should.equal(expectedHtml);
     });
 
     it('should prefix header id with custom string', function () {
       converter.setOption('prefixHeaderId', 'blabla');
       let html = converter.makeHtml('# ' + text),
-          expectedHtml = '<h1 id="blablafooheader">' + text + '</h1>';
+          expectedHtml = '<h1 id="blablafoo-header">' + text + '</h1>';
       html.should.equal(expectedHtml);
     });
   });

@@ -23,7 +23,7 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
 
   // CommonMark list parsing is a separate container-block parser, invoked only when
   // the commonmark flavor selects it. The regex parser below stays the default path.
-  if (options.commonmarkLists) {
+  if (options.cmSpec) {
     return showdown.subParser('makehtml.cmList')(text, options, globals);
   }
 

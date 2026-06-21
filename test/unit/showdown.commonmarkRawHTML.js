@@ -1,10 +1,10 @@
 /**
- * Unit tests for the `commonmarkRawHTML` option (strict CommonMark inline raw HTML).
+ * Unit tests for the `cmSpec` option (strict CommonMark inline raw HTML).
  * The behavior is gated: off by default and enabled by the `commonmark` flavor.
  */
 chai.should();
 
-describe('showdown.Converter commonmarkRawHTML option', function () {
+describe('showdown.Converter cmSpec option (RawHTML)', function () {
   'use strict';
 
   describe('disabled (default)', function () {
@@ -20,7 +20,7 @@ describe('showdown.Converter commonmarkRawHTML option', function () {
   });
 
   describe('enabled', function () {
-    let converter = new showdown.Converter({commonmarkRawHTML: true});
+    let converter = new showdown.Converter({cmSpec: true});
 
     it('should escape a tag with a numeric name', function () {
       converter.makeHtml('<33> <__>').should.equal('<p>&lt;33&gt; &lt;__&gt;</p>');

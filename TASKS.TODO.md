@@ -51,7 +51,7 @@
     
     Tough choices...
 
-- [ ] **simpleLineBreaks** (change)
+- [X] **simpleLineBreaks** (change)
 
     Will be removed from Github Flavor since github only does this in comments (which is weird...)
 

@@ -30,7 +30,6 @@ Legend: ✅ = `on` · ❌ = `off` · _(blank)_ = `off` (default).
 | `tablesHeaderId`                       |           |            |    ✅    |              |
 | `tasklists`                            |           |            |    ✅    |              |
 | `disableForced4SpacesIndentedSublists` |           |            |    ✅    |              |
-| `simpleLineBreaks`                     |           |            |    ✅    |              |
 | `ghMentions`                           |           |            |    ✅    |              |
 | `backslashEscapesHTMLTags`             |           |            |    ✅    |              |
 | `emoji`                                |           |            |    ✅    |              |

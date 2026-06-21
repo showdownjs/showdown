@@ -22,7 +22,7 @@ if (fs.existsSync(path1)) {
 } else {
   // cold testing (manual) of cli.js in the src file. We load the dist file
   showdown = require('../../dist/showdown');
-  version = require('../../package.json');
+  version = require('../../package.json').version;
 }
 
 
@@ -34,46 +34,78 @@ program
   .option('-q, --quiet', 'Quiet mode. Only print errors')
   .option('-m, --mute', 'Mute mode. Does not print anything');
 
-program.command('makehtml')
-  .description('Converts markdown into html')
+addConversionOptions(
+  program.command('makehtml')
+    .description('Converts markdown into html')
 
-  .addHelpText('after', '\n\nExamples:')
-  .addHelpText('after', '  showdown makehtml -i                     Reads from stdin and outputs to stdout')
-  .addHelpText('after', '  showdown makehtml -i foo.md -o bar.html  Reads \'foo.md\' and writes to \'bar.html\'')
-  .addHelpText('after', '  showdown makehtml -i --flavor="github"   Parses stdin using GFM style')
+    .addHelpText('after', '\n\nExamples:')
+    .addHelpText('after', '  showdown makehtml -i                     Reads from stdin and outputs to stdout')
+    .addHelpText('after', '  showdown makehtml -i foo.md -o bar.html  Reads \'foo.md\' and writes to \'bar.html\'')
+    .addHelpText('after', '  showdown makehtml -i --flavor="github"   Parses stdin using GFM style')
 
-  .addHelpText('after', '\nNote for windows users:')
-  .addHelpText('after', 'When reading from stdin, use option -u to set the proper encoding or run `chcp 65001` prior to calling showdown cli to set the command line to utf-8')
+    .addHelpText('after', '\nNote for windows users:')
+    .addHelpText('after', 'When reading from stdin, use option -u to set the proper encoding or run `chcp 65001` prior to calling showdown cli to set the command line to utf-8'),
+  'Input source. Usually a md file. If omitted or empty, reads from stdin. Windows users see note below.',
+  'Output target. Usually a html file. If omitted or empty, writes to stdout'
+).action(function (options, command) {
+  conversionCommand('makeHtml', 'markdown', options, command);
+});
 
-  .option('-i, --input [file]', 'Input source. Usually a md file. If omitted or empty, reads from stdin. Windows users see note below.', true)
-  .option('-o, --output [file]', 'Output target. Usually a html file. If omitted or empty, writes to stdout', true)
-  .option('-u, --encoding <encoding>', 'Sets the input encoding', 'utf8')
-  .option('-y, --output-encoding <encoding>', 'Sets the output encoding', 'utf8')
-  .option('-a, --append', 'Append data to output instead of overwriting. Ignored if writing to stdout', false)
-  .option('-e, --extensions <extensions...>', 'Load the specified extensions. Should be valid paths to node compatible extensions')
-  .option('-p, --flavor <flavor>', 'Run with a predetermined flavor of options. Default is vanilla', 'vanilla')
-  .option('-c, --config <config...>', 'Enables showdown makehtml parser config options. Overrides flavor')
-  .option('--config-help', 'Shows configuration options for showdown parser')
-  .action(makehtmlCommand);
+addConversionOptions(
+  program.command('makemarkdown')
+    .description('Converts html into markdown')
+
+    .addHelpText('after', '\n\nExamples:')
+    .addHelpText('after', '  showdown makemarkdown -i                     Reads from stdin and outputs to stdout')
+    .addHelpText('after', '  showdown makemarkdown -i foo.html -o bar.md  Reads \'foo.html\' and writes to \'bar.md\'')
+
+    .addHelpText('after', '\nNote for windows users:')
+    .addHelpText('after', 'When reading from stdin, use option -u to set the proper encoding or run `chcp 65001` prior to calling showdown cli to set the command line to utf-8'),
+  'Input source. Usually a html file. If omitted or empty, reads from stdin. Windows users see note below.',
+  'Output target. Usually a md file. If omitted or empty, writes to stdout'
+).action(function (options, command) {
+  conversionCommand('makeMarkdown', 'html', options, command);
+});
 
 program.parse();
 
 
 //
-// HELPER FUCNTIONS
+// HELPER FUNCTIONS
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Adds the conversion options shared by the makehtml and makemarkdown commands
+ * @param {Command} cmd
+ * @param {string} inputDesc Description for the --input option
+ * @param {string} outputDesc Description for the --output option
+ * @returns {Command}
+ */
+function addConversionOptions (cmd, inputDesc, outputDesc) {
+  'use strict';
+  return cmd
+    .option('-i, --input [file]', inputDesc, true)
+    .option('-o, --output [file]', outputDesc, true)
+    .option('-u, --encoding <encoding>', 'Sets the input encoding', 'utf8')
+    .option('-y, --output-encoding <encoding>', 'Sets the output encoding', 'utf8')
+    .option('-a, --append', 'Append data to output instead of overwriting. Ignored if writing to stdout', false)
+    .option('-e, --extensions <extensions...>', 'Load the specified extensions. Should be valid paths to node compatible extensions')
+    .option('-p, --flavor <flavor>', 'Run with a predetermined flavor of options. Default is vanilla', 'vanilla')
+    .option('-c, --config <config...>', 'Enables showdown parser config options. Overrides flavor')
+    .option('--config-help', 'Shows configuration options for showdown parser');
+}
 
 /**
  * Messenger helper object to the CLI
  * @param {string} writeMode
- * @param {boolean} supress
+ * @param {boolean} suppress
  * @param {boolean} mute
  * @constructor
  */
-function Messenger (writeMode, supress, mute) {
+function Messenger (writeMode, suppress, mute) {
   'use strict';
   writeMode = writeMode || 'stderr';
-  supress = (!!supress || !!mute);
+  suppress = (!!suppress || !!mute);
   mute = !!mute;
   this._print = (writeMode === 'stdout') ? console.log : console.error;
 
@@ -94,7 +126,7 @@ function Messenger (writeMode, supress, mute) {
   };
 
   this.printMsg = function (msg) {
-    if (supress || mute || !msg) {
+    if (suppress || mute || !msg) {
       return;
     }
     this._print(msg);
@@ -115,40 +147,124 @@ function Messenger (writeMode, supress, mute) {
 function showShowdownOptions () {
   'use strict';
   var showdownOptions = showdown.getDefaultOptions(false);
-  console.log('\nshowdown makehtml config options:');
+  console.log('\nshowdown config options:');
   // show showdown options
   for (var sopt in showdownOptions) {
     if (showdownOptions.hasOwnProperty(sopt)) {
-      console.log('  ' + sopt + ':', '[default=' + showdownOptions[sopt].defaultValue + ']',showdownOptions[sopt].describe);
+      console.log('  ' + sopt + ':', '[default=' + showdownOptions[sopt].defaultValue + ']', showdownOptions[sopt].describe);
     }
   }
-  console.log('\n\nExample: showdown makehtml -c openLinksInNewWindow ghMentions ghMentionsLink="https://google.com"');
+  console.log('\n\nBoolean options can be enabled with `-c <option>` or `-c <option>=true`, and disabled with `-c <option>=false`.');
+  console.log('Example: showdown makehtml -c openLinksInNewWindow -c headerLevelStart=2 -c ghMentionsLink="https://google.com"');
+}
+
+/**
+ * Coerces a single config value to the type declared for the option
+ * @param {string} key Option name
+ * @param {(string|boolean)} rawVal Raw value (true for a bare flag, string otherwise)
+ * @param {string} type Declared option type ('boolean', 'number' or 'string')
+ * @param {Messenger} messenger
+ * @returns {*} The coerced value, or undefined if the value is invalid (already warned)
+ */
+function coerceOptionValue (key, rawVal, type, messenger) {
+  'use strict';
+  // a bare flag (no '=value') always means "enable this option"
+  if (rawVal === true) {
+    return true;
+  }
+
+  // prefixHeaderId is special: it accepts a boolean or a string prefix
+  if (key === 'prefixHeaderId') {
+    if (/^true$/i.test(rawVal)) { return true; }
+    if (/^false$/i.test(rawVal)) { return false; }
+    return rawVal;
+  }
+
+  if (type === 'boolean') {
+    if (/^true$/i.test(rawVal)) { return true; }
+    if (/^false$/i.test(rawVal)) { return false; }
+    messenger.printError('WARNING: invalid boolean value \'' + rawVal + '\' for option \'' + key + '\', ignored');
+    return undefined;
+  }
+
+  if (type === 'number') {
+    var num = Number(rawVal);
+    if (isNaN(num)) {
+      messenger.printError('WARNING: invalid number value \'' + rawVal + '\' for option \'' + key + '\', ignored');
+      return undefined;
+    }
+    return num;
+  }
+
+  // string (and any other) type: pass through unchanged
+  return rawVal;
 }
 
 /**
  * Helper function to parse showdown options
- * @param {{}} configOptions
- * @param {{}} defaultOptions
+ * @param {string[]} configOptions Raw `key` / `key=value` strings from the -c flag
+ * @param {{}} defaultOptions Base options (flavor preset or defaults)
+ * @param {Messenger} messenger
  * @returns {{}}
  */
-function parseShowdownOptions (configOptions, defaultOptions) {
+function parseShowdownOptions (configOptions, defaultOptions, messenger) {
   'use strict';
-  var shOpt = defaultOptions;
-
-  // first prepare passed options
-  if (configOptions) {
-    for (var i = 0; i < configOptions.length; ++i) {
-      var opt = configOptions[i],
-          key = configOptions[i],
-          val = true;
-      if (/=/.test(opt)) {
-        key = opt.split('=')[0];
-        val = opt.split('=')[1];
-      }
-      shOpt[key] = val;
+  // clone the base options so we never mutate the passed-in object
+  // (getFlavorOptions returns the internal preset by reference)
+  var shOpt = {};
+  for (var d in defaultOptions) {
+    if (defaultOptions.hasOwnProperty(d)) {
+      shOpt[d] = defaultOptions[d];
     }
   }
+
+  if (!configOptions) {
+    return shOpt;
+  }
+
+  var optionMeta = showdown.getDefaultOptions(false);
+
+  for (var i = 0; i < configOptions.length; ++i) {
+    var opt = configOptions[i],
+        key = opt,
+        rawVal = true,
+        eqIdx = opt.indexOf('=');
+    if (eqIdx > -1) {
+      key = opt.slice(0, eqIdx);
+      rawVal = opt.slice(eqIdx + 1);
+    }
+
+    if (!optionMeta.hasOwnProperty(key)) {
+      messenger.printError('WARNING: unknown option \'' + key + '\', ignored');
+      continue;
+    }
+
+    var val = coerceOptionValue(key, rawVal, optionMeta[key].type, messenger);
+    if (typeof val === 'undefined') {
+      continue;
+    }
+    shOpt[key] = val;
+  }
   return shOpt;
+}
+
+/**
+ * Resolves the path/specifier passed to the -e flag.
+ * Path-like specifiers are resolved against the current working directory; bare
+ * module specifiers (npm packages) are returned untouched so require() can resolve them.
+ * @param {string} ext
+ * @returns {string}
+ */
+function resolveExtensionPath (ext) {
+  'use strict';
+  if (/^~[/\\]/.test(ext)) {
+    var home = process.env.HOME || process.env.USERPROFILE || '';
+    return path.resolve(home, ext.slice(2));
+  }
+  if (/^[./\\]/.test(ext) || path.isAbsolute(ext)) {
+    return path.resolve(process.cwd(), ext);
+  }
+  return ext;
 }
 
 /**
@@ -157,13 +273,6 @@ function parseShowdownOptions (configOptions, defaultOptions) {
  */
 function readFromStdIn (encoding) {
   'use strict';
-  /*
-  // aparently checking the size of stdin is unreliable so we just won't test
-  var size = fs.fstatSync(process.stdin.fd).size;
-  if (size <= 0) {
-    throw new Error('Could not read from stdin, reason: stdin is empty');
-  }
-  */
   encoding = encoding || 'utf8';
   try {
     return fs.readFileSync(process.stdin.fd, encoding).toString();
@@ -174,9 +283,9 @@ function readFromStdIn (encoding) {
 
 /**
  * Reads from a file
- * @param {string} file Filepath to dile
+ * @param {string} file Filepath to file
  * @param {string} encoding Encoding of the file
- * @returns {Buffer}
+ * @returns {string}
  */
 function readFromFile (file, encoding) {
   'use strict';
@@ -189,40 +298,50 @@ function readFromFile (file, encoding) {
 
 /**
  * Writes to stdout
- * @param {string} html
- * @returns {boolean}
+ * @param {string} output
+ * @param {string} encoding
+ * @param {Messenger} messenger
  */
-function writeToStdOut (html) {
+function writeToStdOut (output, encoding, messenger) {
   'use strict';
-  if (!process.stdout.write(html)) {
-    throw new Error('Could not write to StdOut');
+  // add a trailing newline so the shell prompt does not collide with the output.
+  // This is only done for stdout; files are written verbatim.
+  if (output && !/\n$/.test(output)) {
+    output += '\n';
   }
+  // flush before exiting so large piped output is not truncated by process.exit
+  process.stdout.write(Buffer.from(output, encoding || 'utf8'), function () {
+    messenger.okExit();
+  });
 }
 
 /**
  * Writes to file
- * @param {string} html HTML to write
+ * @param {string} output Data to write
  * @param {string} file Filepath
  * @param {boolean} append If the result should be appended
+ * @param {string} encoding
  */
-function writeToFile (html, file, append) {
+function writeToFile (output, file, append, encoding) {
   'use strict';
   // If a flag is passed, it means we should append instead of overwriting.
   // Only works with files, obviously
   var write = (append) ? fs.appendFileSync : fs.writeFileSync;
   try {
-    write(file, html);
+    write(file, Buffer.from(output, encoding || 'utf8'));
   } catch (err) {
-    throw new Error('Could not write to file ' + file + ', readon: ' + err.message);
+    throw new Error('Could not write to file ' + file + ', reason: ' + err.message);
   }
 }
 
 /**
- * makehtml command
+ * Shared conversion command for both makehtml and makemarkdown
+ * @param {string} method Converter method to call ('makeHtml' or 'makeMarkdown')
+ * @param {string} srcFormat Human readable name of the input format ('markdown' or 'html')
  * @param {{}} options
  * @param {Command} cmd
  */
-function makehtmlCommand (options, cmd) {
+function conversionCommand (method, srcFormat, options, cmd) {
   'use strict';
 
   // show configuration options for showdown helper if configHelp was passed
@@ -239,20 +358,21 @@ function makehtmlCommand (options, cmd) {
       // initiate Messenger helper, can maybe be replaced with commanderjs internal stuff
       messenger = new Messenger(msgMode, quiet, mute),
       defaultOptions = showdown.getDefaultOptions(true),
-      md, html;
+      input, output;
 
   // deal with flavor first since config flag overrides flavor individual options
   if (options.flavor) {
     messenger.printMsg('Enabling flavor ' + options.flavor + '...');
-    defaultOptions = showdown.getFlavorOptions(options.flavor);
-    if (!defaultOptions) {
+    var flavorOptions = showdown.getFlavorOptions(options.flavor);
+    if (!flavorOptions) {
       messenger.errorExit(new Error('Flavor ' + options.flavor + ' is not recognised'));
       return;
     }
+    defaultOptions = flavorOptions;
     messenger.printMsg('OK!');
   }
   // store config options in the options.config as an object
-  options.config = parseShowdownOptions(options.config, defaultOptions);
+  options.config = parseShowdownOptions(options.config, defaultOptions, messenger);
 
   // print enabled options
   for (var o in options.config) {
@@ -278,7 +398,7 @@ function makehtmlCommand (options, cmd) {
     for (var i = 0; i < options.extensions.length; ++i) {
       try {
         messenger.printMsg(options.extensions[i]);
-        var ext = require(options.extensions[i]);
+        var ext = require(resolveExtensionPath(options.extensions[i]));
         converter.addExtension(ext, options.extensions[i]);
         messenger.printMsg(options.extensions[i] + ' loaded...');
       } catch (e) {
@@ -294,14 +414,14 @@ function makehtmlCommand (options, cmd) {
 
   if (readMode === 'stdin') {
     try {
-      md = readFromStdIn(options.encoding);
+      input = readFromStdIn(options.encoding);
     } catch (err) {
       messenger.errorExit(err);
       return;
     }
   } else {
     try {
-      md = readFromFile(options.input, options.encoding);
+      input = readFromFile(options.input, options.encoding);
     } catch (err) {
       messenger.errorExit(err);
       return;
@@ -309,21 +429,28 @@ function makehtmlCommand (options, cmd) {
   }
 
   // process the input
-  messenger.printMsg('Parsing markdown...');
-  html = converter.makeHtml(md);
+  messenger.printMsg('Parsing ' + srcFormat + '...');
+  try {
+    output = converter[method](input.toString());
+  } catch (err) {
+    messenger.errorExit(err);
+    return;
+  }
 
   // write the output
   messenger.printMsg('Writing data to ' + writeMode + '...');
   if (writeMode === 'stdout') {
     try {
-      writeToStdOut(html);
+      // okExit is called from within writeToStdOut once the data is flushed
+      writeToStdOut(output, options.outputEncoding, messenger);
+      return;
     } catch (err) {
       messenger.errorExit(err);
       return;
     }
   } else {
     try {
-      writeToFile(html, options.output, options.append);
+      writeToFile(output, options.output, options.append, options.outputEncoding);
     } catch (err) {
       messenger.errorExit(err);
       return;

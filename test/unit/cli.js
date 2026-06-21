@@ -81,7 +81,7 @@ describe('showdown cli', function () {
           encoding: 'utf-8'
         });
         proc.status.should.equal(0);
-        proc.stdout.should.equal('<p><strong>foo</strong></p>');
+        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
         proc.stderr.should.not.equal('');
       });
     });
@@ -95,7 +95,7 @@ describe('showdown cli', function () {
         });
         proc.status.should.equal(0);
         proc.stderr.should.contain('Enabling flavor github...');
-        proc.stdout.should.equal('<p>this is a 😄</p>');
+        proc.stdout.trim().should.equal('<p>this is a 😄</p>');
         //'Here in London'.should.match(/(here|there) in (\w+)/i).and.capture(1).equals('London');
       });
 
@@ -116,7 +116,7 @@ describe('showdown cli', function () {
         });
         proc.status.should.equal(0);
         proc.stderr.should.not.contain('Enabling option emoji');
-        proc.stdout.should.equal('<p>this is a :smile:</p>');
+        proc.stdout.trim().should.equal('<p>this is a :smile:</p>');
       });
 
       it('should enable a showdown option', function () {
@@ -126,17 +126,64 @@ describe('showdown cli', function () {
         });
         proc.status.should.equal(0);
         proc.stderr.should.contain('Enabling option emoji');
-        proc.stdout.should.equal('<p>this is a 😄</p>');
+        proc.stdout.trim().should.equal('<p>this is a 😄</p>');
       });
 
-      it('should ignore unrecognized options', function () {
+      it('should warn and skip unrecognized options', function () {
         var proc = spawnCLI('makehtml', ['-c', 'foobar'], {
           input: 'foo',
           encoding: 'utf-8'
         });
         proc.status.should.equal(0);
-        proc.stderr.should.contain('Enabling option foobar');
-        proc.stdout.should.equal('<p>foo</p>');
+        proc.stderr.should.contain('unknown option \'foobar\'');
+        proc.stderr.should.not.contain('Enabling option foobar');
+        proc.stdout.trim().should.equal('<p>foo</p>');
+      });
+
+      it('should coerce a numeric option', function () {
+        var proc = spawnCLI('makehtml', ['-c', 'headerLevelStart=3'], {
+          input: '# hi',
+          encoding: 'utf-8'
+        });
+        proc.status.should.equal(0);
+        proc.stdout.should.match(/^<h3\b/);
+      });
+
+      it('should enable a boolean option passed as =true', function () {
+        var proc = spawnCLI('makehtml', ['-c', 'emoji=true'], {
+          input: 'this is a :smile:',
+          encoding: 'utf-8'
+        });
+        proc.status.should.equal(0);
+        proc.stdout.trim().should.equal('<p>this is a 😄</p>');
+      });
+
+      it('should disable a boolean option passed as =false', function () {
+        var proc = spawnCLI('makehtml', ['-c', 'emoji=false'], {
+          input: 'this is a :smile:',
+          encoding: 'utf-8'
+        });
+        proc.status.should.equal(0);
+        proc.stdout.trim().should.equal('<p>this is a :smile:</p>');
+      });
+
+      it('should let -c disable an option enabled by a flavor', function () {
+        var proc = spawnCLI('makehtml', ['-p', 'github', '-c', 'tables=false'], {
+          input: 'a | b\n- | -\n1 | 2',
+          encoding: 'utf-8'
+        });
+        proc.status.should.equal(0);
+        proc.stdout.should.not.contain('<table');
+      });
+
+      it('should warn on an invalid boolean value', function () {
+        var proc = spawnCLI('makehtml', ['-c', 'emoji=notabool'], {
+          input: 'this is a :smile:',
+          encoding: 'utf-8'
+        });
+        proc.status.should.equal(0);
+        proc.stderr.should.contain('invalid boolean value');
+        proc.stdout.trim().should.equal('<p>this is a :smile:</p>');
       });
 
     });
@@ -147,7 +194,7 @@ describe('showdown cli', function () {
         var proc = spawnCLI('makehtml', ['-m', '-i'], {input: '**foo**'});
         proc.status.should.equal(0);
         expect(proc.output).to.be.null; // jshint ignore:line
-        proc.stdout.should.equal('<p><strong>foo</strong></p>');
+        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
         proc.stderr.should.equal('');
       });
 
@@ -165,7 +212,7 @@ describe('showdown cli', function () {
           encoding: 'utf-8'
         });
         proc.status.should.equal(0);
-        proc.stdout.should.equal('<p><strong>foo</strong></p>');
+        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
         proc.stderr.should.equal('');
       });
     });
@@ -176,7 +223,7 @@ describe('showdown cli', function () {
         var proc = spawnCLI('makehtml', ['-q', '-i'], {input: '**foo**'});
         proc.status.should.equal(0);
         expect(proc.output).to.be.null; // jshint ignore:line
-        proc.stdout.should.equal('<p><strong>foo</strong></p>');
+        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
         proc.stderr.should.match(/^\s*DONE!\s*$/);
       });
 
@@ -194,7 +241,7 @@ describe('showdown cli', function () {
           encoding: 'utf-8'
         });
         proc.status.should.equal(0);
-        proc.stdout.should.equal('<p><strong>foo</strong></p>');
+        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
         proc.stderr.should.match(/^\s*DONE!\s*$/);
       });
     });
@@ -206,7 +253,7 @@ describe('showdown cli', function () {
           encoding: 'utf-8'
         });
         proc.status.should.equal(0);
-        proc.stdout.should.equal('<p><strong>foo</strong></p>');
+        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
         proc.stderr.should.not.equal('');
       });
     });
@@ -217,7 +264,7 @@ describe('showdown cli', function () {
             proc = spawnCLI('makehtml', ['-i', 'test/cli/basic.md'], {encoding: 'utf-8'});
 
         proc.status.should.equal(0);
-        proc.stdout.should.equal(expectedOtp);
+        proc.stdout.trim().should.equal(expectedOtp);
         proc.stderr.should.not.equal('');
       });
     });
@@ -273,7 +320,7 @@ describe('showdown cli', function () {
             proc = spawnCLI('makehtml', ['-a'], {encoding: 'utf8', input: '**foo**'});
         proc.status.should.equal(0);
         proc.stderr.should.not.equal('');
-        proc.stdout.should.equal(expectedOtp);
+        proc.stdout.trim().should.equal(expectedOtp);
       });
     });
 
@@ -287,6 +334,86 @@ describe('showdown cli', function () {
             });
         proc.status.should.equal(0, 'Process exited with error state');
         proc.stdout.trim().should.equal(expectedOtp);
+      });
+
+      it('should resolve a relative extension path against the cwd', function () {
+        var expectedOtp = '<p><strong>bar</strong></p>',
+            relPath = './' + path.relative(process.cwd(), path.resolve(__dirname + '/../mocks/mock-extension.js')).replace(/\\/g, '/'),
+            proc = spawnCLI('makehtml', ['-i', '-o', '-e', relPath], {
+              encoding: 'utf8',
+              input: '**foo**'
+            });
+        proc.status.should.equal(0, 'Process exited with error state');
+        proc.stdout.trim().should.equal(expectedOtp);
+      });
+    });
+
+    describe('makehtml -y', function () {
+      it('should write the output using the requested encoding', function () {
+        spawnCLI('makehtml', ['-m', '-i', '-o', '.build/enc.html', '-y', 'latin1'], {
+          encoding: 'utf8',
+          input: '# café'
+        });
+        var buf = fs.readFileSync('.build/enc.html');
+        // latin1 encodes é as a single 0xE9 byte; utf8 would be 0xC3 0xA9
+        buf.includes(0xe9).should.equal(true);
+        buf.includes(0xc3).should.equal(false);
+      });
+    });
+
+    describe('makehtml newline handling', function () {
+      it('should append a trailing newline when writing to stdout', function () {
+        var proc = spawnCLI('makehtml', [], {input: '**foo**', encoding: 'utf-8'});
+        proc.status.should.equal(0);
+        proc.stdout.should.equal('<p><strong>foo</strong></p>\n');
+      });
+
+      it('should not append a trailing newline when writing to a file', function () {
+        spawnCLI('makehtml', ['-m', '-i', '-o', '.build/nl.html'], {
+          encoding: 'utf8',
+          input: '**foo**'
+        });
+        var otp = fs.readFileSync('.build/nl.html', 'utf8');
+        otp.should.equal('<p><strong>foo</strong></p>');
+      });
+    });
+
+  });
+
+  describe('makemarkdown command', function () {
+
+    describe('makemarkdown without flags', function () {
+      it('should read html from stdin and output markdown to stdout', function () {
+        var proc = spawnCLI('makemarkdown', [], {
+          input: '<strong>foo</strong>',
+          encoding: 'utf-8'
+        });
+        proc.status.should.equal(0);
+        proc.stdout.trim().should.equal('**foo**');
+        proc.stderr.should.not.equal('');
+      });
+    });
+
+    describe('makemarkdown -m', function () {
+      it('should mute information but not the parsed markdown', function () {
+        var proc = spawnCLI('makemarkdown', ['-m', '-i'], {
+          input: '<em>foo</em>',
+          encoding: 'utf-8'
+        });
+        proc.status.should.equal(0);
+        proc.stdout.trim().should.equal('*foo*');
+        proc.stderr.should.equal('');
+      });
+    });
+
+    describe('makemarkdown -i <file> -o <file>', function () {
+      it('should read html from a file and write markdown to a file', function () {
+        var expectedOtp = fs.readFileSync('test/cli/basic-md.md', 'utf8').toString().trim(),
+            proc = spawnCLI('makemarkdown', ['-i', 'test/cli/basic-md.html', '-o', '.build/md1.md'], {encoding: 'utf-8'}),
+            otp = fs.readFileSync('.build/md1.md', 'utf8').toString().trim();
+
+        proc.status.should.equal(0);
+        otp.should.equal(expectedOtp);
       });
     });
 

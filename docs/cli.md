@@ -30,8 +30,9 @@ Showdown comes bundled with a Command-line interface (CLI) tool that allows you 
               -h, --help          display help for command
 
             Commands:
-              makehtml [options]  Converts markdown into html
-              help [command]      display help for command
+              makehtml [options]      Converts markdown into html
+              makemarkdown [options]  Converts html into markdown
+              help [command]          display help for command
             ```
 
     * If you installed Showdown locally via `npm install showdown`, open the folder where Showdown is installed, and type `node ./bin/showdown.js -h` in the command line:
@@ -56,8 +57,9 @@ Showdown comes bundled with a Command-line interface (CLI) tool that allows you 
               -h, --help          display help for command
 
             Commands:
-              makehtml [options]  Converts markdown into html
-              help [command]      display help for command
+              makehtml [options]      Converts markdown into html
+              makemarkdown [options]  Converts html into markdown
+              help [command]          display help for command
             ```
 
 1. Use `makehtml` command to convert your document to HTML. For example:
@@ -139,6 +141,19 @@ showdown makehtml [options]
         showdown makehtml -u UTF8
         ```
 
+###### `-y/--output-encoding`
+
+* Short format: `-y`
+* Alias: `--output-encoding`
+* Description: Specify the output encoding. Defaults to `utf8`.
+* Example:
+
+    !!! example ""
+
+        ```sh
+        showdown makehtml -i foo.md -o bar.html -y latin1
+        ```
+
 ###### `-e/--extensions`
 
 * Short format: `-e`
@@ -158,6 +173,14 @@ showdown makehtml [options]
 * Alias: `--config`
 * Description: Enable or disable parser options.
 * Introduced in: `2.0.1` (Breaking change. See the [`Extra options`](#extra-options) section below)
+* Value handling:
+    * A bare option name enables a boolean option: `-c strikethrough`.
+    * Booleans can also be set explicitly with `=true`/`=false`. Use `=false` to **disable** an
+      option that a flavor enables, e.g. `-p github -c tables=false`.
+    * Number options take a numeric value: `-c headerLevelStart=2`.
+    * String options take a string value: `-c ghMentionsLink=https://github.com/{u}`.
+    * Values are coerced to the option's declared type. Unknown option names and values that
+      do not match the option type are reported as warnings and ignored.
 * Example: 
 
     !!! example ""
@@ -165,6 +188,36 @@ showdown makehtml [options]
         ```sh
         showdown makehtml -i foo.md -o bar.html -c strikethrough
         showdown makehtml -i foo.md -o bar.html -c strikethrough -c emoji
+        showdown makehtml -i foo.md -o bar.html -c headerLevelStart=2
+        showdown makehtml -i foo.md -o bar.html -p github -c tables=false
+        ```
+
+### `makemarkdown`
+
+Convert an HTML input into Markdown (the reverse of `makehtml`).
+
+**Usage**
+
+```sh
+showdown makemarkdown [options]
+```
+
+#### Options
+
+`makemarkdown` accepts the same options as [`makehtml`](#makehtml): `-i/--input`, `-o/--output`,
+`-a/--append`, `-u/--encoding`, `-y/--output-encoding`, `-e/--extensions`, `-p/--flavor` and
+`-c/--config`. Here the input is HTML and the output is Markdown.
+
+* Examples:
+
+    !!! example ""
+
+        ```sh
+        // Read from stdin and output to stdout
+        showdown makemarkdown -i
+
+        // Convert foo.html into bar.md
+        showdown makemarkdown -i foo.html -o bar.md
         ```
 
 ## Extra options
@@ -192,5 +245,8 @@ The above commands are equivalent of doing:
 var conv = new showdown.Converter({strikethrough: true, emoji: true});
 ```
 
-!!! warning ""
-    In the CLI tool, all the extra options are **disabled** by default. This is the opposite of what is defined for node and browser, where some options, like `ghCodeBlocks` are enabled (for backward compatibility and historical reasons).
+!!! note ""
+    The CLI runs with the `vanilla` flavor by default, which is the same set of defaults used by
+    the node and browser builds. This means a few options, such as `ghCodeBlocks`, `ellipsis` and
+    `encodeEmails`, are **enabled** out of the box. Use a different flavor with `-p` or override
+    individual options with `-c <option>=true|false`.

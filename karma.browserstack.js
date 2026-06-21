@@ -54,26 +54,10 @@ module.exports = function (config) {
         browser_version: '10.1',
         os: 'OS X',
         os_version: 'Sierra'
-      },
-      bstack_iphoneX: {
-        base: 'BrowserStack',
-        browser: 'safari',
-        os: 'ios',
-        os_version: '11.0',
-        device: 'iPhone X',
-        real_mobile: true
-      },
-      bstack_android: {
-        base: 'BrowserStack',
-        browser: 'chrome',
-        os: 'android',
-        os_version:'4.4',
-        device: 'Samsung Galaxy Tab 4',
-        realMobile: true
       }
     },
 
-    browsers: ['bstack_chrome_windows', 'bstack_firefox_old_windows', 'bstack_firefox_latest_windows', /*'bstack_ie11_windows',*/ 'bstack_edge_windows', 'bstack_iphoneX', 'bstack_macos_safari', 'bstack_android'],
+    browsers: ['bstack_chrome_windows', 'bstack_firefox_old_windows', 'bstack_firefox_latest_windows', /*'bstack_ie11_windows',*/ 'bstack_edge_windows', 'bstack_macos_safari'],
     frameworks: ['mocha', 'chai'],
     reporters: ['dots', 'BrowserStack'],
     files: [

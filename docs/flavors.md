@@ -22,10 +22,10 @@ Legend: ✅ = `on` · ❌ = `off` · _(blank)_ = `off` (default).
 | `noHeaderId`                           |           |     ✅     |          |      ✅      |
 | `requireSpaceBeforeHeadingText`        |           |            |    ✅    |      ✅      |
 | `ghCodeBlocks`                         |    ✅     |     ❌     |    ✅    |      ✅      |
+| `strikethrough`                        |    ✅     |     ❌     |    ✅    |      ❌      |
 | `omitExtraWLInCodeBlocks`              |           |            |    ✅    |              |
 | `simplifiedAutoLink`                   |           |            |    ✅    |              |
 | `literalMidWordUnderscores`            |           |            |    ✅    |              |
-| `strikethrough`                        |           |            |    ✅    |              |
 | `tables`                               |           |            |    ✅    |              |
 | `tablesHeaderId`                       |           |            |    ✅    |              |
 | `tasklists`                            |           |            |    ✅    |              |
@@ -38,7 +38,7 @@ Legend: ✅ = `on` · ❌ = `off` · _(blank)_ = `off` (default).
 | `cmSpec`                               |           |            |          |      ✅      |
 
 !!! note
-    `ghCodeBlocks` defaults to `on`, so `vanilla`, `github` and `commonmark` all keep GFM fenced code blocks enabled; only `original` turns them off.
+    `ghCodeBlocks` defaults to `on`, so `vanilla`, `github` and `commonmark` all keep GFM fenced code blocks enabled; only `original` turns them off. `strikethrough` likewise defaults to `on` (enabled in `vanilla` and `github`); the spec-oriented `original` and `commonmark` flavors turn it off.
 
 ## Set flavor
 

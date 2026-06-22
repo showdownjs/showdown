@@ -269,7 +269,7 @@ var defaultOptions = showdown.getDefaultOptions();
    <p>some text with__underscores__in middle</p>
    ```
 
- * **strikethrough**: (boolean) [default false] Enable support for strikethrough syntax.
+ * **strikethrough**: (boolean) [default true] Enable support for strikethrough syntax.
    `~~strikethrough~~` as `<del>strikethrough</del>`
    
  * **tables**: (boolean) [default false] Enable support for tables syntax. Example:

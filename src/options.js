@@ -54,7 +54,7 @@ function getDefaultOpts (simple) {
       type: 'boolean'
     },
     strikethrough: {
-      defaultValue: false,
+      defaultValue: true,
       describe: 'Turn on/off strikethrough support',
       type: 'boolean'
     },

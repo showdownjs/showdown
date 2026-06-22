@@ -12,7 +12,6 @@ let showdown = {},
         omitExtraWLInCodeBlocks:              true,
         simplifiedAutoLink:                   true,
         literalMidWordUnderscores:            true,
-        strikethrough:                        true,
         tables:                               true,
         tablesHeaderId:                       true,
         ghCodeBlocks:                         true,
@@ -26,13 +25,15 @@ let showdown = {},
       },
       original: {
         noHeaderId:                           true,
-        ghCodeBlocks:                         false
+        ghCodeBlocks:                         false,
+        strikethrough:                        false
       },
       commonmark: {
         noHeaderId:                           true,
         requireSpaceBeforeHeadingText:        true,
         decodeEntities:                       true,
-        cmSpec:                               true
+        cmSpec:                               true,
+        strikethrough:                        false
       },
       vanilla: getDefaultOpts(true)
     };

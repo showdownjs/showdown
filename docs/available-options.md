@@ -729,10 +729,10 @@ Split adjacent blockquote blocks.
 
 ### strikethrough
 
-Enable support for strikethrough (`<del>`).
+Enable support for strikethrough (`<del>`). Enabled by default.
 
 * type: `boolean`
-* default value: `false`
+* default value: `true`
 * introduced in: `1.2.0`
 
 === "input"

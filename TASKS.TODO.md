@@ -26,7 +26,7 @@
 
     This option will be removed and will be the default behavior from now on.
 
-- [ ] **strikethrough** (change)
+- [X] **strikethrough** (change)
 
     Will be enabled by default
 

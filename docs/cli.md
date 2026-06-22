@@ -123,11 +123,13 @@ showdown makehtml [options]
 * Alias: `--output`
 * Description: Output target. Usually a `.html` file. If omitted or empty, writes to `stdout`.
 * Multiple inputs (batch mode):
-    * If `-o` is an existing **directory**, each result is written there using the source
-      basename with the extension swapped (`foo.md` → `foo.html`).
+    * If `-o` is a **directory** (an existing directory, or a path ending in a separator such
+      as `out/`), each result is written there using the source basename with the extension
+      swapped (`foo.md` → `foo.html`). The directory is created if it does not exist.
     * If `-o` is omitted, each result is written **beside its source file**.
     * Passing a single output **file** with multiple inputs is an error (it would overwrite itself).
     * Batch conversion continues past individual file errors and exits non-zero if any file failed.
+* A single input can also be sent to a directory the same way (e.g. `-o out/` writes `out/<name>.html`).
 * Example:
 
     !!! example ""

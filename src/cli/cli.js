@@ -664,7 +664,8 @@ function conversionCommand (method, srcFormat, options, cmd) {
       inputs = Array.isArray(options.input) ? options.input : (typeof options.input === 'string' && options.input ? [options.input] : []),
       readMode = (inputs.length === 0) ? 'stdin' : 'files',
       outputGiven = !(!options.output || options.output === '' || options.output === true),
-      outDir = (outputGiven && isDirectory(options.output)) ? options.output : null;
+      // an existing directory, or a path with a trailing separator, signals directory output
+      wantsDir = outputGiven && (isDirectory(options.output) || /[/\\]$/.test(options.output));
 
   // expand globs up-front so we know the file count (and thus where data goes)
   let files = [],
@@ -673,16 +674,17 @@ function conversionCommand (method, srcFormat, options, cmd) {
     files = expandInputs(inputs, {printWarning: function (m) { unmatched.push(m); }});
   }
 
+  // batch mode: directory output, or multiple inputs (into a dir or beside each source)
+  let isBatch = readMode === 'files' && (wantsDir || files.length > 1);
+
   // decide whether the converted data goes to stdout (so messages avoid that stream)
   let dataToStdout;
   if (readMode === 'stdin') {
     dataToStdout = !outputGiven;
-  } else if (outDir) {
+  } else if (isBatch) {
     dataToStdout = false;
-  } else if (files.length === 1) {
-    dataToStdout = !outputGiven;
   } else {
-    dataToStdout = false;
+    dataToStdout = !outputGiven;
   }
   let msgMode = dataToStdout ? 'stderr' : 'stdout',
       colorEnabled = resolveColorEnabled(cmd.parent, globalOpts, msgMode),
@@ -700,8 +702,14 @@ function conversionCommand (method, srcFormat, options, cmd) {
     messenger.printVerbose('Resolved ' + files.length + ' input file(s): ' + files.join(', '));
   }
 
+  // stdin has no source name to derive a filename from, so it cannot target a directory
+  if (readMode === 'stdin' && wantsDir) {
+    messenger.errorExit(new Error('Cannot write stdin output to a directory; please specify an output file'));
+    return;
+  }
+
   // reject a single output file for multiple inputs (would clobber)
-  if (readMode === 'files' && files.length > 1 && outputGiven && !outDir) {
+  if (files.length > 1 && outputGiven && !wantsDir) {
     messenger.errorExit(new Error('Multiple input files require an output directory; \'' + options.output + '\' is not a directory'));
     return;
   }
@@ -712,8 +720,17 @@ function conversionCommand (method, srcFormat, options, cmd) {
     return;
   }
 
-  // batch mode: directory output, or multiple inputs written beside their sources
-  if (readMode === 'files' && (outDir || files.length > 1)) {
+  // batch mode: write each result into the output directory (created if needed) or beside its source
+  if (isBatch) {
+    let outDir = outputGiven ? options.output : null;
+    if (outDir) {
+      try {
+        fs.mkdirSync(outDir, {recursive: true});
+      } catch (err) {
+        messenger.errorExit(new Error('Could not create output directory ' + outDir + ', reason: ' + err.message));
+        return;
+      }
+    }
     convertBatch(files, outDir, converter, method, targetExt, srcExts, options, messenger);
     return;
   }

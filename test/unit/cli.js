@@ -445,6 +445,19 @@ describe('showdown cli', function () {
         proc.status.should.equal(1);
         proc.stderr.should.contain('no files matched');
       });
+
+      it('should create the output directory when it does not exist', function () {
+        var proc = spawnCLI('makehtml', ['-m', '-i', dir + '/a.md', dir + '/b.md', '-o', dir + '/new/'], {encoding: 'utf8'});
+        proc.status.should.equal(0);
+        fs.existsSync(dir + '/new/a.html').should.equal(true);
+        fs.existsSync(dir + '/new/b.html').should.equal(true);
+      });
+
+      it('should treat a single -o with a trailing slash as a directory', function () {
+        var proc = spawnCLI('makehtml', ['-m', '-i', dir + '/a.md', '-o', dir + '/single/'], {encoding: 'utf8'});
+        proc.status.should.equal(0);
+        fs.existsSync(dir + '/single/a.html').should.equal(true);
+      });
     });
 
     describe('makehtml -v', function () {

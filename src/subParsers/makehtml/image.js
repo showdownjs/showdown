@@ -159,13 +159,18 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     }
 
-    if (width) {
+    // Image dimensions are a non-standard extension: only honor them when
+    // parseImgDimensions is enabled. The `=WxH` syntax is still consumed by the
+    // regex (so it never leaks into the output), but the width/height attributes
+    // are dropped when the option is off - matching the reference-definition path,
+    // which only stores dimensions in gDimensions when the option is on.
+    if (options.parseImgDimensions && width) {
       width  = (width === '*') ? 'auto' : width;
     } else {
       width = null;
     }
 
-    if (height) {
+    if (options.parseImgDimensions && height) {
       height = (height === '*') ? 'auto' : height;
     } else {
       height = null;

@@ -117,6 +117,10 @@ Set the global [flavor](flavors.md) applied to converters by default. Throws if 
 
 Return the name of the currently set global flavor.
 
+### `showdown.getFlavors()`
+
+Return an array of the available [flavor](flavors.md) names (e.g. `['github', 'original', 'commonmark', 'vanilla', 'allOn']`).
+
 ### `showdown.getFlavorOptions(name)`
 
 Return the option overrides bundled in a given flavor, or `undefined` if the flavor was not found. Useful for passing into a constructor: `new showdown.Converter(showdown.getFlavorOptions('commonmark'))`.

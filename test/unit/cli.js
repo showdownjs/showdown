@@ -36,6 +36,10 @@ function spawnCLI (command, args, options) {
 describe('showdown cli', function () {
   'use strict';
 
+  // every assertion here spawns a `node` subprocess; under full-suite CPU load
+  // a spawn can exceed mocha's 3s default, so give this spawn-based suite more room
+  this.timeout(15000);
+
   describe('without commands', function () {
 
     it('should display help if no commands are specified', function () {

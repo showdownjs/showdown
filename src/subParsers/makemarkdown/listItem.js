@@ -14,12 +14,12 @@ showdown.subParser('makeMarkdown.listItem', function (node, options, globals) {
     result = startEvent.output;
   } else {
     result = (function () {
-      var listItemTxt = '';
+      let listItemTxt = '';
 
-      var children = node.childNodes,
+      let children = node.childNodes,
           childrenLenght = children.length;
 
-      for (var i = 0; i < childrenLenght; ++i) {
+      for (let i = 0; i < childrenLenght; ++i) {
         listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
       }
       // if it's only one liner, we need to add a newline at the end

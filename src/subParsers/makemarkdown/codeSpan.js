@@ -13,18 +13,18 @@ showdown.subParser('makeMarkdown.codeSpan', function (node, options, globals) {
   if (startEvent.output && startEvent.output !== '') {
     result = startEvent.output;
   } else {
-    var code = showdown.helper.unescapeHTMLEntities(node.innerHTML);
+    let code = showdown.helper.unescapeHTMLEntities(node.innerHTML);
     // pick a backtick fence longer than the longest run of backticks inside the content
-    var backtickRuns = code.match(/`+/g),
+    let backtickRuns = code.match(/`+/g),
         longestRun = 0;
     if (backtickRuns) {
-      for (var b = 0; b < backtickRuns.length; ++b) {
+      for (let b = 0; b < backtickRuns.length; ++b) {
         if (backtickRuns[b].length > longestRun) {
           longestRun = backtickRuns[b].length;
         }
       }
     }
-    var fence = new Array(longestRun + 2).join('`'),
+    let fence = new Array(longestRun + 2).join('`'),
         pad = (longestRun > 0) ? ' ' : '';
     result = fence + pad + code + pad + fence;
   }

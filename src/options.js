@@ -1,3 +1,5 @@
+// noinspection HtmlRequiredLangAttribute
+
 /**
  * Created by Tivie on 13-07-2015.
  */

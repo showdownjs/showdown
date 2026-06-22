@@ -16,12 +16,12 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
 
-  var grafs = text.split(/\n{2,}/g),
+  let grafs = text.split(/\n{2,}/g),
       grafsOut = [],
       end = grafs.length; // Wrap <p> tags
 
-  for (var i = 0; i < end; i++) {
-    var str = grafs[i];
+  for (let i = 0; i < end; i++) {
+    let str = grafs[i];
     // if this is an HTML marker, copy it (¨R = a raw CommonMark HTML block, deferred past
     // decodeEntities and restored later - it must not be <p>-wrapped or unhashed here)
     if (str.search(/¨([KGR])(\d+)\1/g) >= 0) {
@@ -39,14 +39,14 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
 
   /** Unhashify HTML blocks */
   end = grafsOut.length;
-  for (i = 0; i < end; i++) {
-    var blockText = '',
+  for (let i = 0; i < end; i++) {
+    let blockText = '',
         grafsOutIt = grafsOut[i],
         codeFlag = false;
     // if this is a marker for an html block...
-    var blockMatch = null;
+    let blockMatch = null;
     while ((blockMatch = /¨([KG])(\d+)\1/.exec(grafsOutIt)) !== null) {
-      var delim = blockMatch[1],
+      let delim = blockMatch[1],
           num   = blockMatch[2];
 
       if (delim === 'K') {

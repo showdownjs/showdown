@@ -1,4 +1,4 @@
-// noinspection HtmlDeprecatedAttribute
+// noinspection HtmlDeprecatedAttribute,CheckImageSize
 
 /**
  * showdownjs helper functions
@@ -701,8 +701,8 @@ showdown.helper.cmEncodeURI = function (uri) {
   for (let i = 0; i < uri.length; ++i) {
     let ch = uri.charAt(i),
         code = uri.charCodeAt(i);
-    if (ch === '%' && /^[0-9a-fA-F]{2}$/.test(uri.substr(i + 1, 2))) {
-      out += uri.substr(i, 3);
+    if (ch === '%' && /^[0-9a-fA-F]{2}$/.test(uri.slice(i + 1, i + 3))) {
+      out += uri.slice(i, i + 3);
       i += 2;
     } else if ((code >= 48 && code <= 57) || (code >= 65 && code <= 90) ||
                (code >= 97 && code <= 122) || safe.indexOf(ch) !== -1) {
@@ -1050,6 +1050,7 @@ showdown.helper.validateOptions = function (options) {
  */
 // use this instead of builtin is undefined for IE8 compatibility
 if (typeof (console) === 'undefined') {
+  // noinspection JSValidateTypes
   console = {
     warn: function (msg) {
       'use strict';

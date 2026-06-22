@@ -364,9 +364,8 @@
     const atxRegex = (options.requireSpaceBeforeHeadingText) ? /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm : /^ {0,3}(#{1,6})[ \t]*(.+?)[ \t]*#*[ \t]*$/gm;
     text = text.replace(atxRegex, function (wholeMatch, m1, m2) {
       let headingLevel = options.headerLevelStart - 1 + m1.length,
-          headingText = m2,
           id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(m2, options, globals);
-      return parseHeader('atx', atxRegex, wholeMatch, headingText, headingLevel, id, options, globals);
+      return parseHeader('atx', atxRegex, wholeMatch, m2, headingLevel, id, options, globals);
     });
 
     let afterEvent = new showdown.Event('makehtml.heading.atx.onEnd', text);

@@ -204,7 +204,7 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
   function tryParseCmDefinition (str, start) {
     let n = str.length,
         j = start,
-        isEnd = function (p) { return p >= n || str.charAt(p) === '\n' || str.substr(p, 2) === '¨0'; };
+        isEnd = function (p) { return p >= n || str.charAt(p) === '\n' || str.slice(p, p + 2) === '¨0'; };
 
     // up to 3 leading spaces
     let sp = 0;

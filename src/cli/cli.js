@@ -1,13 +1,13 @@
 /**
  * Created by tivie
  */
-var fs = require('fs'),
+const fs = require('fs'),
     path = require('path'),
     Command = require('commander').Command,
     program = new Command(),
     path1 = path.resolve(__dirname + '/../dist/showdown.js'),
-    path2 = path.resolve(__dirname + '/../../.build/showdown.js'),
-    showdown,
+    path2 = path.resolve(__dirname + '/../../.build/showdown.js');
+let showdown,
     version;
 
 // require shodown. We use conditional loading for each use case
@@ -147,10 +147,10 @@ function Messenger (writeMode, suppress, mute) {
  */
 function showShowdownOptions () {
   'use strict';
-  var showdownOptions = showdown.getDefaultOptions(false);
+  let showdownOptions = showdown.getDefaultOptions(false);
   console.log('\nshowdown config options:');
   // show showdown options
-  for (var sopt in showdownOptions) {
+  for (let sopt in showdownOptions) {
     if (showdownOptions.hasOwnProperty(sopt)) {
       console.log('  ' + sopt + ':', '[default=' + showdownOptions[sopt].defaultValue + ']', showdownOptions[sopt].describe);
     }
@@ -178,8 +178,8 @@ function getAvailableFlavors () {
 function showFlavors () {
   'use strict';
   console.log('\nAvailable flavors:');
-  var flavors = getAvailableFlavors();
-  for (var i = 0; i < flavors.length; ++i) {
+  let flavors = getAvailableFlavors();
+  for (let i = 0; i < flavors.length; ++i) {
     console.log('  ' + flavors[i] + ((flavors[i] === 'vanilla') ? ' (default)' : ''));
   }
   console.log('\nExample: showdown makehtml -i foo.md -o bar.html -p github');
@@ -215,7 +215,7 @@ function coerceOptionValue (key, rawVal, type, messenger) {
   }
 
   if (type === 'number') {
-    var num = Number(rawVal);
+    let num = Number(rawVal);
     if (isNaN(num)) {
       messenger.printError('WARNING: invalid number value \'' + rawVal + '\' for option \'' + key + '\', ignored');
       return undefined;
@@ -238,8 +238,8 @@ function parseShowdownOptions (configOptions, defaultOptions, messenger) {
   'use strict';
   // clone the base options so we never mutate the passed-in object
   // (getFlavorOptions returns the internal preset by reference)
-  var shOpt = {};
-  for (var d in defaultOptions) {
+  let shOpt = {};
+  for (let d in defaultOptions) {
     if (defaultOptions.hasOwnProperty(d)) {
       shOpt[d] = defaultOptions[d];
     }
@@ -249,10 +249,10 @@ function parseShowdownOptions (configOptions, defaultOptions, messenger) {
     return shOpt;
   }
 
-  var optionMeta = showdown.getDefaultOptions(false);
+  let optionMeta = showdown.getDefaultOptions(false);
 
-  for (var i = 0; i < configOptions.length; ++i) {
-    var opt = configOptions[i],
+  for (let i = 0; i < configOptions.length; ++i) {
+    let opt = configOptions[i],
         key = opt,
         rawVal = true,
         eqIdx = opt.indexOf('=');
@@ -266,7 +266,7 @@ function parseShowdownOptions (configOptions, defaultOptions, messenger) {
       continue;
     }
 
-    var val = coerceOptionValue(key, rawVal, optionMeta[key].type, messenger);
+    let val = coerceOptionValue(key, rawVal, optionMeta[key].type, messenger);
     if (typeof val === 'undefined') {
       continue;
     }
@@ -285,7 +285,7 @@ function parseShowdownOptions (configOptions, defaultOptions, messenger) {
 function resolveExtensionPath (ext) {
   'use strict';
   if (/^~[/\\]/.test(ext)) {
-    var home = process.env.HOME || process.env.USERPROFILE || '';
+    let home = process.env.HOME || process.env.USERPROFILE || '';
     return path.resolve(home, ext.slice(2));
   }
   if (/^[./\\]/.test(ext) || path.isAbsolute(ext)) {
@@ -353,7 +353,7 @@ function writeToFile (output, file, append, encoding) {
   'use strict';
   // If a flag is passed, it means we should append instead of overwriting.
   // Only works with files, obviously
-  var write = (append) ? fs.appendFileSync : fs.writeFileSync;
+  let write = (append) ? fs.appendFileSync : fs.writeFileSync;
   try {
     write(file, Buffer.from(output, encoding || 'utf8'));
   } catch (err) {
@@ -383,7 +383,7 @@ function conversionCommand (method, srcFormat, options, cmd) {
     return;
   }
 
-  var quiet = !!(cmd.parent._optionValues.quiet),
+  let quiet = !!(cmd.parent._optionValues.quiet),
       mute = !!(cmd.parent._optionValues.mute),
       readMode = (!options.input || options.input === '' || options.input === true) ? 'stdin' : 'file',
       writeMode = (!options.output || options.output === '' || options.output === true) ? 'stdout' : 'file',
@@ -396,7 +396,7 @@ function conversionCommand (method, srcFormat, options, cmd) {
   // deal with flavor first since config flag overrides flavor individual options
   if (options.flavor) {
     messenger.printMsg('Enabling flavor ' + options.flavor + '...');
-    var flavorOptions = showdown.getFlavorOptions(options.flavor);
+    let flavorOptions = showdown.getFlavorOptions(options.flavor);
     if (!flavorOptions) {
       messenger.errorExit(new Error('Flavor ' + options.flavor + ' is not recognised. Available flavors: ' + getAvailableFlavors().join(', ')));
       return;
@@ -408,7 +408,7 @@ function conversionCommand (method, srcFormat, options, cmd) {
   options.config = parseShowdownOptions(options.config, defaultOptions, messenger);
 
   // print enabled options
-  for (var o in options.config) {
+  for (let o in options.config) {
     if (options.config.hasOwnProperty(o) && options.config[o] === true) {
       messenger.printMsg('Enabling option ' + o);
     }
@@ -416,7 +416,7 @@ function conversionCommand (method, srcFormat, options, cmd) {
 
   // initialize the converter
   messenger.printMsg('\nInitializing converter...');
-  var converter;
+  let converter;
   try {
     converter = new showdown.Converter(options.config);
   } catch (e) {
@@ -428,10 +428,10 @@ function conversionCommand (method, srcFormat, options, cmd) {
   // load extensions
   if (options.extensions) {
     messenger.printMsg('\nLoading extensions...');
-    for (var i = 0; i < options.extensions.length; ++i) {
+    for (let i = 0; i < options.extensions.length; ++i) {
       try {
         messenger.printMsg(options.extensions[i]);
-        var ext = require(resolveExtensionPath(options.extensions[i]));
+        let ext = require(resolveExtensionPath(options.extensions[i]));
         converter.addExtension(ext, options.extensions[i]);
         messenger.printMsg(options.extensions[i] + ' loaded...');
       } catch (e) {

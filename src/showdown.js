@@ -2,7 +2,7 @@
  * Created by Tivie on 06-01-2015.
  */
 // Private properties
-var showdown = {},
+let showdown = {},
     parsers = {},
     extensions = {},
     globalOptions = getDefaultOpts(true),
@@ -96,9 +96,9 @@ showdown.setFlavor = function (name) {
     throw Error(name + ' flavor was not found');
   }
   showdown.resetOptions();
-  var preset = flavor[name];
+  let preset = flavor[name];
   setFlavor = name;
-  for (var option in preset) {
+  for (let option in preset) {
     if (preset.hasOwnProperty(option)) {
       globalOptions[option] = preset[option];
     }
@@ -217,7 +217,7 @@ showdown.extension = function (name, ext) {
       ext = [ext];
     }
 
-    var validExtension = validate(ext, name);
+    let validExtension = validate(ext, name);
 
     if (validExtension.valid) {
       extensions[name] = ext;
@@ -262,7 +262,7 @@ showdown.resetExtensions = function () {
 function validate (extension, name) {
   'use strict';
 
-  var errMsg = (name) ? 'Error in ' + name + ' extension->' : 'Error in unnamed extension',
+  let errMsg = (name) ? 'Error in ' + name + ' extension->' : 'Error in unnamed extension',
       ret = {
         valid: true,
         error: ''
@@ -272,8 +272,8 @@ function validate (extension, name) {
     extension = [extension];
   }
 
-  for (var i = 0; i < extension.length; ++i) {
-    var baseMsg = errMsg + ' sub-extension ' + i + ': ',
+  for (let i = 0; i < extension.length; ++i) {
+    let baseMsg = errMsg + ' sub-extension ' + i + ': ',
         ext = extension[i];
     if (typeof ext !== 'object') {
       ret.valid = false;
@@ -287,7 +287,7 @@ function validate (extension, name) {
       return ret;
     }
 
-    var type = ext.type = ext.type.toLowerCase();
+    let type = ext.type = ext.type.toLowerCase();
 
     // normalize extension type
     if (type === 'language') {
@@ -324,7 +324,7 @@ function validate (extension, name) {
         ret.error = baseMsg + '"listeners" property must be an object but ' + typeof ext.listeners + ' given';
         return ret;
       }
-      for (var ln in ext.listeners) {
+      for (let ln in ext.listeners) {
         if (ext.listeners.hasOwnProperty(ln)) {
           if (typeof ext.listeners[ln] !== 'function') {
             ret.valid = false;
@@ -369,7 +369,7 @@ function validate (extension, name) {
 showdown.validateExtension = function (ext) {
   'use strict';
 
-  var validateExtension = validate(ext, null);
+  let validateExtension = validate(ext, null);
   if (!validateExtension.valid) {
     console.warn(validateExtension.error);
     return false;

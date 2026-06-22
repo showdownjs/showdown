@@ -22,7 +22,7 @@ showdown.subParser('makeMarkdown.table',
       result = startEvent.output;
     } else {
       result = (function () {
-        var txt = '',
+        let txt = '',
             tableArray = [[], []],
             headings,
             rows = [],
@@ -34,12 +34,12 @@ showdown.subParser('makeMarkdown.table',
          * @param {Element} tr
          */
         function iterateRow (tr) {
-          var children = tr.childNodes,
+          let children = tr.childNodes,
               cols = [];
           // we need to iterate by order, since td and th can be used interchangeably and in any order
           // we will ignore malformed stuff, comments and floating text.
-          for (var i = 0; i < children.length; ++i) {
-            var childName = children[i].nodeName.toUpperCase();
+          for (let i = 0; i < children.length; ++i) {
+            let childName = children[i].nodeName.toUpperCase();
             if (childName === 'TD' || childName === 'TH') {
               cols.push(children[i]);
             }
@@ -53,7 +53,7 @@ showdown.subParser('makeMarkdown.table',
         // also, since markdown doesn't support tables with multiple heading rows, only the first one will be transformed
         // the rest will count as regular rows
         if (node.querySelectorAll(':scope>thead').length !== 0 && node.querySelectorAll(':scope>thead>tr').length !== 0) {
-          var thead = node.querySelectorAll(':scope>thead>tr');
+          let thead = node.querySelectorAll(':scope>thead>tr');
 
           // thead>tr can have td and th children
           for (i = 0; i < thead.length; ++i) {
@@ -64,7 +64,7 @@ showdown.subParser('makeMarkdown.table',
         // now let's look for tbody
         // we will ignore tbody without <tr> children
         if (node.querySelectorAll(':scope>tbody').length !== 0 && node.querySelectorAll(':scope>tbody>tr').length !== 0) {
-          var tbody = node.querySelectorAll(':scope>tbody>tr');
+          let tbody = node.querySelectorAll(':scope>tbody>tr');
           // tbody>tr can have td and th children, although th are not very screen reader friendly
           for (i = 0; i < tbody.length; ++i) {
             rows.push(iterateRow(tbody[i]));
@@ -73,7 +73,7 @@ showdown.subParser('makeMarkdown.table',
 
         // now look for tfoot
         if (node.querySelectorAll(':scope>tfoot').length !== 0 && node.querySelectorAll(':scope>tfoot>tr').length !== 0) {
-          var tfoot = node.querySelectorAll(':scope>tfoot>tr');
+          let tfoot = node.querySelectorAll(':scope>tfoot>tr');
           // tfoot>tr can have td and th children, although th are not very screen reader friendly
           for (i = 0; i < tfoot.length; ++i) {
             rows.push(iterateRow(tfoot[i]));
@@ -83,7 +83,7 @@ showdown.subParser('makeMarkdown.table',
         // lastly look for naked tr
         if (node.querySelectorAll(':scope>tr').length !== 0) {
 
-          var tr = node.querySelectorAll(':scope>tr');
+          let tr = node.querySelectorAll(':scope>tr');
           // tfoot>tr can have td and th children, although th are not very screen reader friendly
           for (i = 0; i < tr.length; ++i) {
             rows.push(iterateRow(tr[i]));
@@ -106,11 +106,11 @@ showdown.subParser('makeMarkdown.table',
         headings = rows.shift();
 
         for (i = 0; i < headings.length; ++i) {
-          var headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], options, globals),
+          let headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], options, globals),
               align = '---';
 
           if (headings[i].hasAttribute('style')) {
-            var style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
+            let style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
             switch (style) {
               case 'text-align:left;':
                 align = ':---';
@@ -143,10 +143,10 @@ showdown.subParser('makeMarkdown.table',
 
         // now iterate through the rows and create the pseudo output (not pretty yet)
         for (i = 0; i < rows.length; ++i) {
-          var r = tableArray.push([]) - 1;
+          let r = tableArray.push([]) - 1;
 
           for (ii = 0; ii < colCount; ++ii) {
-            var cellContent = ' ';
+            let cellContent = ' ';
             if (typeof rows[i][ii] !== 'undefined') {
               // Note: if rows[i][ii] is undefined, it means the row has fewer elements than the header,
               // and empty content will be added
@@ -157,10 +157,10 @@ showdown.subParser('makeMarkdown.table',
         }
 
         // now tidy up the output, aligning cells and stuff
-        var cellSpacesCount = 3;
+        let cellSpacesCount = 3;
         for (i = 0; i < tableArray.length; ++i) {
           for (ii = 0; ii < tableArray[i].length; ++ii) {
-            var strLen = tableArray[i][ii].length;
+            let strLen = tableArray[i][ii].length;
             if (strLen > cellSpacesCount) {
               cellSpacesCount = strLen;
             }

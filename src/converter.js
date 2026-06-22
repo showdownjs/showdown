@@ -7,7 +7,7 @@
  * deprecated extension type, rather than once per extension load.
  * @type {{}}
  */
-var deprecatedExtTypeWarned = {};
+let deprecatedExtTypeWarned = {};
 
 /**
  * Emit a one-time deprecation warning for a legacy (`lang`/`output`) extension type
@@ -127,12 +127,12 @@ showdown.Converter = function (converterOptions) {
       ext = [ext];
     }
 
-    var validExt = validate(ext, name);
+    let validExt = validate(ext, name);
     if (!validExt.valid) {
       throw Error(validExt.error);
     }
 
-    for (var i = 0; i < ext.length; ++i) {
+    for (let i = 0; i < ext.length; ++i) {
       // `lang` and `output` extensions are sugar over the event system: a `lang`
       // extension is a listener on `makehtml.onPreParse` (runs after escaping, before the
       // subparsers) and an `output` extension a listener on `makehtml.onEnd` (runs on the
@@ -150,7 +150,7 @@ showdown.Converter = function (converterOptions) {
           break;
       }
       if (ext[i].hasOwnProperty('listeners')) {
-        for (var ln in ext[i].listeners) {
+        for (let ln in ext[i].listeners) {
           if (ext[i].listeners.hasOwnProperty(ln)) {
             listen(ln, ext[i].listeners[ln]);
           }
@@ -214,7 +214,7 @@ showdown.Converter = function (converterOptions) {
     if (typeof callback !== 'function') {
       throw Error('Invalid argument in converter.unlisten() method: callback must be a function, but ' + typeof callback + ' given');
     }
-    var idx = listeners[name].indexOf(callback);
+    let idx = listeners[name].indexOf(callback);
     while (idx > -1) {
       listeners[name].splice(idx, 1);
       idx = listeners[name].indexOf(callback);
@@ -287,7 +287,7 @@ showdown.Converter = function (converterOptions) {
       return text;
     }
 
-    var globals = {
+    let globals = {
       gHtmlBlocks:     [],
       gHtmlRawBlocks:  [],
       gHtmlMdBlocks:   [],
@@ -453,10 +453,10 @@ showdown.Converter = function (converterOptions) {
     // ex: <em>this is</em> <strong>sparta</strong>
     src = src.replace(/>[ \t]+</, '>¨NBSP;<');
 
-    var doc = showdown.helper.document.createElement('div');
+    let doc = showdown.helper.document.createElement('div');
     doc.innerHTML = src;
 
-    var globals = {
+    let globals = {
       preList: substitutePreCodeTags(doc),
       converter: this
     };
@@ -468,18 +468,18 @@ showdown.Converter = function (converterOptions) {
     // TODO
     // doc.innerHTML = doc.innerHTML.replace(/\[[\S\t ]]/);
 
-    var nodes = doc.childNodes,
+    let nodes = doc.childNodes,
         mdDoc = '';
 
-    for (var i = 0; i < nodes.length; i++) {
+    for (let i = 0; i < nodes.length; i++) {
       mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], options, globals);
     }
 
     function clean (node) {
-      for (var n = 0; n < node.childNodes.length; ++n) {
-        var child = node.childNodes[n];
+      for (let n = 0; n < node.childNodes.length; ++n) {
+        let child = node.childNodes[n];
         if (child.nodeType === 3) {
-          if (!/\S/.test(child.nodeValue) && !/^[ ]+$/.test(child.nodeValue)) {
+          if (!/\S/.test(child.nodeValue) && !/^ +$/.test(child.nodeValue)) {
             node.removeChild(child);
             --n;
           } else {
@@ -497,20 +497,20 @@ showdown.Converter = function (converterOptions) {
     // to ease up parsing
     function substitutePreCodeTags (doc) {
 
-      var pres = doc.querySelectorAll('pre'),
+      let pres = doc.querySelectorAll('pre'),
           presPH = [];
 
-      for (var i = 0; i < pres.length; ++i) {
+      for (let i = 0; i < pres.length; ++i) {
 
         if (pres[i].childElementCount === 1 && pres[i].firstChild.tagName.toLowerCase() === 'code') {
-          var content = pres[i].firstChild.innerHTML.trim(),
+          let content = pres[i].firstChild.innerHTML.trim(),
               language = pres[i].firstChild.getAttribute('data-language') || '';
 
           // if data-language attribute is not defined, then we look for class language-*
           if (language === '') {
-            var classes = pres[i].firstChild.className.split(' ');
-            for (var c = 0; c < classes.length; ++c) {
-              var matches = classes[c].match(/^language-(.+)$/);
+            let classes = pres[i].firstChild.className.split(' ');
+            for (let c = 0; c < classes.length; ++c) {
+              let matches = classes[c].match(/^language-(.+)$/);
               if (matches !== null) {
                 language = matches[1];
                 break;
@@ -596,9 +596,9 @@ showdown.Converter = function (converterOptions) {
     if (!flavor.hasOwnProperty(name)) {
       throw Error(name + ' flavor was not found');
     }
-    var preset = flavor[name];
+    let preset = flavor[name];
     setConvFlavor = name;
-    for (var option in preset) {
+    for (let option in preset) {
       if (preset.hasOwnProperty(option)) {
         options[option] = preset[option];
       }

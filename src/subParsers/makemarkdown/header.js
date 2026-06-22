@@ -14,15 +14,15 @@ showdown.subParser('makeMarkdown.header', function (node, options, globals, head
     result = startEvent.output;
   } else {
     result = (function () {
-      var headerMark = new Array(headerLevel + 1).join('#'),
+      let headerMark = new Array(headerLevel + 1).join('#'),
           txt = '';
 
       if (node.hasChildNodes()) {
         txt = headerMark + ' ';
-        var children = node.childNodes,
+        let children = node.childNodes,
             childrenLength = children.length;
 
-        for (var i = 0; i < childrenLength; ++i) {
+        for (let i = 0; i < childrenLength; ++i) {
           txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
         }
       }

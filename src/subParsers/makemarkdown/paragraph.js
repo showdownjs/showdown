@@ -14,11 +14,11 @@ showdown.subParser('makeMarkdown.paragraph', function (node, options, globals) {
     result = startEvent.output;
   } else {
     result = (function () {
-      var txt = '';
+      let txt = '';
       if (node.hasChildNodes()) {
-        var children = node.childNodes,
+        let children = node.childNodes,
             childrenLength = children.length;
-        for (var i = 0; i < childrenLength; ++i) {
+        for (let i = 0; i < childrenLength; ++i) {
           txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
         }
       }

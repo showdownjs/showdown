@@ -13,7 +13,7 @@ showdown.subParser('makeMarkdown.pre', function (node, options, globals) {
   if (startEvent.output && startEvent.output !== '') {
     result = startEvent.output;
   } else {
-    var num  = node.getAttribute('prenum');
+    let num  = node.getAttribute('prenum');
     result = '<pre>' + globals.preList[num] + '</pre>';
   }
 

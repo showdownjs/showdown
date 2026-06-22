@@ -18,7 +18,7 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
     result = startEvent.output;
   } else {
     result = (function () {
-      var txt = '';
+      let txt = '';
 
       // edge case of text without wrapper paragraph
       if (node.nodeType === 3) {
@@ -35,7 +35,7 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
         return '';
       }
 
-      var tagName = node.tagName.toLowerCase();
+      let tagName = node.tagName.toLowerCase();
 
       // Renders an element as raw HTML while still converting its children to markdown.
       // Used for unknown wrapper elements and for feature-gated constructs (strikethrough,
@@ -43,11 +43,11 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
       // symmetric with makeHtml: a construct makeHtml wouldn't parse isn't emitted as markdown
       // here either. Embedded/replaced-content and void/empty elements are emitted verbatim.
       function renderRawElement (n, tag) {
-        var rawContentTags = ['script', 'style', 'canvas', 'audio', 'video', 'iframe', 'object', 'svg', 'math', 'noscript', 'template', 'picture'];
-        var kids = n.childNodes;
+        let rawContentTags = ['script', 'style', 'canvas', 'audio', 'video', 'iframe', 'object', 'svg', 'math', 'noscript', 'template', 'picture'];
+        let kids = n.childNodes;
         if (kids && kids.length > 0 && rawContentTags.indexOf(tag) === -1) {
-          var inner = '';
-          for (var k = 0; k < kids.length; ++k) {
+          let inner = '';
+          for (let k = 0; k < kids.length; ++k) {
             inner += showdown.subParser('makeMarkdown.node')(kids[k], options, globals, spansOnly);
           }
           // a block child terminates itself with a blank line; trim that trailing separator so
@@ -55,7 +55,7 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
           inner = inner.replace(/\n+$/, '');
           // derive the opening tag from outerHTML so attribute serialization is preserved
           // exactly (and is robust against ">" inside attribute values)
-          var outer    = n.outerHTML,
+          let outer    = n.outerHTML,
               closeTag = '</' + tag + '>',
               openTag  = outer.substring(0, outer.length - n.innerHTML.length - closeTag.length);
           return openTag + inner + closeTag;

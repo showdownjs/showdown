@@ -1,4 +1,6 @@
-var root = this || globalThis;
+// noinspection JSUnresolvedReference
+
+let root = this || globalThis;
 
 // AMD Loader
 if (typeof define === 'function' && define.amd) {

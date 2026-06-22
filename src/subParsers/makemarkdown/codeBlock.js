@@ -13,7 +13,7 @@ showdown.subParser('makeMarkdown.codeBlock', function (node, options, globals) {
   if (startEvent.output && startEvent.output !== '') {
     result = startEvent.output;
   } else {
-    var lang = node.getAttribute('language'),
+    let lang = node.getAttribute('language'),
         num  = node.getAttribute('precodenum'),
         code = globals.preList[num];
     if (options.ghCodeBlocks) {
@@ -21,7 +21,7 @@ showdown.subParser('makeMarkdown.codeBlock', function (node, options, globals) {
     } else {
       // fenced code blocks disabled -> emit raw HTML (re-escape the special chars that
       // substitutePreCodeTags decoded when it stashed the content)
-      var escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+      let escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
           langClass = lang ? ' class="' + lang + '"' : '';
       result = '<pre><code' + langClass + '>' + escaped + '</code></pre>';
     }

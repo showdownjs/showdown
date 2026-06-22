@@ -7,6 +7,7 @@
 // ***Author:***
 // - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
 ////
+// noinspection HtmlRequiredLangAttribute
 
 
 showdown.subParser('makehtml.completeHTMLDocument', function (text, options, globals) {

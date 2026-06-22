@@ -432,14 +432,6 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
       attributes.title = title;
     }
 
-    // optionLinksInNewWindow only applies
-    // to external links. Hash links (#) open in same page
-    if (options.openLinksInNewWindow && !/^#/.test(url)) {
-      attributes.rel = 'noopener noreferrer';
-      attributes.target = '¨E95Eblank'; // escaped _
-
-    }
-
     let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
     captureStartEvent
       .setOutput(null)

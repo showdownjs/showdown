@@ -7,7 +7,6 @@ const bootstrap = require('./makehtml.bootstrap.js'),
     testsuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/'),
     tableSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/tables/'),
     simplifiedAutoLinkSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/simplifiedAutoLink/'),
-    openLinksInNewWindowSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/openLinksInNewWindow/'),
     disableForced4SpacesIndentedSublistsSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/disableForced4SpacesIndentedSublists/'),
     rawHeaderIdSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/rawHeaderId/'),
     emojisSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/emojis/'),
@@ -92,8 +91,6 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({simplifiedAutoLink: true});
       } else if (testsuite[i].name === '#374.escape-html-tags') {
         converter = new showdown.Converter({backslashEscapesHTMLTags: true});
-      } else if (testsuite[i].name === '#379.openLinksInNewWindow-breaks-em-markdup') {
-        converter = new showdown.Converter({openLinksInNewWindow: true});
       } else if (testsuite[i].name === '#355.simplifiedAutoLink-URLs-inside-parenthesis-followed-by-another-character-are-not-parsed-correctly') {
         converter = new showdown.Converter({simplifiedAutoLink: true});
       } else if (testsuite[i].name === '#709.allow-whitespaces-after-end-in-metadata') {
@@ -134,20 +131,6 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({literalMidWordUnderscores: true, simplifiedAutoLink: true});
       } else {
         converter = new showdown.Converter({simplifiedAutoLink: true});
-      }
-      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
-    }
-  });
-
-  /** test openLinksInNewWindow support **/
-  describe('openLinksInNewWindow support in', function () {
-    let converter,
-        suite = openLinksInNewWindowSuite;
-    for (let i = 0; i < suite.length; ++i) {
-      if (suite[i].name === 'simplifiedAutoLink') {
-        converter = new showdown.Converter({openLinksInNewWindow: true, simplifiedAutoLink: true});
-      } else {
-        converter = new showdown.Converter({openLinksInNewWindow: true});
       }
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }

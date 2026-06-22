@@ -156,7 +156,7 @@ function showShowdownOptions () {
     }
   }
   console.log('\n\nBoolean options can be enabled with `-c <option>` or `-c <option>=true`, and disabled with `-c <option>=false`.');
-  console.log('Example: showdown makehtml -c openLinksInNewWindow -c headerLevelStart=2 -c ghMentionsLink="https://google.com"');
+  console.log('Example: showdown makehtml -c ghMentions -c headerLevelStart=2 -c ghMentionsLink="https://google.com"');
 }
 
 /**

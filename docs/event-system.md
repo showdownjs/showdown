@@ -138,6 +138,34 @@ Might not be run if no regex match found.
 !!! danger "Infinite loop"
     Do not pass the input as output to the `onCapture` event, or you might trigger an infinite loop.
 
+!!! example "Open external links in a new tab"
+    The link sub-parsers expose the anchor's `attributes` on their `onCapture` event, so a
+    listener can add `target`/`rel` to the generated `<a>`. This replaces the removed
+    `openLinksInNewWindow` option — and, unlike the old option, you control exactly which links
+    are affected.
+
+    The link sub-parsers emit one event per link type (`inline`, `reference`, `angleBrackets`,
+    `autoLink`), so register a listener for each type you want to cover:
+
+    ```js
+    const converter = new showdown.Converter();
+
+    ['inline', 'reference', 'angleBrackets', 'autoLink'].forEach(function (type) {
+      converter.listen('makehtml.link.' + type + '.onCapture', function (evt) {
+        // leave in-page hash links (#section) opening in the same tab
+        if (!/^#/.test(evt.attributes.href)) {
+          evt.attributes.target = '_blank';
+          evt.attributes.rel = 'noopener noreferrer';
+        }
+        return evt;
+      });
+    });
+
+    converter.makeHtml('[showdown](https://github.com/showdownjs/showdown)');
+    // <p><a href="https://github.com/showdownjs/showdown" target="_blank"
+    //       rel="noopener noreferrer">showdown</a></p>
+    ```
+
 ### onHash
 
 **`<converter>.<subparser>.onHash`**: *always runs*.

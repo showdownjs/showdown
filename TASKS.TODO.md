@@ -55,7 +55,7 @@
 
     Will be removed from Github Flavor since github only does this in comments (which is weird...)
 
-- [ ] **openLinksInNewWindow** (removal)
+- [X] **openLinksInNewWindow** (removal)
 
     Will be removed in favor of the new listener extension, which will allow users to manipulate HTML tags attributes
     directly.

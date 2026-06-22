@@ -486,32 +486,6 @@ Omit trailing newline in code blocks (which is set by default before the closing
     <code><pre>var foo = 'bar';</pre></code>
     ```
 
-### openLinksInNewWindow
-
-Open links in new windows.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `1.7.0`
-
-=== "input"
-    
-    ```
-    [link](https://google.com)
-    ```
-
-=== "output (value is `false`)"
-
-    ```html
-    <a href="https://google.com">link</a>
-    ```
-
-=== "output (value is `true`)"
-
-    ```html
-    <a href="https://google.com" rel="noopener noreferrer" target="_blank">link</a>
-    ```
-
 ### parseImgDimensions
 
 Set image dimensions from within Markdown syntax.

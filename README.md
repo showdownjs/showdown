@@ -329,8 +329,6 @@ var defaultOptions = showdown.getDefaultOptions();
 
    NOTE: Prior to version 1.6.1, emails would always be obfuscated through dec and hex encoding.
 
- * **openLinksInNewWindow**: (boolean) [default false] Open all links in new windows
-   (by adding the attribute `target="_blank"` to `<a>` tags) **(since v1.7.0)**
 
  * **backslashEscapesHTMLTags**: (boolean) [default false] Support for HTML Tag escaping. ex: `\<div>foo\</div>` **(since v1.7.2)**
 

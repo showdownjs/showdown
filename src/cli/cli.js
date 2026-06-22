@@ -402,6 +402,12 @@ function expandInputs (patterns, messenger) {
       let dir = path.dirname(pattern),
           rx = globSegmentToRegExp(path.basename(pattern)),
           matched = [];
+      // only the file-name segment may contain a glob; a glob in the path portion
+      // (e.g. `**/`, `src/*/`) means a recursive/multi-level pattern we cannot expand
+      if (/[*?]/.test(dir)) {
+        messenger.printWarning('WARNING: recursive/multi-level glob patterns are not supported (use a single * or ? in the file name only); skipped \'' + pattern + '\'');
+        continue;
+      }
       try {
         let entries = fs.readdirSync(dir || '.');
         for (let j = 0; j < entries.length; ++j) {
@@ -477,6 +483,9 @@ function readFromFile (file, encoding) {
   try {
     return fs.readFileSync(file, encoding);
   } catch (err) {
+    if (err.code === 'EISDIR') {
+      throw new Error(file + ' is a directory, not a file (use a glob such as \'' + path.join(file, '*') + '\' to convert its contents)');
+    }
     throw new Error('Could not read from file ' + file + ', reason: ' + err.message);
   }
 }

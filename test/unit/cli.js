@@ -458,6 +458,18 @@ describe('showdown cli', function () {
         proc.status.should.equal(0);
         fs.existsSync(dir + '/single/a.html').should.equal(true);
       });
+
+      it('should explain that recursive globs are unsupported', function () {
+        var proc = spawnCLI('makehtml', ['-i', dir + '/**/*.md'], {encoding: 'utf8'});
+        proc.status.should.equal(1);
+        proc.stderr.should.contain('recursive');
+      });
+
+      it('should give a clear error when the input is a directory', function () {
+        var proc = spawnCLI('makehtml', ['-i', dir], {encoding: 'utf8'});
+        proc.status.should.equal(1);
+        proc.stderr.should.contain('is a directory');
+      });
     });
 
     describe('makehtml -v', function () {

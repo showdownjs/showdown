@@ -398,6 +398,96 @@ describe('showdown cli', function () {
       });
     });
 
+    describe('makehtml batch / glob input', function () {
+      var dir = '.build/batch';
+
+      beforeEach(function () {
+        fs.rmSync(dir, {recursive: true, force: true});
+        fs.mkdirSync(dir + '/out', {recursive: true});
+        fs.writeFileSync(dir + '/a.md', '# A');
+        fs.writeFileSync(dir + '/b.md', '# B');
+      });
+
+      it('should convert multiple inputs into an output directory', function () {
+        var proc = spawnCLI('makehtml', ['-m', '-i', dir + '/a.md', dir + '/b.md', '-o', dir + '/out'], {encoding: 'utf8'});
+        proc.status.should.equal(0);
+        fs.readFileSync(dir + '/out/a.html', 'utf8').should.contain('>A<');
+        fs.readFileSync(dir + '/out/b.html', 'utf8').should.contain('>B<');
+      });
+
+      it('should write outputs beside each source when no output is given', function () {
+        var proc = spawnCLI('makehtml', ['-m', '-i', dir + '/a.md', dir + '/b.md'], {encoding: 'utf8'});
+        proc.status.should.equal(0);
+        fs.existsSync(dir + '/a.html').should.equal(true);
+        fs.existsSync(dir + '/b.html').should.equal(true);
+      });
+
+      it('should expand a glob pattern with the built-in matcher', function () {
+        // quote-free single arg so the shell does not pre-expand it on POSIX
+        var proc = spawnCLI('makehtml', ['-m', '-i', dir + '/*.md', '-o', dir + '/out'], {encoding: 'utf8'});
+        proc.status.should.equal(0);
+        fs.existsSync(dir + '/out/a.html').should.equal(true);
+        fs.existsSync(dir + '/out/b.html').should.equal(true);
+      });
+
+      it('should reject a single output file for multiple inputs', function () {
+        var proc = spawnCLI('makehtml', ['-i', dir + '/a.md', dir + '/b.md', '-o', dir + '/one.html'], {encoding: 'utf8'});
+        proc.status.should.equal(1);
+        proc.stderr.should.contain('directory');
+      });
+
+      it('should error when a glob matches nothing', function () {
+        var proc = spawnCLI('makehtml', ['-i', dir + '/*.nomatch'], {encoding: 'utf8'});
+        proc.status.should.equal(1);
+        proc.stderr.should.contain('no files matched');
+      });
+    });
+
+    describe('makehtml -v', function () {
+      it('should print extra information in verbose mode', function () {
+        var proc = spawnCLI('makehtml', ['-v', '-i'], {input: '**foo**', encoding: 'utf-8'});
+        proc.status.should.equal(0);
+        proc.stderr.should.contain('bytes from stdin');
+        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
+      });
+
+      it('should not print the extra information without -v', function () {
+        var proc = spawnCLI('makehtml', ['-i'], {input: '**foo**', encoding: 'utf-8'});
+        proc.status.should.equal(0);
+        proc.stderr.should.not.contain('bytes from stdin');
+      });
+    });
+
+    describe('makehtml color', function () {
+      var ESC = String.fromCharCode(27) + '[';
+
+      it('should not emit ANSI codes by default when piped', function () {
+        var proc = spawnCLI('makehtml', ['-c', 'bogus'], {input: 'foo', encoding: 'utf-8'});
+        proc.stderr.should.not.contain(ESC);
+      });
+
+      it('should emit ANSI codes with --color', function () {
+        var proc = spawnCLI('makehtml', ['--color', '-c', 'bogus'], {input: 'foo', encoding: 'utf-8'});
+        proc.stderr.should.contain(ESC);
+      });
+
+      it('should not emit ANSI codes with --no-color', function () {
+        var proc = spawnCLI('makehtml', ['--no-color', '-c', 'bogus'], {input: 'foo', encoding: 'utf-8'});
+        proc.stderr.should.not.contain(ESC);
+      });
+
+      it('should honor the NO_COLOR environment variable', function () {
+        var env = Object.assign({}, process.env, {NO_COLOR: '1'});
+        var proc = spawnCLI('makehtml', ['-c', 'bogus'], {input: 'foo', encoding: 'utf-8', env: env});
+        proc.stderr.should.not.contain(ESC);
+      });
+
+      it('should never colorize the converted output', function () {
+        var proc = spawnCLI('makehtml', ['--color', '-m'], {input: '**foo**', encoding: 'utf-8'});
+        proc.stdout.should.not.contain(ESC);
+      });
+    });
+
   });
 
   describe('makemarkdown command', function () {

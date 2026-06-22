@@ -27,6 +27,9 @@ Showdown comes bundled with a Command-line interface (CLI) tool that allows you 
               -V, --version       output the version number
               -q, --quiet         Quiet mode. Only print errors
               -m, --mute          Mute mode. Does not print anything
+              -v, --verbose       Verbose mode. Print extra information about the conversion
+              --color             Force colored output even when the output is not a terminal
+              --no-color          Disable colored output
               -h, --help          display help for command
 
             Commands:
@@ -54,6 +57,9 @@ Showdown comes bundled with a Command-line interface (CLI) tool that allows you 
               -V, --version       output the version number
               -q, --quiet         Quiet mode. Only print errors
               -m, --mute          Mute mode. Does not print anything
+              -v, --verbose       Verbose mode. Print extra information about the conversion
+              --color             Force colored output even when the output is not a terminal
+              --no-color          Disable colored output
               -h, --help          display help for command
 
             Commands:
@@ -88,7 +94,11 @@ showdown makehtml [options]
 
 * Short format: `-i`
 * Alias: `--input`
-* Description: Input source. Usually a `.md` file. If omitted or empty, reads from `stdin`.
+* Description: Input source. One or more `.md` files (or glob patterns). If omitted or empty, reads from `stdin`.
+* Notes:
+    * Multiple inputs can be passed at once: `-i a.md b.md c.md`.
+    * Glob patterns (`*`, `?`) are supported. Your shell normally expands them; on Windows (or
+      when the pattern is quoted) Showdown expands a single-level pattern itself, e.g. `-i "*.md"`.
 * Examples:
 
     !!! example ""
@@ -99,6 +109,12 @@ showdown makehtml [options]
 
         // Read from the foo.md file and output to stdout
         showdown makehtml --input foo.md
+
+        // Convert several files at once
+        showdown makehtml -i a.md b.md -o out/
+
+        // Convert every markdown file in the current directory
+        showdown makehtml -i *.md -o out/
         ```
 
 ###### `-o/--output`
@@ -106,6 +122,12 @@ showdown makehtml [options]
 * Short format: `-o`
 * Alias: `--output`
 * Description: Output target. Usually a `.html` file. If omitted or empty, writes to `stdout`.
+* Multiple inputs (batch mode):
+    * If `-o` is an existing **directory**, each result is written there using the source
+      basename with the extension swapped (`foo.md` → `foo.html`).
+    * If `-o` is omitted, each result is written **beside its source file**.
+    * Passing a single output **file** with multiple inputs is an error (it would overwrite itself).
+    * Batch conversion continues past individual file errors and exits non-zero if any file failed.
 * Example:
 
     !!! example ""
@@ -113,6 +135,9 @@ showdown makehtml [options]
         ```sh
         // Read from the foo.md file and output to bar.html
         showdown makehtml -i foo.md -o bar.html
+
+        // Convert many files into an output directory
+        showdown makehtml -i *.md -o build/
         ```
 
 ###### `-a/--append`
@@ -235,6 +260,39 @@ showdown makemarkdown [options]
         // Convert foo.html into bar.md
         showdown makemarkdown -i foo.html -o bar.md
         ```
+
+## Output verbosity and color
+
+These are global flags — place them before the command (`showdown -v makehtml ...`) or after it,
+they apply to both `makehtml` and `makemarkdown`.
+
+###### `-q/--quiet`
+
+* Description: Quiet mode. Suppresses informational messages; only errors (and the final `DONE!`) are printed.
+
+###### `-m/--mute`
+
+* Description: Mute mode. Suppresses **everything**, including error messages. The converted output is still produced.
+
+###### `-v/--verbose`
+
+* Description: Verbose mode. Prints extra diagnostic information (resolved input files, per-file
+  `source -> target` mappings in batch mode, input sizes and total time). Ignored when `-q`/`-m` is set.
+* Example:
+
+    !!! example ""
+
+        ```sh
+        showdown makehtml -v -i *.md -o build/
+        ```
+
+###### `--color` / `--no-color`
+
+* Description: Controls colorization of the status/diagnostic messages (the converted output itself
+  is never colored).
+* Default: color is enabled automatically only when the message stream is a terminal (TTY). The
+  `NO_COLOR` and `FORCE_COLOR` environment variables are honored.
+* `--color` forces colored output even when the output is redirected; `--no-color` disables it.
 
 ## Extra options
 

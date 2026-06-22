@@ -32,7 +32,10 @@ program
   .version(version)
   .usage('<command> [options]')
   .option('-q, --quiet', 'Quiet mode. Only print errors')
-  .option('-m, --mute', 'Mute mode. Does not print anything');
+  .option('-m, --mute', 'Mute mode. Does not print anything')
+  .option('-v, --verbose', 'Verbose mode. Print extra information about the conversion')
+  .option('--color', 'Force colored output even when the output is not a terminal')
+  .option('--no-color', 'Disable colored output');
 
 addConversionOptions(
   program.command('makehtml')
@@ -41,12 +44,13 @@ addConversionOptions(
     .addHelpText('after', '\n\nExamples:')
     .addHelpText('after', '  showdown makehtml -i                     Reads from stdin and outputs to stdout')
     .addHelpText('after', '  showdown makehtml -i foo.md -o bar.html  Reads \'foo.md\' and writes to \'bar.html\'')
+    .addHelpText('after', '  showdown makehtml -i *.md -o out/         Converts every md file into the \'out\' directory')
     .addHelpText('after', '  showdown makehtml -i --flavor="github"   Parses stdin using GFM style')
 
     .addHelpText('after', '\nNote for windows users:')
     .addHelpText('after', 'When reading from stdin, use option -u to set the proper encoding or run `chcp 65001` prior to calling showdown cli to set the command line to utf-8'),
-  'Input source. Usually a md file. If omitted or empty, reads from stdin. Windows users see note below.',
-  'Output target. Usually a html file. If omitted or empty, writes to stdout'
+  'Input source. One or more md files or glob patterns. If omitted or empty, reads from stdin. Windows users see note below.',
+  'Output target. A html file, or a directory when converting multiple inputs. If omitted or empty, writes to stdout (single input) or beside each source (multiple inputs)'
 ).action(function (options, command) {
   conversionCommand('makeHtml', 'markdown', options, command);
 });
@@ -58,11 +62,12 @@ addConversionOptions(
     .addHelpText('after', '\n\nExamples:')
     .addHelpText('after', '  showdown makemarkdown -i                     Reads from stdin and outputs to stdout')
     .addHelpText('after', '  showdown makemarkdown -i foo.html -o bar.md  Reads \'foo.html\' and writes to \'bar.md\'')
+    .addHelpText('after', '  showdown makemarkdown -i *.html -o out/      Converts every html file into the \'out\' directory')
 
     .addHelpText('after', '\nNote for windows users:')
     .addHelpText('after', 'When reading from stdin, use option -u to set the proper encoding or run `chcp 65001` prior to calling showdown cli to set the command line to utf-8'),
-  'Input source. Usually a html file. If omitted or empty, reads from stdin. Windows users see note below.',
-  'Output target. Usually a md file. If omitted or empty, writes to stdout'
+  'Input source. One or more html files or glob patterns. If omitted or empty, reads from stdin. Windows users see note below.',
+  'Output target. A md file, or a directory when converting multiple inputs. If omitted or empty, writes to stdout (single input) or beside each source (multiple inputs)'
 ).action(function (options, command) {
   conversionCommand('makeMarkdown', 'html', options, command);
 });
@@ -84,7 +89,7 @@ program.parse();
 function addConversionOptions (cmd, inputDesc, outputDesc) {
   'use strict';
   return cmd
-    .option('-i, --input [file]', inputDesc, true)
+    .option('-i, --input [files...]', inputDesc, true)
     .option('-o, --output [file]', outputDesc, true)
     .option('-u, --encoding <encoding>', 'Sets the input encoding', 'utf8')
     .option('-y, --output-encoding <encoding>', 'Sets the output encoding', 'utf8')
@@ -97,22 +102,73 @@ function addConversionOptions (cmd, inputDesc, outputDesc) {
 }
 
 /**
+ * Builds a set of ANSI color helpers. When disabled, every helper is the identity
+ * function, so call sites can colorize unconditionally.
+ * @param {boolean} enabled
+ * @returns {{red: function, green: function, yellow: function, cyan: function, dim: function, bold: function}}
+ */
+function makeColor (enabled) {
+  'use strict';
+  let esc = String.fromCharCode(27);
+  function wrap (open, close) {
+    return function (str) {
+      return enabled ? (esc + '[' + open + 'm' + str + esc + '[' + close + 'm') : str;
+    };
+  }
+  return {
+    red: wrap(31, 39),
+    green: wrap(32, 39),
+    yellow: wrap(33, 39),
+    cyan: wrap(36, 39),
+    dim: wrap(2, 22),
+    bold: wrap(1, 22)
+  };
+}
+
+/**
+ * Determines whether colored output should be enabled.
+ * Explicit --color / --no-color win; then FORCE_COLOR / NO_COLOR env vars;
+ * otherwise color is on only when the message stream is a TTY.
+ * @param {Command} program The root program (for option source detection)
+ * @param {{}} globalOpts Parsed global options
+ * @param {string} msgMode 'stdout' or 'stderr' — the stream messages are written to
+ * @returns {boolean}
+ */
+function resolveColorEnabled (program, globalOpts, msgMode) {
+  'use strict';
+  if (typeof program.getOptionValueSource === 'function' && program.getOptionValueSource('color') === 'cli') {
+    return globalOpts.color === true;
+  }
+  if (process.env.FORCE_COLOR) {
+    return true;
+  }
+  if (process.env.NO_COLOR) {
+    return false;
+  }
+  let stream = (msgMode === 'stdout') ? process.stdout : process.stderr;
+  return !!stream.isTTY;
+}
+
+/**
  * Messenger helper object to the CLI
- * @param {string} writeMode
- * @param {boolean} suppress
- * @param {boolean} mute
+ * @param {{writeMode?: string, quiet?: boolean, mute?: boolean, verbose?: boolean, color?: {}}} opts
  * @constructor
  */
-function Messenger (writeMode, suppress, mute) {
+function Messenger (opts) {
   'use strict';
-  writeMode = writeMode || 'stderr';
-  suppress = (!!suppress || !!mute);
-  mute = !!mute;
+  opts = opts || {};
+  let writeMode = opts.writeMode || 'stderr',
+      mute = !!opts.mute,
+      // quiet (and mute) suppress normal informational messages
+      suppress = (!!opts.quiet || mute),
+      // verbose is ignored when quiet/mute is set — silence wins
+      verbose = (!!opts.verbose && !suppress),
+      color = opts.color || makeColor(false);
   this._print = (writeMode === 'stdout') ? console.log : console.error;
 
   this.errorExit = function (e) {
     if (!mute) {
-      console.error('ERROR: ' + e.message);
+      console.error(color.red(color.bold('ERROR:')) + ' ' + e.message);
       console.error('Run \'showdown <command> -h\' for help');
     }
     process.exit(1);
@@ -121,7 +177,7 @@ function Messenger (writeMode, suppress, mute) {
   this.okExit = function () {
     if (!mute) {
       this._print('\n');
-      this._print('DONE!');
+      this._print(color.green('DONE!'));
     }
     process.exit(0);
   };
@@ -133,11 +189,25 @@ function Messenger (writeMode, suppress, mute) {
     this._print(msg);
   };
 
+  this.printWarning = function (msg) {
+    if (mute) {
+      return;
+    }
+    console.error(color.yellow(msg));
+  };
+
   this.printError = function (msg) {
     if (mute) {
       return;
     }
-    console.error(msg);
+    console.error(color.red(msg));
+  };
+
+  this.printVerbose = function (msg) {
+    if (!verbose || !msg) {
+      return;
+    }
+    this._print(color.dim(msg));
   };
 
 }
@@ -210,14 +280,14 @@ function coerceOptionValue (key, rawVal, type, messenger) {
   if (type === 'boolean') {
     if (/^true$/i.test(rawVal)) { return true; }
     if (/^false$/i.test(rawVal)) { return false; }
-    messenger.printError('WARNING: invalid boolean value \'' + rawVal + '\' for option \'' + key + '\', ignored');
+    messenger.printWarning('WARNING: invalid boolean value \'' + rawVal + '\' for option \'' + key + '\', ignored');
     return undefined;
   }
 
   if (type === 'number') {
     let num = Number(rawVal);
     if (isNaN(num)) {
-      messenger.printError('WARNING: invalid number value \'' + rawVal + '\' for option \'' + key + '\', ignored');
+      messenger.printWarning('WARNING: invalid number value \'' + rawVal + '\' for option \'' + key + '\', ignored');
       return undefined;
     }
     return num;
@@ -262,7 +332,7 @@ function parseShowdownOptions (configOptions, defaultOptions, messenger) {
     }
 
     if (!optionMeta.hasOwnProperty(key)) {
-      messenger.printError('WARNING: unknown option \'' + key + '\', ignored');
+      messenger.printWarning('WARNING: unknown option \'' + key + '\', ignored');
       continue;
     }
 
@@ -292,6 +362,94 @@ function resolveExtensionPath (ext) {
     return path.resolve(process.cwd(), ext);
   }
   return ext;
+}
+
+/**
+ * Translates a single glob path-segment (supporting * and ?) into an anchored RegExp.
+ * @param {string} segment
+ * @returns {RegExp}
+ */
+function globSegmentToRegExp (segment) {
+  'use strict';
+  let re = '';
+  for (let i = 0; i < segment.length; ++i) {
+    let ch = segment.charAt(i);
+    if (ch === '*') {
+      re += '[^/\\\\]*';
+    } else if (ch === '?') {
+      re += '[^/\\\\]';
+    } else {
+      re += ch.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+    }
+  }
+  return new RegExp('^' + re + '$');
+}
+
+/**
+ * Expands a list of input patterns into a sorted, de-duplicated list of file paths.
+ * Patterns containing * or ? are matched (single level) against their directory;
+ * literal paths pass through unchanged. Patterns that match nothing emit a warning.
+ * @param {string[]} patterns
+ * @param {Messenger} messenger
+ * @returns {string[]}
+ */
+function expandInputs (patterns, messenger) {
+  'use strict';
+  let files = [];
+  for (let i = 0; i < patterns.length; ++i) {
+    let pattern = patterns[i];
+    if (/[*?]/.test(pattern)) {
+      let dir = path.dirname(pattern),
+          rx = globSegmentToRegExp(path.basename(pattern)),
+          matched = [];
+      try {
+        let entries = fs.readdirSync(dir || '.');
+        for (let j = 0; j < entries.length; ++j) {
+          if (rx.test(entries[j])) {
+            matched.push(path.join(dir, entries[j]));
+          }
+        }
+      } catch (e) {
+        // directory unreadable — treated as no match below
+      }
+      if (matched.length === 0) {
+        messenger.printWarning('WARNING: no files matched \'' + pattern + '\'');
+      } else {
+        matched.sort();
+        files = files.concat(matched);
+      }
+    } else {
+      files.push(pattern);
+    }
+  }
+  // de-duplicate while preserving order
+  let seen = {}, unique = [];
+  for (let k = 0; k < files.length; ++k) {
+    if (!Object.prototype.hasOwnProperty.call(seen, files[k])) {
+      seen[files[k]] = true;
+      unique.push(files[k]);
+    }
+  }
+  return unique;
+}
+
+/**
+ * Derives the output file path for a source file (batch / directory output).
+ * The source extension is swapped for targetExt; if the source has no known
+ * source extension, targetExt is appended.
+ * @param {string} srcPath Source file path
+ * @param {string} targetExt Target extension including the dot ('.html' or '.md')
+ * @param {string[]} srcExts Known (lower-cased) source extensions to strip
+ * @param {(string|null)} outDir Output directory, or null to write beside the source
+ * @returns {string}
+ */
+function deriveOutputPath (srcPath, targetExt, srcExts, outDir) {
+  'use strict';
+  let dir = (outDir !== null) ? outDir : path.dirname(srcPath),
+      base = path.basename(srcPath),
+      ext = path.extname(base),
+      stem = (srcExts.indexOf(ext.toLowerCase()) > -1) ? base.slice(0, base.length - ext.length) : base;
+  return path.join(dir, stem + targetExt);
 }
 
 /**
@@ -362,36 +520,29 @@ function writeToFile (output, file, append, encoding) {
 }
 
 /**
- * Shared conversion command for both makehtml and makemarkdown
- * @param {string} method Converter method to call ('makeHtml' or 'makeMarkdown')
- * @param {string} srcFormat Human readable name of the input format ('markdown' or 'html')
- * @param {{}} options
- * @param {Command} cmd
+ * Returns true if the given path exists and is a directory
+ * @param {string} p
+ * @returns {boolean}
  */
-function conversionCommand (method, srcFormat, options, cmd) {
+function isDirectory (p) {
   'use strict';
-
-  // list the available flavors if listFlavors was passed
-  if (options.listFlavors) {
-    showFlavors();
-    return;
+  try {
+    return fs.statSync(p).isDirectory();
+  } catch (e) {
+    return false;
   }
+}
 
-  // show configuration options for showdown helper if configHelp was passed
-  if (options.configHelp) {
-    showShowdownOptions();
-    return;
-  }
-
-  let quiet = !!(cmd.parent._optionValues.quiet),
-      mute = !!(cmd.parent._optionValues.mute),
-      readMode = (!options.input || options.input === '' || options.input === true) ? 'stdin' : 'file',
-      writeMode = (!options.output || options.output === '' || options.output === true) ? 'stdout' : 'file',
-      msgMode = (writeMode === 'file') ? 'stdout' : 'stderr',
-      // initiate Messenger helper, can maybe be replaced with commanderjs internal stuff
-      messenger = new Messenger(msgMode, quiet, mute),
-      defaultOptions = showdown.getDefaultOptions(true),
-      input, output;
+/**
+ * Builds and configures the converter from the parsed options.
+ * Exits the process (via messenger) on a fatal flavor/converter/extension error.
+ * @param {{}} options
+ * @param {Messenger} messenger
+ * @returns {Converter}
+ */
+function buildConverter (options, messenger) {
+  'use strict';
+  let defaultOptions = showdown.getDefaultOptions(true);
 
   // deal with flavor first since config flag overrides flavor individual options
   if (options.flavor) {
@@ -399,7 +550,7 @@ function conversionCommand (method, srcFormat, options, cmd) {
     let flavorOptions = showdown.getFlavorOptions(options.flavor);
     if (!flavorOptions) {
       messenger.errorExit(new Error('Flavor ' + options.flavor + ' is not recognised. Available flavors: ' + getAvailableFlavors().join(', ')));
-      return;
+      return null;
     }
     defaultOptions = flavorOptions;
     messenger.printMsg('OK!');
@@ -421,7 +572,7 @@ function conversionCommand (method, srcFormat, options, cmd) {
     converter = new showdown.Converter(options.config);
   } catch (e) {
     messenger.errorExit(e);
-    return;
+    return null;
   }
   messenger.printMsg('OK!');
 
@@ -440,29 +591,147 @@ function conversionCommand (method, srcFormat, options, cmd) {
       }
     }
   }
+  return converter;
+}
 
-  messenger.printMsg('...');
-  // read the input
-  messenger.printMsg('Reading data from ' + readMode + '...');
-
-  if (readMode === 'stdin') {
+/**
+ * Converts a list of files (batch / directory output). Continues on per-file errors
+ * and exits non-zero if any file failed.
+ * @param {string[]} files
+ * @param {(string|null)} outDir Output directory, or null to write beside each source
+ * @param {Converter} converter
+ * @param {string} method
+ * @param {string} targetExt
+ * @param {string[]} srcExts
+ * @param {{}} options
+ * @param {Messenger} messenger
+ */
+function convertBatch (files, outDir, converter, method, targetExt, srcExts, options, messenger) {
+  'use strict';
+  let failures = 0,
+      start = Date.now();
+  messenger.printMsg('Converting ' + files.length + ' file(s)...');
+  for (let i = 0; i < files.length; ++i) {
+    let src = files[i];
     try {
-      input = readFromStdIn(options.encoding);
+      let text = readFromFile(src, options.encoding),
+          out = converter[method](text.toString()),
+          dest = deriveOutputPath(src, targetExt, srcExts, outDir);
+      writeToFile(out, dest, options.append, options.outputEncoding);
+      messenger.printVerbose(src + ' -> ' + dest);
     } catch (err) {
-      messenger.errorExit(err);
-      return;
-    }
-  } else {
-    try {
-      input = readFromFile(options.input, options.encoding);
-    } catch (err) {
-      messenger.errorExit(err);
-      return;
+      failures += 1;
+      messenger.printError('ERROR: ' + src + ': ' + err.message);
     }
   }
+  messenger.printVerbose('Converted ' + (files.length - failures) + '/' + files.length + ' file(s) in ' + (Date.now() - start) + 'ms');
+  if (failures > 0) {
+    messenger.printError(failures + ' of ' + files.length + ' file(s) failed');
+    process.exit(1);
+  }
+  messenger.okExit();
+}
 
-  // process the input
+/**
+ * Shared conversion command for both makehtml and makemarkdown
+ * @param {string} method Converter method to call ('makeHtml' or 'makeMarkdown')
+ * @param {string} srcFormat Human readable name of the input format ('markdown' or 'html')
+ * @param {{}} options
+ * @param {Command} cmd
+ */
+function conversionCommand (method, srcFormat, options, cmd) {
+  'use strict';
+
+  // list the available flavors if listFlavors was passed
+  if (options.listFlavors) {
+    showFlavors();
+    return;
+  }
+
+  // show configuration options for showdown helper if configHelp was passed
+  if (options.configHelp) {
+    showShowdownOptions();
+    return;
+  }
+
+  let globalOpts = cmd.parent._optionValues,
+      quiet = !!globalOpts.quiet,
+      mute = !!globalOpts.mute,
+      verbose = !!globalOpts.verbose,
+      targetExt = (method === 'makeHtml') ? '.html' : '.md',
+      srcExts = (method === 'makeHtml') ? ['.md', '.markdown', '.mdown', '.mkd', '.mkdn'] : ['.html', '.htm', '.xhtml'],
+      // variadic -i yields an array of patterns; `true` (absent / flag-only) means stdin
+      inputs = Array.isArray(options.input) ? options.input : (typeof options.input === 'string' && options.input ? [options.input] : []),
+      readMode = (inputs.length === 0) ? 'stdin' : 'files',
+      outputGiven = !(!options.output || options.output === '' || options.output === true),
+      outDir = (outputGiven && isDirectory(options.output)) ? options.output : null;
+
+  // expand globs up-front so we know the file count (and thus where data goes)
+  let files = [],
+      unmatched = [];
+  if (readMode === 'files') {
+    files = expandInputs(inputs, {printWarning: function (m) { unmatched.push(m); }});
+  }
+
+  // decide whether the converted data goes to stdout (so messages avoid that stream)
+  let dataToStdout;
+  if (readMode === 'stdin') {
+    dataToStdout = !outputGiven;
+  } else if (outDir) {
+    dataToStdout = false;
+  } else if (files.length === 1) {
+    dataToStdout = !outputGiven;
+  } else {
+    dataToStdout = false;
+  }
+  let msgMode = dataToStdout ? 'stderr' : 'stdout',
+      colorEnabled = resolveColorEnabled(cmd.parent, globalOpts, msgMode),
+      messenger = new Messenger({writeMode: msgMode, quiet: quiet, mute: mute, verbose: verbose, color: makeColor(colorEnabled)});
+
+  // surface any glob patterns that matched nothing
+  for (let w = 0; w < unmatched.length; ++w) {
+    messenger.printWarning(unmatched[w]);
+  }
+  if (readMode === 'files' && files.length === 0) {
+    messenger.errorExit(new Error('No input files to process'));
+    return;
+  }
+  if (readMode === 'files') {
+    messenger.printVerbose('Resolved ' + files.length + ' input file(s): ' + files.join(', '));
+  }
+
+  // reject a single output file for multiple inputs (would clobber)
+  if (readMode === 'files' && files.length > 1 && outputGiven && !outDir) {
+    messenger.errorExit(new Error('Multiple input files require an output directory; \'' + options.output + '\' is not a directory'));
+    return;
+  }
+
+  // build the converter (may exit on a fatal flavor/converter/extension error)
+  let converter = buildConverter(options, messenger);
+  if (!converter) {
+    return;
+  }
+
+  // batch mode: directory output, or multiple inputs written beside their sources
+  if (readMode === 'files' && (outDir || files.length > 1)) {
+    convertBatch(files, outDir, converter, method, targetExt, srcExts, options, messenger);
+    return;
+  }
+
+  // single conversion (stdin or exactly one file)
+  messenger.printMsg('...');
+  messenger.printMsg('Reading data from ' + (readMode === 'stdin' ? 'stdin' : files[0]) + '...');
+  let input;
+  try {
+    input = (readMode === 'stdin') ? readFromStdIn(options.encoding) : readFromFile(files[0], options.encoding);
+  } catch (err) {
+    messenger.errorExit(err);
+    return;
+  }
+  messenger.printVerbose('Read ' + Buffer.byteLength(input.toString(), 'utf8') + ' bytes from ' + (readMode === 'stdin' ? 'stdin' : files[0]));
+
   messenger.printMsg('Parsing ' + srcFormat + '...');
+  let output;
   try {
     output = converter[method](input.toString());
   } catch (err) {
@@ -470,9 +739,8 @@ function conversionCommand (method, srcFormat, options, cmd) {
     return;
   }
 
-  // write the output
-  messenger.printMsg('Writing data to ' + writeMode + '...');
-  if (writeMode === 'stdout') {
+  if (dataToStdout) {
+    messenger.printMsg('Writing data to stdout...');
     try {
       // okExit is called from within writeToStdOut once the data is flushed
       writeToStdOut(output, options.outputEncoding, messenger);
@@ -481,13 +749,17 @@ function conversionCommand (method, srcFormat, options, cmd) {
       messenger.errorExit(err);
       return;
     }
-  } else {
-    try {
-      writeToFile(output, options.output, options.append, options.outputEncoding);
-    } catch (err) {
-      messenger.errorExit(err);
-      return;
-    }
   }
+
+  // single input written to an explicit -o file
+  let dest = outputGiven ? options.output : deriveOutputPath(files[0], targetExt, srcExts, null);
+  messenger.printMsg('Writing data to ' + dest + '...');
+  try {
+    writeToFile(output, dest, options.append, options.outputEncoding);
+  } catch (err) {
+    messenger.errorExit(err);
+    return;
+  }
+  messenger.printVerbose((readMode === 'stdin' ? 'stdin' : files[0]) + ' -> ' + dest);
   messenger.okExit();
 }

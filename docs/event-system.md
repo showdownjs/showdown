@@ -97,7 +97,7 @@ Might not be run if no regex match found.
 | `input`      | `string` | `readonly`   | The captured text                                                 |
 | `output`     | `string` | `write`      | `null` or well-formed HTML (see the Important Note below)         |
 | `regexp`     | `RegExp` | `readonly`   | Regular Expression to capture groups                              |
-| `matches`    | `object` | `read/write` | Match groups. Changes to this object are reflected in the output.  |
+| `matches`    | `object` | `read/write` | Match groups. Changes to this object are reflected in the output. |
 | `attributes` | `object` | `read/write` | Attributes to add to the HTML output                              |
 
 !!! warning "IMPORTANT NOTE"

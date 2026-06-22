@@ -92,7 +92,7 @@ This property should be used as a function that acts as a callback. The callback
 1. `options`: the options used to initialize the converter
 
 !!! warning ""
-    The filter function **should return the transformed text**. If it doesn't, it will fail **silently** and return an empty output.
+    The filter function **should return the transformed text**. If it returns nothing, your transformation is silently skipped and the text passes through unchanged.
 
 !!! note ""
     `lang`/`output` extensions now run as listeners on the document-level [`makehtml.onPreParse`](event-system.md#makehtml-document-level-events) / [`makehtml.onEnd`](event-system.md#makehtml-document-level-events) events, so the `options` passed to `filter` is a **read-only copy** of the converter's options. Reading it works as before; mutating it has no effect on the conversion (mutating `options` was never supported anyway).

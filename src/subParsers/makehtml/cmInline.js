@@ -433,6 +433,11 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
           if (key !== '' && !showdown.helper.isUndefined(globals.gUrls[key])) {
             dest = globals.gUrls[key];
             title = globals.gTitles[key];
+            // parseImgDimensions: reference-style dimensions stored by stripLinkDefinitions
+            if (globals.gDimensions[key]) {
+              width = globals.gDimensions[key].width;
+              height = globals.gDimensions[key].height;
+            }
             matched = true;
           }
         }

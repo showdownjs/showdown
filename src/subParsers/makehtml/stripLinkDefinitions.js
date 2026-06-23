@@ -190,6 +190,11 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
       if (title !== null && !showdown.helper.isUndefined(title)) {
         globals.gTitles[linkId] = title;
       }
+      // parseImgDimensions: store reference-style dimensions (gating copied from the
+      // legacy stripLinkDefinitions replaceFunc); consumed by cmInline's image builder
+      if (options.parseImgDimensions && def.width && def.height) {
+        globals.gDimensions[linkId] = { width: def.width, height: def.height };
+      }
     }
   }
 
@@ -239,6 +244,22 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
     let afterDest = dest.end,
         url = dest.url;
 
+    // parseImgDimensions (Showdown extension, not CommonMark): an optional ` =WxH`
+    // between the destination and the title. Always consumed here; only stored as
+    // dimensions when the option is on (see commitDefinition). Regex fragment copied
+    // from the inline image regex in image.js.
+    let width = null, height = null;
+    let dimPos = afterDest;
+    while (dimPos < n && /[ \t]/.test(str.charAt(dimPos))) { dimPos++; }
+    if (dimPos > afterDest && str.charAt(dimPos) === '=') {
+      let dim = /^=([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4})/.exec(str.slice(dimPos));
+      if (dim) {
+        width = dim[1];
+        height = dim[2];
+        afterDest = dimPos + dim[0].length;
+      }
+    }
+
     // optional title, separated from the destination by whitespace (and at most
     // one line ending, with no blank line)
     let k = afterDest, sawSpace = false, sawNl = false;
@@ -281,6 +302,8 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
       linkId: linkId,
       url: url,
       title: title,
+      width: width,
+      height: height,
       wholeMatch: str.slice(start, end),
       end: end
     };

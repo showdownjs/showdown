@@ -1,11 +1,10 @@
 var fs = require('fs'),
+    os = require('os'),
     path = require('path'),
     chai = require('chai'),
     expect = chai.expect,
     chaiMatch = require('chai-match'),
-    execSync = require('child_process').execSync,
     spawnSync = require('child_process').spawnSync,
-    cmd = 'node src/cli/cli.js',
     packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
 
 require('sinon');
@@ -24,6 +23,22 @@ function spawnCLI (command, args, options) {
   var nargs = ['src/cli/cli.js'];
   if (command) { nargs.push(command);}
   args = nargs.concat(args);
+  options = options || {};
+  // Spawn with a deterministic, color-free base environment. Some runners (notably IDE
+  // test runners) export FORCE_COLOR, which the child would otherwise inherit and emit
+  // ANSI codes the assertions don't expect. Stripping it here keeps output stable wherever
+  // the suite runs. A test that needs a specific value (e.g. NO_COLOR) sets it through
+  // options.env, which is layered on top and therefore wins.
+  var env = {};
+  Object.keys(process.env).forEach(function (key) {
+    if (key !== 'FORCE_COLOR' && key !== 'NO_COLOR') {
+      env[key] = process.env[key];
+    }
+  });
+  if (options.env) {
+    Object.keys(options.env).forEach(function (key) { env[key] = options.env[key]; });
+  }
+  options.env = env;
   var otp = spawnSync('node', args, options),
       stdout = otp.stdout.toString(),
       stderr = otp.stderr.toString(),
@@ -39,6 +54,21 @@ describe('showdown cli', function () {
   // every assertion here spawns a `node` subprocess; under full-suite CPU load
   // a spawn can exceed mocha's 3s default, so give this spawn-based suite more room
   this.timeout(15000);
+
+  // File-output tests get their own throwaway directory rather than sharing the .build/
+  // scratch dir, which collides with the build artifact and grunt's clean step. Combined
+  // with asserting the spawn succeeded before reading the file back (see each test), this
+  // removes the read-before-write races that surfaced as flaky ENOENT failures.
+  var tmpDir;
+  before(function () {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'showdown-cli-'));
+  });
+  after(function () {
+    if (tmpDir) { fs.rmSync(tmpDir, {recursive: true, force: true}); }
+  });
+  function tmp (name) {
+    return path.join(tmpDir, name);
+  }
 
   describe('without commands', function () {
 
@@ -295,47 +325,46 @@ describe('showdown cli', function () {
 
     describe('makehtml -i -o <file>', function () {
       it('should read from stdin and output to a file', function () {
-        execSync(cmd + ' makehtml -m -i -o .build/io1.html', {
-          encoding: 'utf8',
-          input: '**foo**'
-        });
-        var otp = fs.readFileSync('.build/io1.html', 'utf8').toString().trim(),
-            expectedOtp = '<p><strong>foo</strong></p>';
-
-        otp.trim().should.equal(expectedOtp);
+        var out = tmp('io1.html'),
+            proc = spawnCLI('makehtml', ['-m', '-i', '-o', out], {
+              encoding: 'utf8',
+              input: '**foo**'
+            });
+        proc.status.should.equal(0, proc.stderr);
+        fs.readFileSync(out, 'utf8').trim().should.equal('<p><strong>foo</strong></p>');
       });
     });
 
     describe('makehtml -i <file> -o <file>', function () {
       it('should read from a file and output to a file', function () {
-        var expectedOtp = fs.readFileSync('test/cli/basic.html', 'utf8').toString().trim(),
-            proc = spawnCLI('makehtml', ['-i', 'test/cli/basic.md', '-o', '.build/io2.html'], {encoding: 'utf-8'}),
-            otp = fs.readFileSync('.build/io2.html', 'utf8').toString().trim();
+        var out = tmp('io2.html'),
+            expectedOtp = fs.readFileSync('test/cli/basic.html', 'utf8').toString().trim(),
+            proc = spawnCLI('makehtml', ['-i', 'test/cli/basic.md', '-o', out], {encoding: 'utf-8'});
 
-        otp.trim().should.equal(expectedOtp);
-        proc.stdout.should.not.equal(expectedOtp);
+        proc.status.should.equal(0, proc.stderr);
         proc.stderr.should.equal('');
-        proc.status.should.equal(0);
+        fs.readFileSync(out, 'utf8').trim().should.equal(expectedOtp);
+        proc.stdout.should.not.equal(expectedOtp);
       });
     });
 
     describe('makehtml -a', function () {
       it('should read from stdin and append to a file', function () {
-        fs.writeFileSync('.build/io3.html', '<p>foo</p>');
+        var out = tmp('io3.html');
+        fs.writeFileSync(out, '<p>foo</p>');
 
         var expectedOtp = '<p>foo</p><p><strong>foo</strong></p>',
-            proc = spawnCLI('makehtml', ['-i', '-o', '.build/io3.html', '-a'], {
+            proc = spawnCLI('makehtml', ['-i', '-o', out, '-a'], {
               encoding: 'utf8',
               input: '**foo**'
-            }),
-            otp = fs.readFileSync('.build/io3.html', 'utf8').toString().trim();
+            });
 
-        proc.status.should.equal(0);
-        otp.trim().should.equal(expectedOtp);
-        // since the output is to a file, messages are logged to stdout
-        proc.stdout.should.not.equal(expectedOtp);
+        proc.status.should.equal(0, proc.stderr);
         // stderr should be empty
         proc.stderr.should.equal('');
+        fs.readFileSync(out, 'utf8').trim().should.equal(expectedOtp);
+        // since the output is to a file, messages are logged to stdout
+        proc.stdout.should.not.equal(expectedOtp);
       });
 
       it('should ignore -a flag if -o <file> is missing', function () {
@@ -374,11 +403,13 @@ describe('showdown cli', function () {
 
     describe('makehtml -y', function () {
       it('should write the output using the requested encoding', function () {
-        spawnCLI('makehtml', ['-m', '-i', '-o', '.build/enc.html', '-y', 'latin1'], {
-          encoding: 'utf8',
-          input: '# café'
-        });
-        var buf = fs.readFileSync('.build/enc.html');
+        var out = tmp('enc.html'),
+            proc = spawnCLI('makehtml', ['-m', '-i', '-o', out, '-y', 'latin1'], {
+              encoding: 'utf8',
+              input: '# café'
+            });
+        proc.status.should.equal(0, proc.stderr);
+        var buf = fs.readFileSync(out);
         // latin1 encodes é as a single 0xE9 byte; utf8 would be 0xC3 0xA9
         buf.includes(0xe9).should.equal(true);
         buf.includes(0xc3).should.equal(false);
@@ -393,12 +424,13 @@ describe('showdown cli', function () {
       });
 
       it('should not append a trailing newline when writing to a file', function () {
-        spawnCLI('makehtml', ['-m', '-i', '-o', '.build/nl.html'], {
-          encoding: 'utf8',
-          input: '**foo**'
-        });
-        var otp = fs.readFileSync('.build/nl.html', 'utf8');
-        otp.should.equal('<p><strong>foo</strong></p>');
+        var out = tmp('nl.html'),
+            proc = spawnCLI('makehtml', ['-m', '-i', '-o', out], {
+              encoding: 'utf8',
+              input: '**foo**'
+            });
+        proc.status.should.equal(0, proc.stderr);
+        fs.readFileSync(out, 'utf8').should.equal('<p><strong>foo</strong></p>');
       });
     });
 
@@ -506,8 +538,9 @@ describe('showdown cli', function () {
       });
 
       it('should honor the NO_COLOR environment variable', function () {
-        var env = Object.assign({}, process.env, {NO_COLOR: '1'});
-        var proc = spawnCLI('makehtml', ['-c', 'bogus'], {input: 'foo', encoding: 'utf-8', env: env});
+        // spawnCLI supplies a clean base env; layering NO_COLOR on top exercises the
+        // env-var path without ambient FORCE_COLOR (e.g. from an IDE) overriding it.
+        var proc = spawnCLI('makehtml', ['-c', 'bogus'], {input: 'foo', encoding: 'utf-8', env: {NO_COLOR: '1'}});
         proc.stderr.should.not.contain(ESC);
       });
 
@@ -547,12 +580,12 @@ describe('showdown cli', function () {
 
     describe('makemarkdown -i <file> -o <file>', function () {
       it('should read html from a file and write markdown to a file', function () {
-        var expectedOtp = fs.readFileSync('test/cli/basic-md.md', 'utf8').toString().trim(),
-            proc = spawnCLI('makemarkdown', ['-i', 'test/cli/basic-md.html', '-o', '.build/md1.md'], {encoding: 'utf-8'}),
-            otp = fs.readFileSync('.build/md1.md', 'utf8').toString().trim();
+        var out = tmp('md1.md'),
+            expectedOtp = fs.readFileSync('test/cli/basic-md.md', 'utf8').toString().trim(),
+            proc = spawnCLI('makemarkdown', ['-i', 'test/cli/basic-md.html', '-o', out], {encoding: 'utf-8'});
 
-        proc.status.should.equal(0);
-        otp.should.equal(expectedOtp);
+        proc.status.should.equal(0, proc.stderr);
+        fs.readFileSync(out, 'utf8').trim().should.equal(expectedOtp);
       });
     });
 

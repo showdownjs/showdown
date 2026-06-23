@@ -33,7 +33,8 @@ let showdown = {},
         requireSpaceBeforeHeadingText:        true,
         decodeEntities:                       true,
         cmSpec:                               true,
-        strikethrough:                        false
+        strikethrough:                        false,
+        encodeEmails:                         false
       },
       vanilla: getDefaultOpts(true)
     };

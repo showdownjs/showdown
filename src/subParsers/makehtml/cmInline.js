@@ -46,6 +46,102 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
 
   text = parseCmInline(text);
 
+  // ==== copied verbatim from link.js to support GFM link options under cmSpec ====
+  // The cmSpec path bypasses link.js (spanGamut returns early before makehtml.link), so
+  // ghMentions and simplifiedAutoLink are replicated here as post-passes. Real links,
+  // images and code spans are already hashed by parseCmInline above, so they are
+  // protected from these regexes. The writeAnchorTag / parseMail helpers below are also
+  // copied from link.js. TODO: refactor to share this with link.js instead of copying.
+
+  // 5. Handle GithubMentions (if option is enabled)
+  if (options.ghMentions) {
+    let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
+    text = text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
+      // bail if the mentions was escaped
+      if (escape === '\\') {
+        return st + mentions;
+      }
+      // check if options.ghMentionsLink is a string
+      // TODO Validation should be done at initialization not at runtime
+      if (!showdown.helper.isString(options.ghMentionsLink)) {
+        throw new Error('ghMentionsLink option must be a string');
+      }
+      let url = options.ghMentionsLink.replace(/\{u}/g, username);
+      return st + writeAnchorTag ('reference', ghMentionsRegex, wholeMatch, mentions, null, url);
+    });
+  }
+
+  // 8. Handle naked links (if option is enabled)
+  if (options.simplifiedAutoLink) {
+    // 8.1. Check for naked URLs
+    // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
+    let nakedUrlRegex = /([_*~]*?)(((?:https?|ftp):\/\/|www\.)[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*)\1/gi;
+    text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url, urlPrefix) {
+      // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
+      const len = url.length;
+      let suffix = '';
+
+      for (let i = len - 1; i >= 0; --i) {
+        let char = url.charAt(i);
+        if (/[_*~,;:.!?]/.test(char)) {
+          // it's a punctuation char so we remove it from the url
+          url = url.slice(0, -1);
+          // and prepend it to the suffix
+          suffix = char + suffix;
+        } else if (/[)\]]/.test(char)) {
+          // it's a parenthesis so we need to check for "balance" (kinda)
+          let opPar, clPar;
+          if (/\)/.test(char)) {
+            // it's a curved parenthesis
+            opPar = url.match(/\(/g) || [];
+            clPar = url.match(/\)/g);
+          } else {
+            // it's a squared parenthesis
+            opPar = url.match(/\[/g) || [];
+            clPar = url.match(/]/g);
+          }
+          if (opPar.length < clPar.length) {
+            // there are more closing Parenthesis than opening so chop it!!!!!
+            url = url.slice(0, -1);
+            // and prepend it to the suffix
+            suffix = char + suffix;
+          } else {
+            // it's (kinda) balanced so our work is done
+            break;
+          }
+        } else {
+          // it's not a punctuation or a parenthesis so our work is done
+          break;
+        }
+      }
+
+      // we copy the treated url to the text variable
+      let txt = url;
+      // finally, if it's a www shortcut, we prepend http(s)
+      // noinspection HttpUrlsUsage
+      url = (urlPrefix === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+
+      // url part is done so let's take care of text now
+      // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
+      txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+
+      // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
+      // we consumed those characters in the regexp
+      return leadingMDChars +
+        writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
+        suffix +
+        leadingMDChars;
+    });
+
+    // 8.2. Now check for naked mail
+    let nakedMailRegex = /(^|\s)(?:mailto:)?([A-Za-z\d!#$%&'*+-/=?^_`{|}~.]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)(?=$|\s)/gmi;
+    text = text.replace(nakedMailRegex, function (wholeMatch, leadingChar, mail) {
+      const m = parseMail(mail);
+      return leadingChar + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
+    });
+  }
+  // ==== end copied region ====
+
   let afterEvent = new showdown.Event('makehtml.cmInline.onEnd', text);
   afterEvent
     .setOutput(text)
@@ -144,7 +240,17 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
           appendText('¨D');
           i += 3;
         } else if (isEscapable(next)) {
-          appendText(next);
+          // Emit ordinary escaped punctuation as a Showdown escape placeholder (¨E<code>E)
+          // so the later passes (ghMentions, simplifiedAutoLink, emoji, strikethrough,
+          // ellipsis, ...) don't treat the char as markup - e.g. `\@user` must not become a
+          // mention. unescapeSpecialChars restores the literal char at the end of the
+          // pipeline. HTML-special chars stay literal so escapeText turns them into entities
+          // (&amp; &lt; &gt; &quot;); placeholders would otherwise round-trip to raw `<`/`&`.
+          if (next === '&' || next === '<' || next === '>' || next === '"') {
+            appendText(next);
+          } else {
+            appendText('¨E' + next.charCodeAt(0) + 'E');
+          }
           i += 2;
         } else {
           appendText('\\');
@@ -266,7 +372,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
       if (!opener.active) { brackets = opener.prev; appendText(']'); return idx + 1; }
 
       // try to parse the destination/title or a reference that follows the `]`
-      let dest = null, title = null, matched = false, endIdx = idx + 1;
+      let dest = null, title = null, width = null, height = null, matched = false, endIdx = idx + 1;
 
       if (s.charAt(idx + 1) === '(') {
         let j = idx + 2, n2 = s.length, isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; };
@@ -274,6 +380,20 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         let d = showdown.helper.cmScanDestination(s, j);
         if (d) {
           j = d.end;
+          // parseImgDimensions (Showdown extension, not CommonMark): an optional
+          // ` =WxH` between destination and title. The `=WxH` is always consumed here so
+          // it never leaks into the output; buildImage only renders it when the option is
+          // on. Regex fragment copied from the inline image regex in image.js.
+          let dimStart = j;
+          while (dimStart < n2 && isWs(s.charAt(dimStart))) { dimStart++; }
+          if (dimStart > j && s.charAt(dimStart) === '=') {
+            let dim = /^=([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4})/.exec(s.slice(dimStart));
+            if (dim) {
+              width = dim[1];
+              height = dim[2];
+              j = dimStart + dim[0].length;
+            }
+          }
           let hadWs = false;
           while (j < n2 && isWs(s.charAt(j))) { hadWs = true; j++; }
           let tc = s.charAt(j), t = null;
@@ -328,7 +448,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
 
       let otpHTML;
       if (opener.image) {
-        otpHTML = buildImage(innerHTML, dest, title);
+        otpHTML = buildImage(innerHTML, dest, title, width, height);
       } else {
         otpHTML = buildLink(innerHTML, dest, title);
       }
@@ -380,13 +500,18 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
       return hashSpan('<a' + attrs + '>' + innerHTML + '</a>');
     }
 
-    function buildImage (innerHTML, dest, title) {
+    function buildImage (innerHTML, dest, title, width, height) {
       // alt text is the plain-text rendering of the label (markup stripped); the inner
       // spans are hashed, so restore them before flattening
       let alt = showdown.subParser('makehtml.unhashHTMLSpans')(innerHTML, options, globals)
         .replace(/<img\b[^>]*?\salt="([^"]*)"[^>]*?\/?>/g, '$1')
         .replace(/<[^>]*>/g, '');
       let attrs = ' src="' + normalizeDest(dest) + '" alt="' + alt + '"' + buildTitleAttr(title);
+      // width/height gating copied from writeImageTag in image.js (parseImgDimensions)
+      if (options.parseImgDimensions) {
+        if (width)  { attrs += ' width="'  + (width  === '*' ? 'auto' : width)  + '"'; }
+        if (height) { attrs += ' height="' + (height === '*' ? 'auto' : height) + '"'; }
+      }
       return hashSpan('<img' + attrs + ' />');
     }
 
@@ -529,8 +654,18 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
     reAutoEmail.lastIndex = i;
     let email = reAutoEmail.exec(str);
     if (email) {
-      let raw = email[0].slice(1, -1);
-      return {html: showdown.helper._hashHTMLSpan('<a href="mailto:' + escapeAngles(raw) + '">' + escapeAngles(raw) + '</a>', globals), end: i + email[0].length};
+      let raw = email[0].slice(1, -1),
+          href, txt;
+      // encodeEmails: entity-encode the address (href and text) when the option is on,
+      // so it works under cmSpec too. Mirrors parseMail in link.js (copied behavior).
+      if (options.encodeEmails) {
+        href = showdown.helper.encodeEmailAddress('mailto:' + raw);
+        txt = showdown.helper.encodeEmailAddress(raw);
+      } else {
+        href = 'mailto:' + escapeAngles(raw);
+        txt = escapeAngles(raw);
+      }
+      return {html: showdown.helper._hashHTMLSpan('<a href="' + href + '">' + txt + '</a>', globals), end: i + email[0].length};
     }
     return null;
   }
@@ -538,6 +673,123 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   function escapeAngles (s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+
+  // ==== writeAnchorTag and parseMail copied verbatim from link.js ====
+  // Used by the copied ghMentions / simplifiedAutoLink post-passes above so they emit
+  // the exact same anchors as the legacy path. TODO: refactor to share with link.js.
+  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
+
+    let matches = {
+          _wholeMatch: wholeMatch,
+          _linkId: linkId,
+          _url: url,
+          _title: title,
+          text: text
+        },
+        otp,
+        attributes = {};
+
+    title = title || null;
+    url = url || null;
+    if (linkId) {
+      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
+    } else {
+      linkId = null;
+    }
+    emptyCase = !!emptyCase;
+
+    if (emptyCase) {
+      url = '';
+    } else if (!url) {
+      if (!linkId) {
+        // lower-case and turn embedded newlines into spaces
+        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
+      }
+      url = '#' + linkId;
+
+      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
+        url = globals.gUrls[linkId];
+        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
+          title = globals.gTitles[linkId];
+        }
+      } else {
+        return wholeMatch;
+      }
+    }
+
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    // NOTE: deliberately diverges from the link.js original - we do NOT call
+    // cmNormalizeURL here even though cmSpec is on. These ghMentions/simplifiedAutoLink
+    // anchors are legacy GFM constructs; cmNormalizeURL would decode the entity-encoded
+    // mailto: href produced by encodeEmails, making the href/text inconsistent. Skipping
+    // it makes the output identical to the legacy (non-cmSpec) path.
+    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+    attributes.href = url;
+
+    if (title && showdown.helper.isString(title)) {
+      if (options.cmSpec) {
+        title = showdown.helper.cmEscapeTitle(title);
+      } else {
+        title = title
+          .replace(/"/g, '&quot;');
+      }
+      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      attributes.title = title;
+    }
+
+    let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches(matches)
+      .setAttributes(attributes);
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      attributes = captureStartEvent.attributes;
+      text = captureStartEvent.matches.text || '';
+      // Text can be a markdown element, so we run through the appropriate parsers
+      text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
+      text = showdown.subParser('makehtml.emoji')(text, options, globals);
+      text = showdown.subParser('makehtml.underline')(text, options, globals);
+      text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
+      text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
+      text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
+      text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
+      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+  }
+
+  function parseMail (mail) {
+    let url = 'mailto:';
+    mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
+    if (options.encodeEmails) {
+      url = showdown.helper.encodeEmailAddress(url + mail);
+      mail = showdown.helper.encodeEmailAddress(mail);
+    } else {
+      url = url + mail;
+    }
+    return {
+      mail: mail,
+      url: url
+    };
+  }
+  // ==== end copied region ====
 
   function parseRawHTML (str, i) {
     if (!options.cmSpec) { return null; }

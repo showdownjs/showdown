@@ -27,7 +27,19 @@ describe('makeHtml() features testsuite', function () {
   describe('issues', function () {
     for (let i = 0; i < testsuite.length; ++i) {
       let converter;
-      if (testsuite[i].name === '#143.support-image-dimensions') {
+      if (testsuite[i].name === 'cmSpec-ghMentions' || testsuite[i].name === 'cmSpec-ghMentions-escaped') {
+        converter = new showdown.Converter({cmSpec: true, ghMentions: true});
+      } else if (testsuite[i].name === 'cmSpec-simplifiedAutoLink') {
+        converter = new showdown.Converter({cmSpec: true, simplifiedAutoLink: true});
+      } else if (testsuite[i].name === 'cmSpec-httpsAutoLinks') {
+        converter = new showdown.Converter({cmSpec: true, simplifiedAutoLink: true, httpsAutoLinks: true});
+      } else if (testsuite[i].name === 'cmSpec-encodeEmails') {
+        converter = new showdown.Converter({cmSpec: true, encodeEmails: true});
+      } else if (testsuite[i].name === 'cmSpec-parseImgDimensions') {
+        converter = new showdown.Converter({cmSpec: true, parseImgDimensions: true});
+      } else if (testsuite[i].name === 'cmSpec-all-gfm-options') {
+        converter = new showdown.Converter({cmSpec: true, ghMentions: true, simplifiedAutoLink: true, httpsAutoLinks: true, encodeEmails: true, parseImgDimensions: true});
+      } else if (testsuite[i].name === '#143.support-image-dimensions') {
         converter = new showdown.Converter({parseImgDimensions: true});
       } else if (testsuite[i].name === '#69.header-level-start') {
         converter = new showdown.Converter({headerLevelStart: 3});

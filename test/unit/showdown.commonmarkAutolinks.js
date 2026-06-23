@@ -16,7 +16,9 @@ describe('showdown.Converter cmSpec option (Autolinks)', function () {
   });
 
   describe('enabled', function () {
-    let converter = new showdown.Converter({cmSpec: true});
+    // encodeEmails now works under cmSpec, so disable it here to assert the plain,
+    // spec-compliant mailto form (the commonmark flavor disables it for the same reason)
+    let converter = new showdown.Converter({cmSpec: true, encodeEmails: false});
 
     it('should autolink arbitrary URI schemes', function () {
       converter.makeHtml('<irc://foo.bar:2233/baz>')

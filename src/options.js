@@ -78,11 +78,6 @@ function getDefaultOpts (simple) {
       describe: 'Turn on/off GFM tasklist support',
       type: 'boolean'
     },
-    smoothLivePreview: {
-      defaultValue: false,
-      describe: 'Prevents weird effects in live previews due to incomplete input',
-      type: 'boolean'
-    },
     smartIndentationFix: {
       defaultValue: false,
       describe: 'Tries to smartly fix indentation in es6 strings',

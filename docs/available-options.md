@@ -667,18 +667,6 @@ Resolve indentation problems related to ES6 template strings in the midst of ind
 * default value: `false`
 * introduced in: `1.4.2`
 
-### smoothLivePreview
-
-Resolve an awkward effect when a paragraph is followed by a list. This effect appears on some circumstances, in live preview editors.
-
-* type: `boolean`
-* default value: `false`
-* introduced in: `1.2.1`
-
-!!! example "awkward effect"
-    
-    ![](http://i.imgur.com/YQ9iHTL.gif​)
-
 ### splitAdjacentBlockquotes
 
 Split adjacent blockquote blocks.

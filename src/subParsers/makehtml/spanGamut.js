@@ -31,6 +31,12 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
     text = showdown.subParser('makehtml.emoji')(text, options, globals);
     text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
     text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
+
+    // hash the raw HTML these extras produce (e.g. strikethrough's `<del>`, image-based
+    // emoji's `<img>`) before encodeAmpsAndAngles, otherwise their `<`/`>` get escaped to
+    // `&lt;`/`&gt;`. Mirrors the legacy branch, which hashes spans before encoding.
+    text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
+
     text = showdown.subParser('makehtml.encodeAmpsAndAngles')(text, options, globals);
     text = showdown.subParser('makehtml.hardLineBreaks')(text, options, globals);
 

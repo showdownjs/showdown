@@ -367,7 +367,7 @@ These options make Showdown follow the [CommonMark spec](https://spec.commonmark
 `boolean` and default to `false`, and are best enabled via the [`commonmark` flavor](#flavors). See the
 [Spec compliance docs](docs/spec-compliance.md) for details.
 
- * **cmSpec**: Enable CommonMark spec compliance — parse both block-level constructs (lists, block quotes, HTML blocks, container nesting, tab expansion) and inline constructs (emphasis, links, images, autolinks, raw HTML) per the CommonMark spec instead of Showdown's legacy matching.
+ * **cmSpec**: Enable CommonMark spec compliance — parse both block-level constructs (lists, block quotes, HTML blocks, container nesting, tab expansion) and inline constructs (emphasis, links, images, autolinks, raw HTML) per the CommonMark spec instead of Showdown's legacy matching. Most other options still apply on top (GFM extras like `ghMentions`, `simplifiedAutoLink`, `emoji`, `underline`, `tables`, `tasklists`, `parseImgDimensions`, …); a few that tweak the replaced parsers are ignored (`literalMidWordUnderscores`, `splitAdjacentBlockquotes`, …). See the [spec-compliance docs](docs/spec-compliance.md) for the full list.
  * **decodeEntities**: Resolve HTML5 named and numeric character references (`&copy;`, `&#35;`, `&#xcab;`) to their characters. Kept separate from `cmSpec` because it is also useful on its own.
 
 **NOTE**: In the CLI tool, **all** options are ***disabled*** by default — including those (like `ghCodeBlocks`) that are enabled by default in the Node and browser builds.

@@ -14,16 +14,21 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   text = startEvent.output;
 
   if (options.cmSpec) {
+    // underline runs BEFORE cmInline (mirroring the legacy order, where underline runs
+    // before emphasisAndStrong): it claims `__`/`___` as `<u>` and escapes any remaining
+    // `_`, so cmInline doesn't consume those underscores as emphasis. cmInline then hashes
+    // the raw `<u>` tags as CommonMark raw HTML and leaves the escaped `_` placeholders be.
+    text = showdown.subParser('makehtml.underline')(text, options, globals);
+
     // Unified CommonMark inline parser: code spans, backslash escapes, entities,
     // autolinks, raw HTML, links, images and emphasis resolved together on one
     // delimiter stack (replaces the sequential codeSpan/link/image/emphasis passes
-    // and the raw-HTML hashing below). The Showdown-only extras (emoji, underline,
-    // strikethrough, ellipsis) and the final encodeAmpsAndAngles/hardLineBreaks still
-    // run after, on the non-hashed text.
+    // and the raw-HTML hashing below). The remaining Showdown-only extras (emoji,
+    // strikethrough, ellipsis) and the final encodeAmpsAndAngles/hardLineBreaks run
+    // after, on the non-hashed text.
     text = showdown.subParser('makehtml.cmInline')(text, options, globals);
 
     text = showdown.subParser('makehtml.emoji')(text, options, globals);
-    text = showdown.subParser('makehtml.underline')(text, options, globals);
     text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
     text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
     text = showdown.subParser('makehtml.encodeAmpsAndAngles')(text, options, globals);

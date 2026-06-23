@@ -39,6 +39,12 @@ describe('makeHtml() features testsuite', function () {
         converter = new showdown.Converter({cmSpec: true, parseImgDimensions: true});
       } else if (testsuite[i].name === 'cmSpec-all-gfm-options') {
         converter = new showdown.Converter({cmSpec: true, ghMentions: true, simplifiedAutoLink: true, httpsAutoLinks: true, encodeEmails: true, parseImgDimensions: true});
+      } else if (testsuite[i].name === 'cmSpec-underline') {
+        converter = new showdown.Converter({cmSpec: true, underline: true});
+      } else if (testsuite[i].name === 'cmSpec-tasklists') {
+        converter = new showdown.Converter({cmSpec: true, tasklists: true});
+      } else if (testsuite[i].name === 'cmSpec-tasklists-moreStyling') {
+        converter = new showdown.Converter({cmSpec: true, tasklists: true, moreStyling: true});
       } else if (testsuite[i].name === '#143.support-image-dimensions') {
         converter = new showdown.Converter({parseImgDimensions: true});
       } else if (testsuite[i].name === '#69.header-level-start') {

@@ -59,6 +59,37 @@ The separate [`decodeEntities`](available-options.md#decodeentities) option reso
 and numeric character references (`&copy;`, `&#35;`, `&#xcab;`) to their characters. It is kept
 independent of `cmSpec` because it is also useful on its own.
 
+### Options that still apply under `cmSpec`
+
+`cmSpec` only replaces the parsers for the constructs in the table above. Showdown's other options
+keep working on top of it, so you can combine CommonMark parsing with Showdown/GFM extras:
+
+| Group | Options |
+|---|---|
+| Inline extras | `emoji`, `underline`, `strikethrough`, `ellipsis` |
+| Links & images | `ghMentions`, `ghMentionsLink`, `simplifiedAutoLink`, `httpsAutoLinks`, `encodeEmails`, `parseImgDimensions`, `relativePathBaseUrl` |
+| Lists | `tasklists`, `moreStyling` |
+| Tables | `tables`, `tablesHeaderId` |
+| Code blocks | `ghCodeBlocks`, `omitExtraWLInCodeBlocks` |
+| Headings | `noHeaderId`, `prefixHeaderId`, `rawHeaderId`, `headerLevelStart`, `requireSpaceBeforeHeadingText` |
+| Document / misc | `completeHTMLDocument`, `metadata`, `simpleLineBreaks`, `smartIndentationFix` |
+
+!!! note ""
+    The links/images, `underline` and `tasklists`/`moreStyling` groups work under `cmSpec` as of
+    `3.0.0` — the GFM extras are applied on top of the CommonMark constructs.
+
+### Options that have no effect under `cmSpec`
+
+These tweak Showdown's legacy parsers, which `cmSpec` replaces with its own — so they are silently
+ignored when `cmSpec` is on. In each case the CommonMark behavior is the intended one:
+
+| Option | Why it is ignored |
+|---|---|
+| [`literalMidWordUnderscores`](available-options.md#literalmidwordunderscores) | CommonMark's flanking rules already keep intra-word `_` literal. |
+| [`disableForced4SpacesIndentedSublists`](available-options.md#disableforced4spacesindentedsublists) | The CommonMark list parser has its own indentation rules. |
+| [`splitAdjacentBlockquotes`](available-options.md#splitadjacentblockquotes) | The CommonMark block-quote parser handles adjacency per spec. |
+| [`backslashEscapesHTMLTags`](available-options.md#backslashescapeshtmltags) | `cmSpec` already escapes backslash-escaped `<`/`>` via standard CommonMark backslash escapes. |
+
 ### Known differences
 
 The `commonmark` flavor diverges from the spec in a few intentional, documented ways.

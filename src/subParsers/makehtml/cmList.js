@@ -248,17 +248,75 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
       }
     }
     let body = out.join('\n');
+
+    // GFM task lists: when the item starts with `[ ]`/`[x]` and the tasklists option is
+    // on, render a checkbox and tag the <li>. Mirrors list.js (the legacy parser).
+    let liAttrs = '';
+    let taskMatch = options.tasklists ? /^\s*\[([xX ])]/.exec(content.length ? content[0] : '') : null;
+    if (taskMatch) {
+      let checked = taskMatch[1].trim() !== '';
+      body = cmProcessTaskListItem(body, checked);
+      let attributes = { classes: ['task-list-item'], style: 'list-style-type: none;' };
+      if (options.moreStyling && checked) {
+        attributes.classes.push('task-list-item-complete');
+      }
+      liAttrs = showdown.helper._populateAttributes(attributes);
+    }
+
     // an empty item is always `<li></li>`, regardless of loose/tight
     if (body.trim() === '') {
-      return '<li></li>\n';
+      return '<li' + liAttrs + '></li>\n';
     }
     // CommonMark serialization: a loose item opens/closes on its own lines; a tight
     // item opens on a new line only when its content begins with a block child, and
     // closes on a new line only when its content ends with a block child (so trailing
     // inline text hugs `</li>`).
-    let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li>\n' : '<li>',
+    let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li' + liAttrs + '>\n' : '<li' + liAttrs + '>',
         close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
     return open + body + close;
+  }
+
+  // ==== task-list checkbox rendering copied/adapted from list.js processTaskListItem;
+  // TODO: refactor to share with list.js ====
+  // Adapted to preserve a leading `<p>` (loose items) before the `[ ]`/`[x]` marker.
+  function cmProcessTaskListItem (body, checked) {
+    const checkboxRgx = /^([ \t]*(?:<p>)?[ \t]*)\[([xX ])]/;
+    return body.replace(checkboxRgx, function (wm, prefix, checkedRaw) {
+      let attributes = {
+        type: 'checkbox',
+        disabled: true,
+        style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
+        checked: !!checked
+      };
+      let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', body);
+      captureStartEvent
+        .setOutput(null)
+        ._setGlobals(globals)
+        ._setOptions(options)
+        .setRegexp(checkboxRgx)
+        .setMatches({
+          _wholeMatch: body,
+          _tasklistButton: wm,
+          _taksListButtonChecked: checkedRaw
+        })
+        .setAttributes(attributes);
+      captureStartEvent = globals.converter.dispatch(captureStartEvent);
+      let otp;
+      if (captureStartEvent.output && captureStartEvent.output !== '') {
+        otp = captureStartEvent.output;
+      } else {
+        attributes = captureStartEvent.attributes;
+        otp = '<input' + showdown.helper._populateAttributes(attributes) + '>';
+      }
+
+      let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
+      beforeHashEvent
+        .setOutput(otp)
+        ._setGlobals(globals)
+        ._setOptions(options);
+      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+      return prefix + beforeHashEvent.output;
+    });
   }
 
   // a line that is open paragraph text (so a following list marker would have to

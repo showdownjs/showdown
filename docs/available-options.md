@@ -28,7 +28,9 @@ Enable [CommonMark](https://spec.commonmark.org/) spec compliance. With this sin
 !!! hint ""
     This option (together with [`decodeEntities`](#decodeentities)) is what the `commonmark`
     flavor turns on. Rather than setting it directly, you will usually want
-    `showdown.setFlavor('commonmark')`. See [Spec compliance](spec-compliance.md) for the full picture.
+    `showdown.setFlavor('commonmark')`. See [Spec compliance](spec-compliance.md) for the full picture,
+    including [which other options still apply under `cmSpec`](spec-compliance.md#options-that-still-apply-under-cmspec)
+    (most GFM extras do) and [which are ignored](spec-compliance.md#options-that-have-no-effect-under-cmspec).
 
 * type: `boolean`
 * default value: `false`

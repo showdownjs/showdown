@@ -13,6 +13,12 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
+  // Resolve an escaped underscore (`\_`) to the escape placeholder (¨E95E, charcode of
+  // `_`), consuming the backslash, so it is neither underlined nor left with a stray `\`.
+  // Needed because under cmSpec underline runs before backslash escapes are resolved; a
+  // no-op in the legacy path, where `\_` is already a placeholder before this runs.
+  text = text.replace(/\\_/g, '¨E95E');
+
   if (options.literalMidWordUnderscores) {
 
     const rgx1 = /\b___(\S[\s\S]*?)___\b/g;

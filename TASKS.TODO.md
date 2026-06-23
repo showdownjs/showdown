@@ -3,17 +3,17 @@
 
 ## Options
 
-- [ ] **ghCompatibleHeaderId** (removal)
+- [X] **ghCompatibleHeaderId** (removal)
 
     Will be removed and **will become the default behavior**.
     
-- [ ] **customizedHeaderId** (removal)
+- [X] **customizedHeaderId** (removal)
 
     This option introduced non compliant syntax so it really belongs in an extension.
     The new **listener extension system** allows users to directly modify and customize
     the HTML and add any attributes they wish. 
 
-- [ ] **rawPrefixHeaderId** (removal)
+- [X] **rawPrefixHeaderId** (removal)
 
     This option will be superseeded by the option `rawHeaderId`. So basically activating `rawHeaderId` will make
     showdown only to replace spaces, ', ", > and < with dashes (-) from generated header ids, including prefixes.
@@ -26,7 +26,7 @@
 
     This option will be removed and will be the default behavior from now on.
 
-- [ ] **strikethrough** (change)
+- [X] **strikethrough** (change)
 
     Will be enabled by default
 
@@ -51,11 +51,11 @@
     
     Tough choices...
 
-- [ ] **simpleLineBreaks** (change)
+- [X] **simpleLineBreaks** (change)
 
     Will be removed from Github Flavor since github only does this in comments (which is weird...)
 
-- [ ] **openLinksInNewWindow** (removal)
+- [X] **openLinksInNewWindow** (removal)
 
     Will be removed in favor of the new listener extension, which will allow users to manipulate HTML tags attributes
     directly.

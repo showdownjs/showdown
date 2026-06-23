@@ -102,20 +102,20 @@ Showdown automatically generates bookmark anchors in titles by adding an id prop
 ```
 
 ```html
-<h1 id="mycoolheaderwithid">My cool header with ID</h1>
+<h1 id="my-cool-header-with-id">My cool header with ID</h1>
 ```
 
-This behavior can be modified with options:
+The generated ids are **github-compatible** by default (spaces become dashes and most non-alphanumeric chars are stripped). This behavior can be modified with options:
 
- - [**`noHeaderId`**][noHeaderId] disables automatic id generation; 
- - [**`ghCompatibleHeaderId`**][ghCompatibleHeaderId] generates header ids compatible with github style (spaces are replaced with dashes and a bunch of non alphanumeric chars are removed)
+ - [**`noHeaderId`**][noHeaderId] disables automatic id generation;
+ - [**`rawHeaderId`**][rawHeaderId] uses minimal sanitization instead (only spaces, `'`, `"`, `>` and `<` become dashes);
  - [**`prefixHeaderId`**][prefixHeaderId] adds a prefix to the generated header ids (either automatic or custom).
  - [**`headerLevelStart`**][headerLevelStart] sets the header starting level. For instance, setting this to 3 means that `# header` will be converted to `<h3>`.
 
 Read the [README.md][readme] for more info
 
 [noHeaderId]: available-options.md#noheaderid
-[ghCompatibleHeaderId]: available-options.md#ghcompatibleheaderid
+[rawHeaderId]: available-options.md#rawheaderid
 [prefixHeaderId]: available-options.md#prefixheaderid
 [headerLevelStart]: available-options.md#headerlevelstart
 

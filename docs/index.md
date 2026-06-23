@@ -16,7 +16,7 @@ Showdown can be used on the client-side (in the browser) or server-side (with No
 
 ## Live demo
 
-<http://demo.showdownjs.com/>
+<http://demo.showdownjs.eu/>
 
 ## Who uses Showdown (or a fork)
 
@@ -35,8 +35,8 @@ To install Showdown, follow the instructions from the [quickstart guide](quickst
 
 ## License
 
-ShowdownJS v 2.0 is release under the MIT version.
+ShowdownJS (from v2.0 onwards) is released under the MIT license.
 
-Previous versions are release under BSD.
+Previous versions are released under BSD.
 
 [sd-logo]: https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png

@@ -59,7 +59,16 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
       ._setOptions(options);
 
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    return beforeHashEvent.output;
+    otp = beforeHashEvent.output;
+
+    // Image-based emoji (e.g. :octocat:) render as an <img> tag. Hash it so later
+    // HTML-escaping passes don't turn its `<`/`>` into entities - under cmSpec the
+    // generic span hashing skips void tags (it is meant to escape malformed raw HTML),
+    // so the generated markup must protect itself here. Unicode emoji are returned as-is.
+    if (/^\s*</.test(otp)) {
+      otp = showdown.helper._hashHTMLSpan(otp, globals);
+    }
+    return otp;
   });
 
   let afterEvent = new showdown.Event('makehtml.emoji.onEnd', text);

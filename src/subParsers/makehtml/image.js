@@ -32,23 +32,29 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
   });
 
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
-  // base64 encoded images
-  text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = url.replace(/\s/g, '');
-    return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
-  });
+  if (options.cmSpec) {
+    // CommonMark inline-image parsing, symmetric to the link scanner: balanced-paren
+    // and `<...>` destinations, titles, backslash escapes, arbitrary label nesting.
+    text = parseCmInlineImages(text);
+  } else {
+    // base64 encoded images
+    text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+      url = url.replace(/\s/g, '');
+      return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
+    });
 
-  // cases with crazy urls like ./image/cat1).png
-  text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
-  });
+    // cases with crazy urls like ./image/cat1).png
+    text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+      return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
+    });
 
-  // normal cases
-  text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
-  });
+    // normal cases
+    text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+      return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
+    });
+  }
 
   // handle reference-style shortcuts: ![img text]
   text = text.replace(refShortcutRegExp, function (wholeMatch, altText) {
@@ -94,7 +100,11 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
         otp,
         attributes = {};
 
-    linkId = (linkId) ? linkId.toLowerCase() : null;
+    if (linkId) {
+      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
+    } else {
+      linkId = null;
+    }
 
     if (!title) {
       title = null;
@@ -106,7 +116,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     } else if (showdown.helper.isUndefined(url) || url === '' || url === null) {
       if (linkId === '' || linkId === null) {
         // lower-case and turn embedded newlines into spaces
-        linkId = altText.toLowerCase().replace(/ ?\n/g, ' ');
+        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(altText) : showdown.helper.caseFold(altText).replace(/ ?\n/g, ' ');
       }
       url = '#' + linkId;
 
@@ -124,26 +134,43 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       }
     }
 
+    if (options.cmSpec) {
+      // CommonMark: the alt text is the plain-text rendering of the label, with
+      // inline markup stripped (`![foo *bar*]` -> alt="foo bar").
+      altText = flattenAltText(altText);
+    }
     altText = altText
       .replace(/"/g, '&quot;')
       //altText = showdown.helper.escapeCharacters(altText, '*_', false);
       .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     //url = showdown.helper.escapeCharacters(url, '*_', false);
+    if (options.cmSpec) {
+      url = showdown.helper.cmNormalizeURL(url);
+    }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
 
     if (title && showdown.helper.isString(title)) {
-      title = title
-        .replace(/"/g, '&quot;')
-        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      if (options.cmSpec) {
+        title = showdown.helper.cmEscapeTitle(title);
+      } else {
+        title = title
+          .replace(/"/g, '&quot;');
+      }
+      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     }
 
-    if (width) {
+    // Image dimensions are a non-standard extension: only honor them when
+    // parseImgDimensions is enabled. The `=WxH` syntax is still consumed by the
+    // regex (so it never leaks into the output), but the width/height attributes
+    // are dropped when the option is off - matching the reference-definition path,
+    // which only stores dimensions in gDimensions when the option is on.
+    if (options.parseImgDimensions && width) {
       width  = (width === '*') ? 'auto' : width;
     } else {
       width = null;
     }
 
-    if (height) {
+    if (options.parseImgDimensions && height) {
       height = (height === '*') ? 'auto' : height;
     } else {
       height = null;
@@ -183,6 +210,105 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     otp = beforeHashEvent.output;
 
     return otp;
+  }
+
+  /**
+   * CommonMark inline-image scanner. Finds `![label](destination "title")` spans,
+   * matching the label by counting nested brackets and parsing the destination and
+   * title with the shared cursor-based helpers.
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmInlineImages (str) {
+    let inlineImgRegexp = /!\[[\s\S]*?]\([\s\S]*?\)/, // representative pattern (event metadata only)
+        n = str.length,
+        out = '',
+        last = 0,
+        i = 0;
+    while (i < n) {
+      if (str.charAt(i) !== '!' || str.charAt(i + 1) !== '[') { i++; continue; }
+      let depth = 1, k = i + 2, labelEnd = -1;
+      while (k < n) {
+        let c = str.charAt(k);
+        if (c === '\\' && k + 1 < n) { k += 2; continue; }
+        if (c === '[') { depth++; } else if (c === ']') {
+          depth--;
+          if (depth === 0) { labelEnd = k; break; }
+        }
+        k++;
+      }
+      if (labelEnd !== -1 && str.charAt(labelEnd + 1) === '(') {
+        let parsed = parseCmImgDestTitle(str, labelEnd + 2);
+        if (parsed) {
+          let label = str.slice(i + 2, labelEnd),
+              url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, parsed.url);
+          out += str.slice(last, i);
+          out += writeImageTag('inline', inlineImgRegexp, str.slice(i, parsed.end + 1), label, url, null, null, null, parsed.title);
+          i = parsed.end + 1;
+          last = i;
+          continue;
+        }
+      }
+      i++;
+    }
+    out += str.slice(last);
+    return out;
+  }
+
+  /**
+   * Parse an image destination and optional title starting just after the opening
+   * `(`. Returns `{url, title, end}` (end = index of the closing `)`) or `null`.
+   * @param {string} str
+   * @param {number} j
+   * @returns {{url: string, title: (string|null), end: number}|null}
+   */
+  function parseCmImgDestTitle (str, j) {
+    let n = str.length,
+        isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; };
+    while (j < n && isWs(str.charAt(j))) { j++; }
+    let dest = showdown.helper.cmScanDestination(str, j);
+    if (!dest) { return null; }
+    j = dest.end;
+    let hadWs = false;
+    while (j < n && isWs(str.charAt(j))) { hadWs = true; j++; }
+    let title = null,
+        tc = str.charAt(j);
+    if (j < n && (tc === '"' || tc === '\'' || tc === '(')) {
+      if (!hadWs) { return null; }
+      let t = showdown.helper.cmScanTitle(str, j);
+      if (!t) { return null; }
+      title = t.title;
+      j = t.end;
+    }
+    while (j < n && isWs(str.charAt(j))) { j++; }
+    if (j >= n || str.charAt(j) !== ')') { return null; }
+    return {url: dest.url, title: title, end: j};
+  }
+
+  /**
+   * Produce the plain-text rendering of an image label for the `alt` attribute,
+   * per CommonMark: inline markup is processed and then flattened to text. Nested
+   * images contribute their own alt text; links and emphasis contribute their
+   * text content.
+   * @param {string} t
+   * @returns {string}
+   */
+  function flattenAltText (t) {
+    t = showdown.subParser('makehtml.codeSpan')(t, options, globals);
+    t = showdown.subParser('makehtml.image')(t, options, globals);
+    t = showdown.subParser('makehtml.link')(t, options, globals);
+    t = showdown.subParser('makehtml.emoji')(t, options, globals);
+    t = showdown.subParser('makehtml.underline')(t, options, globals);
+    t = showdown.subParser('makehtml.emphasisAndStrong')(t, options, globals);
+    t = showdown.subParser('makehtml.strikethrough')(t, options, globals);
+    t = showdown.subParser('makehtml.ellipsis')(t, options, globals);
+    // restore hashed spans (e.g. produced by nested images/links) so we can read them
+    t = showdown.subParser('makehtml.unhashHTMLSpans')(t, options, globals);
+    // a nested image contributes its alt text; every other tag contributes its
+    // text content, so replace images by their alt then strip the remaining tags
+    t = t.replace(/<img\b[^>]*?\salt="([^"]*)"[^>]*?\/?>/g, '$1');
+    t = t.replace(/<[^>]*>/g, '');
+    return t;
   }
 
 });

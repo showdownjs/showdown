@@ -14,7 +14,7 @@ showdown.subParser('makeMarkdown.txt', function (node, options, globals) {
     result = startEvent.output;
   } else {
     result = (function () {
-      var txt = node.nodeValue;
+      let txt = node.nodeValue;
 
       // multiple spaces are collapsed
       txt = txt.replace(/ +/g, ' ');
@@ -47,7 +47,7 @@ showdown.subParser('makeMarkdown.txt', function (node, options, globals) {
       txt = txt.replace(/^( {0,3})([+-])/gm, '$1\\$2');
 
       // images and links, ] followed by ( is problematic, so we escape it
-      txt = txt.replace(/]([\s]*)\(/g, '\\]$1\\(');
+      txt = txt.replace(/](\s*)\(/g, '\\]$1\\(');
 
       // reference URIs must also be escaped
       txt = txt.replace(/^ {0,3}\[([\S \t]*?)]:/gm, '\\[$1]:');

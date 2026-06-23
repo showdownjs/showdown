@@ -18,7 +18,7 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
     result = startEvent.output;
   } else {
     result = (function () {
-      var txt = '';
+      let txt = '';
 
       // edge case of text without wrapper paragraph
       if (node.nodeType === 3) {
@@ -35,7 +35,33 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
         return '';
       }
 
-      var tagName = node.tagName.toLowerCase();
+      let tagName = node.tagName.toLowerCase();
+
+      // Renders an element as raw HTML while still converting its children to markdown.
+      // Used for unknown wrapper elements and for feature-gated constructs (strikethrough,
+      // underline, tables, ...) when their option is disabled, so the reverse direction stays
+      // symmetric with makeHtml: a construct makeHtml wouldn't parse isn't emitted as markdown
+      // here either. Embedded/replaced-content and void/empty elements are emitted verbatim.
+      function renderRawElement (n, tag) {
+        let rawContentTags = ['script', 'style', 'canvas', 'audio', 'video', 'iframe', 'object', 'svg', 'math', 'noscript', 'template', 'picture'];
+        let kids = n.childNodes;
+        if (kids && kids.length > 0 && rawContentTags.indexOf(tag) === -1) {
+          let inner = '';
+          for (let k = 0; k < kids.length; ++k) {
+            inner += showdown.subParser('makeMarkdown.node')(kids[k], options, globals, spansOnly);
+          }
+          // a block child terminates itself with a blank line; trim that trailing separator so
+          // the wrapper's closing tag stays compact instead of dangling on its own line
+          inner = inner.replace(/\n+$/, '');
+          // derive the opening tag from outerHTML so attribute serialization is preserved
+          // exactly (and is robust against ">" inside attribute values)
+          let outer    = n.outerHTML,
+              closeTag = '</' + tag + '>',
+              openTag  = outer.substring(0, outer.length - n.innerHTML.length - closeTag.length);
+          return openTag + inner + closeTag;
+        }
+        return n.outerHTML;
+      }
 
       switch (tagName) {
 
@@ -90,7 +116,13 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
           break;
 
         case 'table':
-          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.table')(node, options, globals) + '\n\n'; }
+          if (!spansOnly) {
+            // when tables are disabled, emit the table verbatim: recursing into its block-level
+            // cells would inject blank lines that break the raw HTML block on re-parse
+            txt = (options.tables ?
+              showdown.subParser('makeMarkdown.table')(node, options, globals) :
+              node.outerHTML) + '\n\n';
+          }
           break;
 
         //
@@ -113,11 +145,15 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
         case 'del':
         case 's':
         case 'strike':
-          txt = showdown.subParser('makeMarkdown.strikethrough')(node, options, globals);
+          txt = options.strikethrough ?
+            showdown.subParser('makeMarkdown.strikethrough')(node, options, globals) :
+            renderRawElement(node, tagName);
           break;
 
         case 'u':
-          txt = showdown.subParser('makeMarkdown.underline')(node, options, globals);
+          txt = options.underline ?
+            showdown.subParser('makeMarkdown.underline')(node, options, globals) :
+            renderRawElement(node, tagName);
           break;
 
         case 'a':
@@ -137,32 +173,9 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
           break;
 
         default:
-          // unknown tag.
-          // If it has children, we keep the wrapper tag (as raw HTML) but recurse into its
-          // children, so any markdown-convertible content inside it is still converted.
-          // Void/empty unknown elements - and elements whose contents are not flowing markdown
-          // (embedded/replaced content such as <audio>, <canvas>, <script>, ...) - are passed
-          // through verbatim.
-          var rawContentTags = ['script', 'style', 'canvas', 'audio', 'video', 'iframe', 'object', 'svg', 'math', 'noscript', 'template', 'picture'];
-          var unknownChildren = node.childNodes;
-          if (unknownChildren && unknownChildren.length > 0 && rawContentTags.indexOf(tagName) === -1) {
-            var innerTxt = '';
-            for (var u = 0; u < unknownChildren.length; ++u) {
-              innerTxt += showdown.subParser('makeMarkdown.node')(unknownChildren[u], options, globals, spansOnly);
-            }
-            // a block child terminates itself with a blank line; trim that trailing separator so
-            // the wrapper's closing tag stays compact instead of dangling on its own line
-            innerTxt = innerTxt.replace(/\n+$/, '');
-            // derive the opening tag from outerHTML so attribute serialization is preserved
-            // exactly (and is robust against ">" inside attribute values)
-            var outer    = node.outerHTML,
-                closeTag = '</' + tagName + '>',
-                openTag  = outer.substring(0, outer.length - node.innerHTML.length - closeTag.length);
-            txt = openTag + innerTxt + closeTag;
-            if (!spansOnly) { txt += '\n\n'; }
-          } else {
-            txt = node.outerHTML + '\n\n';
-          }
+          // unknown tag: keep the wrapper as raw HTML but still convert its children
+          txt = renderRawElement(node, tagName);
+          if (!spansOnly) { txt += '\n\n'; }
       }
 
       // common normalization

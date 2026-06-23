@@ -4,10 +4,9 @@
 
 // jshint ignore: start
 let bootstrap = require('./makehtml.bootstrap.js'),
-    converter = new bootstrap.showdown.Converter({
-      noHeaderId: true,
-      requireSpaceBeforeHeadingText: true
-    }),
+    // Run the CommonMark suite in CommonMark mode: derive options from the `commonmark`
+    // flavor so that flavor-gated CommonMark behaviors (e.g. decodeEntities) are exercised.
+    converter = new bootstrap.showdown.Converter(bootstrap.showdown.getFlavorOptions('commonmark')),
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getJsonTestSuite('test/functional/makehtml/cases/commonmark.testsuite.json');
 const {tests} = require('commonmark-spec');
@@ -36,6 +35,14 @@ describe('makeHtml() commonmark testsuite', function () {
 
             case 'Fenced code blocks_144': // we use different classes to mark languages in fenced code blocks
               testsuite[section][i].expected = testsuite[section][i].expected.replace('language-;', '; language-;');
+              break;
+
+            case 'Entity and numeric character references_34': // we use different classes to mark languages in fenced code blocks
+              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-föö', 'föö language-föö');
+              break;
+
+            case 'Backslash escapes_24': // we use different classes to mark languages in fenced code blocks
+              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-foo+bar', 'foo+bar language-foo+bar');
               break;
 
 

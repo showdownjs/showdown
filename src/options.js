@@ -1,3 +1,5 @@
+// noinspection HtmlRequiredLangAttribute
+
 /**
  * Created by Tivie on 13-07-2015.
  */
@@ -21,19 +23,9 @@ function getDefaultOpts (simple) {
       describe: 'Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to true will add a generic \'section-\' prefix',
       type: 'string'
     },
-    rawPrefixHeaderId: {
-      defaultValue: false,
-      describe: 'Setting this option to true will prevent showdown from modifying the prefix. This might result in malformed IDs (if, for instance, the " char is used in the prefix)',
-      type: 'boolean'
-    },
-    ghCompatibleHeaderId: {
-      defaultValue: false,
-      describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, a bunch of non alphanumeric chars are removed)',
-      type: 'boolean'
-    },
     rawHeaderId: {
       defaultValue: false,
-      describe: 'Remove only spaces, \' and " from generated header ids (including prefixes), replacing them with dashes (-). WARNING: This might result in malformed ids',
+      describe: 'Remove only spaces, \', ", > and < from generated header ids (including any prefix), replacing them with dashes (-), instead of the default github-compatible sanitization. WARNING: This might result in malformed ids',
       type: 'boolean'
     },
     headerLevelStart: {
@@ -61,13 +53,8 @@ function getDefaultOpts (simple) {
       describe: 'Parse midword underscores as literal underscores',
       type: 'boolean'
     },
-    literalMidWordAsterisks: {
-      defaultValue: false,
-      describe: 'Parse midword asterisks as literal asterisks',
-      type: 'boolean'
-    },
     strikethrough: {
-      defaultValue: false,
+      defaultValue: true,
       describe: 'Turn on/off strikethrough support',
       type: 'boolean'
     },
@@ -89,11 +76,6 @@ function getDefaultOpts (simple) {
     tasklists: {
       defaultValue: false,
       describe: 'Turn on/off GFM tasklist support',
-      type: 'boolean'
-    },
-    smoothLivePreview: {
-      defaultValue: false,
-      describe: 'Prevents weird effects in live previews due to incomplete input',
       type: 'boolean'
     },
     smartIndentationFix: {
@@ -129,11 +111,6 @@ function getDefaultOpts (simple) {
     encodeEmails: {
       defaultValue: true,
       describe: 'Encode e-mail addresses through the use of Character Entities, transforming ASCII e-mail addresses into its equivalent decimal entities',
-      type: 'boolean'
-    },
-    openLinksInNewWindow: {
-      defaultValue: false,
-      describe: 'Open all links in new windows',
       type: 'boolean'
     },
     backslashEscapesHTMLTags: {
@@ -181,6 +158,16 @@ function getDefaultOpts (simple) {
       describe: 'Prepends a base URL to relative paths',
       type: 'string'
     },
+    decodeEntities: {
+      defaultValue: false,
+      describe: 'Resolve HTML5 named and numeric character references to their characters (CommonMark behavior)',
+      type: 'boolean'
+    },
+    cmSpec: {
+      defaultValue: false,
+      describe: 'Enable CommonMark spec compliance: parse blocks (lists, block quotes, HTML blocks, containers, tabs) and inlines (emphasis, links, images, autolinks, raw HTML) per the CommonMark spec instead of Showdown\'s legacy matching',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));
@@ -189,18 +176,6 @@ function getDefaultOpts (simple) {
   for (let opt in defaultOptions) {
     if (defaultOptions.hasOwnProperty(opt)) {
       ret[opt] = defaultOptions[opt].defaultValue;
-    }
-  }
-  return ret;
-}
-
-function allOptionsOn () {
-  'use strict';
-  let options = getDefaultOpts(true),
-      ret = {};
-  for (let opt in options) {
-    if (options.hasOwnProperty(opt)) {
-      ret[opt] = true;
     }
   }
   return ret;

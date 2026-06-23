@@ -21,8 +21,6 @@ var globals = {
       gDimensions:     {},
       gListLevel:      0,
       hashLinkCounts:  {},
-      langExtensions:  [],
-      outputModifiers: [],
       converter:       converter,
       ghCodeBlocks:    []
     },

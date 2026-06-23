@@ -36,9 +36,24 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip
   }
 
   text = showdown.subParser('makehtml.list')(text, options, globals);
+  // In CommonMark container mode the converter-level githubCodeBlock pass only claims
+  // indent-0 fences; list items own their indented fences (renderItem already ran
+  // githubCodeBlock on the de-indented content). This pass picks up genuinely top-level
+  // indented (1-3) fences here, after the list parser has claimed item content and before
+  // codeBlock could mistake their content lines for indented code.
+  if (options.cmSpec) {
+    text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
+  }
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
   text = showdown.subParser('makehtml.table')(text, options, globals);
   text = showdown.subParser('makehtml.blockquote')(text, options, globals);
+  // The block quote container can reveal top-level content that the earlier codeBlock pass
+  // never saw (e.g. an indented-code line that followed a `>` line and so was not yet at the
+  // start of a block). Re-run codeBlock in container mode so that revealed indented code is
+  // recognized instead of falling through to a paragraph.
+  if (options.cmSpec) {
+    text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
+  }
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,

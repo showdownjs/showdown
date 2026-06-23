@@ -1,4 +1,4 @@
-// noinspection HtmlDeprecatedAttribute
+// noinspection HtmlDeprecatedAttribute,CheckImageSize
 
 /**
  * showdownjs helper functions
@@ -653,6 +653,205 @@ showdown.helper.urlASCIIEncoding = function (url) {
 };
 
 /**
+ * Resolve HTML5 named (`&ouml;`), decimal (`&#246;`) and hexadecimal (`&#xf6;`)
+ * character references to their corresponding characters (CommonMark behavior).
+ * Unlike makehtml.decodeEntities, this returns the raw decoded characters (no
+ * HTML re-escaping) so the result can be percent-encoded for a URL or further
+ * processed. Invalid references are left verbatim.
+ * @param {string} str
+ * @returns {string}
+ */
+showdown.helper.cmDecodeEntities = function (str) {
+  let entities = showdown.helper.htmlEntities || {};
+  function fromCodePoint (cp) {
+    if (cp === 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) {
+      return '�';
+    }
+    try {
+      return String.fromCodePoint(cp);
+    } catch (e) {
+      return '�';
+    }
+  }
+  return str.replace(/&([#0-9a-zA-Z]+);/g, function (wholeMatch, body) {
+    let m;
+    if ((m = /^#([0-9]{1,7})$/.exec(body))) {
+      return fromCodePoint(parseInt(m[1], 10));
+    }
+    if ((m = /^#[xX]([0-9a-fA-F]{1,6})$/.exec(body))) {
+      return fromCodePoint(parseInt(m[1], 16));
+    }
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && entities.hasOwnProperty(body)) {
+      return entities[body];
+    }
+    return wholeMatch;
+  });
+};
+
+/**
+ * CommonMark URL percent-encoding: percent-encode every character outside the
+ * "safe" set, while preserving sequences that are already percent-encoded.
+ * Mirrors mdurl.encode's default behavior.
+ * @param {string} uri
+ * @returns {string}
+ */
+showdown.helper.cmEncodeURI = function (uri) {
+  const safe = ';/?:@&=+$,-_.!~*\'()#';
+  let out = '';
+  for (let i = 0; i < uri.length; ++i) {
+    let ch = uri.charAt(i),
+        code = uri.charCodeAt(i);
+    if (ch === '%' && /^[0-9a-fA-F]{2}$/.test(uri.slice(i + 1, i + 3))) {
+      out += uri.slice(i, i + 3);
+      i += 2;
+    } else if ((code >= 48 && code <= 57) || (code >= 65 && code <= 90) ||
+               (code >= 97 && code <= 122) || safe.indexOf(ch) !== -1) {
+      out += ch;
+    } else {
+      out += encodeURIComponent(ch);
+    }
+  }
+  return out;
+};
+
+/**
+ * Full CommonMark URL normalization for a link/image destination:
+ * 1. restore showdown's `¨E<code>E` backslash-escape placeholders to their literal
+ *    characters (so escaped punctuation is treated literally, not re-processed);
+ * 2. resolve raw backslash escapes of ASCII punctuation (`\*` -> `*`); a backslash
+ *    before a non-punctuation character stays literal (and is later percent-encoded);
+ * 3. resolve HTML character references (`&ouml;` -> `ö`);
+ * 4. percent-encode the result;
+ * 5. HTML-escape any residual bare `&` so the href stays valid HTML.
+ * @param {string} url
+ * @returns {string}
+ */
+showdown.helper.cmNormalizeURL = function (url) {
+  url = url.replace(/¨E(\d+)E/g, function (wholeMatch, code) {
+    return String.fromCharCode(parseInt(code, 10));
+  });
+  url = url.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
+  url = showdown.helper.cmDecodeEntities(url);
+  url = showdown.helper.cmEncodeURI(url);
+  return url.replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;');
+};
+
+/**
+ * CommonMark link/image title processing: resolve character references, then
+ * HTML-escape the significant characters so the title attribute is valid HTML.
+ * @param {string} title
+ * @returns {string}
+ */
+showdown.helper.cmEscapeTitle = function (title) {
+  return showdown.helper.cmDecodeEntities(title)
+    .replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+};
+
+/**
+ * Normalize a CommonMark link label for reference matching: resolve backslash
+ * escapes (both raw `\x` and showdown's `¨E<code>E` placeholders), collapse
+ * internal whitespace runs to a single space, trim and case-fold. The same
+ * normalization must be applied to both the definition label and the use label
+ * so that they compare equal.
+ * @param {string} label
+ * @returns {string}
+ */
+showdown.helper.cmNormalizeLabel = function (label) {
+  // CommonMark matches labels by case-fold + whitespace collapse only; backslash
+  // escapes are NOT resolved (so `[foo\!]` does not match a `[foo!]` definition).
+  return showdown.helper.caseFold(label
+    .replace(/¨E(\d+)E/g, function (wholeMatch, code) {
+      return String.fromCharCode(parseInt(code, 10));
+    })
+    .replace(/\s+/g, ' ')
+    .trim());
+};
+
+/**
+ * Unicode case folding for case-insensitive matching of link reference labels.
+ * Uses `toLowerCase().toUpperCase()` (the round-trip used by commonmark.js) so that
+ * characters like `ß`, `ẞ` and `SS` all fold together - which plain `toLowerCase`
+ * does not (`ẞ` -> `ß`, not `ss`).
+ * @param {string} str
+ * @returns {string}
+ */
+showdown.helper.caseFold = function (str) {
+  return str.toLowerCase().toUpperCase();
+};
+
+/**
+ * Scan a CommonMark link destination starting at index `j`. Handles both
+ * `<...>` destinations (no raw newline or unescaped `<`) and bare destinations
+ * with balanced parentheses. Returns `{url, end, angle}` (url may be empty for
+ * `<>`) or `null` when the destination is malformed.
+ * @param {string} str
+ * @param {number} j
+ * @returns {{url: string, end: number, angle: boolean}|null}
+ */
+showdown.helper.cmScanDestination = function (str, j) {
+  let n = str.length;
+  if (str.charAt(j) === '<') {
+    j++;
+    let buf = '';
+    while (j < n && str.charAt(j) !== '>') {
+      let c = str.charAt(j);
+      if (c === '\n' || c === '<') { return null; }
+      if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+      buf += c; j++;
+    }
+    if (j >= n || str.charAt(j) !== '>') { return null; }
+    return {url: buf, end: j + 1, angle: true};
+  }
+  let depth = 0, buf = '';
+  while (j < n) {
+    let c = str.charAt(j),
+        code = str.charCodeAt(j);
+    if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+    if (c === ' ' || c === '\t' || c === '\n') { break; }
+    if (code < 0x20 || code === 0x7f) { break; }
+    if (c === '(') { depth++; buf += c; j++; continue; }
+    if (c === ')') {
+      if (depth === 0) { break; }
+      depth--; buf += c; j++; continue;
+    }
+    buf += c; j++;
+  }
+  if (depth !== 0) { return null; }
+  return {url: buf, end: j, angle: false};
+};
+
+/**
+ * Scan a CommonMark link title starting at index `j` (which must point at the
+ * opening delimiter `"`, `'` or `(`). The title may span multiple lines but not
+ * contain a blank line. Returns `{title, end}` or `null` if malformed.
+ * @param {string} str
+ * @param {number} j
+ * @returns {{title: string, end: number}|null}
+ */
+showdown.helper.cmScanTitle = function (str, j) {
+  let n = str.length,
+      open = str.charAt(j),
+      close = (open === '(') ? ')' : open;
+  if (open !== '"' && open !== '\'' && open !== '(') { return null; }
+  j++;
+  let buf = '';
+  while (j < n) {
+    let c = str.charAt(j);
+    if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+    if (open === '(' && c === '(') { return null; }
+    if (c === close) {
+      if (/\n[ \t]*\n/.test(buf)) { return null; }
+      return {title: buf, end: j + 1};
+    }
+    buf += c; j++;
+  }
+  return null;
+};
+
+/**
  * Clones an object . If the second parameter is true, it deep clones the object.
  * Note: It should not be used in other contexts than showdown, since this algorithm might fail for
  * cyclic references, and dataypes such as Dates, RegExps, Typed Arrays, etc...
@@ -754,6 +953,48 @@ showdown.helper.normalizeLeadingTabs = function (text) {
 };
 
 /**
+ * CommonMark tab expansion: tabs are expanded to spaces using 4-column tab stops,
+ * but only in the part of a line that defines block structure - the leading
+ * whitespace plus an optional single list/block-quote marker and the whitespace
+ * after it. Tabs in content (after that prefix) are preserved. Lines without a tab
+ * in their prefix are returned unchanged.
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.expandCmTabs = function (text) {
+  if (text.indexOf('\t') === -1) {
+    return text;
+  }
+  const prefixRgx = /^[ \t]*(?:(?:[-+*]|\d{1,9}[.)]|>)[ \t]*)?/;
+  const thematicBreakRgx = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/;
+  return text.split('\n').map(function (line) {
+    // a thematic break (e.g. `*\t*\t*`) is not a list item: do not let the marker
+    // branch of the prefix expansion mangle it
+    if (thematicBreakRgx.test(line)) {
+      return line;
+    }
+    let prefix = prefixRgx.exec(line)[0];
+    if (prefix.indexOf('\t') === -1) {
+      return line;
+    }
+    let out = '',
+        col = 0;
+    for (let k = 0; k < prefix.length; ++k) {
+      let ch = prefix.charAt(k);
+      if (ch === '\t') {
+        let adv = 4 - (col % 4);
+        out += new Array(adv + 1).join(' ');
+        col += adv;
+      } else {
+        out += ch;
+        col++;
+      }
+    }
+    return out + line.slice(prefix.length);
+  }).join('\n');
+};
+
+/**
  * Remove one level of line-leading tabs or spaces
  * @param {string} text
  * @returns {string}
@@ -809,6 +1050,7 @@ showdown.helper.validateOptions = function (options) {
  */
 // use this instead of builtin is undefined for IE8 compatibility
 if (typeof (console) === 'undefined') {
+  // noinspection JSValidateTypes
   console = {
     warn: function (msg) {
       'use strict';
@@ -849,9 +1091,31 @@ if (!Math.imul) {
  * Common regexes.
  * We declare some common regexes to improve performance
  */
+// CommonMark inline raw-HTML grammar (mirrors commonmark.js' HTMLTAG): an open tag,
+// close tag, HTML comment, processing instruction, declaration or CDATA section.
+let cmAttributeName = '[a-zA-Z_:][a-zA-Z0-9:._-]*',
+    cmAttributeValue = '(?:[^"\'=<>`\\x00-\\x20]+|\'[^\']*\'|"[^"]*")',
+    cmAttribute = '(?:\\s+' + cmAttributeName + '(?:\\s*=\\s*' + cmAttributeValue + ')?)',
+    cmOpenTag = '<[A-Za-z][A-Za-z0-9\\-]*' + cmAttribute + '*\\s*/?>',
+    cmCloseTag = '</[A-Za-z][A-Za-z0-9\\-]*\\s*>',
+    cmHTMLComment = '<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->',
+    cmProcessingInstruction = '<[?][\\s\\S]*?[?]>',
+    cmDeclaration = '<![A-Za-z]+[^>]*>',
+    cmCDATA = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>';
+
 showdown.helper.regexes = {
   asteriskDashTildeAndColon: /([*_:~])/g,
-  asteriskDashAndTilde:      /([*_~])/g
+  asteriskDashAndTilde:      /([*_~])/g,
+  // Source string (not a RegExp) for the CommonMark inline raw-HTML grammar.
+  // hashHTMLSpans builds a *fresh* global RegExp from this per call, because that
+  // subparser runs re-entrantly and a shared stateful /g regex would corrupt its
+  // lastIndex between nested invocations.
+  cmHTMLTagSource:           '(?:' + cmOpenTag + '|' + cmCloseTag + '|' + cmHTMLComment +
+                               '|' + cmProcessingInstruction + '|' + cmDeclaration + '|' + cmCDATA + ')',
+  // Open and close tag sources on their own, used for the CommonMark "type 7" HTML
+  // block start condition (a complete tag that fills the line).
+  cmOpenTagSource:           cmOpenTag,
+  cmCloseTagSource:          cmCloseTag
 };
 
 /**

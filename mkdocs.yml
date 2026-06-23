@@ -3,8 +3,8 @@ site_description: Showdown is a JavaScript Markdown to HTML converter
 
 theme:
   name: material
-  logo: http://showdownjs.com/apple-touch-icon.png
-  favicon: http://showdownjs.com/apple-touch-icon.png
+  logo: http://showdownjs.eu/apple-touch-icon.png
+  favicon: http://showdownjs.eu/apple-touch-icon.png
   icon:
     repo: fontawesome/brands/github
   features:
@@ -37,11 +37,14 @@ nav:
     - Quickstart: quickstart.md
     - Showdown's Markdown syntax: markdown-syntax.md
     - HTML to Markdown: html-to-markdown.md
+    - XSS vulnerability: xss.md
     - Compatibility: compatibility.md
   - Configuration:
     - Showdown options: configuration.md
     - Available options: available-options.md
     - Flavors: flavors.md
+    - Spec compliance: spec-compliance.md
+    - API reference: api-reference.md
   - CLI: cli.md
   - Integrations: integrations.md
   - Event system: event-system.md

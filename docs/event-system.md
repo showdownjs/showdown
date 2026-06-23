@@ -97,7 +97,7 @@ Might not be run if no regex match found.
 | `input`      | `string` | `readonly`   | The captured text                                                 |
 | `output`     | `string` | `write`      | `null` or well-formed HTML (see the Important Note below)         |
 | `regexp`     | `RegExp` | `readonly`   | Regular Expression to capture groups                              |
-| `matches`    | `object` | `read/write` | Match groups. Changes to this object are reflected in the output.  |
+| `matches`    | `object` | `read/write` | Match groups. Changes to this object are reflected in the output. |
 | `attributes` | `object` | `read/write` | Attributes to add to the HTML output                              |
 
 !!! warning "IMPORTANT NOTE"
@@ -137,6 +137,34 @@ Might not be run if no regex match found.
 
 !!! danger "Infinite loop"
     Do not pass the input as output to the `onCapture` event, or you might trigger an infinite loop.
+
+!!! example "Open external links in a new tab"
+    The link sub-parsers expose the anchor's `attributes` on their `onCapture` event, so a
+    listener can add `target`/`rel` to the generated `<a>`. This replaces the removed
+    `openLinksInNewWindow` option — and, unlike the old option, you control exactly which links
+    are affected.
+
+    The link sub-parsers emit one event per link type (`inline`, `reference`, `angleBrackets`,
+    `autoLink`), so register a listener for each type you want to cover:
+
+    ```js
+    const converter = new showdown.Converter();
+
+    ['inline', 'reference', 'angleBrackets', 'autoLink'].forEach(function (type) {
+      converter.listen('makehtml.link.' + type + '.onCapture', function (evt) {
+        // leave in-page hash links (#section) opening in the same tab
+        if (!/^#/.test(evt.attributes.href)) {
+          evt.attributes.target = '_blank';
+          evt.attributes.rel = 'noopener noreferrer';
+        }
+        return evt;
+      });
+    });
+
+    converter.makeHtml('[showdown](https://github.com/showdownjs/showdown)');
+    // <p><a href="https://github.com/showdownjs/showdown" target="_blank"
+    //       rel="noopener noreferrer">showdown</a></p>
+    ```
 
 ### onHash
 
@@ -181,6 +209,33 @@ Emitted when the sub-parser has finished its work and is about to exit.
 | `output`  | `string` | `write` | The text that will be passed to other subparsers            |
 | `regexp`  | `null`   |         |                                                             |
 | `matches` | `null`   |         |                                                             |
+
+## makeHtml document-level events
+
+Besides the per-sub-parser events above, `makeHtml()` emits three **document-level** events that wrap the whole conversion. They are the place to transform the entire document before or after parsing, and are what `lang`/`output` extensions are built on:
+
+* **`makehtml.onStart`** — emitted once with the **raw** Markdown, *before* any escaping or line-ending normalization. Listeners here see the literal source (real `$`, `¨`, `\r\n`, …) and can rewrite it wholesale.
+* **`makehtml.onPreParse`** — emitted once *after* escaping/normalization and immediately *before* the sub-parsers run. This is where [`lang` extensions](create-extension.md#type) run (as listeners). The input at this stage contains Showdown's internal placeholders — e.g. an escaped `$` appears as `¨D` and an escaped `¨` as `¨T` — so prefer `onStart` if you need the untouched source.
+* **`makehtml.onEnd`** — emitted once with the **final HTML**, after every sub-parser and the optional complete-document wrapping. This is where [`output` extensions](create-extension.md#type) run (as listeners); use it to post-process the generated HTML.
+
+### Properties
+
+| property     | type     | access  | description                                                                                  |
+|--------------|----------|---------|----------------------------------------------------------------------------------------------|
+| `input`      | `string` | `read`  | `onStart`: raw Markdown. `onPreParse`: escaped/normalized Markdown. `onEnd`: the final HTML.  |
+| `output`     | `string` | `write` | The text that will be passed along (return a string from the listener, or set this and return the event). |
+| `regexp`     | `null`   |         |                                                                                              |
+| `matches`    | `null`   |         |                                                                                              |
+| `attributes` | `null`   |         |                                                                                              |
+
+!!! example ""
+
+    ```js
+    // Add a class to every paragraph in the final HTML
+    converter.listen('makehtml.onEnd', function (evt) {
+      return evt.input.replace(/<p>/g, '<p class="md">');
+    });
+    ```
 
 ## makeMarkdown (HTML to Markdown) events
 

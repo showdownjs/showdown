@@ -15,7 +15,7 @@ Showdown can be used client side (in the browser) or server side (with Node.js).
 
 ## Live DEMO
 
-
+<http://demo.showdownjs.eu/>
 
 As you know, ShowdownJS is a free library and it will remain free forever. However, maintaining and improving the library costs time and money.
 
@@ -23,7 +23,7 @@ If you like our work and find our library useful, please donate through [PayPal]
 
 ## License
 
-ShowdownJS v 2.0 is released under the MIT license.
+ShowdownJS (from v2.0 onwards) is released under the MIT license.
 Previous versions are released under BSD.
 
 ## Who uses Showdown (or a fork)
@@ -131,7 +131,7 @@ var converter = new showdown.Converter(),
 Both examples should output...
 
 ```html
-    <h1 id="hellomarkdown">hello, markdown!</h1>
+    <h1 id="hello-markdown">hello, markdown!</h1>
 ```
 
 ## Options
@@ -211,26 +211,17 @@ var defaultOptions = showdown.getDefaultOptions();
     ```
 
  * **noHeaderId**: (boolean) [default false] Disable the automatic generation of header ids.
-   Setting to true overrides **prefixHeaderId**
-
- * **customizedHeaderId**: (boolean) [default false] Use text in curly braces as header id. **(since v1.7.0)**
-   Example:
-   ```
-   ## Sample header {real-id}     will use real-id as id
-   ```
-
- * **ghCompatibleHeaderId**: (boolean) [default false] Generate header ids compatible with github style
-   (spaces are replaced with dashes and a bunch of non alphanumeric chars are removed) **(since v1.5.5)**
+   Setting to true overrides **prefixHeaderId** and **rawHeaderId**
 
  * **prefixHeaderId**: (string/boolean) [default false] Add a prefix to the generated header ids.
    Passing a string will prefix that string to the header id. Setting to `true` will add a generic 'section' prefix.
 
- * **rawPrefixHeaderId**: (boolean) [default false] Setting this option to true will prevent showdown from modifying the prefix.
-   This might result in malformed IDs (if, for instance, the " char is used in the prefix).
-   Has no effect if prefixHeaderId is set to false. **(since v 1.7.3)**
+ * **rawHeaderId**: (boolean) [default false] Use minimal sanitization for generated header ids instead of the
+   default github-compatible style: replace only spaces, `'`, `"`, `>` and `<` with dashes (-), including in any prefix.
+   WARNING: This might result in malformed ids **(since v1.7.3)**
 
- * **rawHeaderId**: (boolean) [default false] Remove only spaces, ' and " from generated header ids (including prefixes),
-    replacing them with dashes (-). WARNING: This might result in malformed ids **(since v1.7.3)**
+ > **NOTE**: Header ids are **github-compatible by default** (spaces become dashes and most non-alphanumeric chars are
+ > stripped). Use **rawHeaderId** for minimal sanitization, or **noHeaderId** to disable ids entirely.
  
  * **headerLevelStart**: (integer) [default 1] Set the header starting level. For instance, setting this to 3 means that
 
@@ -261,10 +252,10 @@ var defaultOptions = showdown.getDefaultOptions();
    ```html
    <p>some text <a href="www.google.com">www.google.com</a>
    ```
- 
- * ~~**excludeTrailingPunctuationFromURLs**: (boolean) [default false] This option excludes trailing punctuation from autolinking urls.
-   Punctuation excluded: `. !  ? ( )`. Only applies if **simplifiedAutoLink** option is set to `true`.~~
-   
+
+ * **httpsAutoLinks**: (boolean) [default false] Use `https://` instead of `http://` for the protocol added to
+   autolinked `www.` urls. Only applies if **simplifiedAutoLink** option is set to `true`. **(since v3.0.0)**
+
  * **literalMidWordUnderscores**: (boolean) [default false] Turning this on will stop showdown from interpreting
    underscores in the middle of words as `<em>` and `<strong>` and instead treat them as literal underscores.
 
@@ -278,10 +269,7 @@ var defaultOptions = showdown.getDefaultOptions();
    <p>some text with__underscores__in middle</p>
    ```
 
- * ~~**literalMidWordAsterisks**: (boolean) [default false] Turning this on will stop showdown from interpreting asterisks
-   in the middle of words as `<em>` and `<strong>` and instead treat them as literal asterisks.~~
-   
- * **strikethrough**: (boolean) [default false] Enable support for strikethrough syntax.
+ * **strikethrough**: (boolean) [default true] Enable support for strikethrough syntax.
    `~~strikethrough~~` as `<del>strikethrough</del>`
    
  * **tables**: (boolean) [default false] Enable support for tables syntax. Example:
@@ -305,8 +293,6 @@ var defaultOptions = showdown.getDefaultOptions();
     - [x] This task is done
     - [ ] This is still pending
    ```
- * **smoothLivePreview**: (boolean) [default false] Prevents weird effects in live previews due to incomplete input
- 
  * **smartIndentationFix**: (boolean) [default false] Tries to smartly fix indentation problems related to es6 template
    strings in the midst of indented code.
 
@@ -341,8 +327,6 @@ var defaultOptions = showdown.getDefaultOptions();
 
    NOTE: Prior to version 1.6.1, emails would always be obfuscated through dec and hex encoding.
 
- * **openLinksInNewWindow**: (boolean) [default false] Open all links in new windows
-   (by adding the attribute `target="_blank"` to `<a>` tags) **(since v1.7.0)**
 
  * **backslashEscapesHTMLTags**: (boolean) [default false] Support for HTML Tag escaping. ex: `\<div>foo\</div>` **(since v1.7.2)**
 
@@ -368,11 +352,23 @@ var defaultOptions = showdown.getDefaultOptions();
 
  * **splitAdjacentBlockquotes**: (boolean) [default false] Split adjacent blockquote blocks.(since v.1.8.6)
 
- * **moreStyling**: (boolean) [default false] Adds some useful classes for css styling. (since v2.0.1)
+ * **moreStyling**: (boolean) [default false] Adds some useful classes for css styling. (since v3.0.0)
     
     - Tasklists: Adds the class `task-list-item-complete` to completed tasks items in GFM tasklists.
 
-**NOTE**: Please note that until **version 1.6.0**, all of these options are ***DISABLED*** by default in the cli tool.
+ * **relativePathBaseUrl**: (string) [default ''] Prepends a base URL to relative paths (in links and images).
+   Absolute paths (starting with a protocol, `//`, or `#`) are left untouched. (since v3.0.0)
+
+#### CommonMark options **(since v3.0.0)**
+
+These options make Showdown follow the [CommonMark spec](https://spec.commonmark.org/). They are
+`boolean` and default to `false`, and are best enabled via the [`commonmark` flavor](#flavors). See the
+[Spec compliance docs](docs/spec-compliance.md) for details.
+
+ * **cmSpec**: Enable CommonMark spec compliance — parse both block-level constructs (lists, block quotes, HTML blocks, container nesting, tab expansion) and inline constructs (emphasis, links, images, autolinks, raw HTML) per the CommonMark spec instead of Showdown's legacy matching. Most other options still apply on top (GFM extras like `ghMentions`, `simplifiedAutoLink`, `emoji`, `underline`, `tables`, `tasklists`, `parseImgDimensions`, …); a few that tweak the replaced parsers are ignored (`literalMidWordUnderscores`, `splitAdjacentBlockquotes`, …). See the [spec-compliance docs](docs/spec-compliance.md) for the full list.
+ * **decodeEntities**: Resolve HTML5 named and numeric character references (`&copy;`, `&#35;`, `&#xcab;`) to their characters. Kept separate from `cmSpec` because it is also useful on its own.
+
+**NOTE**: In the CLI tool, **all** options are ***disabled*** by default — including those (like `ghCodeBlocks`) that are enabled by default in the Node and browser builds.
 
 
 ## Flavors
@@ -384,6 +380,7 @@ Currently, the following flavors are available:
  * original - original markdown flavor as in [John Gruber's spec](https://daringfireball.net/projects/markdown/)
  * vanilla  - showdown base flavor (as from v1.3.1)
  * github   - GFM (GitHub Flavored Markdown)
+ * commonmark - [CommonMark](https://spec.commonmark.org/) CommonMark flavor (as from v3.0.0)
 
 
 ### Global
@@ -451,7 +448,7 @@ var showdown    = require('showdown'),
 ## Building
 
 Building your clone of the repository is easy.
-> Prerequesites: [Node.js](https://nodejs.org/) v12, [npm](https://www.npmjs.com/package/npm) and [npx](https://www.npmjs.com/package/npx) must be installed.
+> Prerequesites: a [currently supported](https://nodejs.org/en/about/previous-releases) [Node.js](https://nodejs.org/), [npm](https://www.npmjs.com/package/npm) and [npx](https://www.npmjs.com/package/npx) must be installed.
 
 1. run `npm install`.
 2. run `npx grunt build` (see [`Gruntfile.js`](/Gruntfile.js)). This command:
@@ -459,7 +456,7 @@ Building your clone of the repository is easy.
     1. Cleans the repo.
     2. Checks code quality ([JSHint](https://jshint.com/) and [ESLint](https://eslint.org/)).
     3. Runs tests.
-    4. Creates the [distributable](/showdown.js) and [minified](/showdown.min.js) files in the [`dist`](/dist) folder.
+    4. Creates the [distributable](/dist/showdown.js) and [minified](/dist/showdown.min.js) files in the [`dist`](/dist) folder.
 
 ## Tests
 

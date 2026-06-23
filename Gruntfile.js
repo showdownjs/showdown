@@ -240,9 +240,9 @@ module.exports = function (grunt) {
   /**
    * Tasks
    */
-  grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'mochaTest:unit', 'mochaTest:functional', 'clean']);
-  grunt.registerTask('test-functional', ['concat:test', 'mochaTest:functional', 'clean']);
-  grunt.registerTask('test-unit', ['concat:test', 'mochaTest:unit', 'clean']);
+  grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'mochaTest:unit', 'mochaTest:functional', 'mochaTest:commonmark', 'clean']);
+  grunt.registerTask('test-functional', ['clean', 'lint', 'concat:test', 'mochaTest:functional', 'clean']);
+  grunt.registerTask('test-unit', ['clean', 'lint', 'concat:test', 'mochaTest:unit', 'clean']);
   grunt.registerTask('test-cli', ['clean', 'lint', 'concat:test', 'mochaTest:cli', 'clean']);
   grunt.registerTask('test-commonmark', ['clean', 'lint', 'concat:test', 'extract-commonmark-tests', 'mochaTest:commonmark', 'clean']);
 

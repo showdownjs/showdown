@@ -14,8 +14,9 @@ showdown.subParser('makeMarkdown.input', function (node, options, globals) {
     result = startEvent.output;
   } else {
     result = (function () {
-      // only checkbox inputs map to task-list markdown; anything else passes through as raw HTML
-      if (node.getAttribute('type') !== 'checkbox') {
+      // only checkbox inputs map to task-list markdown, and only when tasklists are enabled;
+      // anything else passes through as raw HTML
+      if (node.getAttribute('type') !== 'checkbox' || !options.tasklists) {
         return node.outerHTML;
       }
       return (node.getAttribute('checked') !== null) ? '[x]' : '[ ]';

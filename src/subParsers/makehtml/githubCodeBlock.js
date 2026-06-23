@@ -16,7 +16,7 @@
 ////
 
 
-showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals) {
+showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals, topLevelOnly) {
   'use strict';
 
   // early exit if option is not enabled
@@ -32,10 +32,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output + '¨0';
 
+  // In CommonMark container mode the converter-level pass restricts the *opening* fence to
+  // indent 0; indent 1-3 opening fences are owned by the container parsers (a list item's /
+  // block quote's own fence) or handled by a later blockGamut pass for true top-level ones.
+  // This stops an item's indented opening/closing fence from being mistaken for a new
+  // top-level opening fence. The closing fence keeps its 0-3 indent allowance either way.
+  const open = topLevelOnly ? '' : ' {0,3}';
   //const accentRegex = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)(?:(\n {0,3}\1[`~]*)|¨0)/g;
-  const closedBlockRegex   = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1[`~]*/gm;
-  const unclosedBlockRegex = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)¨0/gm;
-  const emptyBlockRegex    = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n {0,3}\1[`~]*/gm;
+  const closedBlockRegex   = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)\\n {0,3}\\1[`~]*', 'gm');
+  const unclosedBlockRegex = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)¨0', 'gm');
+  const emptyBlockRegex    = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n {0,3}\\1[`~]*', 'gm');
 
   text = text.replace(closedBlockRegex, function (wholeMatch, delim, language, codeblock) {
     return parse(closedBlockRegex, wholeMatch, delim, language, codeblock);
@@ -45,9 +51,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
     return parse(emptyBlockRegex, wholeMatch, delim, language, '');
   });
 
-  text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
-    return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
-  });
+  // In topLevelOnly mode, skip the unclosed (run-to-EOF) pass: a genuine indent-0 opener
+  // pairs via the closed/empty passes above, whereas a lone indent-0 *closing* fence of an
+  // indent 1-3 top-level block would otherwise be mistaken for an opener and swallow the
+  // rest of the document. Such an indented top-level fence (and any truly unclosed one) is
+  // handled by the 0-3 blockGamut pass that runs after the container parsers.
+  if (!topLevelOnly) {
+    text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
+      return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
+    });
+  }
 
   // attacklab: strip sentinel
   text = text.replace(/¨0/, '');
@@ -93,6 +106,10 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
       // First parse the github code block
       let infostring = captureStartEvent.matches.infostring;
       let lang = infostring.trim().split(' ')[0];
+      // CommonMark resolves backslash escapes of ASCII punctuation in the info string
+      if (options.decodeEntities) {
+        lang = lang.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
+      }
       codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
       //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);

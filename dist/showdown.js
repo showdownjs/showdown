@@ -1,5 +1,7 @@
-;/*! showdown v 3.0.0-alpha - 17-06-2026 */
+;/*! showdown v 3.0.0-alpha - 23-06-2026 */
 (function(){
+// noinspection HtmlRequiredLangAttribute
+
 /**
  * Created by Tivie on 13-07-2015.
  */
@@ -23,19 +25,9 @@ function getDefaultOpts (simple) {
       describe: 'Add a prefix to the generated header ids. Passing a string will prefix that string to the header id. Setting to true will add a generic \'section-\' prefix',
       type: 'string'
     },
-    rawPrefixHeaderId: {
-      defaultValue: false,
-      describe: 'Setting this option to true will prevent showdown from modifying the prefix. This might result in malformed IDs (if, for instance, the " char is used in the prefix)',
-      type: 'boolean'
-    },
-    ghCompatibleHeaderId: {
-      defaultValue: false,
-      describe: 'Generate header ids compatible with github style (spaces are replaced with dashes, a bunch of non alphanumeric chars are removed)',
-      type: 'boolean'
-    },
     rawHeaderId: {
       defaultValue: false,
-      describe: 'Remove only spaces, \' and " from generated header ids (including prefixes), replacing them with dashes (-). WARNING: This might result in malformed ids',
+      describe: 'Remove only spaces, \', ", > and < from generated header ids (including any prefix), replacing them with dashes (-), instead of the default github-compatible sanitization. WARNING: This might result in malformed ids',
       type: 'boolean'
     },
     headerLevelStart: {
@@ -53,18 +45,18 @@ function getDefaultOpts (simple) {
       describe: 'Turn on/off GFM autolink style',
       type: 'boolean'
     },
+    httpsAutoLinks: {
+      defaultValue: false,
+      describe: 'Use \'https://\' for auto-generated links',
+      type: 'boolean'
+    },
     literalMidWordUnderscores: {
       defaultValue: false,
       describe: 'Parse midword underscores as literal underscores',
       type: 'boolean'
     },
-    literalMidWordAsterisks: {
-      defaultValue: false,
-      describe: 'Parse midword asterisks as literal asterisks',
-      type: 'boolean'
-    },
     strikethrough: {
-      defaultValue: false,
+      defaultValue: true,
       describe: 'Turn on/off strikethrough support',
       type: 'boolean'
     },
@@ -86,11 +78,6 @@ function getDefaultOpts (simple) {
     tasklists: {
       defaultValue: false,
       describe: 'Turn on/off GFM tasklist support',
-      type: 'boolean'
-    },
-    smoothLivePreview: {
-      defaultValue: false,
-      describe: 'Prevents weird effects in live previews due to incomplete input',
       type: 'boolean'
     },
     smartIndentationFix: {
@@ -126,11 +113,6 @@ function getDefaultOpts (simple) {
     encodeEmails: {
       defaultValue: true,
       describe: 'Encode e-mail addresses through the use of Character Entities, transforming ASCII e-mail addresses into its equivalent decimal entities',
-      type: 'boolean'
-    },
-    openLinksInNewWindow: {
-      defaultValue: false,
-      describe: 'Open all links in new windows',
       type: 'boolean'
     },
     backslashEscapesHTMLTags: {
@@ -178,6 +160,16 @@ function getDefaultOpts (simple) {
       describe: 'Prepends a base URL to relative paths',
       type: 'string'
     },
+    decodeEntities: {
+      defaultValue: false,
+      describe: 'Resolve HTML5 named and numeric character references to their characters (CommonMark behavior)',
+      type: 'boolean'
+    },
+    cmSpec: {
+      defaultValue: false,
+      describe: 'Enable CommonMark spec compliance: parse blocks (lists, block quotes, HTML blocks, containers, tabs) and inlines (emphasis, links, images, autolinks, raw HTML) per the CommonMark spec instead of Showdown\'s legacy matching',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));
@@ -191,23 +183,11 @@ function getDefaultOpts (simple) {
   return ret;
 }
 
-function allOptionsOn () {
-  'use strict';
-  let options = getDefaultOpts(true),
-      ret = {};
-  for (let opt in options) {
-    if (options.hasOwnProperty(opt)) {
-      ret[opt] = true;
-    }
-  }
-  return ret;
-}
-
 /**
  * Created by Tivie on 06-01-2015.
  */
 // Private properties
-var showdown = {},
+let showdown = {},
     parsers = {},
     extensions = {},
     globalOptions = getDefaultOpts(true),
@@ -217,15 +197,12 @@ var showdown = {},
         omitExtraWLInCodeBlocks:              true,
         simplifiedAutoLink:                   true,
         literalMidWordUnderscores:            true,
-        strikethrough:                        true,
         tables:                               true,
         tablesHeaderId:                       true,
         ghCodeBlocks:                         true,
         tasklists:                            true,
         disableForced4SpacesIndentedSublists: true,
-        simpleLineBreaks:                     true,
         requireSpaceBeforeHeadingText:        true,
-        ghCompatibleHeaderId:                 true,
         ghMentions:                           true,
         backslashEscapesHTMLTags:             true,
         emoji:                                true,
@@ -233,14 +210,18 @@ var showdown = {},
       },
       original: {
         noHeaderId:                           true,
-        ghCodeBlocks:                         false
+        ghCodeBlocks:                         false,
+        strikethrough:                        false
       },
       commonmark: {
         noHeaderId:                           true,
-        requireSpaceBeforeHeadingText:        true
+        requireSpaceBeforeHeadingText:        true,
+        decodeEntities:                       true,
+        cmSpec:                               true,
+        strikethrough:                        false,
+        encodeEmails:                         false
       },
-      vanilla: getDefaultOpts(true),
-      allOn: allOptionsOn()
+      vanilla: getDefaultOpts(true)
     };
 
 /**
@@ -248,12 +229,6 @@ var showdown = {},
  * @type {{}}
  */
 showdown.helper = {};
-
-/**
- * TODO LEGACY SUPPORT CODE
- * @type {{}}
- */
-showdown.extensions = {};
 
 /**
  * Set a global option
@@ -308,9 +283,9 @@ showdown.setFlavor = function (name) {
     throw Error(name + ' flavor was not found');
   }
   showdown.resetOptions();
-  var preset = flavor[name];
+  let preset = flavor[name];
   setFlavor = name;
-  for (var option in preset) {
+  for (let option in preset) {
     if (preset.hasOwnProperty(option)) {
       globalOptions[option] = preset[option];
     }
@@ -336,6 +311,16 @@ showdown.getFlavorOptions = function (name) {
   if (flavor.hasOwnProperty(name)) {
     return flavor[name];
   }
+};
+
+/**
+ * Get the list of available flavor names
+ * @static
+ * @returns {string[]}
+ */
+showdown.getFlavors = function () {
+  'use strict';
+  return Object.keys(flavor);
 };
 
 /**
@@ -419,7 +404,7 @@ showdown.extension = function (name, ext) {
       ext = [ext];
     }
 
-    var validExtension = validate(ext, name);
+    let validExtension = validate(ext, name);
 
     if (validExtension.valid) {
       extensions[name] = ext;
@@ -464,7 +449,7 @@ showdown.resetExtensions = function () {
 function validate (extension, name) {
   'use strict';
 
-  var errMsg = (name) ? 'Error in ' + name + ' extension->' : 'Error in unnamed extension',
+  let errMsg = (name) ? 'Error in ' + name + ' extension->' : 'Error in unnamed extension',
       ret = {
         valid: true,
         error: ''
@@ -474,8 +459,8 @@ function validate (extension, name) {
     extension = [extension];
   }
 
-  for (var i = 0; i < extension.length; ++i) {
-    var baseMsg = errMsg + ' sub-extension ' + i + ': ',
+  for (let i = 0; i < extension.length; ++i) {
+    let baseMsg = errMsg + ' sub-extension ' + i + ': ',
         ext = extension[i];
     if (typeof ext !== 'object') {
       ret.valid = false;
@@ -489,7 +474,7 @@ function validate (extension, name) {
       return ret;
     }
 
-    var type = ext.type = ext.type.toLowerCase();
+    let type = ext.type = ext.type.toLowerCase();
 
     // normalize extension type
     if (type === 'language') {
@@ -526,7 +511,7 @@ function validate (extension, name) {
         ret.error = baseMsg + '"listeners" property must be an object but ' + typeof ext.listeners + ' given';
         return ret;
       }
-      for (var ln in ext.listeners) {
+      for (let ln in ext.listeners) {
         if (ext.listeners.hasOwnProperty(ln)) {
           if (typeof ext.listeners[ln] !== 'function') {
             ret.valid = false;
@@ -571,7 +556,7 @@ function validate (extension, name) {
 showdown.validateExtension = function (ext) {
   'use strict';
 
-  var validateExtension = validate(ext, null);
+  let validateExtension = validate(ext, null);
   if (!validateExtension.valid) {
     console.warn(validateExtension.error);
     return false;
@@ -579,7 +564,7 @@ showdown.validateExtension = function (ext) {
   return true;
 };
 
-// noinspection HtmlDeprecatedAttribute
+// noinspection HtmlDeprecatedAttribute,CheckImageSize
 
 /**
  * showdownjs helper functions
@@ -1234,6 +1219,205 @@ showdown.helper.urlASCIIEncoding = function (url) {
 };
 
 /**
+ * Resolve HTML5 named (`&ouml;`), decimal (`&#246;`) and hexadecimal (`&#xf6;`)
+ * character references to their corresponding characters (CommonMark behavior).
+ * Unlike makehtml.decodeEntities, this returns the raw decoded characters (no
+ * HTML re-escaping) so the result can be percent-encoded for a URL or further
+ * processed. Invalid references are left verbatim.
+ * @param {string} str
+ * @returns {string}
+ */
+showdown.helper.cmDecodeEntities = function (str) {
+  let entities = showdown.helper.htmlEntities || {};
+  function fromCodePoint (cp) {
+    if (cp === 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) {
+      return '�';
+    }
+    try {
+      return String.fromCodePoint(cp);
+    } catch (e) {
+      return '�';
+    }
+  }
+  return str.replace(/&([#0-9a-zA-Z]+);/g, function (wholeMatch, body) {
+    let m;
+    if ((m = /^#([0-9]{1,7})$/.exec(body))) {
+      return fromCodePoint(parseInt(m[1], 10));
+    }
+    if ((m = /^#[xX]([0-9a-fA-F]{1,6})$/.exec(body))) {
+      return fromCodePoint(parseInt(m[1], 16));
+    }
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && entities.hasOwnProperty(body)) {
+      return entities[body];
+    }
+    return wholeMatch;
+  });
+};
+
+/**
+ * CommonMark URL percent-encoding: percent-encode every character outside the
+ * "safe" set, while preserving sequences that are already percent-encoded.
+ * Mirrors mdurl.encode's default behavior.
+ * @param {string} uri
+ * @returns {string}
+ */
+showdown.helper.cmEncodeURI = function (uri) {
+  const safe = ';/?:@&=+$,-_.!~*\'()#';
+  let out = '';
+  for (let i = 0; i < uri.length; ++i) {
+    let ch = uri.charAt(i),
+        code = uri.charCodeAt(i);
+    if (ch === '%' && /^[0-9a-fA-F]{2}$/.test(uri.slice(i + 1, i + 3))) {
+      out += uri.slice(i, i + 3);
+      i += 2;
+    } else if ((code >= 48 && code <= 57) || (code >= 65 && code <= 90) ||
+               (code >= 97 && code <= 122) || safe.indexOf(ch) !== -1) {
+      out += ch;
+    } else {
+      out += encodeURIComponent(ch);
+    }
+  }
+  return out;
+};
+
+/**
+ * Full CommonMark URL normalization for a link/image destination:
+ * 1. restore showdown's `¨E<code>E` backslash-escape placeholders to their literal
+ *    characters (so escaped punctuation is treated literally, not re-processed);
+ * 2. resolve raw backslash escapes of ASCII punctuation (`\*` -> `*`); a backslash
+ *    before a non-punctuation character stays literal (and is later percent-encoded);
+ * 3. resolve HTML character references (`&ouml;` -> `ö`);
+ * 4. percent-encode the result;
+ * 5. HTML-escape any residual bare `&` so the href stays valid HTML.
+ * @param {string} url
+ * @returns {string}
+ */
+showdown.helper.cmNormalizeURL = function (url) {
+  url = url.replace(/¨E(\d+)E/g, function (wholeMatch, code) {
+    return String.fromCharCode(parseInt(code, 10));
+  });
+  url = url.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
+  url = showdown.helper.cmDecodeEntities(url);
+  url = showdown.helper.cmEncodeURI(url);
+  return url.replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;');
+};
+
+/**
+ * CommonMark link/image title processing: resolve character references, then
+ * HTML-escape the significant characters so the title attribute is valid HTML.
+ * @param {string} title
+ * @returns {string}
+ */
+showdown.helper.cmEscapeTitle = function (title) {
+  return showdown.helper.cmDecodeEntities(title)
+    .replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+};
+
+/**
+ * Normalize a CommonMark link label for reference matching: resolve backslash
+ * escapes (both raw `\x` and showdown's `¨E<code>E` placeholders), collapse
+ * internal whitespace runs to a single space, trim and case-fold. The same
+ * normalization must be applied to both the definition label and the use label
+ * so that they compare equal.
+ * @param {string} label
+ * @returns {string}
+ */
+showdown.helper.cmNormalizeLabel = function (label) {
+  // CommonMark matches labels by case-fold + whitespace collapse only; backslash
+  // escapes are NOT resolved (so `[foo\!]` does not match a `[foo!]` definition).
+  return showdown.helper.caseFold(label
+    .replace(/¨E(\d+)E/g, function (wholeMatch, code) {
+      return String.fromCharCode(parseInt(code, 10));
+    })
+    .replace(/\s+/g, ' ')
+    .trim());
+};
+
+/**
+ * Unicode case folding for case-insensitive matching of link reference labels.
+ * Uses `toLowerCase().toUpperCase()` (the round-trip used by commonmark.js) so that
+ * characters like `ß`, `ẞ` and `SS` all fold together - which plain `toLowerCase`
+ * does not (`ẞ` -> `ß`, not `ss`).
+ * @param {string} str
+ * @returns {string}
+ */
+showdown.helper.caseFold = function (str) {
+  return str.toLowerCase().toUpperCase();
+};
+
+/**
+ * Scan a CommonMark link destination starting at index `j`. Handles both
+ * `<...>` destinations (no raw newline or unescaped `<`) and bare destinations
+ * with balanced parentheses. Returns `{url, end, angle}` (url may be empty for
+ * `<>`) or `null` when the destination is malformed.
+ * @param {string} str
+ * @param {number} j
+ * @returns {{url: string, end: number, angle: boolean}|null}
+ */
+showdown.helper.cmScanDestination = function (str, j) {
+  let n = str.length;
+  if (str.charAt(j) === '<') {
+    j++;
+    let buf = '';
+    while (j < n && str.charAt(j) !== '>') {
+      let c = str.charAt(j);
+      if (c === '\n' || c === '<') { return null; }
+      if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+      buf += c; j++;
+    }
+    if (j >= n || str.charAt(j) !== '>') { return null; }
+    return {url: buf, end: j + 1, angle: true};
+  }
+  let depth = 0, buf = '';
+  while (j < n) {
+    let c = str.charAt(j),
+        code = str.charCodeAt(j);
+    if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+    if (c === ' ' || c === '\t' || c === '\n') { break; }
+    if (code < 0x20 || code === 0x7f) { break; }
+    if (c === '(') { depth++; buf += c; j++; continue; }
+    if (c === ')') {
+      if (depth === 0) { break; }
+      depth--; buf += c; j++; continue;
+    }
+    buf += c; j++;
+  }
+  if (depth !== 0) { return null; }
+  return {url: buf, end: j, angle: false};
+};
+
+/**
+ * Scan a CommonMark link title starting at index `j` (which must point at the
+ * opening delimiter `"`, `'` or `(`). The title may span multiple lines but not
+ * contain a blank line. Returns `{title, end}` or `null` if malformed.
+ * @param {string} str
+ * @param {number} j
+ * @returns {{title: string, end: number}|null}
+ */
+showdown.helper.cmScanTitle = function (str, j) {
+  let n = str.length,
+      open = str.charAt(j),
+      close = (open === '(') ? ')' : open;
+  if (open !== '"' && open !== '\'' && open !== '(') { return null; }
+  j++;
+  let buf = '';
+  while (j < n) {
+    let c = str.charAt(j);
+    if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+    if (open === '(' && c === '(') { return null; }
+    if (c === close) {
+      if (/\n[ \t]*\n/.test(buf)) { return null; }
+      return {title: buf, end: j + 1};
+    }
+    buf += c; j++;
+  }
+  return null;
+};
+
+/**
  * Clones an object . If the second parameter is true, it deep clones the object.
  * Note: It should not be used in other contexts than showdown, since this algorithm might fail for
  * cyclic references, and dataypes such as Dates, RegExps, Typed Arrays, etc...
@@ -1335,6 +1519,48 @@ showdown.helper.normalizeLeadingTabs = function (text) {
 };
 
 /**
+ * CommonMark tab expansion: tabs are expanded to spaces using 4-column tab stops,
+ * but only in the part of a line that defines block structure - the leading
+ * whitespace plus an optional single list/block-quote marker and the whitespace
+ * after it. Tabs in content (after that prefix) are preserved. Lines without a tab
+ * in their prefix are returned unchanged.
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.expandCmTabs = function (text) {
+  if (text.indexOf('\t') === -1) {
+    return text;
+  }
+  const prefixRgx = /^[ \t]*(?:(?:[-+*]|\d{1,9}[.)]|>)[ \t]*)?/;
+  const thematicBreakRgx = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/;
+  return text.split('\n').map(function (line) {
+    // a thematic break (e.g. `*\t*\t*`) is not a list item: do not let the marker
+    // branch of the prefix expansion mangle it
+    if (thematicBreakRgx.test(line)) {
+      return line;
+    }
+    let prefix = prefixRgx.exec(line)[0];
+    if (prefix.indexOf('\t') === -1) {
+      return line;
+    }
+    let out = '',
+        col = 0;
+    for (let k = 0; k < prefix.length; ++k) {
+      let ch = prefix.charAt(k);
+      if (ch === '\t') {
+        let adv = 4 - (col % 4);
+        out += new Array(adv + 1).join(' ');
+        col += adv;
+      } else {
+        out += ch;
+        col++;
+      }
+    }
+    return out + line.slice(prefix.length);
+  }).join('\n');
+};
+
+/**
  * Remove one level of line-leading tabs or spaces
  * @param {string} text
  * @returns {string}
@@ -1390,6 +1616,7 @@ showdown.helper.validateOptions = function (options) {
  */
 // use this instead of builtin is undefined for IE8 compatibility
 if (typeof (console) === 'undefined') {
+  // noinspection JSValidateTypes
   console = {
     warn: function (msg) {
       'use strict';
@@ -1430,9 +1657,31 @@ if (!Math.imul) {
  * Common regexes.
  * We declare some common regexes to improve performance
  */
+// CommonMark inline raw-HTML grammar (mirrors commonmark.js' HTMLTAG): an open tag,
+// close tag, HTML comment, processing instruction, declaration or CDATA section.
+let cmAttributeName = '[a-zA-Z_:][a-zA-Z0-9:._-]*',
+    cmAttributeValue = '(?:[^"\'=<>`\\x00-\\x20]+|\'[^\']*\'|"[^"]*")',
+    cmAttribute = '(?:\\s+' + cmAttributeName + '(?:\\s*=\\s*' + cmAttributeValue + ')?)',
+    cmOpenTag = '<[A-Za-z][A-Za-z0-9\\-]*' + cmAttribute + '*\\s*/?>',
+    cmCloseTag = '</[A-Za-z][A-Za-z0-9\\-]*\\s*>',
+    cmHTMLComment = '<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->',
+    cmProcessingInstruction = '<[?][\\s\\S]*?[?]>',
+    cmDeclaration = '<![A-Za-z]+[^>]*>',
+    cmCDATA = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>';
+
 showdown.helper.regexes = {
   asteriskDashTildeAndColon: /([*_:~])/g,
-  asteriskDashAndTilde:      /([*_~])/g
+  asteriskDashAndTilde:      /([*_~])/g,
+  // Source string (not a RegExp) for the CommonMark inline raw-HTML grammar.
+  // hashHTMLSpans builds a *fresh* global RegExp from this per call, because that
+  // subparser runs re-entrantly and a shared stateful /g regex would corrupt its
+  // lastIndex between nested invocations.
+  cmHTMLTagSource:           '(?:' + cmOpenTag + '|' + cmCloseTag + '|' + cmHTMLComment +
+                               '|' + cmProcessingInstruction + '|' + cmDeclaration + '|' + cmCDATA + ')',
+  // Open and close tag sources on their own, used for the CommonMark "type 7" HTML
+  // block start condition (a complete tag that fills the line).
+  cmOpenTagSource:           cmOpenTag,
+  cmCloseTagSource:          cmCloseTag
 };
 
 /**
@@ -3507,9 +3756,24 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip
   }
 
   text = showdown.subParser('makehtml.list')(text, options, globals);
+  // In CommonMark container mode the converter-level githubCodeBlock pass only claims
+  // indent-0 fences; list items own their indented fences (renderItem already ran
+  // githubCodeBlock on the de-indented content). This pass picks up genuinely top-level
+  // indented (1-3) fences here, after the list parser has claimed item content and before
+  // codeBlock could mistake their content lines for indented code.
+  if (options.cmSpec) {
+    text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
+  }
   text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
   text = showdown.subParser('makehtml.table')(text, options, globals);
   text = showdown.subParser('makehtml.blockquote')(text, options, globals);
+  // The block quote container can reveal top-level content that the earlier codeBlock pass
+  // never saw (e.g. an indented-code line that followed a `>` line and so was not yet at the
+  // start of a block). Re-run codeBlock in container mode so that revealed indented code is
+  // recognized instead of falling through to a paragraph.
+  if (options.cmSpec) {
+    text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
+  }
 
   // We already ran _HashHTMLBlocks() before, in Markdown(), but that
   // was to escape raw HTML in the original Markdown source. This time,
@@ -3552,25 +3816,49 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  let pattern = /(^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+/gm;
+  if (options.cmSpec) {
+    text = parseCmBlockquotes(text);
+  } else {
+    let pattern = /(^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+/gm;
 
-  if (options.splitAdjacentBlockquotes) {
-    pattern = /^ {0,3}>[\s\S]*?\n\n/gm;
+    if (options.splitAdjacentBlockquotes) {
+      pattern = /^ {0,3}>[\s\S]*?\n\n/gm;
+    }
+
+    text = text.replace(pattern, function (bq) {
+      let wholeMatch = bq;
+      bq = bq.replace(/^[ \t]*>[ \t]?/gm, ''); // trim one level of quoting
+      bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
+      return renderBlockquote(bq, wholeMatch, pattern);
+    });
   }
 
-  text = text.replace(pattern, function (bq) {
+  let afterEvent = new showdown.Event('makehtml.blockquote.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+  /**
+   * Render one block quote's already-stripped content into a hashed
+   * `<blockquote>` element, dispatching the capture/hash lifecycle events.
+   * @param {string} bq the block-quote content with markers already removed
+   * @param {string} wholeMatch the original matched text (for the capture event)
+   * @param {RegExp|null} pattern the matching pattern (event metadata only)
+   * @returns {string}
+   */
+  function renderBlockquote (bq, wholeMatch, pattern) {
     let otp,
-        attributes = {},
-        wholeMatch = bq;
-    bq = bq.replace(/^[ \t]*>[ \t]?/gm, ''); // trim one level of quoting
-    bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
+        attributes = {};
 
     let captureStartEvent = new showdown.Event('makehtml.blockquote.onCapture', bq);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
       ._setOptions(options)
-      .setRegexp(pattern)
+      .setRegexp(pattern || null)
       .setMatches({
         _wholeMatch: wholeMatch,
         blockquote: bq
@@ -3585,6 +3873,14 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     } else {
       bq = captureStartEvent.matches.blockquote;
       bq = showdown.subParser('makehtml.githubCodeBlock')(bq, options, globals);
+      // CommonMark container mode: run the source-level leaf-block passes on the quote's
+      // own (marker-stripped) content, mirroring the converter pipeline, so an HTML block
+      // or a link reference definition nested inside the block quote is recognized in the
+      // quote's context instead of only at the top level.
+      if (options.cmSpec) {
+        bq = showdown.subParser('makehtml.hashHTMLBlocks')(bq, options, globals, true);
+        bq = showdown.subParser('makehtml.stripLinkDefinitions')(bq, options, globals);
+      }
       bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
       bq = showdown.subParser('makehtml.paragraphs')(bq, options, globals);
       bq = bq.replace(/(^|\n)/g, '$1  ');
@@ -3604,15 +3900,1313 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
     otp = beforeHashEvent.output;
     return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
-  });
+  }
 
-  let afterEvent = new showdown.Event('makehtml.blockquote.onEnd', text);
+  /**
+   * CommonMark block-quote container parsing (spec section 5.1). Scans line by
+   * line: a block quote consumes consecutive lines that carry the `>` marker
+   * (an optional single space after `>` is stripped), plus lazy paragraph
+   * continuation lines (markerless non-blank text that follows a paragraph line).
+   * A blank line, or a markerless line that cannot lazily continue a paragraph,
+   * ends the block quote; two block quotes separated by a blank line are distinct.
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmBlockquotes (str) {
+    let marker = /^ {0,3}>/,
+        lines = str.split('\n'),
+        out = [],
+        i = 0,
+        n = lines.length;
+
+    // a markerless line that can lazily continue a paragraph: non-blank text that
+    // does not itself begin a block which would interrupt the paragraph
+    function isLazyParagraph (line) {
+      if (line.trim() === '') { return false; }
+      return !(
+        marker.test(line) ||                                // block quote
+        /^ {0,3}#{1,6}(?:[ \t]|$)/.test(line) ||             // ATX heading
+        /^ {0,3}(?:```|~~~)/.test(line) ||                   // fenced code
+        /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(line) ||// thematic break
+        /^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/.test(line)       // list item
+      );
+    }
+
+    // true if, after peeling nested block-quote/list markers, the innermost block
+    // on this line is an open paragraph - so a following markerless line may lazily
+    // continue it (laziness propagates through container nesting)
+    function isParagraphLine (stripped) {
+      let s = stripped,
+          indentedCode = /^ {4}/.test(stripped),
+          m;
+      while ((m = s.match(/^ {0,3}>[ \t]?/) || s.match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/))) {
+        s = s.slice(m[0].length);
+        indentedCode = false; // leading spaces after a marker are container indent
+      }
+      if (s.trim() === '' || indentedCode) { return false; }
+      return !(
+        /^ {0,3}(?:```|~~~)/.test(s) ||
+        /^ {0,3}#{1,6}(?:[ \t]|$)/.test(s) ||
+        /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(s)
+      );
+    }
+
+    while (i < n) {
+      if (!marker.test(lines[i])) {
+        out.push(lines[i]);
+        i++;
+        continue;
+      }
+      let bqLines = [],
+          prevParagraph = false;
+      while (i < n) {
+        let line = lines[i];
+        if (marker.test(line)) {
+          let stripped = line.replace(/^ {0,3}>[ \t]?/, '');
+          bqLines.push(stripped);
+          prevParagraph = isParagraphLine(stripped);
+          i++;
+        } else if (prevParagraph && isLazyParagraph(line)) {
+          bqLines.push(line);
+          prevParagraph = isParagraphLine(line);
+          i++;
+        } else {
+          break; // blank line or non-continuing line ends the block quote
+        }
+      }
+      // trailing newline mirrors the original regex match (which ended in \n) so the
+      // recursive block parsers see a complete final line
+      let content = bqLines.join('\n') + '\n';
+      out.push(renderBlockquote(content, content, null));
+    }
+    return out.join('\n');
+  }
+});
+
+////
+// makehtml/cmInline.js
+// Copyright (c) 2024 ShowdownJS
+//
+// Unified CommonMark inline parser (spec section 6).
+//
+// Invoked only when the `commonmarkInline` option is enabled. It resolves code
+// spans, backslash escapes, character references, autolinks, raw HTML, links,
+// images and emphasis together on a single delimiter stack, so the cross-construct
+// precedence rules CommonMark requires (a link cannot contain a link; code spans /
+// autolinks / raw HTML bind before links; emphasis interleaves with link brackets)
+// are expressible - which the sequential per-construct passes could not.
+//
+// It is built on the same doubly-linked node list + delimiter stack + processEmphasis
+// design used by makehtml.emphasisAndStrong's CommonMark path.
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+/* jshint esnext: false, esversion: 9 */
+
+showdown.subParser('makehtml.cmInline', function (text, options, globals) {
+  'use strict';
+
+  // ASCII punctuation, used by the flanking rules and backslash-escape check.
+  // Declared before parseCmInline runs (const is in the temporal dead zone until here).
+  const asciiPunct = /[!-/:-@[-`{-~]/;
+
+  // Sticky regexes anchored at the scan cursor (lastIndex) so the recognizers never
+  // slice the tail of the string - keeps the tokenizer linear on `<`/`&`-heavy input.
+  // Reused across calls; each recognizer sets lastIndex before exec and the parse is
+  // not re-entrant within a single string.
+  const reEntity = /&(?:#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]*);/y;
+  const reAutoUri = /<[A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*>/y;
+  const reAutoEmail = /<[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*>/y;
+  const reRawHtml = new RegExp('(?:' + showdown.helper.regexes.cmHTMLTagSource + ')', 'y');
+
+  let startEvent = new showdown.Event('makehtml.cmInline.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  text = parseCmInline(text);
+
+  // ==== copied verbatim from link.js to support GFM link options under cmSpec ====
+  // The cmSpec path bypasses link.js (spanGamut returns early before makehtml.link), so
+  // ghMentions and simplifiedAutoLink are replicated here as post-passes. Real links,
+  // images and code spans are already hashed by parseCmInline above, so they are
+  // protected from these regexes. The writeAnchorTag / parseMail helpers below are also
+  // copied from link.js. TODO: refactor to share this with link.js instead of copying.
+
+  // 5. Handle GithubMentions (if option is enabled)
+  if (options.ghMentions) {
+    let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
+    text = text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
+      // bail if the mentions was escaped
+      if (escape === '\\') {
+        return st + mentions;
+      }
+      // check if options.ghMentionsLink is a string
+      // TODO Validation should be done at initialization not at runtime
+      if (!showdown.helper.isString(options.ghMentionsLink)) {
+        throw new Error('ghMentionsLink option must be a string');
+      }
+      let url = options.ghMentionsLink.replace(/\{u}/g, username);
+      return st + writeAnchorTag ('reference', ghMentionsRegex, wholeMatch, mentions, null, url);
+    });
+  }
+
+  // 8. Handle naked links (if option is enabled)
+  if (options.simplifiedAutoLink) {
+    // 8.1. Check for naked URLs
+    // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
+    let nakedUrlRegex = /([_*~]*?)(((?:https?|ftp):\/\/|www\.)[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*)\1/gi;
+    text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url, urlPrefix) {
+      // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
+      const len = url.length;
+      let suffix = '';
+
+      for (let i = len - 1; i >= 0; --i) {
+        let char = url.charAt(i);
+        if (/[_*~,;:.!?]/.test(char)) {
+          // it's a punctuation char so we remove it from the url
+          url = url.slice(0, -1);
+          // and prepend it to the suffix
+          suffix = char + suffix;
+        } else if (/[)\]]/.test(char)) {
+          // it's a parenthesis so we need to check for "balance" (kinda)
+          let opPar, clPar;
+          if (/\)/.test(char)) {
+            // it's a curved parenthesis
+            opPar = url.match(/\(/g) || [];
+            clPar = url.match(/\)/g);
+          } else {
+            // it's a squared parenthesis
+            opPar = url.match(/\[/g) || [];
+            clPar = url.match(/]/g);
+          }
+          if (opPar.length < clPar.length) {
+            // there are more closing Parenthesis than opening so chop it!!!!!
+            url = url.slice(0, -1);
+            // and prepend it to the suffix
+            suffix = char + suffix;
+          } else {
+            // it's (kinda) balanced so our work is done
+            break;
+          }
+        } else {
+          // it's not a punctuation or a parenthesis so our work is done
+          break;
+        }
+      }
+
+      // we copy the treated url to the text variable
+      let txt = url;
+      // finally, if it's a www shortcut, we prepend http(s)
+      // noinspection HttpUrlsUsage
+      url = (urlPrefix === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+
+      // url part is done so let's take care of text now
+      // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
+      txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+
+      // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
+      // we consumed those characters in the regexp
+      return leadingMDChars +
+        writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
+        suffix +
+        leadingMDChars;
+    });
+
+    // 8.2. Now check for naked mail
+    let nakedMailRegex = /(^|\s)(?:mailto:)?([A-Za-z\d!#$%&'*+-/=?^_`{|}~.]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)(?=$|\s)/gmi;
+    text = text.replace(nakedMailRegex, function (wholeMatch, leadingChar, mail) {
+      const m = parseMail(mail);
+      return leadingChar + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
+    });
+  }
+  // ==== end copied region ====
+
+  let afterEvent = new showdown.Event('makehtml.cmInline.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
     ._setOptions(options);
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
+
+  // ---- shared character helpers (flanking rules) -------------------------------
+
+  function isPunct (ch) {
+    return ch !== undefined && (asciiPunct.test(ch) || /\p{P}/u.test(ch));
+  }
+  function isWhitespace (ch) {
+    return ch === undefined || /\s/.test(ch) || /\p{Z}/u.test(ch);
+  }
+  function isEscapable (ch) {
+    return ch !== undefined && asciiPunct.test(ch);
+  }
+
+  // HTML-escape a run of plain text (entities already resolved to characters)
+  function escapeText (str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function hashSpan (html) {
+    return showdown.helper._hashHTMLSpan(html, globals);
+  }
+
+  // resolve backslash escapes of ASCII punctuation to the literal character
+  function resolveBackslash (str) {
+    return str.replace(/\\([!-/:-@[-`{-~])/g, '$1');
+  }
+
+  // ---- main parse --------------------------------------------------------------
+
+  function parseCmInline (str) {
+    let head = null,
+        tail = null,
+        delimiters = null, // top of emphasis delimiter stack
+        brackets = null,   // top of bracket (link/image) stack
+        // backtick runs of these lengths have no closer in the rest of the string;
+        // future opens of the same length fail immediately (keeps backticks linear)
+        backtickNoCloser = {};
+
+    function appendNode (node) {
+      node.prev = tail;
+      node.next = null;
+      node.raw = node.raw || false;
+      if (tail) { tail.next = node; } else { head = node; }
+      tail = node;
+      return node;
+    }
+    function appendText (literal) {
+      return appendNode({type: 'text', literal: literal});
+    }
+    // append already-final HTML that must not be escaped at render time
+    function appendRaw (html) {
+      return appendNode({type: 'text', literal: html, raw: true});
+    }
+
+    const len = str.length;
+    let i = 0;
+    while (i < len) {
+      let ch = str.charAt(i);
+
+      if (ch === '\n') {
+        // hard line break: two+ trailing spaces or a backslash before the newline.
+        // The <br /> is hashed so the later encodeAmpsAndAngles pass leaves it intact.
+        let n = tail;
+        if (n && n.type === 'text' && !n.raw && / {2,}$/.test(n.literal)) {
+          n.literal = n.literal.replace(/ +$/, '');
+          appendRaw(hashSpan('<br />') + '\n');
+        } else if (n && n.type === 'text' && !n.raw && /\\$/.test(n.literal)) {
+          n.literal = n.literal.slice(0, -1);
+          appendRaw(hashSpan('<br />') + '\n');
+        } else {
+          if (n && n.type === 'text' && !n.raw) { n.literal = n.literal.replace(/ +$/, ''); }
+          appendText('\n');
+        }
+        i++;
+        continue;
+      }
+
+      if (ch === '\\') {
+        let next = str.charAt(i + 1);
+        if (next === '\n') {
+          appendRaw(hashSpan('<br />') + '\n');
+          i += 2;
+        } else if (next === '¨' && str.charAt(i + 2) === 'D') {
+          // escaped `$` (the converter hashes `$` to the `¨D` placeholder early)
+          appendText('¨D');
+          i += 3;
+        } else if (isEscapable(next)) {
+          // Emit ordinary escaped punctuation as a Showdown escape placeholder (¨E<code>E)
+          // so the later passes (ghMentions, simplifiedAutoLink, emoji, strikethrough,
+          // ellipsis, ...) don't treat the char as markup - e.g. `\@user` must not become a
+          // mention. unescapeSpecialChars restores the literal char at the end of the
+          // pipeline. HTML-special chars stay literal so escapeText turns them into entities
+          // (&amp; &lt; &gt; &quot;); placeholders would otherwise round-trip to raw `<`/`&`.
+          if (next === '&' || next === '<' || next === '>' || next === '"') {
+            appendText(next);
+          } else {
+            appendText('¨E' + next.charCodeAt(0) + 'E');
+          }
+          i += 2;
+        } else {
+          appendText('\\');
+          i++;
+        }
+        continue;
+      }
+
+      if (ch === '`') {
+        let res = parseBacktick(str, i, backtickNoCloser);
+        if (res) {
+          appendRaw(res.html); i = res.end;
+        } else {
+          let e = skipRun(str, i, '`'); appendText(str.slice(i, e)); i = e;
+        }
+        continue;
+      }
+
+      if (ch === '<') {
+        let res = parseAutolink(str, i) || parseRawHTML(str, i);
+        if (res) { appendRaw(res.html); i = res.end; continue; }
+        appendText('<');
+        i++;
+        continue;
+      }
+
+      if (ch === '&') {
+        reEntity.lastIndex = i;
+        let m = reEntity.exec(str);
+        if (m) {
+          let decoded = showdown.helper.cmDecodeEntities(m[0]);
+          if (decoded !== m[0]) { appendText(decoded); i += m[0].length; continue; }
+        }
+        appendText('&');
+        i++;
+        continue;
+      }
+
+      if (ch === '!' && str.charAt(i + 1) === '[') {
+        let node = appendText('![');
+        pushBracket(node, true, i + 2);
+        i += 2;
+        continue;
+      }
+      if (ch === '[') {
+        let node = appendText('[');
+        pushBracket(node, false, i + 1);
+        i++;
+        continue;
+      }
+      if (ch === ']') {
+        i = parseCloseBracket(str, i);
+        continue;
+      }
+
+      if (ch === '*' || ch === '_') {
+        let start = i;
+        while (i < len && str.charAt(i) === ch) { ++i; }
+        let run = str.slice(start, i),
+            before = (start === 0) ? undefined : str.charAt(start - 1),
+            after = (i >= len) ? undefined : str.charAt(i),
+            beforeWs = isWhitespace(before),
+            afterWs = isWhitespace(after),
+            beforePt = isPunct(before),
+            afterPt = isPunct(after),
+            leftFlanking = !afterWs && (!afterPt || beforeWs || beforePt),
+            rightFlanking = !beforeWs && (!beforePt || afterWs || afterPt),
+            canOpen, canClose;
+        if (ch === '_') {
+          canOpen = leftFlanking && (!rightFlanking || beforePt);
+          canClose = rightFlanking && (!leftFlanking || afterPt);
+        } else {
+          canOpen = leftFlanking;
+          canClose = rightFlanking;
+        }
+        let node = appendNode({type: 'delim', cc: ch, literal: run, numdelims: run.length, origdelims: run.length, canOpen: canOpen, canClose: canClose});
+        node.delimPrev = delimiters;
+        node.delimNext = null;
+        if (delimiters) { delimiters.delimNext = node; }
+        delimiters = node;
+        continue;
+      }
+
+      // plain text run up to the next significant char
+      let start = i;
+      while (i < len && '\n\\`<&![]*_'.indexOf(str.charAt(i)) === -1) { ++i; }
+      if (i === start) {
+        appendText(str.charAt(i)); i++;
+      } else {
+        appendText(str.slice(start, i));
+      }
+    }
+
+    processEmphasis(null);
+
+    // render the node list
+    let out = '';
+    for (let n = head; n !== null; n = n.next) {
+      out += n.raw ? n.literal : escapeText(n.literal);
+    }
+    return out;
+
+    // ---- bracket stack ---------------------------------------------------------
+
+    function pushBracket (node, image, sourceStart) {
+      brackets = {
+        node: node,
+        prev: brackets,
+        prevDelim: delimiters,
+        image: image,
+        active: true,
+        sourceStart: sourceStart // index in `str` where the label text begins
+      };
+    }
+
+    function parseCloseBracket (s, idx) {
+      let opener = brackets;
+      if (opener === null) { appendText(']'); return idx + 1; }
+      if (!opener.active) { brackets = opener.prev; appendText(']'); return idx + 1; }
+
+      // try to parse the destination/title or a reference that follows the `]`
+      let dest = null, title = null, width = null, height = null, matched = false, endIdx = idx + 1;
+
+      if (s.charAt(idx + 1) === '(') {
+        let j = idx + 2, n2 = s.length, isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; };
+        while (j < n2 && isWs(s.charAt(j))) { j++; }
+        let d = showdown.helper.cmScanDestination(s, j);
+        if (d) {
+          j = d.end;
+          // parseImgDimensions (Showdown extension, not CommonMark): an optional
+          // ` =WxH` between destination and title. The `=WxH` is always consumed here so
+          // it never leaks into the output; buildImage only renders it when the option is
+          // on. Regex fragment copied from the inline image regex in image.js.
+          let dimStart = j;
+          while (dimStart < n2 && isWs(s.charAt(dimStart))) { dimStart++; }
+          if (dimStart > j && s.charAt(dimStart) === '=') {
+            let dim = /^=([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4})/.exec(s.slice(dimStart));
+            if (dim) {
+              width = dim[1];
+              height = dim[2];
+              j = dimStart + dim[0].length;
+            }
+          }
+          let hadWs = false;
+          while (j < n2 && isWs(s.charAt(j))) { hadWs = true; j++; }
+          let tc = s.charAt(j), t = null;
+          if (hadWs && (tc === '"' || tc === '\'' || tc === '(')) {
+            t = showdown.helper.cmScanTitle(s, j);
+            if (t) { j = t.end; }
+          }
+          while (j < n2 && isWs(s.charAt(j))) { j++; }
+          if (s.charAt(j) === ')') {
+            dest = d.url;
+            title = t ? t.title : null;
+            matched = true;
+            endIdx = j + 1;
+          }
+        }
+      }
+
+      if (!matched) {
+        // reference: full [label], collapsed [] or shortcut. Use the RAW source label
+        // (backslash escapes intact) - CommonMark matches labels by case-fold +
+        // whitespace only, so `[foo\!]` must not match a `[foo!]` definition.
+        let labelText = s.slice(opener.sourceStart, idx),
+            refKey = null;
+        if (s.charAt(idx + 1) === '[') {
+          let close = findRefClose(s, idx + 2);
+          if (close !== -1) {
+            let inner = s.slice(idx + 2, close);
+            refKey = inner.trim() === '' ? labelText : inner;
+            endIdx = close + 1;
+          }
+        } else {
+          refKey = labelText; // shortcut
+          endIdx = idx + 1;
+        }
+        if (refKey !== null) {
+          let key = showdown.helper.cmNormalizeLabel(refKey);
+          if (key !== '' && !showdown.helper.isUndefined(globals.gUrls[key])) {
+            dest = globals.gUrls[key];
+            title = globals.gTitles[key];
+            // parseImgDimensions: reference-style dimensions stored by stripLinkDefinitions
+            if (globals.gDimensions[key]) {
+              width = globals.gDimensions[key].width;
+              height = globals.gDimensions[key].height;
+            }
+            matched = true;
+          }
+        }
+      }
+
+      if (!matched) { brackets = opener.prev; appendText(']'); return idx + 1; }
+
+      // process emphasis on the delimiters inside the brackets
+      processEmphasis(opener.prevDelim);
+
+      // collect and render the inner nodes
+      let innerHTML = renderNodes(opener.node.next, null);
+
+      let otpHTML;
+      if (opener.image) {
+        otpHTML = buildImage(innerHTML, dest, title, width, height);
+      } else {
+        otpHTML = buildLink(innerHTML, dest, title);
+      }
+
+      // drop the opener node and everything after it, append the built span
+      removeFrom(opener.node);
+      appendRaw(otpHTML);
+      // remove any emphasis delimiters that belonged to the consumed range
+      pruneDelimiters(opener.prevDelim);
+
+      if (!opener.image) {
+        // a link cannot be nested in another link
+        for (let b = opener.prev; b !== null; b = b.prev) {
+          if (!b.image) { b.active = false; }
+        }
+      }
+      brackets = opener.prev;
+      return endIdx;
+    }
+
+    // ---- rendering helpers -----------------------------------------------------
+
+    // concatenate the rendered HTML of nodes [from .. to)
+    function renderNodes (from, to) {
+      let out = '';
+      for (let n = from; n !== null && n !== to; n = n.next) {
+        out += n.raw ? n.literal : escapeText(n.literal);
+      }
+      return out;
+    }
+    function removeFrom (node) {
+      tail = node.prev;
+      if (tail) { tail.next = null; } else { head = null; }
+    }
+
+    function normalizeDest (dest) {
+      dest = resolveBackslash(dest);
+      dest = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, dest);
+      return showdown.helper.cmNormalizeURL(dest);
+    }
+    function buildTitleAttr (title) {
+      if (title === null || title === undefined) { return ''; }
+      return ' title="' + showdown.helper.cmEscapeTitle(resolveBackslash(title)) + '"';
+    }
+
+    function buildLink (innerHTML, dest, title) {
+      let attrs = ' href="' + normalizeDest(dest) + '"' + buildTitleAttr(title);
+      innerHTML = showdown.subParser('makehtml.hardLineBreaks')(innerHTML, options, globals);
+      return hashSpan('<a' + attrs + '>' + innerHTML + '</a>');
+    }
+
+    function buildImage (innerHTML, dest, title, width, height) {
+      // alt text is the plain-text rendering of the label (markup stripped); the inner
+      // spans are hashed, so restore them before flattening
+      let alt = showdown.subParser('makehtml.unhashHTMLSpans')(innerHTML, options, globals)
+        .replace(/<img\b[^>]*?\salt="([^"]*)"[^>]*?\/?>/g, '$1')
+        .replace(/<[^>]*>/g, '');
+      let attrs = ' src="' + normalizeDest(dest) + '" alt="' + alt + '"' + buildTitleAttr(title);
+      // width/height gating copied from writeImageTag in image.js (parseImgDimensions)
+      if (options.parseImgDimensions) {
+        if (width)  { attrs += ' width="'  + (width  === '*' ? 'auto' : width)  + '"'; }
+        if (height) { attrs += ' height="' + (height === '*' ? 'auto' : height) + '"'; }
+      }
+      return hashSpan('<img' + attrs + ' />');
+    }
+
+    // ---- emphasis (CommonMark reference algorithm) -----------------------------
+
+    function removeDelimiter (d) {
+      if (d.delimPrev) { d.delimPrev.delimNext = d.delimNext; }
+      if (d.delimNext) { d.delimNext.delimPrev = d.delimPrev; } else { delimiters = d.delimPrev; }
+    }
+    function insertAfter (node, newNode) {
+      newNode.prev = node;
+      newNode.next = node.next;
+      if (node.next) { node.next.prev = newNode; } else { tail = newNode; }
+      node.next = newNode;
+    }
+    // drop every delimiter at or above `bottom` from the stack (after a bracket span
+    // has consumed the nodes they pointed at)
+    function pruneDelimiters (bottom) {
+      let d = delimiters;
+      while (d !== null && d !== bottom) {
+        let p = d.delimPrev;
+        removeDelimiter(d);
+        d = p;
+      }
+    }
+
+    function processEmphasis (stackBottom) {
+      let openersBottom = {
+        '_': [stackBottom, stackBottom, stackBottom],
+        '*': [stackBottom, stackBottom, stackBottom]
+      };
+
+      let closer = delimiters;
+      while (closer !== null && closer.delimPrev !== null && closer.delimPrev !== stackBottom) {
+        closer = closer.delimPrev;
+      }
+      if (closer === stackBottom) { closer = (stackBottom === null) ? closer : stackBottom.delimNext; }
+
+      while (closer !== null) {
+        if (!closer.canClose) { closer = closer.delimNext; continue; }
+        let opener = closer.delimPrev,
+            openerFound = false,
+            oddMatch = false;
+        while (opener !== null && opener !== stackBottom && opener !== openersBottom[closer.cc][closer.origdelims % 3]) {
+          oddMatch = (closer.canOpen || opener.canClose) &&
+                     (closer.origdelims % 3 !== 0) &&
+                     ((opener.origdelims + closer.origdelims) % 3 === 0);
+          if (opener.cc === closer.cc && opener.canOpen && !oddMatch) { openerFound = true; break; }
+          opener = opener.delimPrev;
+        }
+        let oldCloser = closer;
+
+        if (openerFound) {
+          let use = (opener.numdelims >= 2 && closer.numdelims >= 2) ? 2 : 1,
+              tagOpen = (use === 2) ? '<strong>' : '<em>',
+              tagClose = (use === 2) ? '</strong>' : '</em>';
+
+          opener.literal = opener.literal.slice(0, opener.literal.length - use);
+          opener.numdelims -= use;
+          closer.literal = closer.literal.slice(use);
+          closer.numdelims -= use;
+
+          let inner = renderNodes(opener.next, closer);
+          inner = showdown.subParser('makehtml.hardLineBreaks')(inner, options, globals);
+          let wrapped = hashSpan(tagOpen + inner + tagClose);
+
+          let n2 = opener.next;
+          while (n2 !== null && n2 !== closer) {
+            let nx = n2.next;
+            if (n2.type === 'delim') { removeDelimiter(n2); }
+            n2 = nx;
+          }
+          let wrapNode = {type: 'text', literal: wrapped, raw: true};
+          insertAfter(opener, wrapNode);
+          wrapNode.next = closer;
+          closer.prev = wrapNode;
+
+          if (opener.numdelims === 0) { opener.literal = ''; removeDelimiter(opener); }
+          if (closer.numdelims === 0) {
+            closer.literal = '';
+            let tmp = closer.delimNext;
+            removeDelimiter(closer);
+            closer = tmp;
+          }
+        } else {
+          openersBottom[oldCloser.cc][oldCloser.origdelims % 3] = oldCloser.delimPrev;
+          if (!oldCloser.canOpen) { removeDelimiter(oldCloser); }
+          closer = oldCloser.delimNext;
+        }
+      }
+    }
+  }
+
+  // ---- token recognizers (return {html, end} or null) ----------------------------
+
+  function skipRun (str, i, ch) {
+    let j = i;
+    while (j < str.length && str.charAt(j) === ch) { j++; }
+    return j;
+  }
+
+  function parseBacktick (str, i, noCloser) {
+    let openEnd = skipRun(str, i, '`'),
+        runLen = openEnd - i,
+        n = str.length,
+        j = openEnd;
+    if (noCloser[runLen]) { return null; }
+    // find a closing run of backticks of exactly runLen (not part of a longer run)
+    while (j < n) {
+      if (str.charAt(j) === '`') {
+        let runStart = j,
+            runEnd = skipRun(str, j, '`');
+        if (runEnd - runStart === runLen) {
+          let content = str.slice(openEnd, runStart).replace(/\n/g, ' ');
+          // strip exactly one leading and trailing space if the content is not all spaces
+          if (content.length >= 2 && content.charAt(0) === ' ' && content.charAt(content.length - 1) === ' ' && /[^ ]/.test(content)) {
+            content = content.slice(1, -1);
+          }
+          let encoded = showdown.subParser('makehtml.encodeCode')(content, options, globals);
+          return {html: showdown.helper._hashHTMLSpan('<code>' + encoded + '</code>', globals), end: runEnd};
+        }
+        j = runEnd;
+      } else {
+        j++;
+      }
+    }
+    noCloser[runLen] = true; // no closer of this length anywhere after here
+    return null;
+  }
+
+  function parseAutolink (str, i) {
+    if (!options.cmSpec) { return null; }
+    reAutoUri.lastIndex = i;
+    let uri = reAutoUri.exec(str);
+    if (uri) {
+      let raw = uri[0].slice(1, -1),
+          href = showdown.helper.cmEncodeURI(raw).replace(/&/g, '&amp;');
+      return {html: showdown.helper._hashHTMLSpan('<a href="' + href + '">' + escapeAngles(raw) + '</a>', globals), end: i + uri[0].length};
+    }
+    reAutoEmail.lastIndex = i;
+    let email = reAutoEmail.exec(str);
+    if (email) {
+      let raw = email[0].slice(1, -1),
+          href, txt;
+      // encodeEmails: entity-encode the address (href and text) when the option is on,
+      // so it works under cmSpec too. Mirrors parseMail in link.js (copied behavior).
+      if (options.encodeEmails) {
+        href = showdown.helper.encodeEmailAddress('mailto:' + raw);
+        txt = showdown.helper.encodeEmailAddress(raw);
+      } else {
+        href = 'mailto:' + escapeAngles(raw);
+        txt = escapeAngles(raw);
+      }
+      return {html: showdown.helper._hashHTMLSpan('<a href="' + href + '">' + txt + '</a>', globals), end: i + email[0].length};
+    }
+    return null;
+  }
+
+  function escapeAngles (s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // ==== writeAnchorTag and parseMail copied verbatim from link.js ====
+  // Used by the copied ghMentions / simplifiedAutoLink post-passes above so they emit
+  // the exact same anchors as the legacy path. TODO: refactor to share with link.js.
+  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
+
+    let matches = {
+          _wholeMatch: wholeMatch,
+          _linkId: linkId,
+          _url: url,
+          _title: title,
+          text: text
+        },
+        otp,
+        attributes = {};
+
+    title = title || null;
+    url = url || null;
+    if (linkId) {
+      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
+    } else {
+      linkId = null;
+    }
+    emptyCase = !!emptyCase;
+
+    if (emptyCase) {
+      url = '';
+    } else if (!url) {
+      if (!linkId) {
+        // lower-case and turn embedded newlines into spaces
+        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
+      }
+      url = '#' + linkId;
+
+      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
+        url = globals.gUrls[linkId];
+        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
+          title = globals.gTitles[linkId];
+        }
+      } else {
+        return wholeMatch;
+      }
+    }
+
+    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    // NOTE: deliberately diverges from the link.js original - we do NOT call
+    // cmNormalizeURL here even though cmSpec is on. These ghMentions/simplifiedAutoLink
+    // anchors are legacy GFM constructs; cmNormalizeURL would decode the entity-encoded
+    // mailto: href produced by encodeEmails, making the href/text inconsistent. Skipping
+    // it makes the output identical to the legacy (non-cmSpec) path.
+    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+    attributes.href = url;
+
+    if (title && showdown.helper.isString(title)) {
+      if (options.cmSpec) {
+        title = showdown.helper.cmEscapeTitle(title);
+      } else {
+        title = title
+          .replace(/"/g, '&quot;');
+      }
+      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      attributes.title = title;
+    }
+
+    let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(pattern)
+      .setMatches(matches)
+      .setAttributes(attributes);
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      attributes = captureStartEvent.attributes;
+      text = captureStartEvent.matches.text || '';
+      // Text can be a markdown element, so we run through the appropriate parsers
+      text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
+      text = showdown.subParser('makehtml.emoji')(text, options, globals);
+      text = showdown.subParser('makehtml.underline')(text, options, globals);
+      text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
+      text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
+      text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
+      text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
+      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    otp = beforeHashEvent.output;
+    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+  }
+
+  function parseMail (mail) {
+    let url = 'mailto:';
+    mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
+    if (options.encodeEmails) {
+      url = showdown.helper.encodeEmailAddress(url + mail);
+      mail = showdown.helper.encodeEmailAddress(mail);
+    } else {
+      url = url + mail;
+    }
+    return {
+      mail: mail,
+      url: url
+    };
+  }
+  // ==== end copied region ====
+
+  function parseRawHTML (str, i) {
+    if (!options.cmSpec) { return null; }
+    reRawHtml.lastIndex = i;
+    let m = reRawHtml.exec(str);
+    if (!m) { return null; }
+    return {html: showdown.helper._hashHTMLSpan(m[0], globals), end: i + m[0].length};
+  }
+
+  // find the closing `]` of a reference label, honoring backslash escapes
+  function findRefClose (str, j) {
+    let n = str.length;
+    while (j < n) {
+      let c = str.charAt(j);
+      if (c === '\\' && j + 1 < n) { j += 2; continue; }
+      if (c === ']') { return j; }
+      if (c === '[') { return -1; }
+      j++;
+    }
+    return -1;
+  }
+});
+
+////
+// makehtml/cmList.js
+// Copyright (c) 2024 ShowdownJS
+//
+// CommonMark list container-block parser (spec section 5.2/5.3).
+//
+// This is a separate, line-based parser invoked only when the `commonmarkLists`
+// option is enabled (it is part of the `commonmark` flavor). Showdown's default
+// regex list parser (`makehtml.list`) is left untouched; `makehtml.list` simply
+// delegates here when the flag is on.
+//
+// It differs from the regex parser in the ways CommonMark requires: a change of
+// bullet character or ordered delimiter starts a new list, ordered lists keep
+// their start number and the `)` delimiter, loose/tight is decided per list (not
+// per item), and items nest by content indentation.
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
+showdown.subParser('makehtml.cmList', function (text, options, globals) {
+  'use strict';
+
+  let startEvent = new showdown.Event('makehtml.list.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  text = parseCmList(text);
+
+  let afterEvent = new showdown.Event('makehtml.list.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+  /** @param {string} line @returns {number} count of leading spaces */
+  function leadingSpaces (line) {
+    let m = line.match(/^ */);
+    return m[0].length;
+  }
+
+  /** @param {string} line @returns {boolean} */
+  function isBlank (line) {
+    return /^[ \t]*$/.test(line);
+  }
+
+  // a markerless line that can lazily continue an open paragraph: non-blank text
+  // that does not itself begin an interrupting block
+  function isLazyParagraph (line) {
+    if (isBlank(line)) { return false; }
+    return !(
+      /^ {0,3}>/.test(line) ||                               // block quote
+      /^ {0,3}#{1,6}(?:[ \t]|$)/.test(line) ||               // ATX heading
+      /^ {0,3}(?:```|~~~)/.test(line) ||                     // fenced code
+      /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(line) ||  // thematic break
+      /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(line)   // list item
+    );
+  }
+
+  /**
+   * Match a list-item marker at the start of a line.
+   * @param {string} line
+   * @returns {{type:string, bullet:(string|null), delim:(string|null),
+   *   num:(number|null), markerIndent:number, contentIndent:number,
+   *   firstContent:string}|null}
+   */
+  function matchMarker (line) {
+    let m = line.match(/^( {0,3})([-+*]|\d{1,9}[.)])( *)([\s\S]*)$/);
+    if (!m) { return null; }
+    let indent = m[1].length,
+        markerTxt = m[2],
+        spaces = m[3].length,
+        rest = m[4];
+    // the marker must be followed by at least one space (or end the line); `-one`
+    // is a paragraph, not a list
+    if (rest !== '' && spaces === 0) { return null; }
+
+    let k = markerTxt.length,
+        type = /[-+*]/.test(markerTxt) ? 'ul' : 'ol',
+        contentIndent,
+        firstContent;
+    if (rest === '') {
+      contentIndent = indent + k + 1;
+      firstContent = '';
+    } else if (spaces >= 5) {
+      // 5+ spaces: one space is the marker gap, the rest is indented code
+      contentIndent = indent + k + 1;
+      firstContent = new Array(spaces).join(' ') + rest;
+    } else {
+      contentIndent = indent + k + spaces;
+      firstContent = rest;
+    }
+    return {
+      type: type,
+      bullet: type === 'ul' ? markerTxt : null,
+      delim: type === 'ol' ? markerTxt.slice(-1) : null,
+      num: type === 'ol' ? parseInt(markerTxt, 10) : null,
+      markerIndent: indent,
+      contentIndent: contentIndent,
+      firstContent: firstContent
+    };
+  }
+
+  /**
+   * Gather one list item starting at line index `i`. Consumes the marker line and
+   * subsequent lines indented to the item's content column, plus lazy paragraph
+   * continuations. Blank lines that are followed by more item content are kept
+   * (internal); trailing blank lines are left for the caller.
+   * @returns {{content:string[], end:number, blanksFollow:number, internalBlank:boolean}}
+   */
+  function gatherItem (lines, i, m) {
+    let n = lines.length,
+        w = m.contentIndent,
+        content = [m.firstContent],
+        internalBlank = false;
+    i++;
+    // a list item may begin with at most one blank line: an empty marker followed
+    // by a blank line is an empty item; later indented content is not part of it
+    if (m.firstContent === '' && i < n && isBlank(lines[i])) {
+      let j = i;
+      while (j < n && isBlank(lines[j])) { j++; }
+      return {content: [''], end: i, blanksFollow: j - i, internalBlank: false};
+    }
+    while (i < n) {
+      let line = lines[i];
+      if (isBlank(line)) {
+        // look ahead: blanks are internal only if the item continues afterwards
+        let j = i;
+        while (j < n && isBlank(lines[j])) { j++; }
+        if (j < n && leadingSpaces(lines[j]) >= w && !isBlank(lines[j])) {
+          for (let b = i; b < j; ++b) { content.push(''); }
+          if (content.some(function (c) { return c.trim() !== ''; })) { internalBlank = true; }
+          i = j;
+          continue;
+        }
+        return {content: content, end: i, blanksFollow: j - i, internalBlank: internalBlank};
+      }
+      if (leadingSpaces(line) >= w) {
+        content.push(line.slice(w));
+        i++;
+      } else if (isLazyParagraph(line) && lastIsParagraph(content)) {
+        content.push(line);
+        i++;
+      } else {
+        return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
+      }
+    }
+    return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
+  }
+
+  // Whether an item's content has a blank line separating two of its *top-level*
+  // blocks (which makes the list loose). A blank line inside a nested list/block
+  // quote does not count - it makes the nested list loose, not this one. We track
+  // the content-indent of the deepest open nested container and ignore lines (and
+  // blanks) inside it.
+  function itemLoose (content) {
+    let containerIndent = -1, // content indent of the open nested container (-1 = none)
+        topBlockSeen = false,
+        blank = false;
+    for (let li = 0; li < content.length; ++li) {
+      let line = content[li];
+      if (line.trim() === '') { blank = true; continue; }
+      let ind = leadingSpaces(line);
+      if (containerIndent >= 0 && ind >= containerIndent) {
+        continue; // inside the nested container - not a top-level line of this item
+      }
+      if (blank && topBlockSeen) { return true; } // blank between two top-level blocks
+      blank = false;
+      topBlockSeen = true;
+      let mk = matchMarker(line);
+      if (mk) {
+        containerIndent = mk.contentIndent;
+      } else if (/^ {0,3}>/.test(line)) {
+        containerIndent = ind + 1;
+      } else {
+        containerIndent = -1; // a plain top-level block (paragraph / indented code)
+        // a fenced code block is a single block: skip its interior (including blank
+        // lines) so blanks inside the fence are not counted as separators between two
+        // top-level blocks (which would wrongly make the list loose)
+        let fence = line.match(/^ {0,3}(```+|~~~+)/);
+        if (fence) {
+          let closeRe = new RegExp('^ {0,3}[' + fence[1][0] + ']{' + fence[1].length + ',}[ \\t]*$');
+          while (li + 1 < content.length && !closeRe.test(content[li + 1])) { li++; }
+          if (li + 1 < content.length) { li++; } // consume the closing fence line
+        }
+      }
+    }
+    return false;
+  }
+
+  // whether the last content line is an open paragraph (so a lazy continuation line
+  // may be appended). Nested block-quote / list markers are peeled first, so lazy
+  // continuation propagates through container nesting (e.g. `1. > Blockquote`
+  // followed by a markerless line continues the inner block quote's paragraph).
+  function lastIsParagraph (content) {
+    let last = content[content.length - 1];
+    if (last === undefined) { return false; }
+    let s = last,
+        indentedCode = /^ {4}/.test(last),
+        m;
+    while ((m = s.match(/^ {0,3}>[ \t]?/) || s.match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/))) {
+      s = s.slice(m[0].length);
+      indentedCode = false;
+    }
+    if (s.trim() === '' || indentedCode) { return false; }
+    return !(
+      /^ {0,3}(?:```|~~~)/.test(s) ||
+      /^ {0,3}#{1,6}(?:[ \t]|$)/.test(s)
+    );
+  }
+
+  /**
+   * Render one list item's content into `<li>…</li>`. In a tight list the item's
+   * direct paragraphs are not wrapped in `<p>`; in a loose list they are. Nested
+   * blocks (sub-lists, block quotes, code) are produced by blockGamut.
+   */
+  function renderItem (content, loose) {
+    // trailing newline so the recursive block parsers (esp. indented code, which
+    // requires each line to end in \n) see a complete final line
+    let str = content.join('\n') + '\n';
+    // drop the empty leading line that an empty marker (`-` with content on the next
+    // line) contributes, so an indented-code first block sees a clean block start
+    // (codeBlock keys off `^`/a preceding blank line) instead of a lone leading newline
+    str = str.replace(/^\n+/, '');
+    str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
+    str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
+    str = str.replace(/^\n+/, '').replace(/\n+$/, '');
+
+    let grafs = str.split(/\n{2,}/g),
+        out = [];
+    for (let i = 0; i < grafs.length; ++i) {
+      let g = grafs[i];
+      if (/¨([KG])(\d+)\1/.test(g)) {
+        out.push(g);
+      } else if (/\S/.test(g)) {
+        g = showdown.subParser('makehtml.spanGamut')(g, options, globals);
+        if (loose) {
+          g = g.replace(/^[ \t]*/, '<p>') + '</p>';
+        }
+        out.push(g);
+      }
+    }
+    let body = out.join('\n');
+
+    // GFM task lists: when the item starts with `[ ]`/`[x]` and the tasklists option is
+    // on, render a checkbox and tag the <li>. Mirrors list.js (the legacy parser).
+    let liAttrs = '';
+    let taskMatch = options.tasklists ? /^\s*\[([xX ])]/.exec(content.length ? content[0] : '') : null;
+    if (taskMatch) {
+      let checked = taskMatch[1].trim() !== '';
+      body = cmProcessTaskListItem(body, checked);
+      let attributes = { classes: ['task-list-item'], style: 'list-style-type: none;' };
+      if (options.moreStyling && checked) {
+        attributes.classes.push('task-list-item-complete');
+      }
+      liAttrs = showdown.helper._populateAttributes(attributes);
+    }
+
+    // an empty item is always `<li></li>`, regardless of loose/tight
+    if (body.trim() === '') {
+      return '<li' + liAttrs + '></li>\n';
+    }
+    // CommonMark serialization: a loose item opens/closes on its own lines; a tight
+    // item opens on a new line only when its content begins with a block child, and
+    // closes on a new line only when its content ends with a block child (so trailing
+    // inline text hugs `</li>`).
+    let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li' + liAttrs + '>\n' : '<li' + liAttrs + '>',
+        close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
+    return open + body + close;
+  }
+
+  // ==== task-list checkbox rendering copied/adapted from list.js processTaskListItem;
+  // TODO: refactor to share with list.js ====
+  // Adapted to preserve a leading `<p>` (loose items) before the `[ ]`/`[x]` marker.
+  function cmProcessTaskListItem (body, checked) {
+    const checkboxRgx = /^([ \t]*(?:<p>)?[ \t]*)\[([xX ])]/;
+    return body.replace(checkboxRgx, function (wm, prefix, checkedRaw) {
+      let attributes = {
+        type: 'checkbox',
+        disabled: true,
+        style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
+        checked: !!checked
+      };
+      let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', body);
+      captureStartEvent
+        .setOutput(null)
+        ._setGlobals(globals)
+        ._setOptions(options)
+        .setRegexp(checkboxRgx)
+        .setMatches({
+          _wholeMatch: body,
+          _tasklistButton: wm,
+          _taksListButtonChecked: checkedRaw
+        })
+        .setAttributes(attributes);
+      captureStartEvent = globals.converter.dispatch(captureStartEvent);
+      let otp;
+      if (captureStartEvent.output && captureStartEvent.output !== '') {
+        otp = captureStartEvent.output;
+      } else {
+        attributes = captureStartEvent.attributes;
+        otp = '<input' + showdown.helper._populateAttributes(attributes) + '>';
+      }
+
+      let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
+      beforeHashEvent
+        .setOutput(otp)
+        ._setGlobals(globals)
+        ._setOptions(options);
+      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+      return prefix + beforeHashEvent.output;
+    });
+  }
+
+  // a line that is open paragraph text (so a following list marker would have to
+  // "interrupt a paragraph" - which empty items and non-1 ordered lists may not do)
+  function isParaText (line) {
+    if (isBlank(line) || /¨[A-Za-z]?\d+[A-Za-z]/.test(line)) { return false; }
+    return isLazyParagraph(line) || matchMarker(line) !== null;
+  }
+
+  /**
+   * CommonMark list parsing. Scans line by line, leaving non-list lines untouched
+   * and converting each run of list items of the same type into a hashed list.
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmList (str) {
+    let lines = str.split('\n'),
+        out = [],
+        i = 0,
+        n = lines.length,
+        prevParagraph = false;
+
+    while (i < n) {
+      let m = matchMarker(lines[i]);
+      if (!m) {
+        out.push(lines[i]);
+        prevParagraph = isParaText(lines[i]);
+        i++;
+        continue;
+      }
+
+      // a list item may interrupt a paragraph only if it is non-empty and (for
+      // ordered lists) starts with 1; otherwise the marker line is paragraph text
+      if (prevParagraph && (m.firstContent.trim() === '' || (m.type === 'ol' && m.num !== 1))) {
+        out.push(lines[i]);
+        prevParagraph = true;
+        i++;
+        continue;
+      }
+
+      // collect a run of items that form a single list
+      let type = m.type,
+          bullet = m.bullet,
+          delim = m.delim,
+          startNum = m.num,
+          items = [],
+          loose = false;
+
+      while (i < n) {
+        let mm = matchMarker(lines[i]);
+        if (!mm || mm.type !== type) { break; }
+        if (type === 'ul' && mm.bullet !== bullet) { break; }
+        if (type === 'ol' && mm.delim !== delim) { break; }
+
+        let item = gatherItem(lines, i, mm);
+        if (itemLoose(item.content)) { loose = true; }
+        items.push(item.content);
+        i = item.end;
+
+        if (item.blanksFollow > 0) {
+          let j = i + item.blanksFollow,
+              next = (j < n) ? matchMarker(lines[j]) : null,
+              continues = next && next.type === type &&
+                (type === 'ul' ? next.bullet === bullet : next.delim === delim);
+          if (continues) {
+            loose = true; // blank line between items
+            i = j;
+            continue;
+          }
+          break; // blanks end the list (left in place for the outer loop)
+        }
+      }
+
+      let start = (type === 'ol' && startNum !== 1) ? startNum : null,
+          body = '';
+      for (let k = 0; k < items.length; ++k) {
+        body += renderItem(items[k], loose);
+      }
+      let otp = '\n\n<' + type + (start !== null ? ' start="' + start + '"' : '') + '>\n' + body + '</' + type + '>\n';
+      out.push(showdown.subParser('makehtml.hashBlock')(otp, options, globals));
+      prevParagraph = false;
+    }
+
+    return out.join('\n');
+  }
 });
 
 ////
@@ -3823,6 +5417,7 @@ showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
 // ***Author:***
 // - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
 ////
+// noinspection HtmlRequiredLangAttribute
 
 
 showdown.subParser('makehtml.completeHTMLDocument', function (text, options, globals) {
@@ -3888,6 +5483,94 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
   text = doctypeParsed + '<html' + lang + '>\n<head>\n' + title + charset + metadata + '</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
 
   let afterEvent = new showdown.Event('makehtml.completeHTMLDocument.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+});
+
+////
+// makehtml/decodeEntities.js
+// Copyright (c) 2024 ShowdownJS
+//
+// Resolves HTML5 named (`&copy;`), decimal (`&#35;`) and hexadecimal (`&#xcab;`)
+// character references to their corresponding characters, per the CommonMark spec.
+//
+// This diverges from Showdown's default behavior (which preserves entities verbatim),
+// so it is gated behind the `decodeEntities` option (enabled by the `commonmark` flavor).
+//
+// It runs late in the pipeline - after inline parsing and while code spans/blocks are
+// still hashed - so that:
+//   - a decoded markdown character (e.g. `&#42;` -> `*`) is NOT re-parsed as emphasis;
+//   - entities inside code remain escaped (the code is hashed, hence untouched);
+//   - decoded newlines stay literal inside their block.
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+showdown.subParser('makehtml.decodeEntities', function (text, options, globals) {
+  'use strict';
+
+  if (!options.decodeEntities) {
+    return text;
+  }
+
+  let startEvent = new showdown.Event('makehtml.decodeEntities.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  const entities = showdown.helper.htmlEntities;
+
+  // Re-escape HTML-significant characters so a decoded char (e.g. `&lt;` -> `<`) stays
+  // a literal in the HTML output rather than being read as markup.
+  function escapeOutput (str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // Map a code point to its character, replacing disallowed values with U+FFFD.
+  function fromCodePoint (cp) {
+    if (cp === 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) {
+      return '�';
+    }
+    try {
+      return String.fromCodePoint(cp);
+    } catch (e) {
+      return '�';
+    }
+  }
+
+  // Match any `&…;` candidate that survived encodeAmpsAndAngles (which already escaped
+  // bare ampersands and `&name`/`&name?;` non-references). We classify each candidate here.
+  text = text.replace(/&([#0-9a-zA-Z]+);/g, function (wholeMatch, body) {
+    let m;
+    // decimal numeric reference: 1-7 digits
+    if ((m = /^#([0-9]{1,7})$/.exec(body))) {
+      return escapeOutput(fromCodePoint(parseInt(m[1], 10)));
+    }
+    // hexadecimal numeric reference: 1-6 hex digits
+    if ((m = /^#[xX]([0-9a-fA-F]{1,6})$/.exec(body))) {
+      return escapeOutput(fromCodePoint(parseInt(m[1], 16)));
+    }
+    // named reference (must be a known HTML5 entity name)
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && entities.hasOwnProperty(body)) {
+      return escapeOutput(entities[body]);
+    }
+    // not a valid reference - escape the ampersand and leave the rest intact
+    return '&amp;' + body + ';';
+  });
+
+  let afterEvent = new showdown.Event('makehtml.decodeEntities.onEnd', text);
   afterEvent
     .setOutput(text)
     ._setGlobals(globals)
@@ -4025,7 +5708,16 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
       ._setOptions(options);
 
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    return beforeHashEvent.output;
+    otp = beforeHashEvent.output;
+
+    // Image-based emoji (e.g. :octocat:) render as an <img> tag. Hash it so later
+    // HTML-escaping passes don't turn its `<`/`>` into entities - under cmSpec the
+    // generic span hashing skips void tags (it is meant to escape malformed raw HTML),
+    // so the generated markup must protect itself here. Unicode emoji are returned as-is.
+    if (/^\s*</.test(otp)) {
+      otp = showdown.helper._hashHTMLSpan(otp, globals);
+    }
+    return otp;
   });
 
   let afterEvent = new showdown.Event('makehtml.emoji.onEnd', text);
@@ -4050,6 +5742,9 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
 // ***Author:***
 // - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
 ////
+
+/* jshint esnext: false, esversion: 9 */
+// (esversion 9 enables the \p{...} Unicode property escapes used for CommonMark flanking rules)
 
 showdown.subParser('makehtml.emphasisAndStrong', function (text, options, globals) {
   'use strict';
@@ -4155,6 +5850,219 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
     otp = beforeHashEvent.output;
     otp = showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
     return otp;
+  }
+
+  // CommonMark-compliant emphasis/strong parsing (delimiter-run algorithm).
+  // Gated behind the `commonmarkEmphasis` option (enabled by the commonmark flavor) because
+  // it diverges from Showdown's default behavior (e.g. intraword underscores, flanking rules).
+  if (options.cmSpec) {
+    text = parseCommonmarkEmphasis(text);
+
+    let cmAfterEvent = new showdown.Event('makehtml.emphasisAndStrong.onEnd', text);
+    cmAfterEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    cmAfterEvent = globals.converter.dispatch(cmAfterEvent);
+    return cmAfterEvent.output;
+  }
+
+  /**
+   * Parse emphasis and strong emphasis using the CommonMark delimiter-run algorithm.
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCommonmarkEmphasis (str) {
+    // CommonMark punctuation = ASCII punctuation + Unicode P categories
+    const asciiPunct = /[!-/:-@[-`{-~]/;
+    function isPunct (ch) {
+      return ch !== undefined && (asciiPunct.test(ch) || /\p{P}/u.test(ch));
+    }
+    function isWhitespace (ch) {
+      return ch === undefined || /\s/.test(ch) || /\p{Z}/u.test(ch);
+    }
+
+    // 1. Tokenize into a doubly-linked list of nodes; collect a delimiter stack.
+    let head = null,
+        tail = null,
+        delimiters = null; // tail of delimiter stack
+
+    function appendNode (node) {
+      node.prev = tail;
+      node.next = null;
+      if (tail) {
+        tail.next = node;
+      } else {
+        head = node;
+      }
+      tail = node;
+      return node;
+    }
+
+    const len = str.length;
+    let i = 0;
+    while (i < len) {
+      let ch = str.charAt(i);
+      if (ch === '*' || ch === '_') {
+        let start = i;
+        while (i < len && str.charAt(i) === ch) {
+          ++i;
+        }
+        let run = str.slice(start, i),
+            before = (start === 0) ? undefined : str.charAt(start - 1),
+            after = (i >= len) ? undefined : str.charAt(i),
+            beforeWs = isWhitespace(before),
+            afterWs = isWhitespace(after),
+            beforePt = isPunct(before),
+            afterPt = isPunct(after),
+            leftFlanking = !afterWs && (!afterPt || beforeWs || beforePt),
+            rightFlanking = !beforeWs && (!beforePt || afterWs || afterPt),
+            canOpen, canClose;
+        if (ch === '_') {
+          canOpen = leftFlanking && (!rightFlanking || beforePt);
+          canClose = rightFlanking && (!leftFlanking || afterPt);
+        } else {
+          canOpen = leftFlanking;
+          canClose = rightFlanking;
+        }
+        let node = appendNode({type: 'delim', cc: ch, literal: run, numdelims: run.length, origdelims: run.length, canOpen: canOpen, canClose: canClose});
+        node.delimPrev = delimiters;
+        node.delimNext = null;
+        if (delimiters) {
+          delimiters.delimNext = node;
+        }
+        delimiters = node;
+      } else {
+        // accumulate a literal text run up to the next delimiter
+        let start = i;
+        while (i < len && str.charAt(i) !== '*' && str.charAt(i) !== '_') {
+          ++i;
+        }
+        appendNode({type: 'text', literal: str.slice(start, i)});
+      }
+    }
+
+    // 2. Process emphasis (CommonMark reference algorithm).
+    processEmphasis();
+
+    // 3. Render remaining nodes back to a string.
+    let out = '';
+    for (let n = head; n !== null; n = n.next) {
+      out += n.literal;
+    }
+    return out;
+
+    function removeDelimiter (d) {
+      if (d.delimPrev) {
+        d.delimPrev.delimNext = d.delimNext;
+      }
+      if (d.delimNext) {
+        d.delimNext.delimPrev = d.delimPrev;
+      } else {
+        delimiters = d.delimPrev; // top of stack
+      }
+    }
+
+    function insertAfter (node, newNode) {
+      newNode.prev = node;
+      newNode.next = node.next;
+      if (node.next) {
+        node.next.prev = newNode;
+      } else {
+        tail = newNode;
+      }
+      node.next = newNode;
+    }
+
+    function processEmphasis () {
+      // one lower-bound per delimiter char, bucketed by (origdelims % 3) per the spec
+      let openersBottom = {'_': [null, null, null], '*': [null, null, null]};
+
+      // start from the bottom-most delimiter on the stack
+      let closer = delimiters;
+      while (closer !== null && closer.delimPrev !== null) {
+        closer = closer.delimPrev;
+      }
+
+      while (closer !== null) {
+        if (!closer.canClose) {
+          closer = closer.delimNext;
+          continue;
+        }
+        // look back for a matching opener
+        let opener = closer.delimPrev,
+            openerFound = false,
+            oddMatch = false;
+        while (opener !== null && opener !== openersBottom[closer.cc][closer.origdelims % 3]) {
+          oddMatch = (closer.canOpen || opener.canClose) &&
+                     (closer.origdelims % 3 !== 0) &&
+                     ((opener.origdelims + closer.origdelims) % 3 === 0);
+          if (opener.cc === closer.cc && opener.canOpen && !oddMatch) {
+            openerFound = true;
+            break;
+          }
+          opener = opener.delimPrev;
+        }
+        let oldCloser = closer;
+
+        if (openerFound) {
+          let use = (opener.numdelims >= 2 && closer.numdelims >= 2) ? 2 : 1,
+              tagOpen = (use === 2) ? '<strong>' : '<em>',
+              tagClose = (use === 2) ? '</strong>' : '</em>';
+
+          // trim consumed delimiters from the opener (end) and closer (start) literals
+          opener.literal = opener.literal.slice(0, opener.literal.length - use);
+          opener.numdelims -= use;
+          closer.literal = closer.literal.slice(use);
+          closer.numdelims -= use;
+
+          // collect inner nodes (between opener and closer), render and hash them
+          let inner = '';
+          for (let n = opener.next; n !== null && n !== closer; n = n.next) {
+            inner += n.literal;
+          }
+          // emphasis content is hashed here, before the rest of the span gamut runs, so apply
+          // hard line breaks and encode double quotes now (CommonMark renders quotes as &quot;)
+          inner = showdown.subParser('makehtml.hardLineBreaks')(inner, options, globals);
+          inner = inner.replace(/"/g, '&quot;');
+          let wrapped = showdown.subParser('makehtml.hashHTMLSpans')(tagOpen + inner + tagClose, options, globals);
+
+          // remove inner nodes and their delimiters from the lists
+          let n2 = opener.next;
+          while (n2 !== null && n2 !== closer) {
+            let nx = n2.next;
+            if (n2.type === 'delim') {
+              removeDelimiter(n2);
+            }
+            n2 = nx;
+          }
+          // splice in a single text node holding the wrapped (hashed) result
+          let wrapNode = {type: 'text', literal: wrapped};
+          insertAfter(opener, wrapNode);
+          // relink opener.next directly to closer (drop the removed inner nodes)
+          wrapNode.next = closer;
+          closer.prev = wrapNode;
+
+          // drop fully-consumed delimiters
+          if (opener.numdelims === 0) {
+            opener.literal = '';
+            removeDelimiter(opener);
+          }
+          if (closer.numdelims === 0) {
+            closer.literal = '';
+            let tmp = closer.delimNext;
+            removeDelimiter(closer);
+            closer = tmp;
+          }
+        } else {
+          openersBottom[oldCloser.cc][oldCloser.origdelims % 3] = oldCloser.delimPrev;
+          if (!oldCloser.canOpen) {
+            removeDelimiter(oldCloser);
+          }
+          closer = oldCloser.delimNext;
+        }
+      }
+    }
   }
 
   // it's faster to have separate regexes for each case than have just one
@@ -4381,20 +6289,26 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  // Build a regex to find HTML tags.
-  let tags     = /<\/?[a-z\d_:-]+(?:\s+[\s\S]+?)?>/gi,
-      comments = /<!(--(([^>-]|-[^>])([^-]|-[^-])*)--)>/gi;
+  // In CommonMark raw-HTML mode this escaping is skipped: inline raw HTML is instead
+  // recognized with the strict grammar and hashed in spanGamut (makehtml.hashCmRawHTML),
+  // after backslash escapes and link/image destinations have been resolved. Escaping
+  // `=`/`_`/etc. here would corrupt that later strict tag recognition.
+  if (!options.cmSpec) {
+    // Build a regex to find HTML tags.
+    let tags     = /<\/?[a-z\d_:-]+(?:\s+[\s\S]+?)?>/gi,
+        comments = /<!(--(([^>-]|-[^>])([^-]|-[^-])*)--)>/gi;
 
-  text = text.replace(tags, function (wholeMatch) {
-    return wholeMatch
-      .replace(/(.)<\/?code>(?=.)/g, '$1`')
-      .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
-  });
+    text = text.replace(tags, function (wholeMatch) {
+      return wholeMatch
+        .replace(/(.)<\/?code>(?=.)/g, '$1`')
+        .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
+    });
 
-  text = text.replace(comments, function (wholeMatch) {
-    return wholeMatch
-      .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
-  });
+    text = text.replace(comments, function (wholeMatch) {
+      return wholeMatch
+        .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
+    });
+  }
 
   let afterEvent = new showdown.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onEnd', text);
   afterEvent
@@ -4423,7 +6337,7 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
 ////
 
 
-showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals) {
+showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals, topLevelOnly) {
   'use strict';
 
   // early exit if option is not enabled
@@ -4439,10 +6353,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output + '¨0';
 
+  // In CommonMark container mode the converter-level pass restricts the *opening* fence to
+  // indent 0; indent 1-3 opening fences are owned by the container parsers (a list item's /
+  // block quote's own fence) or handled by a later blockGamut pass for true top-level ones.
+  // This stops an item's indented opening/closing fence from being mistaken for a new
+  // top-level opening fence. The closing fence keeps its 0-3 indent allowance either way.
+  const open = topLevelOnly ? '' : ' {0,3}';
   //const accentRegex = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)(?:(\n {0,3}\1[`~]*)|¨0)/g;
-  const closedBlockRegex   = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)\n {0,3}\1[`~]*/gm;
-  const unclosedBlockRegex = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)¨0/gm;
-  const emptyBlockRegex    = /^ {0,3}(```+|~~~+) *([^\n\t`~]*)\n {0,3}\1[`~]*/gm;
+  const closedBlockRegex   = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)\\n {0,3}\\1[`~]*', 'gm');
+  const unclosedBlockRegex = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)¨0', 'gm');
+  const emptyBlockRegex    = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n {0,3}\\1[`~]*', 'gm');
 
   text = text.replace(closedBlockRegex, function (wholeMatch, delim, language, codeblock) {
     return parse(closedBlockRegex, wholeMatch, delim, language, codeblock);
@@ -4452,9 +6372,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
     return parse(emptyBlockRegex, wholeMatch, delim, language, '');
   });
 
-  text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
-    return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
-  });
+  // In topLevelOnly mode, skip the unclosed (run-to-EOF) pass: a genuine indent-0 opener
+  // pairs via the closed/empty passes above, whereas a lone indent-0 *closing* fence of an
+  // indent 1-3 top-level block would otherwise be mistaken for an opener and swallow the
+  // rest of the document. Such an indented top-level fence (and any truly unclosed one) is
+  // handled by the 0-3 blockGamut pass that runs after the container parsers.
+  if (!topLevelOnly) {
+    text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
+      return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
+    });
+  }
 
   // attacklab: strip sentinel
   text = text.replace(/¨0/, '');
@@ -4500,6 +6427,10 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
       // First parse the github code block
       let infostring = captureStartEvent.matches.infostring;
       let lang = infostring.trim().split(' ')[0];
+      // CommonMark resolves backslash escapes of ASCII punctuation in the info string
+      if (options.decodeEntities) {
+        lang = lang.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
+      }
       codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
       //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
@@ -4559,20 +6490,25 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals)
 });
 
 ////
-// makehtml/emphasisAndStrong.js
+// makehtml/hardLineBreaks.js
 // Copyright (c) 2022 ShowdownJS
 //
-// Transforms MD emphasis and strong into `<em>` and `<strong>` html entities
-//
-// Markdown treats asterisks (*) and underscores (_) as indicators of emphasis.
-// Text wrapped with one * or _ will be wrapped with an HTML <em> tag;
-// double *’s or _’s will be wrapped with an HTML <strong> tag
+// Transforms hard line breaks (trailing spaces / backslash) into `<br />` tags.
 //
 // ***Author:***
 // - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
 ////
 
-showdown.subParser('makehtml.hardLineBreaks', function (text, options) {
+showdown.subParser('makehtml.hardLineBreaks', function (text, options, globals) {
+  'use strict';
+
+  let startEvent = new showdown.Event('makehtml.hardLineBreaks.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
 
   // Do hard breaks
   if (options.simpleLineBreaks) {
@@ -4587,7 +6523,13 @@ showdown.subParser('makehtml.hardLineBreaks', function (text, options) {
   }
   text = text.replace(/\\\n/g, '<br />\n');
 
-  return text;
+  let afterEvent = new showdown.Event('makehtml.hardLineBreaks.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
 
 });
 
@@ -4692,7 +6634,7 @@ showdown.subParser('makehtml.hashElement', function (text, options, globals) {
 ////
 
 
-showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) {
+showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, sourceMode) {
   'use strict';
   let startEvent = new showdown.Event('makehtml.hashHTMLBlocks.onStart', text);
   startEvent
@@ -4756,6 +6698,22 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
     });
   }
 
+  // The CommonMark block scanner only applies to the original Markdown source
+  // (the converter-level pass). blockGamut re-invokes this subparser on the markup
+  // it has just generated to prevent <p>-wrapping; there the existing balanced-tag
+  // hashing is correct (and must not over-consume generated block tags).
+  if (options.cmSpec && sourceMode) {
+    text = parseCmHTMLBlocks(text);
+
+    let cmAfterEvent = new showdown.Event('makehtml.hashHTMLBlocks.onEnd', text);
+    cmAfterEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    cmAfterEvent = globals.converter.dispatch(cmAfterEvent);
+    return cmAfterEvent.output;
+  }
+
   // hash HTML Blocks
   for (let i = 0; i < blockTags.length; ++i) {
 
@@ -4804,6 +6762,114 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals) 
     ._setOptions(options);
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
+
+  /**
+   * CommonMark HTML blocks (spec section 4.6): a line-based scanner implementing the
+   * 7 block types, each with its own start and end condition. Block content is hashed
+   * verbatim (not parsed as Markdown). Types 1-6 may interrupt a paragraph; type 7
+   * may only start at a block boundary (document start or after a blank line).
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmHTMLBlocks (str) {
+    const blockNames = 'address|article|aside|base|basefont|blockquote|body|caption|' +
+      'center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|' +
+      'footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hr|html|iframe|legend|' +
+      'li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|section|' +
+      'summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul';
+
+    let type1Start = /^ {0,3}<(?:script|pre|style|textarea)(?:[ \t>]|$)/i,
+        type1End   = /<\/(?:script|pre|style|textarea)>/i,
+        type2Start = /^ {0,3}<!--/,
+        type2End   = /-->/,
+        type3Start = /^ {0,3}<\?/,
+        type3End   = /\?>/,
+        type4Start = /^ {0,3}<![A-Za-z]/,
+        type4End   = />/,
+        type5Start = /^ {0,3}<!\[CDATA\[/,
+        type5End   = /]]>/,
+        type6Start = new RegExp('^ {0,3}</?(?:' + blockNames + ')(?:[ \\t/>]|$)', 'i'),
+        type7Start = new RegExp('^ {0,3}(?:' + showdown.helper.regexes.cmOpenTagSource + '|' +
+                      showdown.helper.regexes.cmCloseTagSource + ')[ \\t]*$'),
+        isBlank    = /^[ \t]*$/;
+
+    function startType (line, prevBlank) {
+      if (type1Start.test(line)) { return 1; }
+      if (type2Start.test(line)) { return 2; }
+      if (type3Start.test(line)) { return 3; }
+      if (type5Start.test(line)) { return 5; }
+      if (type4Start.test(line)) { return 4; }
+      if (type6Start.test(line)) { return 6; }
+      // type 7 cannot interrupt a paragraph
+      if (prevBlank && type7Start.test(line)) { return 7; }
+      return 0;
+    }
+
+    // a fenced-code opener (mirrors githubCodeBlock: an info string carries no backtick,
+    // tilde or tab). A fenced code block takes precedence over an HTML block start, so its
+    // interior lines must not be scanned for HTML block starts.
+    let fenceOpen = /^ {0,3}(```+|~~~+) *[^`~\t]*$/;
+
+    let lines = str.split('\n'),
+        out = [],
+        i = 0,
+        prevBlank = true; // document start behaves like "after a blank line"
+
+    while (i < lines.length) {
+      let type = startType(lines[i], prevBlank);
+      if (type === 0) {
+        let fence = lines[i].match(fenceOpen);
+        if (fence) {
+          // consume the whole fenced region verbatim (closing fence inclusive, or EOF) so
+          // an HTML-block-like line inside the fence cannot open an HTML block. The fence
+          // itself is hashed later by githubCodeBlock.
+          let closeRe = new RegExp('^ {0,3}[' + fence[1][0] + ']{' + fence[1].length + ',}[ \\t]*$');
+          out.push(lines[i]);
+          i++;
+          while (i < lines.length) {
+            out.push(lines[i]);
+            if (closeRe.test(lines[i])) { i++; break; }
+            i++;
+          }
+          prevBlank = false;
+          continue;
+        }
+        out.push(lines[i]);
+        prevBlank = isBlank.test(lines[i]);
+        i++;
+        continue;
+      }
+
+      let blockLines = [];
+      if (type >= 1 && type <= 5) {
+        // ends on (and includes) the line matching the end condition; may be the
+        // start line itself
+        let endRe = [null, type1End, type2End, type3End, type4End, type5End][type];
+        while (i < lines.length) {
+          let l = lines[i];
+          blockLines.push(l);
+          i++;
+          if (endRe.test(l)) { break; }
+        }
+      } else {
+        // types 6 and 7 end before the first following blank line (or at EOF)
+        while (i < lines.length && !isBlank.test(lines[i])) {
+          blockLines.push(lines[i]);
+          i++;
+        }
+      }
+
+      // wrap the placeholder in blank lines so later block parsing treats it as its
+      // own block. A CommonMark HTML block is raw verbatim source: its content (including
+      // any entities) must NOT be decoded, so it gets a distinct `¨R` marker and a separate
+      // store, and is restored late - after decodeEntities - rather than being unhashed in
+      // paragraphs like generated `¨K`/`¨G` blocks (which legitimately decode).
+      out.push('\n¨R' + (globals.gHtmlRawBlocks.push(blockLines.join('\n')) - 1) + 'R\n');
+      prevBlank = false;
+    }
+
+    return out.join('\n');
+  }
 });
 
 ////
@@ -4828,24 +6894,30 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
   text = startEvent.output;
 
   // Hash Self Closing tags
-  text = text.replace(/<[^>]+?\/>/gi, function (wm) {
-    return showdown.helper._hashHTMLSpan(wm, globals);
-  });
+  if (!options.cmSpec) {
+    text = text.replace(/<[^>]+?\/>/gi, function (wm) {
+      return showdown.helper._hashHTMLSpan(wm, globals);
+    });
+  }
 
-  // Hash tags without properties
+  // Hash tags without properties (whole <tag>…</tag> span)
   text = text.replace(/<([^>]+?)>[\s\S]*?<\/\1>/g, function (wm) {
     return showdown.helper._hashHTMLSpan(wm, globals);
   });
 
-  // Hash tags with properties
+  // Hash tags with properties (whole <tag …>…</tag> span, e.g. generated markup)
   text = text.replace(/<([^>]+?)\s[^>]+?>[\s\S]*?<\/\1>/g, function (wm) {
     return showdown.helper._hashHTMLSpan(wm, globals);
   });
 
-  // Hash self closing tags without />
-  text = text.replace(/<[^>]+?>/gi, function (wm) {
-    return showdown.helper._hashHTMLSpan(wm, globals);
-  });
+  // Hash self closing tags without />. In CommonMark raw-HTML mode the valid inline
+  // raw HTML has already been hashed earlier (spanGamut); any `<…>` left here is
+  // malformed and must NOT be hashed (it is escaped by encodeAmpsAndAngles instead).
+  if (!options.cmSpec) {
+    text = text.replace(/<[^>]+?>/gi, function (wm) {
+      return showdown.helper._hashHTMLSpan(wm, globals);
+    });
+  }
 
   let afterEvent = new showdown.Event('makehtml.hashHTMLSpans.onEnd', text);
   afterEvent
@@ -5000,14 +7072,6 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
     let title,
         prefix;
 
-    // It is separate from other options to allow combining prefix and customized
-    if (options.customizedHeaderId) {
-      let match = m.match(/{([^{]+?)}\s*$/);
-      if (match && match[1]) {
-        m = match[1];
-      }
-    }
-
     title = m;
 
     // Prefix id to prevent causing inadvertent pre-existing style matches.
@@ -5019,11 +7083,23 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
       prefix = '';
     }
 
-    if (!options.rawPrefixHeaderId) {
-      title = prefix + title;
-    }
+    title = prefix + title;
 
-    if (options.ghCompatibleHeaderId) {
+    if (options.rawHeaderId) {
+      // minimal sanitization: only spaces, ', ", > and < become dashes (the prefix is
+      // included, so it gets the same treatment). WARNING: may produce malformed ids.
+      title = title
+        .replace(/ /g, '-')
+        // replace previously escaped chars (&, ¨ and $)
+        .replace(/&amp;/g, '&')
+        .replace(/¨T/g, '¨')
+        .replace(/¨D/g, '$')
+        // replace ", ', > and <
+        .replace(/["'><]/g, '-')
+        .toLowerCase();
+    } else {
+      // default: GitHub-compatible ids (spaces become dashes, non-alphanumeric chars
+      // are stripped). Borrowed from github's redcarpet so results are similar.
       title = title
         .replace(/ /g, '-')
         // replace previously escaped chars (&, ¨ and $)
@@ -5031,27 +7107,8 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
         .replace(/¨T/g, '')
         .replace(/¨D/g, '')
         // replace rest of the chars (&~$ are repeated as they might have been escaped)
-        // borrowed from github's redcarpet (so they should produce similar results)
         .replace(/[&+$,\/:;=?@"#{}|^¨¿？：~\[\]`、゠＝…‥『』〝〟「」\\*()｛｝（）［］【】%.。，¡!！'<>]/g, '')
         .toLowerCase();
-    } else if (options.rawHeaderId) {
-      title = title
-        .replace(/ /g, '-')
-        // replace previously escaped chars (&, ¨ and $)
-        .replace(/&amp;/g, '&')
-        .replace(/¨T/g, '¨')
-        .replace(/¨D/g, '$')
-        // replace " and '
-        .replace(/["']/g, '-')
-        .toLowerCase();
-    } else {
-      title = title
-        .replace(/\W/g, '')
-        .toLowerCase();
-    }
-
-    if (options.rawPrefixHeaderId) {
-      title = prefix + title;
     }
 
     if (globals.hashLinkCounts[title]) {
@@ -5072,14 +7129,38 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
     startEvent = globals.converter.dispatch(startEvent);
     text = startEvent.output;
 
-    const setextRegexH1 = /^( {0,3}([^ \t\n]+.*\n)(.+\n)?(.+\n)?)( {0,3}=+[ \t]*)$/gm,
-        setextRegexH2 = /^( {0,3}([^ \t\n]+.*\n)(.+\n)?(.+\n)?)( {0,3}(-+)[ \t]*)$/gm;
+    // NOTE: the first line is `[^ \t\n].*` (single leading non-space + rest) rather
+    // than `[^ \t\n]+.*`. The latter has two overlapping greedy quantifiers that can
+    // consume the same characters, causing O(n^2) backtracking on a long line with no
+    // trailing underline (a DoS via any long whitespace-free input). The two forms
+    // match the same set of lines and capture the same substring.
+    const setextRegexH1 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}=+[ \t]*)$/gm,
+        setextRegexH2 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}(-+)[ \t]*)$/gm;
+
+    // CommonMark: a setext heading's text is a paragraph, so the line(s) before the
+    // underline may not begin another kind of block. Since setext runs before the
+    // list/block-quote parsers in blockGamut, a `-` underline would otherwise steal
+    // list-item lines (e.g. `- foo\n-`). When commonmarkLists is enabled, skip the
+    // match if the heading text starts a list item or block quote; the container
+    // parsers then handle those lines (and any genuine underline inside an item).
+    function cmSkipSetext (headingText) {
+      let first = headingText.split('\n')[0];
+      return /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(first) ||
+             /^ {0,3}>/.test(first) ||
+             // a fenced-code opener is a leaf block, not setext paragraph text. In container
+             // mode the converter-level fence pass leaves indent 1-3 fences for the block
+             // parsers, so they can reach setext here; let the fence (and any container
+             // marker below it) be claimed by the block/container parsers instead.
+             /^ {0,3}(?:```|~~~)/.test(first);
+    }
 
     text = text.replace(setextRegexH1, function (wholeMatch, headingText, line1, line2, line3, line4) {
+      if (options.cmSpec && cmSkipSetext(headingText)) { return wholeMatch; }
       return parseSetextHeading(setextRegexH2, options.headerLevelStart, wholeMatch, headingText, line1, line2, line3, line4);
     });
 
     text = text.replace(setextRegexH2, function (wholeMatch, headingText, line1, line2, line3, line4) {
+      if (options.cmSpec && cmSkipSetext(headingText)) { return wholeMatch; }
       return parseSetextHeading(setextRegexH2, options.headerLevelStart + 1, wholeMatch, headingText, line1, line2, line3, line4);
     });
 
@@ -5252,9 +7333,8 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
     const atxRegex = (options.requireSpaceBeforeHeadingText) ? /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm : /^ {0,3}(#{1,6})[ \t]*(.+?)[ \t]*#*[ \t]*$/gm;
     text = text.replace(atxRegex, function (wholeMatch, m1, m2) {
       let headingLevel = options.headerLevelStart - 1 + m1.length,
-          headingText = (options.customizedHeaderId) ? m2.replace(/\s?{([^{]+?)}\s*$/, '') : m2,
           id = (options.noHeaderId) ? null : showdown.subParser('makehtml.heading.id')(m2, options, globals);
-      return parseHeader('atx', atxRegex, wholeMatch, headingText, headingLevel, id, options, globals);
+      return parseHeader('atx', atxRegex, wholeMatch, m2, headingLevel, id, options, globals);
     });
 
     let afterEvent = new showdown.Event('makehtml.heading.atx.onEnd', text);
@@ -5293,14 +7373,26 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
   text = startEvent.output;
 
 
+  // CommonMark: an *indented* line of consecutive dashes that directly follows a
+  // non-blank line is a setext underline inside a list item (e.g. `- Bar\n  ---`),
+  // not a thematic break. When commonmarkLists is on, leave it for the list/setext
+  // parsers. An unindented `---` after a list item is still a real thematic break
+  // (it ends the list), and a spaced form like `- - -` is never an underline.
+  function isSetextUnderlineDash (wholeMatch, args) {
+    if (!options.cmSpec || !/^ +-+[ \t]*$/.test(wholeMatch)) { return false; }
+    return precededByNonBlank(args[args.length - 1], args[args.length - 2]);
+  }
+
   // parses: --- and - - -
   const rgx1 = /^ {0,2}( ?-){3,}[ \t]*$/gm;
   text = text.replace(rgx1, function (wholeMatch) {
+    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
     return parse(rgx1, wholeMatch);
   });
   // parses: -\t-\t-
   const rgx2 = /^ {0,3}-(\t?-){2,}[ \t]*$/gm;
   text = text.replace(rgx2, function (wholeMatch) {
+    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
     return parse(rgx2, wholeMatch);
   });
 
@@ -5327,6 +7419,7 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
 
   const rgx7 = /^ {0,3}(- *){2,}-[ \t]*$/gm;
   text = text.replace(rgx7, function (wholeMatch) {
+    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
     return parse(rgx7, wholeMatch);
   });
   const rgx8 = /^ {0,3}(\* *){2,}\*[ \t]*$/gm;
@@ -5345,6 +7438,19 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
     ._setOptions(options);
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
+
+  /**
+   * Whether the line preceding the match at `offset` is non-blank.
+   * @param {string} str
+   * @param {number} offset start index of the matched line (a line start)
+   * @returns {boolean}
+   */
+  function precededByNonBlank (str, offset) {
+    if (offset === 0) { return false; }
+    let end = offset - 1, // index of the newline ending the previous line
+        start = str.lastIndexOf('\n', end - 1) + 1;
+    return str.slice(start, end).trim() !== '';
+  }
 
   /**
    *
@@ -5388,6 +7494,2143 @@ showdown.subParser('makehtml.horizontalRule', function (text, options, globals) 
 });
 
 ////
+// makehtml/htmlEntities.js
+// Copyright (c) 2024 ShowdownJS
+//
+// HTML5 named character reference table (name -> replacement string).
+// Generated from the WHATWG HTML5 named character reference set.
+// Used by makehtml.decodeEntities to resolve &name; references (CommonMark).
+////
+
+showdown.helper.htmlEntities = {
+  'AElig': 'Æ',
+  'AMP': '&',
+  'Aacute': 'Á',
+  'Abreve': 'Ă',
+  'Acirc': 'Â',
+  'Acy': 'А',
+  'Afr': '𝔄',
+  'Agrave': 'À',
+  'Alpha': 'Α',
+  'Amacr': 'Ā',
+  'And': '⩓',
+  'Aogon': 'Ą',
+  'Aopf': '𝔸',
+  'ApplyFunction': '⁡',
+  'Aring': 'Å',
+  'Ascr': '𝒜',
+  'Assign': '≔',
+  'Atilde': 'Ã',
+  'Auml': 'Ä',
+  'Backslash': '∖',
+  'Barv': '⫧',
+  'Barwed': '⌆',
+  'Bcy': 'Б',
+  'Because': '∵',
+  'Bernoullis': 'ℬ',
+  'Beta': 'Β',
+  'Bfr': '𝔅',
+  'Bopf': '𝔹',
+  'Breve': '˘',
+  'Bscr': 'ℬ',
+  'Bumpeq': '≎',
+  'CHcy': 'Ч',
+  'COPY': '©',
+  'Cacute': 'Ć',
+  'Cap': '⋒',
+  'CapitalDifferentialD': 'ⅅ',
+  'Cayleys': 'ℭ',
+  'Ccaron': 'Č',
+  'Ccedil': 'Ç',
+  'Ccirc': 'Ĉ',
+  'Cconint': '∰',
+  'Cdot': 'Ċ',
+  'Cedilla': '¸',
+  'CenterDot': '·',
+  'Cfr': 'ℭ',
+  'Chi': 'Χ',
+  'CircleDot': '⊙',
+  'CircleMinus': '⊖',
+  'CirclePlus': '⊕',
+  'CircleTimes': '⊗',
+  'ClockwiseContourIntegral': '∲',
+  'CloseCurlyDoubleQuote': '”',
+  'CloseCurlyQuote': '’',
+  'Colon': '∷',
+  'Colone': '⩴',
+  'Congruent': '≡',
+  'Conint': '∯',
+  'ContourIntegral': '∮',
+  'Copf': 'ℂ',
+  'Coproduct': '∐',
+  'CounterClockwiseContourIntegral': '∳',
+  'Cross': '⨯',
+  'Cscr': '𝒞',
+  'Cup': '⋓',
+  'CupCap': '≍',
+  'DD': 'ⅅ',
+  'DDotrahd': '⤑',
+  'DJcy': 'Ђ',
+  'DScy': 'Ѕ',
+  'DZcy': 'Џ',
+  'Dagger': '‡',
+  'Darr': '↡',
+  'Dashv': '⫤',
+  'Dcaron': 'Ď',
+  'Dcy': 'Д',
+  'Del': '∇',
+  'Delta': 'Δ',
+  'Dfr': '𝔇',
+  'DiacriticalAcute': '´',
+  'DiacriticalDot': '˙',
+  'DiacriticalDoubleAcute': '˝',
+  'DiacriticalGrave': '`',
+  'DiacriticalTilde': '˜',
+  'Diamond': '⋄',
+  'DifferentialD': 'ⅆ',
+  'Dopf': '𝔻',
+  'Dot': '¨',
+  'DotDot': '⃜',
+  'DotEqual': '≐',
+  'DoubleContourIntegral': '∯',
+  'DoubleDot': '¨',
+  'DoubleDownArrow': '⇓',
+  'DoubleLeftArrow': '⇐',
+  'DoubleLeftRightArrow': '⇔',
+  'DoubleLeftTee': '⫤',
+  'DoubleLongLeftArrow': '⟸',
+  'DoubleLongLeftRightArrow': '⟺',
+  'DoubleLongRightArrow': '⟹',
+  'DoubleRightArrow': '⇒',
+  'DoubleRightTee': '⊨',
+  'DoubleUpArrow': '⇑',
+  'DoubleUpDownArrow': '⇕',
+  'DoubleVerticalBar': '∥',
+  'DownArrow': '↓',
+  'DownArrowBar': '⤓',
+  'DownArrowUpArrow': '⇵',
+  'DownBreve': '̑',
+  'DownLeftRightVector': '⥐',
+  'DownLeftTeeVector': '⥞',
+  'DownLeftVector': '↽',
+  'DownLeftVectorBar': '⥖',
+  'DownRightTeeVector': '⥟',
+  'DownRightVector': '⇁',
+  'DownRightVectorBar': '⥗',
+  'DownTee': '⊤',
+  'DownTeeArrow': '↧',
+  'Downarrow': '⇓',
+  'Dscr': '𝒟',
+  'Dstrok': 'Đ',
+  'ENG': 'Ŋ',
+  'ETH': 'Ð',
+  'Eacute': 'É',
+  'Ecaron': 'Ě',
+  'Ecirc': 'Ê',
+  'Ecy': 'Э',
+  'Edot': 'Ė',
+  'Efr': '𝔈',
+  'Egrave': 'È',
+  'Element': '∈',
+  'Emacr': 'Ē',
+  'EmptySmallSquare': '◻',
+  'EmptyVerySmallSquare': '▫',
+  'Eogon': 'Ę',
+  'Eopf': '𝔼',
+  'Epsilon': 'Ε',
+  'Equal': '⩵',
+  'EqualTilde': '≂',
+  'Equilibrium': '⇌',
+  'Escr': 'ℰ',
+  'Esim': '⩳',
+  'Eta': 'Η',
+  'Euml': 'Ë',
+  'Exists': '∃',
+  'ExponentialE': 'ⅇ',
+  'Fcy': 'Ф',
+  'Ffr': '𝔉',
+  'FilledSmallSquare': '◼',
+  'FilledVerySmallSquare': '▪',
+  'Fopf': '𝔽',
+  'ForAll': '∀',
+  'Fouriertrf': 'ℱ',
+  'Fscr': 'ℱ',
+  'GJcy': 'Ѓ',
+  'GT': '>',
+  'Gamma': 'Γ',
+  'Gammad': 'Ϝ',
+  'Gbreve': 'Ğ',
+  'Gcedil': 'Ģ',
+  'Gcirc': 'Ĝ',
+  'Gcy': 'Г',
+  'Gdot': 'Ġ',
+  'Gfr': '𝔊',
+  'Gg': '⋙',
+  'Gopf': '𝔾',
+  'GreaterEqual': '≥',
+  'GreaterEqualLess': '⋛',
+  'GreaterFullEqual': '≧',
+  'GreaterGreater': '⪢',
+  'GreaterLess': '≷',
+  'GreaterSlantEqual': '⩾',
+  'GreaterTilde': '≳',
+  'Gscr': '𝒢',
+  'Gt': '≫',
+  'HARDcy': 'Ъ',
+  'Hacek': 'ˇ',
+  'Hat': '^',
+  'Hcirc': 'Ĥ',
+  'Hfr': 'ℌ',
+  'HilbertSpace': 'ℋ',
+  'Hopf': 'ℍ',
+  'HorizontalLine': '─',
+  'Hscr': 'ℋ',
+  'Hstrok': 'Ħ',
+  'HumpDownHump': '≎',
+  'HumpEqual': '≏',
+  'IEcy': 'Е',
+  'IJlig': 'Ĳ',
+  'IOcy': 'Ё',
+  'Iacute': 'Í',
+  'Icirc': 'Î',
+  'Icy': 'И',
+  'Idot': 'İ',
+  'Ifr': 'ℑ',
+  'Igrave': 'Ì',
+  'Im': 'ℑ',
+  'Imacr': 'Ī',
+  'ImaginaryI': 'ⅈ',
+  'Implies': '⇒',
+  'Int': '∬',
+  'Integral': '∫',
+  'Intersection': '⋂',
+  'InvisibleComma': '⁣',
+  'InvisibleTimes': '⁢',
+  'Iogon': 'Į',
+  'Iopf': '𝕀',
+  'Iota': 'Ι',
+  'Iscr': 'ℐ',
+  'Itilde': 'Ĩ',
+  'Iukcy': 'І',
+  'Iuml': 'Ï',
+  'Jcirc': 'Ĵ',
+  'Jcy': 'Й',
+  'Jfr': '𝔍',
+  'Jopf': '𝕁',
+  'Jscr': '𝒥',
+  'Jsercy': 'Ј',
+  'Jukcy': 'Є',
+  'KHcy': 'Х',
+  'KJcy': 'Ќ',
+  'Kappa': 'Κ',
+  'Kcedil': 'Ķ',
+  'Kcy': 'К',
+  'Kfr': '𝔎',
+  'Kopf': '𝕂',
+  'Kscr': '𝒦',
+  'LJcy': 'Љ',
+  'LT': '<',
+  'Lacute': 'Ĺ',
+  'Lambda': 'Λ',
+  'Lang': '⟪',
+  'Laplacetrf': 'ℒ',
+  'Larr': '↞',
+  'Lcaron': 'Ľ',
+  'Lcedil': 'Ļ',
+  'Lcy': 'Л',
+  'LeftAngleBracket': '⟨',
+  'LeftArrow': '←',
+  'LeftArrowBar': '⇤',
+  'LeftArrowRightArrow': '⇆',
+  'LeftCeiling': '⌈',
+  'LeftDoubleBracket': '⟦',
+  'LeftDownTeeVector': '⥡',
+  'LeftDownVector': '⇃',
+  'LeftDownVectorBar': '⥙',
+  'LeftFloor': '⌊',
+  'LeftRightArrow': '↔',
+  'LeftRightVector': '⥎',
+  'LeftTee': '⊣',
+  'LeftTeeArrow': '↤',
+  'LeftTeeVector': '⥚',
+  'LeftTriangle': '⊲',
+  'LeftTriangleBar': '⧏',
+  'LeftTriangleEqual': '⊴',
+  'LeftUpDownVector': '⥑',
+  'LeftUpTeeVector': '⥠',
+  'LeftUpVector': '↿',
+  'LeftUpVectorBar': '⥘',
+  'LeftVector': '↼',
+  'LeftVectorBar': '⥒',
+  'Leftarrow': '⇐',
+  'Leftrightarrow': '⇔',
+  'LessEqualGreater': '⋚',
+  'LessFullEqual': '≦',
+  'LessGreater': '≶',
+  'LessLess': '⪡',
+  'LessSlantEqual': '⩽',
+  'LessTilde': '≲',
+  'Lfr': '𝔏',
+  'Ll': '⋘',
+  'Lleftarrow': '⇚',
+  'Lmidot': 'Ŀ',
+  'LongLeftArrow': '⟵',
+  'LongLeftRightArrow': '⟷',
+  'LongRightArrow': '⟶',
+  'Longleftarrow': '⟸',
+  'Longleftrightarrow': '⟺',
+  'Longrightarrow': '⟹',
+  'Lopf': '𝕃',
+  'LowerLeftArrow': '↙',
+  'LowerRightArrow': '↘',
+  'Lscr': 'ℒ',
+  'Lsh': '↰',
+  'Lstrok': 'Ł',
+  'Lt': '≪',
+  'Map': '⤅',
+  'Mcy': 'М',
+  'MediumSpace': ' ',
+  'Mellintrf': 'ℳ',
+  'Mfr': '𝔐',
+  'MinusPlus': '∓',
+  'Mopf': '𝕄',
+  'Mscr': 'ℳ',
+  'Mu': 'Μ',
+  'NJcy': 'Њ',
+  'Nacute': 'Ń',
+  'Ncaron': 'Ň',
+  'Ncedil': 'Ņ',
+  'Ncy': 'Н',
+  'NegativeMediumSpace': '​',
+  'NegativeThickSpace': '​',
+  'NegativeThinSpace': '​',
+  'NegativeVeryThinSpace': '​',
+  'NestedGreaterGreater': '≫',
+  'NestedLessLess': '≪',
+  'NewLine': '\n',
+  'Nfr': '𝔑',
+  'NoBreak': '⁠',
+  'NonBreakingSpace': ' ',
+  'Nopf': 'ℕ',
+  'Not': '⫬',
+  'NotCongruent': '≢',
+  'NotCupCap': '≭',
+  'NotDoubleVerticalBar': '∦',
+  'NotElement': '∉',
+  'NotEqual': '≠',
+  'NotEqualTilde': '≂̸',
+  'NotExists': '∄',
+  'NotGreater': '≯',
+  'NotGreaterEqual': '≱',
+  'NotGreaterFullEqual': '≧̸',
+  'NotGreaterGreater': '≫̸',
+  'NotGreaterLess': '≹',
+  'NotGreaterSlantEqual': '⩾̸',
+  'NotGreaterTilde': '≵',
+  'NotHumpDownHump': '≎̸',
+  'NotHumpEqual': '≏̸',
+  'NotLeftTriangle': '⋪',
+  'NotLeftTriangleBar': '⧏̸',
+  'NotLeftTriangleEqual': '⋬',
+  'NotLess': '≮',
+  'NotLessEqual': '≰',
+  'NotLessGreater': '≸',
+  'NotLessLess': '≪̸',
+  'NotLessSlantEqual': '⩽̸',
+  'NotLessTilde': '≴',
+  'NotNestedGreaterGreater': '⪢̸',
+  'NotNestedLessLess': '⪡̸',
+  'NotPrecedes': '⊀',
+  'NotPrecedesEqual': '⪯̸',
+  'NotPrecedesSlantEqual': '⋠',
+  'NotReverseElement': '∌',
+  'NotRightTriangle': '⋫',
+  'NotRightTriangleBar': '⧐̸',
+  'NotRightTriangleEqual': '⋭',
+  'NotSquareSubset': '⊏̸',
+  'NotSquareSubsetEqual': '⋢',
+  'NotSquareSuperset': '⊐̸',
+  'NotSquareSupersetEqual': '⋣',
+  'NotSubset': '⊂⃒',
+  'NotSubsetEqual': '⊈',
+  'NotSucceeds': '⊁',
+  'NotSucceedsEqual': '⪰̸',
+  'NotSucceedsSlantEqual': '⋡',
+  'NotSucceedsTilde': '≿̸',
+  'NotSuperset': '⊃⃒',
+  'NotSupersetEqual': '⊉',
+  'NotTilde': '≁',
+  'NotTildeEqual': '≄',
+  'NotTildeFullEqual': '≇',
+  'NotTildeTilde': '≉',
+  'NotVerticalBar': '∤',
+  'Nscr': '𝒩',
+  'Ntilde': 'Ñ',
+  'Nu': 'Ν',
+  'OElig': 'Œ',
+  'Oacute': 'Ó',
+  'Ocirc': 'Ô',
+  'Ocy': 'О',
+  'Odblac': 'Ő',
+  'Ofr': '𝔒',
+  'Ograve': 'Ò',
+  'Omacr': 'Ō',
+  'Omega': 'Ω',
+  'Omicron': 'Ο',
+  'Oopf': '𝕆',
+  'OpenCurlyDoubleQuote': '“',
+  'OpenCurlyQuote': '‘',
+  'Or': '⩔',
+  'Oscr': '𝒪',
+  'Oslash': 'Ø',
+  'Otilde': 'Õ',
+  'Otimes': '⨷',
+  'Ouml': 'Ö',
+  'OverBar': '‾',
+  'OverBrace': '⏞',
+  'OverBracket': '⎴',
+  'OverParenthesis': '⏜',
+  'PartialD': '∂',
+  'Pcy': 'П',
+  'Pfr': '𝔓',
+  'Phi': 'Φ',
+  'Pi': 'Π',
+  'PlusMinus': '±',
+  'Poincareplane': 'ℌ',
+  'Popf': 'ℙ',
+  'Pr': '⪻',
+  'Precedes': '≺',
+  'PrecedesEqual': '⪯',
+  'PrecedesSlantEqual': '≼',
+  'PrecedesTilde': '≾',
+  'Prime': '″',
+  'Product': '∏',
+  'Proportion': '∷',
+  'Proportional': '∝',
+  'Pscr': '𝒫',
+  'Psi': 'Ψ',
+  'QUOT': '"',
+  'Qfr': '𝔔',
+  'Qopf': 'ℚ',
+  'Qscr': '𝒬',
+  'RBarr': '⤐',
+  'REG': '®',
+  'Racute': 'Ŕ',
+  'Rang': '⟫',
+  'Rarr': '↠',
+  'Rarrtl': '⤖',
+  'Rcaron': 'Ř',
+  'Rcedil': 'Ŗ',
+  'Rcy': 'Р',
+  'Re': 'ℜ',
+  'ReverseElement': '∋',
+  'ReverseEquilibrium': '⇋',
+  'ReverseUpEquilibrium': '⥯',
+  'Rfr': 'ℜ',
+  'Rho': 'Ρ',
+  'RightAngleBracket': '⟩',
+  'RightArrow': '→',
+  'RightArrowBar': '⇥',
+  'RightArrowLeftArrow': '⇄',
+  'RightCeiling': '⌉',
+  'RightDoubleBracket': '⟧',
+  'RightDownTeeVector': '⥝',
+  'RightDownVector': '⇂',
+  'RightDownVectorBar': '⥕',
+  'RightFloor': '⌋',
+  'RightTee': '⊢',
+  'RightTeeArrow': '↦',
+  'RightTeeVector': '⥛',
+  'RightTriangle': '⊳',
+  'RightTriangleBar': '⧐',
+  'RightTriangleEqual': '⊵',
+  'RightUpDownVector': '⥏',
+  'RightUpTeeVector': '⥜',
+  'RightUpVector': '↾',
+  'RightUpVectorBar': '⥔',
+  'RightVector': '⇀',
+  'RightVectorBar': '⥓',
+  'Rightarrow': '⇒',
+  'Ropf': 'ℝ',
+  'RoundImplies': '⥰',
+  'Rrightarrow': '⇛',
+  'Rscr': 'ℛ',
+  'Rsh': '↱',
+  'RuleDelayed': '⧴',
+  'SHCHcy': 'Щ',
+  'SHcy': 'Ш',
+  'SOFTcy': 'Ь',
+  'Sacute': 'Ś',
+  'Sc': '⪼',
+  'Scaron': 'Š',
+  'Scedil': 'Ş',
+  'Scirc': 'Ŝ',
+  'Scy': 'С',
+  'Sfr': '𝔖',
+  'ShortDownArrow': '↓',
+  'ShortLeftArrow': '←',
+  'ShortRightArrow': '→',
+  'ShortUpArrow': '↑',
+  'Sigma': 'Σ',
+  'SmallCircle': '∘',
+  'Sopf': '𝕊',
+  'Sqrt': '√',
+  'Square': '□',
+  'SquareIntersection': '⊓',
+  'SquareSubset': '⊏',
+  'SquareSubsetEqual': '⊑',
+  'SquareSuperset': '⊐',
+  'SquareSupersetEqual': '⊒',
+  'SquareUnion': '⊔',
+  'Sscr': '𝒮',
+  'Star': '⋆',
+  'Sub': '⋐',
+  'Subset': '⋐',
+  'SubsetEqual': '⊆',
+  'Succeeds': '≻',
+  'SucceedsEqual': '⪰',
+  'SucceedsSlantEqual': '≽',
+  'SucceedsTilde': '≿',
+  'SuchThat': '∋',
+  'Sum': '∑',
+  'Sup': '⋑',
+  'Superset': '⊃',
+  'SupersetEqual': '⊇',
+  'Supset': '⋑',
+  'THORN': 'Þ',
+  'TRADE': '™',
+  'TSHcy': 'Ћ',
+  'TScy': 'Ц',
+  'Tab': '\t',
+  'Tau': 'Τ',
+  'Tcaron': 'Ť',
+  'Tcedil': 'Ţ',
+  'Tcy': 'Т',
+  'Tfr': '𝔗',
+  'Therefore': '∴',
+  'Theta': 'Θ',
+  'ThickSpace': '  ',
+  'ThinSpace': ' ',
+  'Tilde': '∼',
+  'TildeEqual': '≃',
+  'TildeFullEqual': '≅',
+  'TildeTilde': '≈',
+  'Topf': '𝕋',
+  'TripleDot': '⃛',
+  'Tscr': '𝒯',
+  'Tstrok': 'Ŧ',
+  'Uacute': 'Ú',
+  'Uarr': '↟',
+  'Uarrocir': '⥉',
+  'Ubrcy': 'Ў',
+  'Ubreve': 'Ŭ',
+  'Ucirc': 'Û',
+  'Ucy': 'У',
+  'Udblac': 'Ű',
+  'Ufr': '𝔘',
+  'Ugrave': 'Ù',
+  'Umacr': 'Ū',
+  'UnderBar': '_',
+  'UnderBrace': '⏟',
+  'UnderBracket': '⎵',
+  'UnderParenthesis': '⏝',
+  'Union': '⋃',
+  'UnionPlus': '⊎',
+  'Uogon': 'Ų',
+  'Uopf': '𝕌',
+  'UpArrow': '↑',
+  'UpArrowBar': '⤒',
+  'UpArrowDownArrow': '⇅',
+  'UpDownArrow': '↕',
+  'UpEquilibrium': '⥮',
+  'UpTee': '⊥',
+  'UpTeeArrow': '↥',
+  'Uparrow': '⇑',
+  'Updownarrow': '⇕',
+  'UpperLeftArrow': '↖',
+  'UpperRightArrow': '↗',
+  'Upsi': 'ϒ',
+  'Upsilon': 'Υ',
+  'Uring': 'Ů',
+  'Uscr': '𝒰',
+  'Utilde': 'Ũ',
+  'Uuml': 'Ü',
+  'VDash': '⊫',
+  'Vbar': '⫫',
+  'Vcy': 'В',
+  'Vdash': '⊩',
+  'Vdashl': '⫦',
+  'Vee': '⋁',
+  'Verbar': '‖',
+  'Vert': '‖',
+  'VerticalBar': '∣',
+  'VerticalLine': '|',
+  'VerticalSeparator': '❘',
+  'VerticalTilde': '≀',
+  'VeryThinSpace': ' ',
+  'Vfr': '𝔙',
+  'Vopf': '𝕍',
+  'Vscr': '𝒱',
+  'Vvdash': '⊪',
+  'Wcirc': 'Ŵ',
+  'Wedge': '⋀',
+  'Wfr': '𝔚',
+  'Wopf': '𝕎',
+  'Wscr': '𝒲',
+  'Xfr': '𝔛',
+  'Xi': 'Ξ',
+  'Xopf': '𝕏',
+  'Xscr': '𝒳',
+  'YAcy': 'Я',
+  'YIcy': 'Ї',
+  'YUcy': 'Ю',
+  'Yacute': 'Ý',
+  'Ycirc': 'Ŷ',
+  'Ycy': 'Ы',
+  'Yfr': '𝔜',
+  'Yopf': '𝕐',
+  'Yscr': '𝒴',
+  'Yuml': 'Ÿ',
+  'ZHcy': 'Ж',
+  'Zacute': 'Ź',
+  'Zcaron': 'Ž',
+  'Zcy': 'З',
+  'Zdot': 'Ż',
+  'ZeroWidthSpace': '​',
+  'Zeta': 'Ζ',
+  'Zfr': 'ℨ',
+  'Zopf': 'ℤ',
+  'Zscr': '𝒵',
+  'aacute': 'á',
+  'abreve': 'ă',
+  'ac': '∾',
+  'acE': '∾̳',
+  'acd': '∿',
+  'acirc': 'â',
+  'acute': '´',
+  'acy': 'а',
+  'aelig': 'æ',
+  'af': '⁡',
+  'afr': '𝔞',
+  'agrave': 'à',
+  'alefsym': 'ℵ',
+  'aleph': 'ℵ',
+  'alpha': 'α',
+  'amacr': 'ā',
+  'amalg': '⨿',
+  'amp': '&',
+  'and': '∧',
+  'andand': '⩕',
+  'andd': '⩜',
+  'andslope': '⩘',
+  'andv': '⩚',
+  'ang': '∠',
+  'ange': '⦤',
+  'angle': '∠',
+  'angmsd': '∡',
+  'angmsdaa': '⦨',
+  'angmsdab': '⦩',
+  'angmsdac': '⦪',
+  'angmsdad': '⦫',
+  'angmsdae': '⦬',
+  'angmsdaf': '⦭',
+  'angmsdag': '⦮',
+  'angmsdah': '⦯',
+  'angrt': '∟',
+  'angrtvb': '⊾',
+  'angrtvbd': '⦝',
+  'angsph': '∢',
+  'angst': 'Å',
+  'angzarr': '⍼',
+  'aogon': 'ą',
+  'aopf': '𝕒',
+  'ap': '≈',
+  'apE': '⩰',
+  'apacir': '⩯',
+  'ape': '≊',
+  'apid': '≋',
+  'apos': '\'',
+  'approx': '≈',
+  'approxeq': '≊',
+  'aring': 'å',
+  'ascr': '𝒶',
+  'ast': '*',
+  'asymp': '≈',
+  'asympeq': '≍',
+  'atilde': 'ã',
+  'auml': 'ä',
+  'awconint': '∳',
+  'awint': '⨑',
+  'bNot': '⫭',
+  'backcong': '≌',
+  'backepsilon': '϶',
+  'backprime': '‵',
+  'backsim': '∽',
+  'backsimeq': '⋍',
+  'barvee': '⊽',
+  'barwed': '⌅',
+  'barwedge': '⌅',
+  'bbrk': '⎵',
+  'bbrktbrk': '⎶',
+  'bcong': '≌',
+  'bcy': 'б',
+  'bdquo': '„',
+  'becaus': '∵',
+  'because': '∵',
+  'bemptyv': '⦰',
+  'bepsi': '϶',
+  'bernou': 'ℬ',
+  'beta': 'β',
+  'beth': 'ℶ',
+  'between': '≬',
+  'bfr': '𝔟',
+  'bigcap': '⋂',
+  'bigcirc': '◯',
+  'bigcup': '⋃',
+  'bigodot': '⨀',
+  'bigoplus': '⨁',
+  'bigotimes': '⨂',
+  'bigsqcup': '⨆',
+  'bigstar': '★',
+  'bigtriangledown': '▽',
+  'bigtriangleup': '△',
+  'biguplus': '⨄',
+  'bigvee': '⋁',
+  'bigwedge': '⋀',
+  'bkarow': '⤍',
+  'blacklozenge': '⧫',
+  'blacksquare': '▪',
+  'blacktriangle': '▴',
+  'blacktriangledown': '▾',
+  'blacktriangleleft': '◂',
+  'blacktriangleright': '▸',
+  'blank': '␣',
+  'blk12': '▒',
+  'blk14': '░',
+  'blk34': '▓',
+  'block': '█',
+  'bne': '=⃥',
+  'bnequiv': '≡⃥',
+  'bnot': '⌐',
+  'bopf': '𝕓',
+  'bot': '⊥',
+  'bottom': '⊥',
+  'bowtie': '⋈',
+  'boxDL': '╗',
+  'boxDR': '╔',
+  'boxDl': '╖',
+  'boxDr': '╓',
+  'boxH': '═',
+  'boxHD': '╦',
+  'boxHU': '╩',
+  'boxHd': '╤',
+  'boxHu': '╧',
+  'boxUL': '╝',
+  'boxUR': '╚',
+  'boxUl': '╜',
+  'boxUr': '╙',
+  'boxV': '║',
+  'boxVH': '╬',
+  'boxVL': '╣',
+  'boxVR': '╠',
+  'boxVh': '╫',
+  'boxVl': '╢',
+  'boxVr': '╟',
+  'boxbox': '⧉',
+  'boxdL': '╕',
+  'boxdR': '╒',
+  'boxdl': '┐',
+  'boxdr': '┌',
+  'boxh': '─',
+  'boxhD': '╥',
+  'boxhU': '╨',
+  'boxhd': '┬',
+  'boxhu': '┴',
+  'boxminus': '⊟',
+  'boxplus': '⊞',
+  'boxtimes': '⊠',
+  'boxuL': '╛',
+  'boxuR': '╘',
+  'boxul': '┘',
+  'boxur': '└',
+  'boxv': '│',
+  'boxvH': '╪',
+  'boxvL': '╡',
+  'boxvR': '╞',
+  'boxvh': '┼',
+  'boxvl': '┤',
+  'boxvr': '├',
+  'bprime': '‵',
+  'breve': '˘',
+  'brvbar': '¦',
+  'bscr': '𝒷',
+  'bsemi': '⁏',
+  'bsim': '∽',
+  'bsime': '⋍',
+  'bsol': '\\',
+  'bsolb': '⧅',
+  'bsolhsub': '⟈',
+  'bull': '•',
+  'bullet': '•',
+  'bump': '≎',
+  'bumpE': '⪮',
+  'bumpe': '≏',
+  'bumpeq': '≏',
+  'cacute': 'ć',
+  'cap': '∩',
+  'capand': '⩄',
+  'capbrcup': '⩉',
+  'capcap': '⩋',
+  'capcup': '⩇',
+  'capdot': '⩀',
+  'caps': '∩︀',
+  'caret': '⁁',
+  'caron': 'ˇ',
+  'ccaps': '⩍',
+  'ccaron': 'č',
+  'ccedil': 'ç',
+  'ccirc': 'ĉ',
+  'ccups': '⩌',
+  'ccupssm': '⩐',
+  'cdot': 'ċ',
+  'cedil': '¸',
+  'cemptyv': '⦲',
+  'cent': '¢',
+  'centerdot': '·',
+  'cfr': '𝔠',
+  'chcy': 'ч',
+  'check': '✓',
+  'checkmark': '✓',
+  'chi': 'χ',
+  'cir': '○',
+  'cirE': '⧃',
+  'circ': 'ˆ',
+  'circeq': '≗',
+  'circlearrowleft': '↺',
+  'circlearrowright': '↻',
+  'circledR': '®',
+  'circledS': 'Ⓢ',
+  'circledast': '⊛',
+  'circledcirc': '⊚',
+  'circleddash': '⊝',
+  'cire': '≗',
+  'cirfnint': '⨐',
+  'cirmid': '⫯',
+  'cirscir': '⧂',
+  'clubs': '♣',
+  'clubsuit': '♣',
+  'colon': ':',
+  'colone': '≔',
+  'coloneq': '≔',
+  'comma': ',',
+  'commat': '@',
+  'comp': '∁',
+  'compfn': '∘',
+  'complement': '∁',
+  'complexes': 'ℂ',
+  'cong': '≅',
+  'congdot': '⩭',
+  'conint': '∮',
+  'copf': '𝕔',
+  'coprod': '∐',
+  'copy': '©',
+  'copysr': '℗',
+  'crarr': '↵',
+  'cross': '✗',
+  'cscr': '𝒸',
+  'csub': '⫏',
+  'csube': '⫑',
+  'csup': '⫐',
+  'csupe': '⫒',
+  'ctdot': '⋯',
+  'cudarrl': '⤸',
+  'cudarrr': '⤵',
+  'cuepr': '⋞',
+  'cuesc': '⋟',
+  'cularr': '↶',
+  'cularrp': '⤽',
+  'cup': '∪',
+  'cupbrcap': '⩈',
+  'cupcap': '⩆',
+  'cupcup': '⩊',
+  'cupdot': '⊍',
+  'cupor': '⩅',
+  'cups': '∪︀',
+  'curarr': '↷',
+  'curarrm': '⤼',
+  'curlyeqprec': '⋞',
+  'curlyeqsucc': '⋟',
+  'curlyvee': '⋎',
+  'curlywedge': '⋏',
+  'curren': '¤',
+  'curvearrowleft': '↶',
+  'curvearrowright': '↷',
+  'cuvee': '⋎',
+  'cuwed': '⋏',
+  'cwconint': '∲',
+  'cwint': '∱',
+  'cylcty': '⌭',
+  'dArr': '⇓',
+  'dHar': '⥥',
+  'dagger': '†',
+  'daleth': 'ℸ',
+  'darr': '↓',
+  'dash': '‐',
+  'dashv': '⊣',
+  'dbkarow': '⤏',
+  'dblac': '˝',
+  'dcaron': 'ď',
+  'dcy': 'д',
+  'dd': 'ⅆ',
+  'ddagger': '‡',
+  'ddarr': '⇊',
+  'ddotseq': '⩷',
+  'deg': '°',
+  'delta': 'δ',
+  'demptyv': '⦱',
+  'dfisht': '⥿',
+  'dfr': '𝔡',
+  'dharl': '⇃',
+  'dharr': '⇂',
+  'diam': '⋄',
+  'diamond': '⋄',
+  'diamondsuit': '♦',
+  'diams': '♦',
+  'die': '¨',
+  'digamma': 'ϝ',
+  'disin': '⋲',
+  'div': '÷',
+  'divide': '÷',
+  'divideontimes': '⋇',
+  'divonx': '⋇',
+  'djcy': 'ђ',
+  'dlcorn': '⌞',
+  'dlcrop': '⌍',
+  'dollar': '$',
+  'dopf': '𝕕',
+  'dot': '˙',
+  'doteq': '≐',
+  'doteqdot': '≑',
+  'dotminus': '∸',
+  'dotplus': '∔',
+  'dotsquare': '⊡',
+  'doublebarwedge': '⌆',
+  'downarrow': '↓',
+  'downdownarrows': '⇊',
+  'downharpoonleft': '⇃',
+  'downharpoonright': '⇂',
+  'drbkarow': '⤐',
+  'drcorn': '⌟',
+  'drcrop': '⌌',
+  'dscr': '𝒹',
+  'dscy': 'ѕ',
+  'dsol': '⧶',
+  'dstrok': 'đ',
+  'dtdot': '⋱',
+  'dtri': '▿',
+  'dtrif': '▾',
+  'duarr': '⇵',
+  'duhar': '⥯',
+  'dwangle': '⦦',
+  'dzcy': 'џ',
+  'dzigrarr': '⟿',
+  'eDDot': '⩷',
+  'eDot': '≑',
+  'eacute': 'é',
+  'easter': '⩮',
+  'ecaron': 'ě',
+  'ecir': '≖',
+  'ecirc': 'ê',
+  'ecolon': '≕',
+  'ecy': 'э',
+  'edot': 'ė',
+  'ee': 'ⅇ',
+  'efDot': '≒',
+  'efr': '𝔢',
+  'eg': '⪚',
+  'egrave': 'è',
+  'egs': '⪖',
+  'egsdot': '⪘',
+  'el': '⪙',
+  'elinters': '⏧',
+  'ell': 'ℓ',
+  'els': '⪕',
+  'elsdot': '⪗',
+  'emacr': 'ē',
+  'empty': '∅',
+  'emptyset': '∅',
+  'emptyv': '∅',
+  'emsp': ' ',
+  'emsp13': ' ',
+  'emsp14': ' ',
+  'eng': 'ŋ',
+  'ensp': ' ',
+  'eogon': 'ę',
+  'eopf': '𝕖',
+  'epar': '⋕',
+  'eparsl': '⧣',
+  'eplus': '⩱',
+  'epsi': 'ε',
+  'epsilon': 'ε',
+  'epsiv': 'ϵ',
+  'eqcirc': '≖',
+  'eqcolon': '≕',
+  'eqsim': '≂',
+  'eqslantgtr': '⪖',
+  'eqslantless': '⪕',
+  'equals': '=',
+  'equest': '≟',
+  'equiv': '≡',
+  'equivDD': '⩸',
+  'eqvparsl': '⧥',
+  'erDot': '≓',
+  'erarr': '⥱',
+  'escr': 'ℯ',
+  'esdot': '≐',
+  'esim': '≂',
+  'eta': 'η',
+  'eth': 'ð',
+  'euml': 'ë',
+  'euro': '€',
+  'excl': '!',
+  'exist': '∃',
+  'expectation': 'ℰ',
+  'exponentiale': 'ⅇ',
+  'fallingdotseq': '≒',
+  'fcy': 'ф',
+  'female': '♀',
+  'ffilig': 'ﬃ',
+  'fflig': 'ﬀ',
+  'ffllig': 'ﬄ',
+  'ffr': '𝔣',
+  'filig': 'ﬁ',
+  'fjlig': 'fj',
+  'flat': '♭',
+  'fllig': 'ﬂ',
+  'fltns': '▱',
+  'fnof': 'ƒ',
+  'fopf': '𝕗',
+  'forall': '∀',
+  'fork': '⋔',
+  'forkv': '⫙',
+  'fpartint': '⨍',
+  'frac12': '½',
+  'frac13': '⅓',
+  'frac14': '¼',
+  'frac15': '⅕',
+  'frac16': '⅙',
+  'frac18': '⅛',
+  'frac23': '⅔',
+  'frac25': '⅖',
+  'frac34': '¾',
+  'frac35': '⅗',
+  'frac38': '⅜',
+  'frac45': '⅘',
+  'frac56': '⅚',
+  'frac58': '⅝',
+  'frac78': '⅞',
+  'frasl': '⁄',
+  'frown': '⌢',
+  'fscr': '𝒻',
+  'gE': '≧',
+  'gEl': '⪌',
+  'gacute': 'ǵ',
+  'gamma': 'γ',
+  'gammad': 'ϝ',
+  'gap': '⪆',
+  'gbreve': 'ğ',
+  'gcirc': 'ĝ',
+  'gcy': 'г',
+  'gdot': 'ġ',
+  'ge': '≥',
+  'gel': '⋛',
+  'geq': '≥',
+  'geqq': '≧',
+  'geqslant': '⩾',
+  'ges': '⩾',
+  'gescc': '⪩',
+  'gesdot': '⪀',
+  'gesdoto': '⪂',
+  'gesdotol': '⪄',
+  'gesl': '⋛︀',
+  'gesles': '⪔',
+  'gfr': '𝔤',
+  'gg': '≫',
+  'ggg': '⋙',
+  'gimel': 'ℷ',
+  'gjcy': 'ѓ',
+  'gl': '≷',
+  'glE': '⪒',
+  'gla': '⪥',
+  'glj': '⪤',
+  'gnE': '≩',
+  'gnap': '⪊',
+  'gnapprox': '⪊',
+  'gne': '⪈',
+  'gneq': '⪈',
+  'gneqq': '≩',
+  'gnsim': '⋧',
+  'gopf': '𝕘',
+  'grave': '`',
+  'gscr': 'ℊ',
+  'gsim': '≳',
+  'gsime': '⪎',
+  'gsiml': '⪐',
+  'gt': '>',
+  'gtcc': '⪧',
+  'gtcir': '⩺',
+  'gtdot': '⋗',
+  'gtlPar': '⦕',
+  'gtquest': '⩼',
+  'gtrapprox': '⪆',
+  'gtrarr': '⥸',
+  'gtrdot': '⋗',
+  'gtreqless': '⋛',
+  'gtreqqless': '⪌',
+  'gtrless': '≷',
+  'gtrsim': '≳',
+  'gvertneqq': '≩︀',
+  'gvnE': '≩︀',
+  'hArr': '⇔',
+  'hairsp': ' ',
+  'half': '½',
+  'hamilt': 'ℋ',
+  'hardcy': 'ъ',
+  'harr': '↔',
+  'harrcir': '⥈',
+  'harrw': '↭',
+  'hbar': 'ℏ',
+  'hcirc': 'ĥ',
+  'hearts': '♥',
+  'heartsuit': '♥',
+  'hellip': '…',
+  'hercon': '⊹',
+  'hfr': '𝔥',
+  'hksearow': '⤥',
+  'hkswarow': '⤦',
+  'hoarr': '⇿',
+  'homtht': '∻',
+  'hookleftarrow': '↩',
+  'hookrightarrow': '↪',
+  'hopf': '𝕙',
+  'horbar': '―',
+  'hscr': '𝒽',
+  'hslash': 'ℏ',
+  'hstrok': 'ħ',
+  'hybull': '⁃',
+  'hyphen': '‐',
+  'iacute': 'í',
+  'ic': '⁣',
+  'icirc': 'î',
+  'icy': 'и',
+  'iecy': 'е',
+  'iexcl': '¡',
+  'iff': '⇔',
+  'ifr': '𝔦',
+  'igrave': 'ì',
+  'ii': 'ⅈ',
+  'iiiint': '⨌',
+  'iiint': '∭',
+  'iinfin': '⧜',
+  'iiota': '℩',
+  'ijlig': 'ĳ',
+  'imacr': 'ī',
+  'image': 'ℑ',
+  'imagline': 'ℐ',
+  'imagpart': 'ℑ',
+  'imath': 'ı',
+  'imof': '⊷',
+  'imped': 'Ƶ',
+  'in': '∈',
+  'incare': '℅',
+  'infin': '∞',
+  'infintie': '⧝',
+  'inodot': 'ı',
+  'int': '∫',
+  'intcal': '⊺',
+  'integers': 'ℤ',
+  'intercal': '⊺',
+  'intlarhk': '⨗',
+  'intprod': '⨼',
+  'iocy': 'ё',
+  'iogon': 'į',
+  'iopf': '𝕚',
+  'iota': 'ι',
+  'iprod': '⨼',
+  'iquest': '¿',
+  'iscr': '𝒾',
+  'isin': '∈',
+  'isinE': '⋹',
+  'isindot': '⋵',
+  'isins': '⋴',
+  'isinsv': '⋳',
+  'isinv': '∈',
+  'it': '⁢',
+  'itilde': 'ĩ',
+  'iukcy': 'і',
+  'iuml': 'ï',
+  'jcirc': 'ĵ',
+  'jcy': 'й',
+  'jfr': '𝔧',
+  'jmath': 'ȷ',
+  'jopf': '𝕛',
+  'jscr': '𝒿',
+  'jsercy': 'ј',
+  'jukcy': 'є',
+  'kappa': 'κ',
+  'kappav': 'ϰ',
+  'kcedil': 'ķ',
+  'kcy': 'к',
+  'kfr': '𝔨',
+  'kgreen': 'ĸ',
+  'khcy': 'х',
+  'kjcy': 'ќ',
+  'kopf': '𝕜',
+  'kscr': '𝓀',
+  'lAarr': '⇚',
+  'lArr': '⇐',
+  'lAtail': '⤛',
+  'lBarr': '⤎',
+  'lE': '≦',
+  'lEg': '⪋',
+  'lHar': '⥢',
+  'lacute': 'ĺ',
+  'laemptyv': '⦴',
+  'lagran': 'ℒ',
+  'lambda': 'λ',
+  'lang': '⟨',
+  'langd': '⦑',
+  'langle': '⟨',
+  'lap': '⪅',
+  'laquo': '«',
+  'larr': '←',
+  'larrb': '⇤',
+  'larrbfs': '⤟',
+  'larrfs': '⤝',
+  'larrhk': '↩',
+  'larrlp': '↫',
+  'larrpl': '⤹',
+  'larrsim': '⥳',
+  'larrtl': '↢',
+  'lat': '⪫',
+  'latail': '⤙',
+  'late': '⪭',
+  'lates': '⪭︀',
+  'lbarr': '⤌',
+  'lbbrk': '❲',
+  'lbrace': '{',
+  'lbrack': '[',
+  'lbrke': '⦋',
+  'lbrksld': '⦏',
+  'lbrkslu': '⦍',
+  'lcaron': 'ľ',
+  'lcedil': 'ļ',
+  'lceil': '⌈',
+  'lcub': '{',
+  'lcy': 'л',
+  'ldca': '⤶',
+  'ldquo': '“',
+  'ldquor': '„',
+  'ldrdhar': '⥧',
+  'ldrushar': '⥋',
+  'ldsh': '↲',
+  'le': '≤',
+  'leftarrow': '←',
+  'leftarrowtail': '↢',
+  'leftharpoondown': '↽',
+  'leftharpoonup': '↼',
+  'leftleftarrows': '⇇',
+  'leftrightarrow': '↔',
+  'leftrightarrows': '⇆',
+  'leftrightharpoons': '⇋',
+  'leftrightsquigarrow': '↭',
+  'leftthreetimes': '⋋',
+  'leg': '⋚',
+  'leq': '≤',
+  'leqq': '≦',
+  'leqslant': '⩽',
+  'les': '⩽',
+  'lescc': '⪨',
+  'lesdot': '⩿',
+  'lesdoto': '⪁',
+  'lesdotor': '⪃',
+  'lesg': '⋚︀',
+  'lesges': '⪓',
+  'lessapprox': '⪅',
+  'lessdot': '⋖',
+  'lesseqgtr': '⋚',
+  'lesseqqgtr': '⪋',
+  'lessgtr': '≶',
+  'lesssim': '≲',
+  'lfisht': '⥼',
+  'lfloor': '⌊',
+  'lfr': '𝔩',
+  'lg': '≶',
+  'lgE': '⪑',
+  'lhard': '↽',
+  'lharu': '↼',
+  'lharul': '⥪',
+  'lhblk': '▄',
+  'ljcy': 'љ',
+  'll': '≪',
+  'llarr': '⇇',
+  'llcorner': '⌞',
+  'llhard': '⥫',
+  'lltri': '◺',
+  'lmidot': 'ŀ',
+  'lmoust': '⎰',
+  'lmoustache': '⎰',
+  'lnE': '≨',
+  'lnap': '⪉',
+  'lnapprox': '⪉',
+  'lne': '⪇',
+  'lneq': '⪇',
+  'lneqq': '≨',
+  'lnsim': '⋦',
+  'loang': '⟬',
+  'loarr': '⇽',
+  'lobrk': '⟦',
+  'longleftarrow': '⟵',
+  'longleftrightarrow': '⟷',
+  'longmapsto': '⟼',
+  'longrightarrow': '⟶',
+  'looparrowleft': '↫',
+  'looparrowright': '↬',
+  'lopar': '⦅',
+  'lopf': '𝕝',
+  'loplus': '⨭',
+  'lotimes': '⨴',
+  'lowast': '∗',
+  'lowbar': '_',
+  'loz': '◊',
+  'lozenge': '◊',
+  'lozf': '⧫',
+  'lpar': '(',
+  'lparlt': '⦓',
+  'lrarr': '⇆',
+  'lrcorner': '⌟',
+  'lrhar': '⇋',
+  'lrhard': '⥭',
+  'lrm': '‎',
+  'lrtri': '⊿',
+  'lsaquo': '‹',
+  'lscr': '𝓁',
+  'lsh': '↰',
+  'lsim': '≲',
+  'lsime': '⪍',
+  'lsimg': '⪏',
+  'lsqb': '[',
+  'lsquo': '‘',
+  'lsquor': '‚',
+  'lstrok': 'ł',
+  'lt': '<',
+  'ltcc': '⪦',
+  'ltcir': '⩹',
+  'ltdot': '⋖',
+  'lthree': '⋋',
+  'ltimes': '⋉',
+  'ltlarr': '⥶',
+  'ltquest': '⩻',
+  'ltrPar': '⦖',
+  'ltri': '◃',
+  'ltrie': '⊴',
+  'ltrif': '◂',
+  'lurdshar': '⥊',
+  'luruhar': '⥦',
+  'lvertneqq': '≨︀',
+  'lvnE': '≨︀',
+  'mDDot': '∺',
+  'macr': '¯',
+  'male': '♂',
+  'malt': '✠',
+  'maltese': '✠',
+  'map': '↦',
+  'mapsto': '↦',
+  'mapstodown': '↧',
+  'mapstoleft': '↤',
+  'mapstoup': '↥',
+  'marker': '▮',
+  'mcomma': '⨩',
+  'mcy': 'м',
+  'mdash': '—',
+  'measuredangle': '∡',
+  'mfr': '𝔪',
+  'mho': '℧',
+  'micro': 'µ',
+  'mid': '∣',
+  'midast': '*',
+  'midcir': '⫰',
+  'middot': '·',
+  'minus': '−',
+  'minusb': '⊟',
+  'minusd': '∸',
+  'minusdu': '⨪',
+  'mlcp': '⫛',
+  'mldr': '…',
+  'mnplus': '∓',
+  'models': '⊧',
+  'mopf': '𝕞',
+  'mp': '∓',
+  'mscr': '𝓂',
+  'mstpos': '∾',
+  'mu': 'μ',
+  'multimap': '⊸',
+  'mumap': '⊸',
+  'nGg': '⋙̸',
+  'nGt': '≫⃒',
+  'nGtv': '≫̸',
+  'nLeftarrow': '⇍',
+  'nLeftrightarrow': '⇎',
+  'nLl': '⋘̸',
+  'nLt': '≪⃒',
+  'nLtv': '≪̸',
+  'nRightarrow': '⇏',
+  'nVDash': '⊯',
+  'nVdash': '⊮',
+  'nabla': '∇',
+  'nacute': 'ń',
+  'nang': '∠⃒',
+  'nap': '≉',
+  'napE': '⩰̸',
+  'napid': '≋̸',
+  'napos': 'ŉ',
+  'napprox': '≉',
+  'natur': '♮',
+  'natural': '♮',
+  'naturals': 'ℕ',
+  'nbsp': ' ',
+  'nbump': '≎̸',
+  'nbumpe': '≏̸',
+  'ncap': '⩃',
+  'ncaron': 'ň',
+  'ncedil': 'ņ',
+  'ncong': '≇',
+  'ncongdot': '⩭̸',
+  'ncup': '⩂',
+  'ncy': 'н',
+  'ndash': '–',
+  'ne': '≠',
+  'neArr': '⇗',
+  'nearhk': '⤤',
+  'nearr': '↗',
+  'nearrow': '↗',
+  'nedot': '≐̸',
+  'nequiv': '≢',
+  'nesear': '⤨',
+  'nesim': '≂̸',
+  'nexist': '∄',
+  'nexists': '∄',
+  'nfr': '𝔫',
+  'ngE': '≧̸',
+  'nge': '≱',
+  'ngeq': '≱',
+  'ngeqq': '≧̸',
+  'ngeqslant': '⩾̸',
+  'nges': '⩾̸',
+  'ngsim': '≵',
+  'ngt': '≯',
+  'ngtr': '≯',
+  'nhArr': '⇎',
+  'nharr': '↮',
+  'nhpar': '⫲',
+  'ni': '∋',
+  'nis': '⋼',
+  'nisd': '⋺',
+  'niv': '∋',
+  'njcy': 'њ',
+  'nlArr': '⇍',
+  'nlE': '≦̸',
+  'nlarr': '↚',
+  'nldr': '‥',
+  'nle': '≰',
+  'nleftarrow': '↚',
+  'nleftrightarrow': '↮',
+  'nleq': '≰',
+  'nleqq': '≦̸',
+  'nleqslant': '⩽̸',
+  'nles': '⩽̸',
+  'nless': '≮',
+  'nlsim': '≴',
+  'nlt': '≮',
+  'nltri': '⋪',
+  'nltrie': '⋬',
+  'nmid': '∤',
+  'nopf': '𝕟',
+  'not': '¬',
+  'notin': '∉',
+  'notinE': '⋹̸',
+  'notindot': '⋵̸',
+  'notinva': '∉',
+  'notinvb': '⋷',
+  'notinvc': '⋶',
+  'notni': '∌',
+  'notniva': '∌',
+  'notnivb': '⋾',
+  'notnivc': '⋽',
+  'npar': '∦',
+  'nparallel': '∦',
+  'nparsl': '⫽⃥',
+  'npart': '∂̸',
+  'npolint': '⨔',
+  'npr': '⊀',
+  'nprcue': '⋠',
+  'npre': '⪯̸',
+  'nprec': '⊀',
+  'npreceq': '⪯̸',
+  'nrArr': '⇏',
+  'nrarr': '↛',
+  'nrarrc': '⤳̸',
+  'nrarrw': '↝̸',
+  'nrightarrow': '↛',
+  'nrtri': '⋫',
+  'nrtrie': '⋭',
+  'nsc': '⊁',
+  'nsccue': '⋡',
+  'nsce': '⪰̸',
+  'nscr': '𝓃',
+  'nshortmid': '∤',
+  'nshortparallel': '∦',
+  'nsim': '≁',
+  'nsime': '≄',
+  'nsimeq': '≄',
+  'nsmid': '∤',
+  'nspar': '∦',
+  'nsqsube': '⋢',
+  'nsqsupe': '⋣',
+  'nsub': '⊄',
+  'nsubE': '⫅̸',
+  'nsube': '⊈',
+  'nsubset': '⊂⃒',
+  'nsubseteq': '⊈',
+  'nsubseteqq': '⫅̸',
+  'nsucc': '⊁',
+  'nsucceq': '⪰̸',
+  'nsup': '⊅',
+  'nsupE': '⫆̸',
+  'nsupe': '⊉',
+  'nsupset': '⊃⃒',
+  'nsupseteq': '⊉',
+  'nsupseteqq': '⫆̸',
+  'ntgl': '≹',
+  'ntilde': 'ñ',
+  'ntlg': '≸',
+  'ntriangleleft': '⋪',
+  'ntrianglelefteq': '⋬',
+  'ntriangleright': '⋫',
+  'ntrianglerighteq': '⋭',
+  'nu': 'ν',
+  'num': '#',
+  'numero': '№',
+  'numsp': ' ',
+  'nvDash': '⊭',
+  'nvHarr': '⤄',
+  'nvap': '≍⃒',
+  'nvdash': '⊬',
+  'nvge': '≥⃒',
+  'nvgt': '>⃒',
+  'nvinfin': '⧞',
+  'nvlArr': '⤂',
+  'nvle': '≤⃒',
+  'nvlt': '<⃒',
+  'nvltrie': '⊴⃒',
+  'nvrArr': '⤃',
+  'nvrtrie': '⊵⃒',
+  'nvsim': '∼⃒',
+  'nwArr': '⇖',
+  'nwarhk': '⤣',
+  'nwarr': '↖',
+  'nwarrow': '↖',
+  'nwnear': '⤧',
+  'oS': 'Ⓢ',
+  'oacute': 'ó',
+  'oast': '⊛',
+  'ocir': '⊚',
+  'ocirc': 'ô',
+  'ocy': 'о',
+  'odash': '⊝',
+  'odblac': 'ő',
+  'odiv': '⨸',
+  'odot': '⊙',
+  'odsold': '⦼',
+  'oelig': 'œ',
+  'ofcir': '⦿',
+  'ofr': '𝔬',
+  'ogon': '˛',
+  'ograve': 'ò',
+  'ogt': '⧁',
+  'ohbar': '⦵',
+  'ohm': 'Ω',
+  'oint': '∮',
+  'olarr': '↺',
+  'olcir': '⦾',
+  'olcross': '⦻',
+  'oline': '‾',
+  'olt': '⧀',
+  'omacr': 'ō',
+  'omega': 'ω',
+  'omicron': 'ο',
+  'omid': '⦶',
+  'ominus': '⊖',
+  'oopf': '𝕠',
+  'opar': '⦷',
+  'operp': '⦹',
+  'oplus': '⊕',
+  'or': '∨',
+  'orarr': '↻',
+  'ord': '⩝',
+  'order': 'ℴ',
+  'orderof': 'ℴ',
+  'ordf': 'ª',
+  'ordm': 'º',
+  'origof': '⊶',
+  'oror': '⩖',
+  'orslope': '⩗',
+  'orv': '⩛',
+  'oscr': 'ℴ',
+  'oslash': 'ø',
+  'osol': '⊘',
+  'otilde': 'õ',
+  'otimes': '⊗',
+  'otimesas': '⨶',
+  'ouml': 'ö',
+  'ovbar': '⌽',
+  'par': '∥',
+  'para': '¶',
+  'parallel': '∥',
+  'parsim': '⫳',
+  'parsl': '⫽',
+  'part': '∂',
+  'pcy': 'п',
+  'percnt': '%',
+  'period': '.',
+  'permil': '‰',
+  'perp': '⊥',
+  'pertenk': '‱',
+  'pfr': '𝔭',
+  'phi': 'φ',
+  'phiv': 'ϕ',
+  'phmmat': 'ℳ',
+  'phone': '☎',
+  'pi': 'π',
+  'pitchfork': '⋔',
+  'piv': 'ϖ',
+  'planck': 'ℏ',
+  'planckh': 'ℎ',
+  'plankv': 'ℏ',
+  'plus': '+',
+  'plusacir': '⨣',
+  'plusb': '⊞',
+  'pluscir': '⨢',
+  'plusdo': '∔',
+  'plusdu': '⨥',
+  'pluse': '⩲',
+  'plusmn': '±',
+  'plussim': '⨦',
+  'plustwo': '⨧',
+  'pm': '±',
+  'pointint': '⨕',
+  'popf': '𝕡',
+  'pound': '£',
+  'pr': '≺',
+  'prE': '⪳',
+  'prap': '⪷',
+  'prcue': '≼',
+  'pre': '⪯',
+  'prec': '≺',
+  'precapprox': '⪷',
+  'preccurlyeq': '≼',
+  'preceq': '⪯',
+  'precnapprox': '⪹',
+  'precneqq': '⪵',
+  'precnsim': '⋨',
+  'precsim': '≾',
+  'prime': '′',
+  'primes': 'ℙ',
+  'prnE': '⪵',
+  'prnap': '⪹',
+  'prnsim': '⋨',
+  'prod': '∏',
+  'profalar': '⌮',
+  'profline': '⌒',
+  'profsurf': '⌓',
+  'prop': '∝',
+  'propto': '∝',
+  'prsim': '≾',
+  'prurel': '⊰',
+  'pscr': '𝓅',
+  'psi': 'ψ',
+  'puncsp': ' ',
+  'qfr': '𝔮',
+  'qint': '⨌',
+  'qopf': '𝕢',
+  'qprime': '⁗',
+  'qscr': '𝓆',
+  'quaternions': 'ℍ',
+  'quatint': '⨖',
+  'quest': '?',
+  'questeq': '≟',
+  'quot': '"',
+  'rAarr': '⇛',
+  'rArr': '⇒',
+  'rAtail': '⤜',
+  'rBarr': '⤏',
+  'rHar': '⥤',
+  'race': '∽̱',
+  'racute': 'ŕ',
+  'radic': '√',
+  'raemptyv': '⦳',
+  'rang': '⟩',
+  'rangd': '⦒',
+  'range': '⦥',
+  'rangle': '⟩',
+  'raquo': '»',
+  'rarr': '→',
+  'rarrap': '⥵',
+  'rarrb': '⇥',
+  'rarrbfs': '⤠',
+  'rarrc': '⤳',
+  'rarrfs': '⤞',
+  'rarrhk': '↪',
+  'rarrlp': '↬',
+  'rarrpl': '⥅',
+  'rarrsim': '⥴',
+  'rarrtl': '↣',
+  'rarrw': '↝',
+  'ratail': '⤚',
+  'ratio': '∶',
+  'rationals': 'ℚ',
+  'rbarr': '⤍',
+  'rbbrk': '❳',
+  'rbrace': '}',
+  'rbrack': ']',
+  'rbrke': '⦌',
+  'rbrksld': '⦎',
+  'rbrkslu': '⦐',
+  'rcaron': 'ř',
+  'rcedil': 'ŗ',
+  'rceil': '⌉',
+  'rcub': '}',
+  'rcy': 'р',
+  'rdca': '⤷',
+  'rdldhar': '⥩',
+  'rdquo': '”',
+  'rdquor': '”',
+  'rdsh': '↳',
+  'real': 'ℜ',
+  'realine': 'ℛ',
+  'realpart': 'ℜ',
+  'reals': 'ℝ',
+  'rect': '▭',
+  'reg': '®',
+  'rfisht': '⥽',
+  'rfloor': '⌋',
+  'rfr': '𝔯',
+  'rhard': '⇁',
+  'rharu': '⇀',
+  'rharul': '⥬',
+  'rho': 'ρ',
+  'rhov': 'ϱ',
+  'rightarrow': '→',
+  'rightarrowtail': '↣',
+  'rightharpoondown': '⇁',
+  'rightharpoonup': '⇀',
+  'rightleftarrows': '⇄',
+  'rightleftharpoons': '⇌',
+  'rightrightarrows': '⇉',
+  'rightsquigarrow': '↝',
+  'rightthreetimes': '⋌',
+  'ring': '˚',
+  'risingdotseq': '≓',
+  'rlarr': '⇄',
+  'rlhar': '⇌',
+  'rlm': '‏',
+  'rmoust': '⎱',
+  'rmoustache': '⎱',
+  'rnmid': '⫮',
+  'roang': '⟭',
+  'roarr': '⇾',
+  'robrk': '⟧',
+  'ropar': '⦆',
+  'ropf': '𝕣',
+  'roplus': '⨮',
+  'rotimes': '⨵',
+  'rpar': ')',
+  'rpargt': '⦔',
+  'rppolint': '⨒',
+  'rrarr': '⇉',
+  'rsaquo': '›',
+  'rscr': '𝓇',
+  'rsh': '↱',
+  'rsqb': ']',
+  'rsquo': '’',
+  'rsquor': '’',
+  'rthree': '⋌',
+  'rtimes': '⋊',
+  'rtri': '▹',
+  'rtrie': '⊵',
+  'rtrif': '▸',
+  'rtriltri': '⧎',
+  'ruluhar': '⥨',
+  'rx': '℞',
+  'sacute': 'ś',
+  'sbquo': '‚',
+  'sc': '≻',
+  'scE': '⪴',
+  'scap': '⪸',
+  'scaron': 'š',
+  'sccue': '≽',
+  'sce': '⪰',
+  'scedil': 'ş',
+  'scirc': 'ŝ',
+  'scnE': '⪶',
+  'scnap': '⪺',
+  'scnsim': '⋩',
+  'scpolint': '⨓',
+  'scsim': '≿',
+  'scy': 'с',
+  'sdot': '⋅',
+  'sdotb': '⊡',
+  'sdote': '⩦',
+  'seArr': '⇘',
+  'searhk': '⤥',
+  'searr': '↘',
+  'searrow': '↘',
+  'sect': '§',
+  'semi': ';',
+  'seswar': '⤩',
+  'setminus': '∖',
+  'setmn': '∖',
+  'sext': '✶',
+  'sfr': '𝔰',
+  'sfrown': '⌢',
+  'sharp': '♯',
+  'shchcy': 'щ',
+  'shcy': 'ш',
+  'shortmid': '∣',
+  'shortparallel': '∥',
+  'shy': '­',
+  'sigma': 'σ',
+  'sigmaf': 'ς',
+  'sigmav': 'ς',
+  'sim': '∼',
+  'simdot': '⩪',
+  'sime': '≃',
+  'simeq': '≃',
+  'simg': '⪞',
+  'simgE': '⪠',
+  'siml': '⪝',
+  'simlE': '⪟',
+  'simne': '≆',
+  'simplus': '⨤',
+  'simrarr': '⥲',
+  'slarr': '←',
+  'smallsetminus': '∖',
+  'smashp': '⨳',
+  'smeparsl': '⧤',
+  'smid': '∣',
+  'smile': '⌣',
+  'smt': '⪪',
+  'smte': '⪬',
+  'smtes': '⪬︀',
+  'softcy': 'ь',
+  'sol': '/',
+  'solb': '⧄',
+  'solbar': '⌿',
+  'sopf': '𝕤',
+  'spades': '♠',
+  'spadesuit': '♠',
+  'spar': '∥',
+  'sqcap': '⊓',
+  'sqcaps': '⊓︀',
+  'sqcup': '⊔',
+  'sqcups': '⊔︀',
+  'sqsub': '⊏',
+  'sqsube': '⊑',
+  'sqsubset': '⊏',
+  'sqsubseteq': '⊑',
+  'sqsup': '⊐',
+  'sqsupe': '⊒',
+  'sqsupset': '⊐',
+  'sqsupseteq': '⊒',
+  'squ': '□',
+  'square': '□',
+  'squarf': '▪',
+  'squf': '▪',
+  'srarr': '→',
+  'sscr': '𝓈',
+  'ssetmn': '∖',
+  'ssmile': '⌣',
+  'sstarf': '⋆',
+  'star': '☆',
+  'starf': '★',
+  'straightepsilon': 'ϵ',
+  'straightphi': 'ϕ',
+  'strns': '¯',
+  'sub': '⊂',
+  'subE': '⫅',
+  'subdot': '⪽',
+  'sube': '⊆',
+  'subedot': '⫃',
+  'submult': '⫁',
+  'subnE': '⫋',
+  'subne': '⊊',
+  'subplus': '⪿',
+  'subrarr': '⥹',
+  'subset': '⊂',
+  'subseteq': '⊆',
+  'subseteqq': '⫅',
+  'subsetneq': '⊊',
+  'subsetneqq': '⫋',
+  'subsim': '⫇',
+  'subsub': '⫕',
+  'subsup': '⫓',
+  'succ': '≻',
+  'succapprox': '⪸',
+  'succcurlyeq': '≽',
+  'succeq': '⪰',
+  'succnapprox': '⪺',
+  'succneqq': '⪶',
+  'succnsim': '⋩',
+  'succsim': '≿',
+  'sum': '∑',
+  'sung': '♪',
+  'sup': '⊃',
+  'sup1': '¹',
+  'sup2': '²',
+  'sup3': '³',
+  'supE': '⫆',
+  'supdot': '⪾',
+  'supdsub': '⫘',
+  'supe': '⊇',
+  'supedot': '⫄',
+  'suphsol': '⟉',
+  'suphsub': '⫗',
+  'suplarr': '⥻',
+  'supmult': '⫂',
+  'supnE': '⫌',
+  'supne': '⊋',
+  'supplus': '⫀',
+  'supset': '⊃',
+  'supseteq': '⊇',
+  'supseteqq': '⫆',
+  'supsetneq': '⊋',
+  'supsetneqq': '⫌',
+  'supsim': '⫈',
+  'supsub': '⫔',
+  'supsup': '⫖',
+  'swArr': '⇙',
+  'swarhk': '⤦',
+  'swarr': '↙',
+  'swarrow': '↙',
+  'swnwar': '⤪',
+  'szlig': 'ß',
+  'target': '⌖',
+  'tau': 'τ',
+  'tbrk': '⎴',
+  'tcaron': 'ť',
+  'tcedil': 'ţ',
+  'tcy': 'т',
+  'tdot': '⃛',
+  'telrec': '⌕',
+  'tfr': '𝔱',
+  'there4': '∴',
+  'therefore': '∴',
+  'theta': 'θ',
+  'thetasym': 'ϑ',
+  'thetav': 'ϑ',
+  'thickapprox': '≈',
+  'thicksim': '∼',
+  'thinsp': ' ',
+  'thkap': '≈',
+  'thksim': '∼',
+  'thorn': 'þ',
+  'tilde': '˜',
+  'times': '×',
+  'timesb': '⊠',
+  'timesbar': '⨱',
+  'timesd': '⨰',
+  'tint': '∭',
+  'toea': '⤨',
+  'top': '⊤',
+  'topbot': '⌶',
+  'topcir': '⫱',
+  'topf': '𝕥',
+  'topfork': '⫚',
+  'tosa': '⤩',
+  'tprime': '‴',
+  'trade': '™',
+  'triangle': '▵',
+  'triangledown': '▿',
+  'triangleleft': '◃',
+  'trianglelefteq': '⊴',
+  'triangleq': '≜',
+  'triangleright': '▹',
+  'trianglerighteq': '⊵',
+  'tridot': '◬',
+  'trie': '≜',
+  'triminus': '⨺',
+  'triplus': '⨹',
+  'trisb': '⧍',
+  'tritime': '⨻',
+  'trpezium': '⏢',
+  'tscr': '𝓉',
+  'tscy': 'ц',
+  'tshcy': 'ћ',
+  'tstrok': 'ŧ',
+  'twixt': '≬',
+  'twoheadleftarrow': '↞',
+  'twoheadrightarrow': '↠',
+  'uArr': '⇑',
+  'uHar': '⥣',
+  'uacute': 'ú',
+  'uarr': '↑',
+  'ubrcy': 'ў',
+  'ubreve': 'ŭ',
+  'ucirc': 'û',
+  'ucy': 'у',
+  'udarr': '⇅',
+  'udblac': 'ű',
+  'udhar': '⥮',
+  'ufisht': '⥾',
+  'ufr': '𝔲',
+  'ugrave': 'ù',
+  'uharl': '↿',
+  'uharr': '↾',
+  'uhblk': '▀',
+  'ulcorn': '⌜',
+  'ulcorner': '⌜',
+  'ulcrop': '⌏',
+  'ultri': '◸',
+  'umacr': 'ū',
+  'uml': '¨',
+  'uogon': 'ų',
+  'uopf': '𝕦',
+  'uparrow': '↑',
+  'updownarrow': '↕',
+  'upharpoonleft': '↿',
+  'upharpoonright': '↾',
+  'uplus': '⊎',
+  'upsi': 'υ',
+  'upsih': 'ϒ',
+  'upsilon': 'υ',
+  'upuparrows': '⇈',
+  'urcorn': '⌝',
+  'urcorner': '⌝',
+  'urcrop': '⌎',
+  'uring': 'ů',
+  'urtri': '◹',
+  'uscr': '𝓊',
+  'utdot': '⋰',
+  'utilde': 'ũ',
+  'utri': '▵',
+  'utrif': '▴',
+  'uuarr': '⇈',
+  'uuml': 'ü',
+  'uwangle': '⦧',
+  'vArr': '⇕',
+  'vBar': '⫨',
+  'vBarv': '⫩',
+  'vDash': '⊨',
+  'vangrt': '⦜',
+  'varepsilon': 'ϵ',
+  'varkappa': 'ϰ',
+  'varnothing': '∅',
+  'varphi': 'ϕ',
+  'varpi': 'ϖ',
+  'varpropto': '∝',
+  'varr': '↕',
+  'varrho': 'ϱ',
+  'varsigma': 'ς',
+  'varsubsetneq': '⊊︀',
+  'varsubsetneqq': '⫋︀',
+  'varsupsetneq': '⊋︀',
+  'varsupsetneqq': '⫌︀',
+  'vartheta': 'ϑ',
+  'vartriangleleft': '⊲',
+  'vartriangleright': '⊳',
+  'vcy': 'в',
+  'vdash': '⊢',
+  'vee': '∨',
+  'veebar': '⊻',
+  'veeeq': '≚',
+  'vellip': '⋮',
+  'verbar': '|',
+  'vert': '|',
+  'vfr': '𝔳',
+  'vltri': '⊲',
+  'vnsub': '⊂⃒',
+  'vnsup': '⊃⃒',
+  'vopf': '𝕧',
+  'vprop': '∝',
+  'vrtri': '⊳',
+  'vscr': '𝓋',
+  'vsubnE': '⫋︀',
+  'vsubne': '⊊︀',
+  'vsupnE': '⫌︀',
+  'vsupne': '⊋︀',
+  'vzigzag': '⦚',
+  'wcirc': 'ŵ',
+  'wedbar': '⩟',
+  'wedge': '∧',
+  'wedgeq': '≙',
+  'weierp': '℘',
+  'wfr': '𝔴',
+  'wopf': '𝕨',
+  'wp': '℘',
+  'wr': '≀',
+  'wreath': '≀',
+  'wscr': '𝓌',
+  'xcap': '⋂',
+  'xcirc': '◯',
+  'xcup': '⋃',
+  'xdtri': '▽',
+  'xfr': '𝔵',
+  'xhArr': '⟺',
+  'xharr': '⟷',
+  'xi': 'ξ',
+  'xlArr': '⟸',
+  'xlarr': '⟵',
+  'xmap': '⟼',
+  'xnis': '⋻',
+  'xodot': '⨀',
+  'xopf': '𝕩',
+  'xoplus': '⨁',
+  'xotime': '⨂',
+  'xrArr': '⟹',
+  'xrarr': '⟶',
+  'xscr': '𝓍',
+  'xsqcup': '⨆',
+  'xuplus': '⨄',
+  'xutri': '△',
+  'xvee': '⋁',
+  'xwedge': '⋀',
+  'yacute': 'ý',
+  'yacy': 'я',
+  'ycirc': 'ŷ',
+  'ycy': 'ы',
+  'yen': '¥',
+  'yfr': '𝔶',
+  'yicy': 'ї',
+  'yopf': '𝕪',
+  'yscr': '𝓎',
+  'yucy': 'ю',
+  'yuml': 'ÿ',
+  'zacute': 'ź',
+  'zcaron': 'ž',
+  'zcy': 'з',
+  'zdot': 'ż',
+  'zeetrf': 'ℨ',
+  'zeta': 'ζ',
+  'zfr': '𝔷',
+  'zhcy': 'ж',
+  'zigrarr': '⇝',
+  'zopf': '𝕫',
+  'zscr': '𝓏',
+  'zwj': '‍',
+  'zwnj': '‌'
+};
+
+////
 // makehtml/blockquote.js
 // Copyright (c) 2018 ShowdownJS
 //
@@ -5421,23 +9664,29 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
   });
 
   // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
-  // base64 encoded images
-  text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = url.replace(/\s/g, '');
-    return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
-  });
+  if (options.cmSpec) {
+    // CommonMark inline-image parsing, symmetric to the link scanner: balanced-paren
+    // and `<...>` destinations, titles, backslash escapes, arbitrary label nesting.
+    text = parseCmInlineImages(text);
+  } else {
+    // base64 encoded images
+    text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+      url = url.replace(/\s/g, '');
+      return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
+    });
 
-  // cases with crazy urls like ./image/cat1).png
-  text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
-  });
+    // cases with crazy urls like ./image/cat1).png
+    text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+      return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
+    });
 
-  // normal cases
-  text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
-  });
+    // normal cases
+    text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
+      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+      return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
+    });
+  }
 
   // handle reference-style shortcuts: ![img text]
   text = text.replace(refShortcutRegExp, function (wholeMatch, altText) {
@@ -5483,7 +9732,11 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
         otp,
         attributes = {};
 
-    linkId = (linkId) ? linkId.toLowerCase() : null;
+    if (linkId) {
+      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
+    } else {
+      linkId = null;
+    }
 
     if (!title) {
       title = null;
@@ -5495,7 +9748,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     } else if (showdown.helper.isUndefined(url) || url === '' || url === null) {
       if (linkId === '' || linkId === null) {
         // lower-case and turn embedded newlines into spaces
-        linkId = altText.toLowerCase().replace(/ ?\n/g, ' ');
+        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(altText) : showdown.helper.caseFold(altText).replace(/ ?\n/g, ' ');
       }
       url = '#' + linkId;
 
@@ -5513,26 +9766,43 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       }
     }
 
+    if (options.cmSpec) {
+      // CommonMark: the alt text is the plain-text rendering of the label, with
+      // inline markup stripped (`![foo *bar*]` -> alt="foo bar").
+      altText = flattenAltText(altText);
+    }
     altText = altText
       .replace(/"/g, '&quot;')
       //altText = showdown.helper.escapeCharacters(altText, '*_', false);
       .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     //url = showdown.helper.escapeCharacters(url, '*_', false);
+    if (options.cmSpec) {
+      url = showdown.helper.cmNormalizeURL(url);
+    }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
 
     if (title && showdown.helper.isString(title)) {
-      title = title
-        .replace(/"/g, '&quot;')
-        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      if (options.cmSpec) {
+        title = showdown.helper.cmEscapeTitle(title);
+      } else {
+        title = title
+          .replace(/"/g, '&quot;');
+      }
+      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     }
 
-    if (width) {
+    // Image dimensions are a non-standard extension: only honor them when
+    // parseImgDimensions is enabled. The `=WxH` syntax is still consumed by the
+    // regex (so it never leaks into the output), but the width/height attributes
+    // are dropped when the option is off - matching the reference-definition path,
+    // which only stores dimensions in gDimensions when the option is on.
+    if (options.parseImgDimensions && width) {
       width  = (width === '*') ? 'auto' : width;
     } else {
       width = null;
     }
 
-    if (height) {
+    if (options.parseImgDimensions && height) {
       height = (height === '*') ? 'auto' : height;
     } else {
       height = null;
@@ -5572,6 +9842,105 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
     otp = beforeHashEvent.output;
 
     return otp;
+  }
+
+  /**
+   * CommonMark inline-image scanner. Finds `![label](destination "title")` spans,
+   * matching the label by counting nested brackets and parsing the destination and
+   * title with the shared cursor-based helpers.
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmInlineImages (str) {
+    let inlineImgRegexp = /!\[[\s\S]*?]\([\s\S]*?\)/, // representative pattern (event metadata only)
+        n = str.length,
+        out = '',
+        last = 0,
+        i = 0;
+    while (i < n) {
+      if (str.charAt(i) !== '!' || str.charAt(i + 1) !== '[') { i++; continue; }
+      let depth = 1, k = i + 2, labelEnd = -1;
+      while (k < n) {
+        let c = str.charAt(k);
+        if (c === '\\' && k + 1 < n) { k += 2; continue; }
+        if (c === '[') { depth++; } else if (c === ']') {
+          depth--;
+          if (depth === 0) { labelEnd = k; break; }
+        }
+        k++;
+      }
+      if (labelEnd !== -1 && str.charAt(labelEnd + 1) === '(') {
+        let parsed = parseCmImgDestTitle(str, labelEnd + 2);
+        if (parsed) {
+          let label = str.slice(i + 2, labelEnd),
+              url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, parsed.url);
+          out += str.slice(last, i);
+          out += writeImageTag('inline', inlineImgRegexp, str.slice(i, parsed.end + 1), label, url, null, null, null, parsed.title);
+          i = parsed.end + 1;
+          last = i;
+          continue;
+        }
+      }
+      i++;
+    }
+    out += str.slice(last);
+    return out;
+  }
+
+  /**
+   * Parse an image destination and optional title starting just after the opening
+   * `(`. Returns `{url, title, end}` (end = index of the closing `)`) or `null`.
+   * @param {string} str
+   * @param {number} j
+   * @returns {{url: string, title: (string|null), end: number}|null}
+   */
+  function parseCmImgDestTitle (str, j) {
+    let n = str.length,
+        isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; };
+    while (j < n && isWs(str.charAt(j))) { j++; }
+    let dest = showdown.helper.cmScanDestination(str, j);
+    if (!dest) { return null; }
+    j = dest.end;
+    let hadWs = false;
+    while (j < n && isWs(str.charAt(j))) { hadWs = true; j++; }
+    let title = null,
+        tc = str.charAt(j);
+    if (j < n && (tc === '"' || tc === '\'' || tc === '(')) {
+      if (!hadWs) { return null; }
+      let t = showdown.helper.cmScanTitle(str, j);
+      if (!t) { return null; }
+      title = t.title;
+      j = t.end;
+    }
+    while (j < n && isWs(str.charAt(j))) { j++; }
+    if (j >= n || str.charAt(j) !== ')') { return null; }
+    return {url: dest.url, title: title, end: j};
+  }
+
+  /**
+   * Produce the plain-text rendering of an image label for the `alt` attribute,
+   * per CommonMark: inline markup is processed and then flattened to text. Nested
+   * images contribute their own alt text; links and emphasis contribute their
+   * text content.
+   * @param {string} t
+   * @returns {string}
+   */
+  function flattenAltText (t) {
+    t = showdown.subParser('makehtml.codeSpan')(t, options, globals);
+    t = showdown.subParser('makehtml.image')(t, options, globals);
+    t = showdown.subParser('makehtml.link')(t, options, globals);
+    t = showdown.subParser('makehtml.emoji')(t, options, globals);
+    t = showdown.subParser('makehtml.underline')(t, options, globals);
+    t = showdown.subParser('makehtml.emphasisAndStrong')(t, options, globals);
+    t = showdown.subParser('makehtml.strikethrough')(t, options, globals);
+    t = showdown.subParser('makehtml.ellipsis')(t, options, globals);
+    // restore hashed spans (e.g. produced by nested images/links) so we can read them
+    t = showdown.subParser('makehtml.unhashHTMLSpans')(t, options, globals);
+    // a nested image contributes its alt text; every other tag contributes its
+    // text content, so replace images by their alt then strip the remaining tags
+    t = t.replace(/<img\b[^>]*?\salt="([^"]*)"[^>]*?\/?>/g, '$1');
+    t = t.replace(/<[^>]*>/g, '');
+    return t;
   }
 
 });
@@ -5615,31 +9984,37 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   });
 
   // 2. Handle inline-style links: [link text](url "optional title")
-  // 2.1. Look for empty cases: []() and [empty]() and []("title")
-  let inlineEmptyRegex = /\[(.*?)]\(<? ?>? ?(["'](.*)["'])?\)/g;
-  text = text.replace(inlineEmptyRegex, function (wholeMatch, text, m1, title) {
-    return writeAnchorTag ('inline', inlineEmptyRegex, wholeMatch, text, null, null, title, true);
-  });
+  if (options.cmSpec) {
+    // CommonMark inline-link parsing: a manual scanner that handles balanced-paren
+    // and `<...>` destinations, titles in "...", '...' or (...), and backslash escapes.
+    text = parseCmInlineLinks(text);
+  } else {
+    // 2.1. Look for empty cases: []() and [empty]() and []("title")
+    let inlineEmptyRegex = /\[(.*?)]\(<? ?>? ?(["'](.*)["'])?\)/g;
+    text = text.replace(inlineEmptyRegex, function (wholeMatch, text, m1, title) {
+      return writeAnchorTag ('inline', inlineEmptyRegex, wholeMatch, text, null, null, title, true);
+    });
 
-  // 2.2. Look for cases with crazy urls like ./image/cat1).png
-  // the url mus be enclosed in <>
-  let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
-  text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
-    return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
-  });
+    // 2.2. Look for cases with crazy urls like ./image/cat1).png
+    // the url mus be enclosed in <>
+    let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
+    text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
+      return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
+    });
 
-  // 2.3. inline links with no title or titles wrapped in ' or ":
-  // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
-  let inlineNormalRegex1 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s*(?:(['"])(.*?)\3)? *\)/g;
-  text = text.replace(inlineNormalRegex1, function (wholeMatch, text, url, m1, title) {
-    return writeAnchorTag ('inline', inlineNormalRegex1, wholeMatch, text, null, url, title);
-  });
+    // 2.3. inline links with no title or titles wrapped in ' or ":
+    // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
+    let inlineNormalRegex1 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s*(?:(['"])(.*?)\3)? *\)/g;
+    text = text.replace(inlineNormalRegex1, function (wholeMatch, text, url, m1, title) {
+      return writeAnchorTag ('inline', inlineNormalRegex1, wholeMatch, text, null, url, title);
+    });
 
-  // 2.4. inline links with titles wrapped in (): [foo](bar.com (title))
-  let inlineNormalRegex2 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s+\((.*?)\) *\)/g;
-  text = text.replace(inlineNormalRegex2, function (wholeMatch, text, url, title) {
-    return writeAnchorTag ('inline', inlineNormalRegex2, wholeMatch, text, null, url, title);
-  });
+    // 2.4. inline links with titles wrapped in (): [foo](bar.com (title))
+    let inlineNormalRegex2 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s+\((.*?)\) *\)/g;
+    text = text.replace(inlineNormalRegex2, function (wholeMatch, text, url, title) {
+      return writeAnchorTag ('inline', inlineNormalRegex2, wholeMatch, text, null, url, title);
+    });
+  }
 
 
   // 3. Handle reference-style shortcuts: [link text]
@@ -5652,29 +10027,51 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   // 4. Handle angle brackets links -> `<http://example.com/>`
   // Must come after links, because you can use < and > delimiters in inline links like [this](<url>).
 
-  // 4.1. Handle links first
-  let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
-  text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
+  if (options.cmSpec) {
+    // CommonMark autolinks: any scheme (2-32 chars) URI, and emails, with no entity encoding.
+    // 4.1. URI autolinks: <scheme:rest>
+    let cmUriAutolinkRegex = /<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*)>/g;
+    text = text.replace(cmUriAutolinkRegex, function (wholeMatch, uri) {
+      // backslash escapes do not work inside autolinks, so restore them to literal backslash + char
+      let raw = showdown.subParser('makehtml.unescapeSpecialChars')(uri.replace(/(¨E\d+E)/g, '\\$1'), options, globals);
+      let otp = '<a href="' + cmEscapeHref(showdown.helper.cmEncodeURI(raw)) + '">' + cmEscapeText(raw) + '</a>';
+      return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+    });
 
-    // backslash escaped characters do not work inside autolinks (according to commonmark spec... sure)
-    // so let's unescape them (and add a backslash html entity before)
-    url = url.replace(/(¨E\d+E)/g, '\\$1');
-    url = showdown.subParser('makehtml.unescapeSpecialChars')(url, options, globals);
-    let text = url;
+    // 4.2. Email autolinks: <foo@bar.example.com>
+    let cmEmailAutolinkRegex = /<([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)>/g;
+    text = text.replace(cmEmailAutolinkRegex, function (wholeMatch, email) {
+      let raw = showdown.subParser('makehtml.unescapeSpecialChars')(email.replace(/(¨E\d+E)/g, '\\$1'), options, globals);
+      let otp = '<a href="' + cmEscapeHref('mailto:' + raw) + '">' + cmEscapeText(raw) + '</a>';
+      return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+    });
 
-    // now let's replace some entities which should be properly url encoded
-    url = showdown.helper.urlASCIIEncoding(url);
+  } else {
+    // 4.1. Handle links first
+    let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
+    text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
 
-    url = (urlStart === 'www.') ? 'http://' + url : url;
-    return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
-  });
+      // backslash escaped characters do not work inside autolinks (according to commonmark spec... sure)
+      // so let's unescape them (and add a backslash html entity before)
+      url = url.replace(/(¨E\d+E)/g, '\\$1');
+      url = showdown.subParser('makehtml.unescapeSpecialChars')(url, options, globals);
+      let text = url;
 
-  // 4.2. Then mail adresses
-  let angleBracketsMailRegex = /<(?:mailto:)?([-.\w]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)>/gi;
-  text = text.replace(angleBracketsMailRegex, function (wholeMatch, mail) {
-    const m = parseMail(mail);
-    return writeAnchorTag ('angleBrackets', angleBracketsMailRegex, wholeMatch, m.mail, null, m.url);
-  });
+      // now let's replace some entities which should be properly url encoded
+      url = showdown.helper.urlASCIIEncoding(url);
+
+      // noinspection HttpUrlsUsage
+      url = (urlStart === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+      return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
+    });
+
+    // 4.2. Then mail adresses
+    let angleBracketsMailRegex = /<(?:mailto:)?([-.\w]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)>/gi;
+    text = text.replace(angleBracketsMailRegex, function (wholeMatch, mail) {
+      const m = parseMail(mail);
+      return writeAnchorTag ('angleBrackets', angleBracketsMailRegex, wholeMatch, m.mail, null, m.url);
+    });
+  }
 
   // 5. Handle GithubMentions (if option is enabled)
   if (options.ghMentions) {
@@ -5751,8 +10148,9 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
       // we copy the treated url to the text variable
       let txt = url;
-      // finally, if it's a www shortcut, we prepend http
-      url = (urlPrefix === 'www.') ? 'http://' + url : url;
+      // finally, if it's a www shortcut, we prepend http(s)
+      // noinspection HttpUrlsUsage
+      url = (urlPrefix === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
 
       // url part is done so let's take care of text now
       // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
@@ -5785,6 +10183,133 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
 
   /**
+   * CommonMark inline-link scanner. Finds `[label](destination "title")` spans,
+   * parsing the destination and title with a hand-written cursor so that balanced
+   * parentheses, `<...>` destinations, the three title delimiters and backslash
+   * escapes are handled per the spec. Anything that does not parse as a valid
+   * inline link is left untouched (to be handled by the reference/shortcut passes).
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmInlineLinks (str) {
+    let inlineLinkRegexp = /\[[\s\S]*?]\([\s\S]*?\)/, // representative pattern (for event metadata only)
+        n = str.length,
+        out = '',
+        last = 0,
+        i = 0;
+    while (i < n) {
+      if (str.charAt(i) !== '[') { i++; continue; }
+      // find the matching `]`, counting nested brackets and honoring backslash escapes
+      let depth = 1, k = i + 1, labelEnd = -1;
+      while (k < n) {
+        let c = str.charAt(k);
+        if (c === '\\' && k + 1 < n) { k += 2; continue; }
+        if (c === '[') { depth++; } else if (c === ']') {
+          depth--;
+          if (depth === 0) { labelEnd = k; break; }
+        }
+        k++;
+      }
+      if (labelEnd !== -1 && str.charAt(labelEnd + 1) === '(') {
+        let parsed = parseCmDestTitle(str, labelEnd + 2);
+        if (parsed) {
+          let label = str.slice(i + 1, labelEnd);
+          out += str.slice(last, i);
+          out += writeAnchorTag('inline', inlineLinkRegexp, str.slice(i, parsed.end + 1), label, null, parsed.url, parsed.title, parsed.emptyCase);
+          i = parsed.end + 1;
+          last = i;
+          continue;
+        }
+      }
+      // not a valid inline link here; advance past this `[` so a nested `[...]( )`
+      // still gets a chance to match
+      i++;
+    }
+    out += str.slice(last);
+    return out;
+  }
+
+  /**
+   * Parse a CommonMark link destination and optional title starting just after the
+   * opening `(`. Returns `{url, title, emptyCase, end}` where `end` is the index of
+   * the closing `)`, or `null` if the span is not a valid destination/title.
+   * @param {string} str
+   * @param {number} j index right after the opening `(`
+   * @returns {{url: string, title: (string|null), emptyCase: boolean, end: number}|null}
+   */
+  function parseCmDestTitle (str, j) {
+    let n = str.length,
+        isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; },
+        url = '',
+        emptyCase = false;
+
+    // optional leading whitespace
+    while (j < n && isWs(str.charAt(j))) { j++; }
+
+    if (str.charAt(j) === '<') {
+      // angle-bracket destination: up to an unescaped `>`, no raw newline or `<`
+      j++;
+      let buf = '';
+      while (j < n && str.charAt(j) !== '>') {
+        let c = str.charAt(j);
+        if (c === '\n' || c === '<') { return null; }
+        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+        buf += c; j++;
+      }
+      if (j >= n || str.charAt(j) !== '>') { return null; }
+      j++; // consume `>`
+      url = buf;
+      if (url === '') { emptyCase = true; }
+    } else {
+      // bare destination: balanced parentheses, ends at whitespace or an unbalanced `)`
+      let depth = 0, buf = '';
+      while (j < n) {
+        let c = str.charAt(j);
+        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+        if (isWs(c)) { break; }
+        if (c === '(') { depth++; buf += c; j++; continue; }
+        if (c === ')') {
+          if (depth === 0) { break; }
+          depth--; buf += c; j++; continue;
+        }
+        buf += c; j++;
+      }
+      if (depth !== 0) { return null; } // unbalanced parens -> not a link
+      url = buf;
+      if (url === '') { emptyCase = true; }
+    }
+
+    // optional whitespace separating destination and title
+    let hadWs = false;
+    while (j < n && isWs(str.charAt(j))) { hadWs = true; j++; }
+
+    let title = null,
+        tc = str.charAt(j);
+    if (j < n && (tc === '"' || tc === '\'' || tc === '(')) {
+      // a title must be separated from the destination by whitespace
+      if (!hadWs) { return null; }
+      let close = (tc === '(') ? ')' : tc,
+          buf = '';
+      j++;
+      let closed = false;
+      while (j < n) {
+        let c = str.charAt(j);
+        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+        if (tc === '(' && c === '(') { return null; } // unescaped `(` invalid in (...) title
+        if (c === close) { closed = true; j++; break; }
+        buf += c; j++;
+      }
+      if (!closed) { return null; }
+      title = buf;
+    }
+
+    // optional trailing whitespace, then the required closing `)`
+    while (j < n && isWs(str.charAt(j))) { j++; }
+    if (j >= n || str.charAt(j) !== ')') { return null; }
+    return {url: url, title: title, emptyCase: emptyCase, end: j};
+  }
+
+  /**
    *
    * @param {string} subEvtName
    * @param {RegExp} pattern
@@ -5810,7 +10335,11 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
     title = title || null;
     url = url || null;
-    linkId = (linkId) ? linkId.toLowerCase() : null;
+    if (linkId) {
+      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
+    } else {
+      linkId = null;
+    }
     emptyCase = !!emptyCase;
 
     if (emptyCase) {
@@ -5818,7 +10347,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     } else if (!url) {
       if (!linkId) {
         // lower-case and turn embedded newlines into spaces
-        linkId = text.toLowerCase().replace(/ ?\n/g, ' ');
+        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
       }
       url = '#' + linkId;
 
@@ -5833,22 +10362,21 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     }
 
     url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    if (options.cmSpec) {
+      url = showdown.helper.cmNormalizeURL(url);
+    }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     attributes.href = url;
 
     if (title && showdown.helper.isString(title)) {
-      title = title
-        .replace(/"/g, '&quot;')
-        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      if (options.cmSpec) {
+        title = showdown.helper.cmEscapeTitle(title);
+      } else {
+        title = title
+          .replace(/"/g, '&quot;');
+      }
+      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
       attributes.title = title;
-    }
-
-    // optionLinksInNewWindow only applies
-    // to external links. Hash links (#) open in same page
-    if (options.openLinksInNewWindow && !/^#/.test(url)) {
-      attributes.rel = 'noopener noreferrer';
-      attributes.target = '¨E95Eblank'; // escaped _
-
     }
 
     let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
@@ -5907,6 +10435,24 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
       url: url
     };
   }
+
+  // HTML-escape an autolink href (the URL is already percent-encoded)
+  function cmEscapeHref (url) {
+    return url
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // HTML-escape the visible autolink text (no percent-encoding)
+  function cmEscapeText (txt) {
+    return txt
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 });
 
 ////
@@ -5931,6 +10477,12 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
   const subListRgx = /^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
   const mainListRgx = /(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
   const listTypeRgx = /[*+-]/g;
+
+  // CommonMark list parsing is a separate container-block parser, invoked only when
+  // the commonmark flavor selects it. The regex parser below stays the default path.
+  if (options.cmSpec) {
+    return showdown.subParser('makehtml.cmList')(text, options, globals);
+  }
 
   let startEvent = new showdown.Event('makehtml.list.onStart', text);
   startEvent
@@ -6447,14 +10999,15 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
 
-  var grafs = text.split(/\n{2,}/g),
+  let grafs = text.split(/\n{2,}/g),
       grafsOut = [],
       end = grafs.length; // Wrap <p> tags
 
-  for (var i = 0; i < end; i++) {
-    var str = grafs[i];
-    // if this is an HTML marker, copy it
-    if (str.search(/¨([KG])(\d+)\1/g) >= 0) {
+  for (let i = 0; i < end; i++) {
+    let str = grafs[i];
+    // if this is an HTML marker, copy it (¨R = a raw CommonMark HTML block, deferred past
+    // decodeEntities and restored later - it must not be <p>-wrapped or unhashed here)
+    if (str.search(/¨([KGR])(\d+)\1/g) >= 0) {
       grafsOut.push(str);
 
     // test for presence of characters to prevent empty lines being parsed
@@ -6469,15 +11022,15 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
 
   /** Unhashify HTML blocks */
   end = grafsOut.length;
-  for (i = 0; i < end; i++) {
-    var blockText = '',
+  for (let i = 0; i < end; i++) {
+    let blockText = '',
         grafsOutIt = grafsOut[i],
         codeFlag = false;
     // if this is a marker for an html block...
-    // use RegExp.test instead of string.search because of QML bug
-    while (/¨([KG])(\d+)\1/.test(grafsOutIt)) {
-      var delim = RegExp.$1,
-          num   = RegExp.$2;
+    let blockMatch = null;
+    while ((blockMatch = /¨([KG])(\d+)\1/.exec(grafsOutIt)) !== null) {
+      let delim = blockMatch[1],
+          num   = blockMatch[2];
 
       if (delim === 'K') {
         blockText = globals.gHtmlBlocks[num];
@@ -6550,6 +11103,42 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
+  if (options.cmSpec) {
+    // underline runs BEFORE cmInline (mirroring the legacy order, where underline runs
+    // before emphasisAndStrong): it claims `__`/`___` as `<u>` and escapes any remaining
+    // `_`, so cmInline doesn't consume those underscores as emphasis. cmInline then hashes
+    // the raw `<u>` tags as CommonMark raw HTML and leaves the escaped `_` placeholders be.
+    text = showdown.subParser('makehtml.underline')(text, options, globals);
+
+    // Unified CommonMark inline parser: code spans, backslash escapes, entities,
+    // autolinks, raw HTML, links, images and emphasis resolved together on one
+    // delimiter stack (replaces the sequential codeSpan/link/image/emphasis passes
+    // and the raw-HTML hashing below). The remaining Showdown-only extras (emoji,
+    // strikethrough, ellipsis) and the final encodeAmpsAndAngles/hardLineBreaks run
+    // after, on the non-hashed text.
+    text = showdown.subParser('makehtml.cmInline')(text, options, globals);
+
+    text = showdown.subParser('makehtml.emoji')(text, options, globals);
+    text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
+    text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
+
+    // hash the raw HTML these extras produce (e.g. strikethrough's `<del>`, image-based
+    // emoji's `<img>`) before encodeAmpsAndAngles, otherwise their `<`/`>` get escaped to
+    // `&lt;`/`&gt;`. Mirrors the legacy branch, which hashes spans before encoding.
+    text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
+
+    text = showdown.subParser('makehtml.encodeAmpsAndAngles')(text, options, globals);
+    text = showdown.subParser('makehtml.hardLineBreaks')(text, options, globals);
+
+    let cmAfterEvent = new showdown.Event('makehtml.spanGamut.onEnd', text);
+    cmAfterEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    cmAfterEvent = globals.converter.dispatch(cmAfterEvent);
+    return cmAfterEvent.output;
+  }
+
   text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
   text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
   text = showdown.subParser('makehtml.encodeBackslashEscapes')(text, options, globals);
@@ -6558,6 +11147,23 @@ showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   // because ![foo][f] looks like a link.
   text = showdown.subParser('makehtml.image')(text, options, globals);
   text = showdown.subParser('makehtml.link')(text, options, globals);
+
+  if (options.cmSpec) {
+    // CommonMark inline raw HTML: recognize well-formed tags/comments/PIs/
+    // declarations/CDATA and hash them now - after backslash escapes and link/image
+    // destinations are resolved, but before emphasis - so that markup characters
+    // inside a tag (e.g. `<a href="**">`) are not parsed as emphasis. Malformed
+    // `<…>` is left for encodeAmpsAndAngles to escape. Fresh regex per call (this
+    // subparser runs re-entrantly).
+    text = text.replace(new RegExp(showdown.helper.regexes.cmHTMLTagSource, 'g'), function (wm) {
+      // Backslash escapes are not processed inside raw HTML, so restore any escape
+      // placeholders that encodeBackslashEscapes produced back to literal `\<char>`.
+      wm = wm.replace(/¨E(\d+)E/g, function (m, code) {
+        return '\\' + String.fromCharCode(parseInt(code, 10));
+      });
+      return showdown.helper._hashHTMLSpan(wm, globals);
+    });
+  }
 
   text = showdown.subParser('makehtml.emoji')(text, options, globals);
   text = showdown.subParser('makehtml.underline')(text, options, globals);
@@ -6651,54 +11257,305 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
   const regex     = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?([^>\s]+)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=¨0))/gm,
       base64Regex = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n\n|(?=¨0)|(?=\n\[))/gm;
 
+  let startEvent = new showdown.Event('makehtml.stripLinkDefinitions.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '¨0';
 
   let replaceFunc = function (wholeMatch, linkId, url, width, height, blankLines, title) {
 
     // if there aren't two instances of linkId it must not be a reference link so back out
-    linkId = linkId.toLowerCase();
-    if (text.toLowerCase().split(linkId).length - 1 < 2) {
+    linkId = showdown.helper.caseFold(linkId);
+    if (showdown.helper.caseFold(text).split(linkId).length - 1 < 2) {
       return wholeMatch;
     }
-    if (url.match(/^data:.+?\/.+?;base64,/)) {
-      // remove newlines
-      globals.gUrls[linkId] = url.replace(/\s/g, '');
-    } else {
-      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
 
-      globals.gUrls[linkId] = showdown.subParser('makehtml.encodeAmpsAndAngles')(url, options, globals);  // Link IDs are case-insensitive
+    let captureStartEvent = new showdown.Event('makehtml.stripLinkDefinitions.onCapture', wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(regex)
+      .setMatches({
+        _wholeMatch: wholeMatch,
+        linkId: linkId,
+        url: url,
+        width: width,
+        height: height,
+        blankLines: blankLines,
+        title: title
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+    let otp;
+    // if something was passed as output, it takes precedence and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      // a listener may have normalized the captured groups
+      linkId     = captureStartEvent.matches.linkId;
+      url        = captureStartEvent.matches.url;
+      width      = captureStartEvent.matches.width;
+      height     = captureStartEvent.matches.height;
+      blankLines = captureStartEvent.matches.blankLines;
+      title      = captureStartEvent.matches.title;
+
+      if (url.match(/^data:.+?\/.+?;base64,/)) {
+        // remove newlines
+        globals.gUrls[linkId] = url.replace(/\s/g, '');
+      } else {
+        url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+
+        globals.gUrls[linkId] = showdown.subParser('makehtml.encodeAmpsAndAngles')(url, options, globals);  // Link IDs are case-insensitive
+      }
+
+      if (blankLines) {
+        // Oops, found blank lines, so it's not a title.
+        // Put back the parenthetical statement we stole.
+        otp = blankLines + title;
+
+      } else {
+        if (title) {
+          globals.gTitles[linkId] = title.replace(/["']/g, '&quot;');
+        }
+        if (options.parseImgDimensions && width && height) {
+          globals.gDimensions[linkId] = {
+            width:  width,
+            height: height
+          };
+        }
+        // Completely remove the definition from the text
+        otp = '';
+      }
     }
 
-    if (blankLines) {
-      // Oops, found blank lines, so it's not a title.
-      // Put back the parenthetical statement we stole.
-      return blankLines + title;
-
-    } else {
-      if (title) {
-        globals.gTitles[linkId] = title.replace(/["']/g, '&quot;');
-      }
-      if (options.parseImgDimensions && width && height) {
-        globals.gDimensions[linkId] = {
-          width:  width,
-          height: height
-        };
-      }
-    }
-    // Completely remove the definition from the text
-    return '';
+    let beforeHashEvent = new showdown.Event('makehtml.stripLinkDefinitions.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
   };
 
-  // first we try to find base64 link references
-  text = text.replace(base64Regex, replaceFunc);
+  if (options.cmSpec) {
+    text = parseCmLinkDefinitions(text);
+  } else {
+    // first we try to find base64 link references
+    text = text.replace(base64Regex, replaceFunc);
 
-  text = text.replace(regex, replaceFunc);
+    text = text.replace(regex, replaceFunc);
+  }
 
   // attacklab: strip sentinel
   text = text.replace(/¨0/, '');
 
-  return text;
+  let afterEvent = new showdown.Event('makehtml.stripLinkDefinitions.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+
+  /**
+   * CommonMark link reference definition parsing. Scans block by block: a
+   * definition may appear at the start of the document, after a blank line, or
+   * immediately after another definition. Supports multi-line definitions,
+   * `<...>` (and empty `<>`) destinations, multi-line titles, backslash escapes
+   * and first-definition-wins for duplicate labels.
+   * @param {string} str text with the trailing `¨0` sentinel
+   * @returns {string}
+   */
+  function parseCmLinkDefinitions (str) {
+    let n = str.length,
+        out = '',
+        i = 0,
+        atBlockStart = true;
+    while (i < n) {
+      if (atBlockStart) {
+        let def = tryParseCmDefinition(str, i);
+        if (def) {
+          commitDefinition(def);
+          i = def.end;
+          atBlockStart = true; // consecutive definitions are allowed
+          continue;
+        }
+      }
+      // consume one line verbatim
+      let nl = str.indexOf('\n', i);
+      if (nl === -1) {
+        out += str.slice(i);
+        break;
+      }
+      let line = str.slice(i, nl + 1);
+      out += line;
+      i = nl + 1;
+      // A definition can begin after a blank line or after a self-contained leaf
+      // block such as an ATX heading or a thematic break, but it must not
+      // interrupt a paragraph.
+      atBlockStart = /^[ \t]*\n$/.test(line) ||
+        /^ {0,3}#{1,6}(?:[ \t]|\n)/.test(line) ||
+        /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}\n$/.test(line);
+    }
+    return out;
+  }
+
+  /**
+   * Store a parsed definition, honoring first-definition-wins, and dispatch the
+   * capture event so listener extensions still observe link-definition captures.
+   * @param {{linkId: string, url: string, title: (string|null), wholeMatch: string}} def
+   */
+  function commitDefinition (def) {
+    let captureStartEvent = new showdown.Event('makehtml.stripLinkDefinitions.onCapture', def.wholeMatch);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(null)
+      .setMatches({
+        _wholeMatch: def.wholeMatch,
+        linkId: def.linkId,
+        url: def.url,
+        title: def.title
+      })
+      .setAttributes({});
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+    let linkId = captureStartEvent.matches.linkId,
+        url = captureStartEvent.matches.url,
+        title = captureStartEvent.matches.title;
+
+    // first definition wins
+    if (showdown.helper.isUndefined(globals.gUrls[linkId])) {
+      globals.gUrls[linkId] = url;
+      if (title !== null && !showdown.helper.isUndefined(title)) {
+        globals.gTitles[linkId] = title;
+      }
+      // parseImgDimensions: store reference-style dimensions (gating copied from the
+      // legacy stripLinkDefinitions replaceFunc); consumed by cmInline's image builder
+      if (options.parseImgDimensions && def.width && def.height) {
+        globals.gDimensions[linkId] = { width: def.width, height: def.height };
+      }
+    }
+  }
+
+  /**
+   * Attempt to parse a single CommonMark link reference definition starting at
+   * `start` (a line start). Returns the parsed definition with `end` (index just
+   * past the consumed text) or `null` if there is no definition here.
+   * @param {string} str
+   * @param {number} start
+   * @returns {{linkId: string, url: string, title: (string|null), wholeMatch: string, end: number}|null}
+   */
+  function tryParseCmDefinition (str, start) {
+    let n = str.length,
+        j = start,
+        isEnd = function (p) { return p >= n || str.charAt(p) === '\n' || str.slice(p, p + 2) === '¨0'; };
+
+    // up to 3 leading spaces
+    let sp = 0;
+    while (j < n && str.charAt(j) === ' ' && sp < 3) { j++; sp++; }
+    if (str.charAt(j) !== '[') { return null; }
+    j++;
+
+    // label: up to the first unescaped ']', no nested '[' or blank line
+    let label = '', sawNonWs = false;
+    while (j < n) {
+      let c = str.charAt(j);
+      if (c === '\\' && j + 1 < n) { label += c + str.charAt(j + 1); j += 2; sawNonWs = true; continue; }
+      if (c === ']') { break; }
+      if (c === '[') { return null; }
+      if (!/\s/.test(c)) { sawNonWs = true; }
+      label += c; j++;
+    }
+    if (j >= n || str.charAt(j) !== ']' || !sawNonWs || /\n[ \t]*\n/.test(label)) { return null; }
+    j++; // consume ']'
+    if (str.charAt(j) !== ':') { return null; }
+    j++;
+
+    // whitespace (incl at most one line ending) before the destination
+    let nlCount = 0;
+    while (j < n && /[ \t\n]/.test(str.charAt(j))) {
+      if (str.charAt(j) === '\n') { nlCount++; if (nlCount > 1) { return null; } }
+      j++;
+    }
+
+    let dest = showdown.helper.cmScanDestination(str, j);
+    if (!dest || (!dest.angle && dest.url === '')) { return null; }
+    let afterDest = dest.end,
+        url = dest.url;
+
+    // parseImgDimensions (Showdown extension, not CommonMark): an optional ` =WxH`
+    // between the destination and the title. Always consumed here; only stored as
+    // dimensions when the option is on (see commitDefinition). Regex fragment copied
+    // from the inline image regex in image.js.
+    let width = null, height = null;
+    let dimPos = afterDest;
+    while (dimPos < n && /[ \t]/.test(str.charAt(dimPos))) { dimPos++; }
+    if (dimPos > afterDest && str.charAt(dimPos) === '=') {
+      let dim = /^=([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4})/.exec(str.slice(dimPos));
+      if (dim) {
+        width = dim[1];
+        height = dim[2];
+        afterDest = dimPos + dim[0].length;
+      }
+    }
+
+    // optional title, separated from the destination by whitespace (and at most
+    // one line ending, with no blank line)
+    let k = afterDest, sawSpace = false, sawNl = false;
+    while (k < n && /[ \t]/.test(str.charAt(k))) { k++; sawSpace = true; }
+    if (str.charAt(k) === '\n') { sawNl = true; k++; while (k < n && /[ \t]/.test(str.charAt(k))) { k++; } }
+
+    let title = null, end;
+    let tc = str.charAt(k);
+    if ((sawSpace || sawNl) && (tc === '"' || tc === '\'' || tc === '(')) {
+      let t = showdown.helper.cmScanTitle(str, k);
+      if (t) {
+        let p = t.end;
+        while (p < n && /[ \t]/.test(str.charAt(p))) { p++; }
+        if (isEnd(p)) {
+          title = t.title;
+          end = (str.charAt(p) === '\n') ? p + 1 : p;
+        }
+      }
+    }
+
+    if (title === null) {
+      // no (valid) title: the destination must be the last token on its line
+      let p = afterDest;
+      while (p < n && /[ \t]/.test(str.charAt(p))) { p++; }
+      if (!isEnd(p)) { return null; }
+      end = (str.charAt(p) === '\n') ? p + 1 : p;
+    }
+
+    let linkId = showdown.helper.cmNormalizeLabel(label);
+    if (linkId === '') { return null; }
+
+    if (url.match(/^data:.+?\/.+?;base64,/)) {
+      url = url.replace(/\s/g, '');
+    } else {
+      url = showdown.helper.cmNormalizeURL(showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url));
+    }
+    if (title !== null) { title = showdown.helper.cmEscapeTitle(title); }
+
+    return {
+      linkId: linkId,
+      url: url,
+      title: title,
+      width: width,
+      height: height,
+      wholeMatch: str.slice(start, end),
+      end: end
+    };
+  }
 });
 
 showdown.subParser('makehtml.table', function (text, options, globals) {
@@ -7043,6 +11900,12 @@ showdown.subParser('makehtml.underline', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
+  // Resolve an escaped underscore (`\_`) to the escape placeholder (¨E95E, charcode of
+  // `_`), consuming the backslash, so it is neither underlined nor left with a stray `\`.
+  // Needed because under cmSpec underline runs before backslash escapes are resolved; a
+  // no-op in the legacy path, where `\_` is already a placeholder before this runs.
+  text = text.replace(/\\_/g, '¨E95E');
+
   if (options.literalMidWordUnderscores) {
 
     const rgx1 = /\b___(\S[\s\S]*?)___\b/g;
@@ -7197,217 +12060,535 @@ showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals)
 showdown.subParser('makeMarkdown.blockquote', function (node, options, globals) {
   'use strict';
 
-  var txt = '';
-  if (node.hasChildNodes()) {
-    var children = node.childNodes,
-        childrenLength = children.length;
+  let startEvent = new showdown.Event('makeMarkdown.blockquote.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
 
-    for (var i = 0; i < childrenLength; ++i) {
-      var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      var txt = '';
+      if (node.hasChildNodes()) {
+        var children = node.childNodes,
+            childrenLength = children.length;
 
-      if (innerTxt === '') {
-        continue;
+        for (var i = 0; i < childrenLength; ++i) {
+          var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+
+          if (innerTxt === '') {
+            continue;
+          }
+          txt += innerTxt;
+        }
       }
-      txt += innerTxt;
-    }
+      // cleanup
+      txt = txt.trim();
+      txt = '> ' + txt.split('\n').join('\n> ');
+      return txt;
+    })();
   }
-  // cleanup
-  txt = txt.trim();
-  txt = '> ' + txt.split('\n').join('\n> ');
-  return txt;
+
+  let endEvent = new showdown.Event('makeMarkdown.blockquote.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
-showdown.subParser('makeMarkdown.break', function () {
+showdown.subParser('makeMarkdown.break', function (node, options, globals) {
   'use strict';
 
-  return '  \n';
+  let startEvent = new showdown.Event('makeMarkdown.break.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = '  \n';
+  }
+
+  let endEvent = new showdown.Event('makeMarkdown.break.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.codeBlock', function (node, options, globals) {
   'use strict';
 
-  var lang = node.getAttribute('language'),
-      num  = node.getAttribute('precodenum');
-  return '```' + lang + '\n' + globals.preList[num] + '\n```';
+  let startEvent = new showdown.Event('makeMarkdown.codeBlock.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    let lang = node.getAttribute('language'),
+        num  = node.getAttribute('precodenum'),
+        code = globals.preList[num];
+    if (options.ghCodeBlocks) {
+      result = '```' + lang + '\n' + code + '\n```';
+    } else {
+      // fenced code blocks disabled -> emit raw HTML (re-escape the special chars that
+      // substitutePreCodeTags decoded when it stashed the content)
+      let escaped = code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
+          langClass = lang ? ' class="' + lang + '"' : '';
+      result = '<pre><code' + langClass + '>' + escaped + '</code></pre>';
+    }
+  }
+
+  let endEvent = new showdown.Event('makeMarkdown.codeBlock.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
-showdown.subParser('makeMarkdown.codeSpan', function (node) {
+showdown.subParser('makeMarkdown.codeSpan', function (node, options, globals) {
   'use strict';
 
-  return '`' + node.innerHTML + '`';
+  let startEvent = new showdown.Event('makeMarkdown.codeSpan.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    let code = showdown.helper.unescapeHTMLEntities(node.innerHTML);
+    // pick a backtick fence longer than the longest run of backticks inside the content
+    let backtickRuns = code.match(/`+/g),
+        longestRun = 0;
+    if (backtickRuns) {
+      for (let b = 0; b < backtickRuns.length; ++b) {
+        if (backtickRuns[b].length > longestRun) {
+          longestRun = backtickRuns[b].length;
+        }
+      }
+    }
+    let fence = new Array(longestRun + 2).join('`'),
+        pad = (longestRun > 0) ? ' ' : '';
+    result = fence + pad + code + pad + fence;
+  }
+
+  let endEvent = new showdown.Event('makeMarkdown.codeSpan.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.emphasis', function (node, options, globals) {
   'use strict';
 
-  var txt = '';
-  if (node.hasChildNodes()) {
-    txt += '*';
-    var children = node.childNodes,
-        childrenLength = children.length;
-    for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-    }
-    txt += '*';
+  let startEvent = new showdown.Event('makeMarkdown.emphasis.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = '';
+      if (node.hasChildNodes()) {
+        txt += '*';
+        let children = node.childNodes,
+            childrenLength = children.length;
+        for (let i = 0; i < childrenLength; ++i) {
+          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+        }
+        txt += '*';
+      }
+      return txt;
+    })();
   }
-  return txt;
+
+  let endEvent = new showdown.Event('makeMarkdown.emphasis.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.header', function (node, options, globals, headerLevel) {
   'use strict';
 
-  var headerMark = new Array(headerLevel + 1).join('#'),
-      txt = '';
+  let startEvent = new showdown.Event('makeMarkdown.header.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
 
-  if (node.hasChildNodes()) {
-    txt = headerMark + ' ';
-    var children = node.childNodes,
-        childrenLength = children.length;
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let headerMark = new Array(headerLevel + 1).join('#'),
+          txt = '';
 
-    for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-    }
+      if (node.hasChildNodes()) {
+        txt = headerMark + ' ';
+        let children = node.childNodes,
+            childrenLength = children.length;
+
+        for (let i = 0; i < childrenLength; ++i) {
+          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+        }
+      }
+      return txt;
+    })();
   }
-  return txt;
+
+  let endEvent = new showdown.Event('makeMarkdown.header.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
-showdown.subParser('makeMarkdown.hr', function () {
+showdown.subParser('makeMarkdown.hr', function (node, options, globals) {
   'use strict';
 
-  return '---';
+  let startEvent = new showdown.Event('makeMarkdown.hr.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = '---';
+  }
+
+  let endEvent = new showdown.Event('makeMarkdown.hr.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
-showdown.subParser('makeMarkdown.image', function (node) {
+showdown.subParser('makeMarkdown.image', function (node, options, globals) {
   'use strict';
 
-  var txt = '';
-  if (node.hasAttribute('src') && node.getAttribute('src') !== '') {
-    txt += '![' + node.getAttribute('alt') + '](';
-    txt += '<' + node.getAttribute('src') + '>';
-    if (node.hasAttribute('width') && node.hasAttribute('height')) {
-      var width = node.getAttribute('width');
-      var height = node.getAttribute('height');
-      txt += ' =' + (width === 'auto' ? '*' : width) + 'x' + (height === 'auto' ? '*' : height);
-    }
+  let startEvent = new showdown.Event('makeMarkdown.image.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
 
-    if (node.hasAttribute('title')) {
-      txt += ' "' + node.getAttribute('title') + '"';
-    }
-    txt += ')';
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = '';
+      if (node.hasAttribute('src') && node.getAttribute('src') !== '') {
+        let hasDimensions = node.hasAttribute('width') && node.hasAttribute('height');
+
+        // image dimensions are a showdown-specific syntax; when the option is disabled but the
+        // image carries dimensions, fall back to raw HTML so the size isn't silently lost
+        if (hasDimensions && !options.parseImgDimensions) {
+          return node.outerHTML;
+        }
+
+        txt += '![' + (node.getAttribute('alt') || '') + '](';
+        txt += '<' + node.getAttribute('src') + '>';
+        if (hasDimensions) {
+          let width = node.getAttribute('width');
+          let height = node.getAttribute('height');
+          txt += ' =' + (width === 'auto' ? '*' : width) + 'x' + (height === 'auto' ? '*' : height);
+        }
+
+        if (node.hasAttribute('title')) {
+          txt += ' "' + node.getAttribute('title') + '"';
+        }
+        txt += ')';
+      }
+      return txt;
+    })();
   }
-  return txt;
+
+  let endEvent = new showdown.Event('makeMarkdown.image.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.input', function (node, options, globals) {
   'use strict';
 
-  var txt = '';
-  if (node.getAttribute('checked') !== null) {
-    txt += '[x]';
+  let startEvent = new showdown.Event('makeMarkdown.input.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
   } else {
-    txt += '[ ]';
+    result = (function () {
+      // only checkbox inputs map to task-list markdown, and only when tasklists are enabled;
+      // anything else passes through as raw HTML
+      if (node.getAttribute('type') !== 'checkbox' || !options.tasklists) {
+        return node.outerHTML;
+      }
+      return (node.getAttribute('checked') !== null) ? '[x]' : '[ ]';
+    })();
   }
-  var children = node.childNodes,
-      childrenLength = children.length;
-  for (var i = 0; i < childrenLength; ++i) {
-    txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-  }
-  return txt;
+
+  let endEvent = new showdown.Event('makeMarkdown.input.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.links', function (node, options, globals) {
   'use strict';
 
-  var txt = '';
-  if (node.hasChildNodes() && node.hasAttribute('href')) {
-    var children = node.childNodes,
-        childrenLength = children.length;
+  let startEvent = new showdown.Event('makeMarkdown.links.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
 
-    // special case for mentions
-    // to simplify (and not make stuff really complicated) mentions will only work in this circumstance:
-    // <a class="user-mention" href="https://github.com/user">@user</a>
-    // that is, if there's a "user-mention" class and option ghMentions is true
-    // otherwise is ignored
-    var classes = node.getAttribute('class');
-    if (options.ghMentions && /(?:^| )user-mention\b/.test(classes)) {
-      for (var ii = 0; ii < childrenLength; ++ii) {
-        txt += showdown.subParser('makeMarkdown.node')(children[ii], options, globals);
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = '';
+      if (!node.hasChildNodes()) {
+        return txt;
+      }
+      let children = node.childNodes,
+          childrenLength = children.length;
+
+      // anchors without an href (e.g. named anchors) lose their link semantics but keep their text
+      if (!node.hasAttribute('href')) {
+        for (let n = 0; n < childrenLength; ++n) {
+          txt += showdown.subParser('makeMarkdown.node')(children[n], options, globals);
+        }
+        return txt;
       }
 
-    } else {
-      txt = '[';
-      for (var i = 0; i < childrenLength; ++i) {
-        txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+      // special case for mentions
+      // to simplify (and not make stuff really complicated) mentions will only work in this circumstance:
+      // <a class="user-mention" href="https://github.com/user">@user</a>
+      // that is, if there's a "user-mention" class and option ghMentions is true
+      // otherwise is ignored
+      let classes = node.getAttribute('class');
+      if (options.ghMentions && /(?:^| )user-mention\b/.test(classes)) {
+        for (let ii = 0; ii < childrenLength; ++ii) {
+          txt += showdown.subParser('makeMarkdown.node')(children[ii], options, globals);
+        }
+        return txt;
       }
-      txt += '](';
-      txt += '<' + node.getAttribute('href') + '>';
+
+      let innerTxt = '';
+      for (let i = 0; i < childrenLength; ++i) {
+        innerTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+      }
+      let href = node.getAttribute('href');
+
+      // autolink: when the link text is identical to the href and there's no title,
+      // emit the compact <href> form instead of [href](<href>)
+      if (!node.hasAttribute('title') && innerTxt === href) {
+        return '<' + href + '>';
+      }
+
+      txt = '[' + innerTxt + '](<' + href + '>';
       if (node.hasAttribute('title')) {
         txt += ' "' + node.getAttribute('title') + '"';
       }
       txt += ')';
-    }
-
-
+      return txt;
+    })();
   }
-  return txt;
+
+  let endEvent = new showdown.Event('makeMarkdown.links.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.list', function (node, options, globals, type) {
   'use strict';
 
-  var txt = '';
-  if (!node.hasChildNodes()) {
-    return '';
+  let startEvent = new showdown.Event('makeMarkdown.list.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = '';
+      if (!node.hasChildNodes()) {
+        return '';
+      }
+      let listItems       = node.childNodes,
+          listItemsLenght = listItems.length,
+          listNum = node.getAttribute('start') || 1;
+
+      for (let i = 0; i < listItemsLenght; ++i) {
+        if (typeof listItems[i].tagName === 'undefined' || listItems[i].tagName.toLowerCase() !== 'li') {
+          continue;
+        }
+
+        // define the bullet to use in list
+        let bullet = '';
+        if (type === 'ol') {
+          bullet = listNum.toString() + '. ';
+        } else {
+          bullet = '- ';
+        }
+
+        // parse list item
+        txt += bullet + showdown.subParser('makeMarkdown.listItem')(listItems[i], options, globals);
+        ++listNum;
+      }
+
+      return txt.trim();
+    })();
   }
-  var listItems       = node.childNodes,
-      listItemsLenght = listItems.length,
-      listNum = node.getAttribute('start') || 1;
 
-  for (var i = 0; i < listItemsLenght; ++i) {
-    if (typeof listItems[i].tagName === 'undefined' || listItems[i].tagName.toLowerCase() !== 'li') {
-      continue;
-    }
-
-    // define the bullet to use in list
-    var bullet = '';
-    if (type === 'ol') {
-      bullet = listNum.toString() + '. ';
-    } else {
-      bullet = '- ';
-    }
-
-    // parse list item
-    txt += bullet + showdown.subParser('makeMarkdown.listItem')(listItems[i], options, globals);
-    ++listNum;
-  }
-
-  return txt.trim();
+  let endEvent = new showdown.Event('makeMarkdown.list.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.listItem', function (node, options, globals) {
   'use strict';
 
-  var listItemTxt = '';
+  let startEvent = new showdown.Event('makeMarkdown.listItem.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
 
-  var children = node.childNodes,
-      childrenLenght = children.length;
-
-  for (var i = 0; i < childrenLenght; ++i) {
-    listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-  }
-  // if it's only one liner, we need to add a newline at the end
-  if (!/\n$/.test(listItemTxt)) {
-    listItemTxt += '\n';
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
   } else {
-    // it's multiparagraph, so we need to indent
-    listItemTxt = listItemTxt
-      .split('\n')
-      .join('\n    ')
-      .replace(/^ {4}$/gm, '')
-      .replace(/\n\n+/g, '\n\n');
+    result = (function () {
+      let listItemTxt = '';
+
+      let children = node.childNodes,
+          childrenLenght = children.length;
+
+      for (let i = 0; i < childrenLenght; ++i) {
+        listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+      }
+      // if it's only one liner, we need to add a newline at the end
+      if (!/\n$/.test(listItemTxt)) {
+        listItemTxt += '\n';
+      } else {
+        // it's multiparagraph, so we need to indent
+        listItemTxt = listItemTxt
+          .split('\n')
+          .join('\n    ')
+          .replace(/^ {4}$/gm, '')
+          .replace(/\n\n+/g, '\n\n');
+      }
+
+      return listItemTxt;
+    })();
   }
 
-  return listItemTxt;
+  let endEvent = new showdown.Event('makeMarkdown.listItem.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 
@@ -7417,183 +12598,345 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
 
   spansOnly = spansOnly || false;
 
-  var txt = '';
+  let startEvent = new showdown.Event('makeMarkdown.node.onStart', node.outerHTML || node.nodeValue || '');
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
 
-  // edge case of text without wrapper paragraph
-  if (node.nodeType === 3) {
-    return showdown.subParser('makeMarkdown.txt')(node, options, globals);
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = '';
+
+      // edge case of text without wrapper paragraph
+      if (node.nodeType === 3) {
+        return showdown.subParser('makeMarkdown.txt')(node, options, globals);
+      }
+
+      // HTML comment
+      if (node.nodeType === 8) {
+        return '<!--' + node.data + '-->\n\n';
+      }
+
+      // process only node elements
+      if (node.nodeType !== 1) {
+        return '';
+      }
+
+      let tagName = node.tagName.toLowerCase();
+
+      // Renders an element as raw HTML while still converting its children to markdown.
+      // Used for unknown wrapper elements and for feature-gated constructs (strikethrough,
+      // underline, tables, ...) when their option is disabled, so the reverse direction stays
+      // symmetric with makeHtml: a construct makeHtml wouldn't parse isn't emitted as markdown
+      // here either. Embedded/replaced-content and void/empty elements are emitted verbatim.
+      function renderRawElement (n, tag) {
+        let rawContentTags = ['script', 'style', 'canvas', 'audio', 'video', 'iframe', 'object', 'svg', 'math', 'noscript', 'template', 'picture'];
+        let kids = n.childNodes;
+        if (kids && kids.length > 0 && rawContentTags.indexOf(tag) === -1) {
+          let inner = '';
+          for (let k = 0; k < kids.length; ++k) {
+            inner += showdown.subParser('makeMarkdown.node')(kids[k], options, globals, spansOnly);
+          }
+          // a block child terminates itself with a blank line; trim that trailing separator so
+          // the wrapper's closing tag stays compact instead of dangling on its own line
+          inner = inner.replace(/\n+$/, '');
+          // derive the opening tag from outerHTML so attribute serialization is preserved
+          // exactly (and is robust against ">" inside attribute values)
+          let outer    = n.outerHTML,
+              closeTag = '</' + tag + '>',
+              openTag  = outer.substring(0, outer.length - n.innerHTML.length - closeTag.length);
+          return openTag + inner + closeTag;
+        }
+        return n.outerHTML;
+      }
+
+      switch (tagName) {
+
+        //
+        // BLOCKS
+        //
+        case 'h1':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 1) + '\n\n'; }
+          break;
+        case 'h2':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 2) + '\n\n'; }
+          break;
+        case 'h3':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 3) + '\n\n'; }
+          break;
+        case 'h4':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 4) + '\n\n'; }
+          break;
+        case 'h5':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 5) + '\n\n'; }
+          break;
+        case 'h6':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 6) + '\n\n'; }
+          break;
+
+        case 'p':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.paragraph')(node, options, globals) + '\n\n'; }
+          break;
+
+        case 'blockquote':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.blockquote')(node, options, globals) + '\n\n'; }
+          break;
+
+        case 'hr':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.hr')(node, options, globals) + '\n\n'; }
+          break;
+
+        case 'ol':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, options, globals, 'ol') + '\n\n'; }
+          break;
+
+        case 'ul':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, options, globals, 'ul') + '\n\n'; }
+          break;
+
+        case 'precode':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.codeBlock')(node, options, globals) + '\n\n'; }
+          break;
+
+        case 'pre':
+          if (!spansOnly) { txt = showdown.subParser('makeMarkdown.pre')(node, options, globals) + '\n\n'; }
+          break;
+
+        case 'table':
+          if (!spansOnly) {
+            // when tables are disabled, emit the table verbatim: recursing into its block-level
+            // cells would inject blank lines that break the raw HTML block on re-parse
+            txt = (options.tables ?
+              showdown.subParser('makeMarkdown.table')(node, options, globals) :
+              node.outerHTML) + '\n\n';
+          }
+          break;
+
+        //
+        // SPANS
+        //
+        case 'code':
+          txt = showdown.subParser('makeMarkdown.codeSpan')(node, options, globals);
+          break;
+
+        case 'em':
+        case 'i':
+          txt = showdown.subParser('makeMarkdown.emphasis')(node, options, globals);
+          break;
+
+        case 'strong':
+        case 'b':
+          txt = showdown.subParser('makeMarkdown.strong')(node, options, globals);
+          break;
+
+        case 'del':
+        case 's':
+        case 'strike':
+          txt = options.strikethrough ?
+            showdown.subParser('makeMarkdown.strikethrough')(node, options, globals) :
+            renderRawElement(node, tagName);
+          break;
+
+        case 'u':
+          txt = options.underline ?
+            showdown.subParser('makeMarkdown.underline')(node, options, globals) :
+            renderRawElement(node, tagName);
+          break;
+
+        case 'a':
+          txt = showdown.subParser('makeMarkdown.links')(node, options, globals);
+          break;
+
+        case 'img':
+          txt = showdown.subParser('makeMarkdown.image')(node, options, globals);
+          break;
+
+        case 'br':
+          txt = showdown.subParser('makeMarkdown.break')(node, options, globals);
+          break;
+
+        case 'input':
+          txt = showdown.subParser('makeMarkdown.input')(node, options, globals);
+          break;
+
+        default:
+          // unknown tag: keep the wrapper as raw HTML but still convert its children
+          txt = renderRawElement(node, tagName);
+          if (!spansOnly) { txt += '\n\n'; }
+      }
+
+      // common normalization
+      // TODO eventually
+
+      return txt;
+    })();
   }
 
-  // HTML comment
-  if (node.nodeType === 8) {
-    return '<!--' + node.data + '-->\n\n';
-  }
-
-  // process only node elements
-  if (node.nodeType !== 1) {
-    return '';
-  }
-
-  var tagName = node.tagName.toLowerCase();
-
-  switch (tagName) {
-
-    //
-    // BLOCKS
-    //
-    case 'h1':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 1) + '\n\n'; }
-      break;
-    case 'h2':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 2) + '\n\n'; }
-      break;
-    case 'h3':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 3) + '\n\n'; }
-      break;
-    case 'h4':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 4) + '\n\n'; }
-      break;
-    case 'h5':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 5) + '\n\n'; }
-      break;
-    case 'h6':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.header')(node, options, globals, 6) + '\n\n'; }
-      break;
-
-    case 'p':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.paragraph')(node, options, globals) + '\n\n'; }
-      break;
-
-    case 'blockquote':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.blockquote')(node, options, globals) + '\n\n'; }
-      break;
-
-    case 'hr':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.hr')(node, options, globals) + '\n\n'; }
-      break;
-
-    case 'ol':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, options, globals, 'ol') + '\n\n'; }
-      break;
-
-    case 'ul':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.list')(node, options, globals, 'ul') + '\n\n'; }
-      break;
-
-    case 'precode':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.codeBlock')(node, options, globals) + '\n\n'; }
-      break;
-
-    case 'pre':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.pre')(node, options, globals) + '\n\n'; }
-      break;
-
-    case 'table':
-      if (!spansOnly) { txt = showdown.subParser('makeMarkdown.table')(node, options, globals) + '\n\n'; }
-      break;
-
-    //
-    // SPANS
-    //
-    case 'code':
-      txt = showdown.subParser('makeMarkdown.codeSpan')(node, options, globals);
-      break;
-
-    case 'em':
-    case 'i':
-      txt = showdown.subParser('makeMarkdown.emphasis')(node, options, globals);
-      break;
-
-    case 'strong':
-    case 'b':
-      txt = showdown.subParser('makeMarkdown.strong')(node, options, globals);
-      break;
-
-    case 'del':
-      txt = showdown.subParser('makeMarkdown.strikethrough')(node, options, globals);
-      break;
-
-    case 'a':
-      txt = showdown.subParser('makeMarkdown.links')(node, options, globals);
-      break;
-
-    case 'img':
-      txt = showdown.subParser('makeMarkdown.image')(node, options, globals);
-      break;
-
-    case 'br':
-      txt = showdown.subParser('makeMarkdown.break')(node, options, globals);
-      break;
-
-    case 'input':
-      txt = showdown.subParser('makeMarkdown.input')(node, options, globals);
-      break;
-
-    default:
-      txt = node.outerHTML + '\n\n';
-  }
-
-  // common normalization
-  // TODO eventually
-
-  return txt;
+  let endEvent = new showdown.Event('makeMarkdown.node.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.paragraph', function (node, options, globals) {
   'use strict';
 
-  var txt = '';
-  if (node.hasChildNodes()) {
-    var children = node.childNodes,
-        childrenLength = children.length;
-    for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-    }
+  let startEvent = new showdown.Event('makeMarkdown.paragraph.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = '';
+      if (node.hasChildNodes()) {
+        let children = node.childNodes,
+            childrenLength = children.length;
+        for (let i = 0; i < childrenLength; ++i) {
+          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+        }
+      }
+
+      // some text normalization
+      txt = txt.trim();
+
+      return txt;
+    })();
   }
 
-  // some text normalization
-  txt = txt.trim();
-
-  return txt;
+  let endEvent = new showdown.Event('makeMarkdown.paragraph.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.pre', function (node, options, globals) {
   'use strict';
 
-  var num  = node.getAttribute('prenum');
-  return '<pre>' + globals.preList[num] + '</pre>';
+  let startEvent = new showdown.Event('makeMarkdown.pre.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    let num  = node.getAttribute('prenum');
+    result = '<pre>' + globals.preList[num] + '</pre>';
+  }
+
+  let endEvent = new showdown.Event('makeMarkdown.pre.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.strikethrough', function (node, options, globals) {
   'use strict';
 
-  var txt = '';
-  if (node.hasChildNodes()) {
-    txt += '~~';
-    var children = node.childNodes,
-        childrenLength = children.length;
-    for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-    }
-    txt += '~~';
+  let startEvent = new showdown.Event('makeMarkdown.strikethrough.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = '';
+      if (node.hasChildNodes()) {
+        txt += '~~';
+        let children = node.childNodes,
+            childrenLength = children.length;
+        for (let i = 0; i < childrenLength; ++i) {
+          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+        }
+        txt += '~~';
+      }
+      return txt;
+    })();
   }
-  return txt;
+
+  let endEvent = new showdown.Event('makeMarkdown.strikethrough.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.strong', function (node, options, globals) {
   'use strict';
 
-  var txt = '';
-  if (node.hasChildNodes()) {
-    txt += '**';
-    var children = node.childNodes,
-        childrenLength = children.length;
-    for (var i = 0; i < childrenLength; ++i) {
-      txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-    }
-    txt += '**';
+  let startEvent = new showdown.Event('makeMarkdown.strong.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = '';
+      if (node.hasChildNodes()) {
+        txt += '**';
+        let children = node.childNodes,
+            childrenLength = children.length;
+        for (let i = 0; i < childrenLength; ++i) {
+          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+        }
+        txt += '**';
+      }
+      return txt;
+    })();
   }
-  return txt;
+
+  let endEvent = new showdown.Event('makeMarkdown.strong.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 showdown.subParser('makeMarkdown.table',
@@ -7607,220 +12950,371 @@ showdown.subParser('makeMarkdown.table',
   function (node, options, globals) {
     'use strict';
 
-    var txt = '',
-        tableArray = [[], []],
-        headings,
-        rows = [],
-        colCount,
-        i,
-        ii;
+    let startEvent = new showdown.Event('makeMarkdown.table.onStart', node.outerHTML);
+    startEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setMatches({node: node});
+    startEvent = globals.converter.dispatch(startEvent);
 
-    /**
-     * @param {Element} tr
-     */
-    function iterateRow (tr) {
-      var children = tr.childNodes,
-          cols = [];
-      // we need to iterate by order, since td and th can be used interchangeably and in any order
-      // we will ignore malformed stuff, comments and floating text.
-      for (var i = 0; i < children.length; ++i) {
-        var childName = children[i].nodeName.toUpperCase();
-        if (childName === 'TD' || childName === 'TH') {
-          cols.push(children[i]);
-        }
-      }
-      return cols;
-    }
+    let result;
+    if (startEvent.output && startEvent.output !== '') {
+      result = startEvent.output;
+    } else {
+      result = (function () {
+        let txt = '',
+            tableArray = [[], []],
+            headings,
+            rows = [],
+            colCount,
+            i,
+            ii;
 
-
-    // first lets look for <thead>
-    // we will ignore thead without <tr> children
-    // also, since markdown doesn't support tables with multiple heading rows, only the first one will be transformed
-    // the rest will count as regular rows
-    if (node.querySelectorAll(':scope>thead').length !== 0 && node.querySelectorAll(':scope>thead>tr').length !== 0) {
-      var thead = node.querySelectorAll(':scope>thead>tr');
-
-      // thead>tr can have td and th children
-      for (i = 0; i < thead.length; ++i) {
-        rows.push(iterateRow(thead[i]));
-      }
-    }
-
-    // now let's look for tbody
-    // we will ignore tbody without <tr> children
-    if (node.querySelectorAll(':scope>tbody').length !== 0 && node.querySelectorAll(':scope>tbody>tr').length !== 0) {
-      var tbody = node.querySelectorAll(':scope>tbody>tr');
-      // tbody>tr can have td and th children, although th are not very screen reader friendly
-      for (i = 0; i < tbody.length; ++i) {
-        rows.push(iterateRow(tbody[i]));
-      }
-    }
-
-    // now look for tfoot
-    if (node.querySelectorAll(':scope>tfoot').length !== 0 && node.querySelectorAll(':scope>tfoot>tr').length !== 0) {
-      var tfoot = node.querySelectorAll(':scope>tfoot>tr');
-      // tfoot>tr can have td and th children, although th are not very screen reader friendly
-      for (i = 0; i < tfoot.length; ++i) {
-        rows.push(iterateRow(tfoot[i]));
-      }
-    }
-
-    // lastly look for naked tr
-    if (node.querySelectorAll(':scope>tr').length !== 0) {
-
-      var tr = node.querySelectorAll(':scope>tr');
-      // tfoot>tr can have td and th children, although th are not very screen reader friendly
-      for (i = 0; i < tr.length; ++i) {
-        rows.push(iterateRow(tr[i]));
-      }
-    }
-
-    // TODO: implement <caption> in tables https://developer.mozilla.org/pt-BR/docs/Web/HTML/Element/caption
-    // note: <colgroup> is ignored, since they are basically styling
-
-    // we need now to account for cases of completely empty tables, like <table></table> or equivalent
-    if (rows.length === 0) {
-      // table is empty, return empty text
-      return txt;
-    }
-
-    // count the first row. We need it to trim the table (if table rows have inconsistent number of columns)
-    colCount = rows[0].length;
-
-    // let's shift the first row as a heading
-    headings = rows.shift();
-
-    for (i = 0; i < headings.length; ++i) {
-      var headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], globals),
-          align = '---';
-
-      if (headings[i].hasAttribute('style')) {
-        var style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
-        switch (style) {
-          case 'text-align:left;':
-            align = ':---';
-            break;
-          case 'text-align:right;':
-            align = '---:';
-            break;
-          case 'text-align:center;':
-            align = ':---:';
-            break;
-        }
-      }
-      tableArray[0][i] = headContent.trim();
-      tableArray[1][i] = align;
-    }
-
-    // now iterate through the rows and create the pseudo output (not pretty yet)
-    for (i = 0; i < rows.length; ++i) {
-      var r = tableArray.push([]) - 1;
-
-      for (ii = 0; ii < colCount; ++ii) {
-        var cellContent = ' ';
-        if (typeof rows[i][ii] !== 'undefined') {
-          // Note: if rows[i][ii] is undefined, it means the row has fewer elements than the header,
-          // and empty content will be added
-          cellContent = showdown.subParser('makeMarkdown.tableCell')(rows[i][ii], globals);
-        }
-        tableArray[r].push(cellContent);
-      }
-    }
-
-    // now tidy up the output, aligning cells and stuff
-    var cellSpacesCount = 3;
-    for (i = 0; i < tableArray.length; ++i) {
-      for (ii = 0; ii < tableArray[i].length; ++ii) {
-        var strLen = tableArray[i][ii].length;
-        if (strLen > cellSpacesCount) {
-          cellSpacesCount = strLen;
-        }
-      }
-    }
-
-    for (i = 0; i < tableArray.length; ++i) {
-      for (ii = 0; ii < tableArray[i].length; ++ii) {
-        if (i === 1) {
-          if (tableArray[i][ii].slice(-1) === ':') {
-            tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(0, -1), cellSpacesCount - 1, '-') + ':';
-          } else {
-            tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
+        /**
+         * @param {Element} tr
+         */
+        function iterateRow (tr) {
+          let children = tr.childNodes,
+              cols = [];
+          // we need to iterate by order, since td and th can be used interchangeably and in any order
+          // we will ignore malformed stuff, comments and floating text.
+          for (let i = 0; i < children.length; ++i) {
+            let childName = children[i].nodeName.toUpperCase();
+            if (childName === 'TD' || childName === 'TH') {
+              cols.push(children[i]);
+            }
           }
-
-        } else {
-          tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount);
+          return cols;
         }
-      }
-      txt += '| ' + tableArray[i].join(' | ') + ' |\n';
+
+
+        // first lets look for <thead>
+        // we will ignore thead without <tr> children
+        // also, since markdown doesn't support tables with multiple heading rows, only the first one will be transformed
+        // the rest will count as regular rows
+        if (node.querySelectorAll(':scope>thead').length !== 0 && node.querySelectorAll(':scope>thead>tr').length !== 0) {
+          let thead = node.querySelectorAll(':scope>thead>tr');
+
+          // thead>tr can have td and th children
+          for (i = 0; i < thead.length; ++i) {
+            rows.push(iterateRow(thead[i]));
+          }
+        }
+
+        // now let's look for tbody
+        // we will ignore tbody without <tr> children
+        if (node.querySelectorAll(':scope>tbody').length !== 0 && node.querySelectorAll(':scope>tbody>tr').length !== 0) {
+          let tbody = node.querySelectorAll(':scope>tbody>tr');
+          // tbody>tr can have td and th children, although th are not very screen reader friendly
+          for (i = 0; i < tbody.length; ++i) {
+            rows.push(iterateRow(tbody[i]));
+          }
+        }
+
+        // now look for tfoot
+        if (node.querySelectorAll(':scope>tfoot').length !== 0 && node.querySelectorAll(':scope>tfoot>tr').length !== 0) {
+          let tfoot = node.querySelectorAll(':scope>tfoot>tr');
+          // tfoot>tr can have td and th children, although th are not very screen reader friendly
+          for (i = 0; i < tfoot.length; ++i) {
+            rows.push(iterateRow(tfoot[i]));
+          }
+        }
+
+        // lastly look for naked tr
+        if (node.querySelectorAll(':scope>tr').length !== 0) {
+
+          let tr = node.querySelectorAll(':scope>tr');
+          // tfoot>tr can have td and th children, although th are not very screen reader friendly
+          for (i = 0; i < tr.length; ++i) {
+            rows.push(iterateRow(tr[i]));
+          }
+        }
+
+        // TODO: implement <caption> in tables https://developer.mozilla.org/pt-BR/docs/Web/HTML/Element/caption
+        // note: <colgroup> is ignored, since they are basically styling
+
+        // we need now to account for cases of completely empty tables, like <table></table> or equivalent
+        if (rows.length === 0) {
+          // table is empty, return empty text
+          return txt;
+        }
+
+        // count the first row. We need it to trim the table (if table rows have inconsistent number of columns)
+        colCount = rows[0].length;
+
+        // let's shift the first row as a heading
+        headings = rows.shift();
+
+        for (i = 0; i < headings.length; ++i) {
+          let headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], options, globals),
+              align = '---';
+
+          if (headings[i].hasAttribute('style')) {
+            let style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
+            switch (style) {
+              case 'text-align:left;':
+                align = ':---';
+                break;
+              case 'text-align:right;':
+                align = '---:';
+                break;
+              case 'text-align:center;':
+                align = ':---:';
+                break;
+            }
+          }
+          // fall back to the deprecated `align` attribute when no inline text-align style matched
+          if (align === '---' && headings[i].hasAttribute('align')) {
+            switch (headings[i].getAttribute('align').toLowerCase()) {
+              case 'left':
+                align = ':---';
+                break;
+              case 'right':
+                align = '---:';
+                break;
+              case 'center':
+                align = ':---:';
+                break;
+            }
+          }
+          tableArray[0][i] = headContent.trim();
+          tableArray[1][i] = align;
+        }
+
+        // now iterate through the rows and create the pseudo output (not pretty yet)
+        for (i = 0; i < rows.length; ++i) {
+          let r = tableArray.push([]) - 1;
+
+          for (ii = 0; ii < colCount; ++ii) {
+            let cellContent = ' ';
+            if (typeof rows[i][ii] !== 'undefined') {
+              // Note: if rows[i][ii] is undefined, it means the row has fewer elements than the header,
+              // and empty content will be added
+              cellContent = showdown.subParser('makeMarkdown.tableCell')(rows[i][ii], options, globals);
+            }
+            tableArray[r].push(cellContent);
+          }
+        }
+
+        // now tidy up the output, aligning cells and stuff
+        let cellSpacesCount = 3;
+        for (i = 0; i < tableArray.length; ++i) {
+          for (ii = 0; ii < tableArray[i].length; ++ii) {
+            let strLen = tableArray[i][ii].length;
+            if (strLen > cellSpacesCount) {
+              cellSpacesCount = strLen;
+            }
+          }
+        }
+
+        for (i = 0; i < tableArray.length; ++i) {
+          for (ii = 0; ii < tableArray[i].length; ++ii) {
+            if (i === 1) {
+              if (tableArray[i][ii].slice(-1) === ':') {
+                tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(0, -1), cellSpacesCount - 1, '-') + ':';
+              } else {
+                tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
+              }
+
+            } else {
+              tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount);
+            }
+          }
+          txt += '| ' + tableArray[i].join(' | ') + ' |\n';
+        }
+
+        return txt.trim();
+      })();
     }
 
-    return txt.trim();
+    let endEvent = new showdown.Event('makeMarkdown.table.onEnd', result);
+    endEvent
+      .setOutput(result)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setMatches({node: node});
+    endEvent = globals.converter.dispatch(endEvent);
+    return endEvent.output;
   }
 );
 
 showdown.subParser('makeMarkdown.tableCell', function (node, options, globals) {
   'use strict';
 
-  var txt = '';
-  if (!node.hasChildNodes()) {
-    return '';
-  }
-  var children = node.childNodes,
-      childrenLength = children.length;
+  let startEvent = new showdown.Event('makeMarkdown.tableCell.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
 
-  for (var i = 0; i < childrenLength; ++i) {
-    txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals, true);
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = '';
+      if (!node.hasChildNodes()) {
+        return '';
+      }
+      let children = node.childNodes,
+          childrenLength = children.length;
+
+      for (let i = 0; i < childrenLength; ++i) {
+        txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals, true);
+      }
+      return txt.trim();
+    })();
   }
-  return txt.trim();
+
+  let endEvent = new showdown.Event('makeMarkdown.tableCell.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
-showdown.subParser('makeMarkdown.txt', function (node) {
+showdown.subParser('makeMarkdown.txt', function (node, options, globals) {
   'use strict';
 
-  var txt = node.nodeValue;
+  let startEvent = new showdown.Event('makeMarkdown.txt.onStart', node.nodeValue);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
 
-  // multiple spaces are collapsed
-  txt = txt.replace(/ +/g, ' ');
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let txt = node.nodeValue;
 
-  // replace the custom ¨NBSP; with a space
-  txt = txt.replace(/¨NBSP;/g, ' ');
+      // multiple spaces are collapsed
+      txt = txt.replace(/ +/g, ' ');
 
-  // ", <, > and & should replace escaped html entities
-  txt = showdown.helper.unescapeHTMLEntities(txt);
+      // replace the custom ¨NBSP; with a space
+      txt = txt.replace(/¨NBSP;/g, ' ');
 
-  // escape markdown magic characters
-  // emphasis, strong and strikethrough - can appear everywhere
-  // we also escape pipe (|) because of tables
-  // and escape ` because of code blocks and spans
-  txt = txt.replace(/([*_~|`])/g, '\\$1');
+      // ", <, > and & should replace escaped html entities
+      txt = showdown.helper.unescapeHTMLEntities(txt);
 
-  // escape > because of blockquotes
-  txt = txt.replace(/^(\s*)>/g, '\\$1>');
+      // escape markdown magic characters
+      // emphasis, strong and strikethrough - can appear everywhere
+      // we also escape pipe (|) because of tables
+      // and escape ` because of code blocks and spans
+      txt = txt.replace(/([*_~|`])/g, '\\$1');
 
-  // hash character, only troublesome at the beginning of a line because of headers
-  txt = txt.replace(/^#/gm, '\\#');
+      // escape > because of blockquotes
+      txt = txt.replace(/^(\s*)>/g, '\\$1>');
 
-  // horizontal rules
-  txt = txt.replace(/^(\s*)([-=]{3,})(\s*)$/, '$1\\$2$3');
+      // hash character, only troublesome at the beginning of a line because of headers
+      txt = txt.replace(/^#/gm, '\\#');
 
-  // dot, because of ordered lists, only troublesome at the beginning of a line when preceded by an integer
-  txt = txt.replace(/^( {0,3}\d+)\./gm, '$1\\.');
+      // horizontal rules
+      txt = txt.replace(/^(\s*)([-=]{3,})(\s*)$/, '$1\\$2$3');
 
-  // +, * and -, at the beginning of a line becomes a list, so we need to escape them also (asterisk was already escaped)
-  txt = txt.replace(/^( {0,3})([+-])/gm, '$1\\$2');
+      // dot, because of ordered lists, only troublesome at the beginning of a line when preceded by an integer
+      txt = txt.replace(/^( {0,3}\d+)\./gm, '$1\\.');
 
-  // images and links, ] followed by ( is problematic, so we escape it
-  txt = txt.replace(/]([\s]*)\(/g, '\\]$1\\(');
+      // +, * and -, at the beginning of a line becomes a list, so we need to escape them also (asterisk was already escaped)
+      txt = txt.replace(/^( {0,3})([+-])/gm, '$1\\$2');
 
-  // reference URIs must also be escaped
-  txt = txt.replace(/^ {0,3}\[([\S \t]*?)]:/gm, '\\[$1]:');
+      // images and links, ] followed by ( is problematic, so we escape it
+      txt = txt.replace(/](\s*)\(/g, '\\]$1\\(');
 
-  return txt;
+      // reference URIs must also be escaped
+      txt = txt.replace(/^ {0,3}\[([\S \t]*?)]:/gm, '\\[$1]:');
+
+      return txt;
+    })();
+  }
+
+  let endEvent = new showdown.Event('makeMarkdown.txt.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
+});
+
+showdown.subParser('makeMarkdown.underline', function (node, options, globals) {
+  'use strict';
+
+  let startEvent = new showdown.Event('makeMarkdown.underline.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      // showdown's forward parser emits <u> for the `underline` option (e.g. __text__).
+      // We mirror that here so <u> round-trips. Note: __ is standard-Markdown strong, so this
+      // only round-trips cleanly through a converter that has the `underline` option enabled.
+      let txt = '';
+      if (node.hasChildNodes()) {
+        txt += '__';
+        let children = node.childNodes,
+            childrenLength = children.length;
+        for (let i = 0; i < childrenLength; ++i) {
+          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+        }
+        txt += '__';
+      }
+      return txt;
+    })();
+  }
+
+  let endEvent = new showdown.Event('makeMarkdown.underline.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
 });
 
 /**
  * Created by Estevao on 31-05-2015.
  */
+
+/**
+ * Module scope (shared across all converter instances): warn at most once per process per
+ * deprecated extension type, rather than once per extension load.
+ * @type {{}}
+ */
+let deprecatedExtTypeWarned = {};
+
+/**
+ * Emit a one-time deprecation warning for a legacy (`lang`/`output`) extension type
+ * @param {string} type
+ * @param {string} event
+ */
+function warnDeprecatedExtType (type, event) {
+  'use strict';
+  if (deprecatedExtTypeWarned[type]) {
+    return;
+  }
+  deprecatedExtTypeWarned[type] = true;
+  console.warn('DEPRECATION WARNING: "' + type + '" extensions are deprecated and will be ' +
+    'removed in a future version. Use a "listener" extension on the "' + event + '" event instead.');
+}
 
 /**
  * Showdown Converter class
@@ -7838,20 +13332,6 @@ showdown.Converter = function (converterOptions) {
        * @type {{}}
        */
       options = {},
-
-      /**
-       * Language extensions used by this converter
-       * @private
-       * @type {Array}
-       */
-      langExtensions = [],
-
-      /**
-       * Output modifiers extensions used by this converter
-       * @private
-       * @type {Array}
-       */
-      outputModifiers = [],
 
       /**
        * Event listeners
@@ -7923,15 +13403,7 @@ showdown.Converter = function (converterOptions) {
       ext = showdown.helper.stdExtName(ext);
       name = ext;
 
-      // LEGACY_SUPPORT CODE
-      if (showdown.extensions[ext]) {
-        console.warn('DEPRECATION WARNING: ' + ext + ' is an old extension that uses a deprecated loading method.' +
-          'Please inform the developer that the extension should be updated!');
-        legacyExtensionLoading(showdown.extensions[ext], ext);
-        return;
-        // END LEGACY SUPPORT CODE
-
-      } else if (!showdown.helper.isUndefined(extensions[ext])) {
+      if (!showdown.helper.isUndefined(extensions[ext])) {
         ext = extensions[ext];
 
       } else {
@@ -7947,24 +13419,30 @@ showdown.Converter = function (converterOptions) {
       ext = [ext];
     }
 
-    var validExt = validate(ext, name);
+    let validExt = validate(ext, name);
     if (!validExt.valid) {
       throw Error(validExt.error);
     }
 
-    for (var i = 0; i < ext.length; ++i) {
+    for (let i = 0; i < ext.length; ++i) {
+      // `lang` and `output` extensions are sugar over the event system: a `lang`
+      // extension is a listener on `makehtml.onPreParse` (runs after escaping, before the
+      // subparsers) and an `output` extension a listener on `makehtml.onEnd` (runs on the
+      // final HTML). They are deprecated in favor of writing listener extensions directly.
       switch (ext[i].type) {
 
         case 'lang':
-          langExtensions.push(ext[i]);
+          warnDeprecatedExtType('lang', 'makehtml.onPreParse');
+          listen('makehtml.onPreParse', _wrapLegacyExtension(ext[i]));
           break;
 
         case 'output':
-          outputModifiers.push(ext[i]);
+          warnDeprecatedExtType('output', 'makehtml.onEnd');
+          listen('makehtml.onEnd', _wrapLegacyExtension(ext[i]));
           break;
       }
       if (ext[i].hasOwnProperty('listeners')) {
-        for (var ln in ext[i].listeners) {
+        for (let ln in ext[i].listeners) {
           if (ext[i].listeners.hasOwnProperty(ln)) {
             listen(ln, ext[i].listeners[ln]);
           }
@@ -7975,35 +13453,16 @@ showdown.Converter = function (converterOptions) {
   }
 
   /**
-   * LEGACY_SUPPORT
-   * @param {*} ext
-   * @param {string} name
+   * Adapt a legacy `lang`/`output` extension to an event listener.
+   * Returning a string makes `dispatch` update both `event.input` and `event.output`, so
+   * several legacy extensions on the same event chain exactly like the old forEach did.
+   * @param {{}} ext
+   * @returns {function(showdown.Event): string}
    */
-  function legacyExtensionLoading (ext, name) {
-    if (typeof ext === 'function') {
-      ext = ext(new showdown.Converter());
-    }
-    if (!showdown.helper.isArray(ext)) {
-      ext = [ext];
-    }
-    var valid = validate(ext, name);
-
-    if (!valid.valid) {
-      throw Error(valid.error);
-    }
-
-    for (var i = 0; i < ext.length; ++i) {
-      switch (ext[i].type) {
-        case 'lang':
-          langExtensions.push(ext[i]);
-          break;
-        case 'output':
-          outputModifiers.push(ext[i]);
-          break;
-        default:// should never reach here
-          throw Error('Extension loader error: Type unrecognized!!!');
-      }
-    }
+  function _wrapLegacyExtension (ext) {
+    return function (event) {
+      return showdown.subParser('makehtml.runExtension')(ext, event.input, event.options, { converter: event.converter });
+    };
   }
 
   /**
@@ -8024,6 +13483,37 @@ showdown.Converter = function (converterOptions) {
       listeners[name] = [];
     }
     listeners[name].push(callback);
+  }
+
+  /**
+   * Stop listening to an event
+   * @param {string} name
+   * @param {function} [callback] If omitted, removes every listener for the event
+   */
+  function unlisten (name, callback) {
+    if (!showdown.helper.isString(name)) {
+      throw Error('Invalid argument in converter.unlisten() method: name must be a string, but ' + typeof name + ' given');
+    }
+    name = name.toLowerCase();
+    if (!listeners.hasOwnProperty(name)) {
+      return;
+    }
+    // no callback given: remove every listener registered for this event
+    if (typeof callback === 'undefined') {
+      delete listeners[name];
+      return;
+    }
+    if (typeof callback !== 'function') {
+      throw Error('Invalid argument in converter.unlisten() method: callback must be a function, but ' + typeof callback + ' given');
+    }
+    let idx = listeners[name].indexOf(callback);
+    while (idx > -1) {
+      listeners[name].splice(idx, 1);
+      idx = listeners[name].indexOf(callback);
+    }
+    if (listeners[name].length === 0) {
+      delete listeners[name];
+    }
   }
 
   function rTrimInputText (text) {
@@ -8068,6 +13558,17 @@ showdown.Converter = function (converterOptions) {
   };
 
   /**
+   * Stop listening to an event
+   * @param {string} name
+   * @param {function} [callback] If omitted, removes every listener for the event
+   * @returns {showdown.Converter}
+   */
+  this.unlisten = function (name, callback) {
+    unlisten(name, callback);
+    return this;
+  };
+
+  /**
    * Converts a markdown string into HTML string
    * @param {string} text
    * @returns {*}
@@ -8078,8 +13579,9 @@ showdown.Converter = function (converterOptions) {
       return text;
     }
 
-    var globals = {
+    let globals = {
       gHtmlBlocks:     [],
+      gHtmlRawBlocks:  [],
       gHtmlMdBlocks:   [],
       gHtmlSpans:      [],
       gUrls:           {},
@@ -8087,8 +13589,6 @@ showdown.Converter = function (converterOptions) {
       gDimensions:     {},
       gListLevel:      0,
       hashLinkCounts:  {},
-      langExtensions:  langExtensions,
-      outputModifiers: outputModifiers,
       converter:       this,
       ghCodeBlocks:    [],
       metadata: {
@@ -8097,6 +13597,17 @@ showdown.Converter = function (converterOptions) {
         format: ''
       }
     };
+
+    // document level onStart event, emitted with the raw markdown before any escaping or
+    // normalization. Listeners here see literal `$`/`¨` (unlike onPreParse, which runs after
+    // escaping) and can rewrite the source wholesale.
+    let startEvent = new showdown.Event('makehtml.onStart', text);
+    startEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    startEvent = this.dispatch(startEvent);
+    text = startEvent.output;
 
     // This lets us use ¨ trema as an escape char to avoid md5 hashes
     // The choice of character is arbitrary; anything that isn't
@@ -8134,20 +13645,55 @@ showdown.Converter = function (converterOptions) {
      */
     text = text.replace(/^[ \t]+$/mg, '');
 
-    //run languageExtensions
-    showdown.helper.forEach(langExtensions, function (ext) {
-      text = showdown.subParser('makehtml.runExtension')(ext, text, options, globals);
-    });
+    // document level onPreParse event, emitted after escaping/normalization and immediately
+    // before the subparsers run. This is where `lang` extensions are invoked (as listeners).
+    // Input here contains the `¨D`/`¨T` placeholders for escaped `$`/`¨`.
+    let preParseEvent = new showdown.Event('makehtml.onPreParse', text);
+    preParseEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    preParseEvent = this.dispatch(preParseEvent);
+    text = preParseEvent.output;
 
     // run the sub parsers
     text = showdown.subParser('makehtml.metadata')(text, options, globals);
     text = showdown.subParser('makehtml.hashPreCodeTags')(text, options, globals);
-    text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
-    text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
+    if (options.cmSpec) {
+      // Container mode parses leaf blocks in document order: an open HTML block (e.g. a
+      // `<div>` with no following blank line) absorbs a fence that follows it, so the
+      // (fence-aware) HTML-block scan must run before githubCodeBlock. githubCodeBlock then
+      // only claims fences at indent 0; indent 1-3 fences nested in list items / block
+      // quotes are handled by the container parsers (and a later blockGamut pass for
+      // genuinely top-level indented fences).
+      if (options.cmSpec) {
+        text = showdown.helper.expandCmTabs(text);
+      }
+      text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals, true);
+      text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals, true);
+    } else {
+      text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
+      // CommonMark tab expansion runs after fenced/pre code is hashed (so their content
+      // tabs are protected) and before the block parsers, which key off indentation.
+      if (options.cmSpec) {
+        text = showdown.helper.expandCmTabs(text);
+      }
+      text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals, true);
+    }
     text = showdown.subParser('makehtml.hashCodeTags')(text, options, globals);
     text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);
     text = showdown.subParser('makehtml.blockGamut')(text, options, globals);
     text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
+    // decode character references (gated by the decodeEntities option) after inline parsing,
+    // while code spans/blocks are still hashed, so decoded chars are not re-parsed
+    text = showdown.subParser('makehtml.decodeEntities')(text, options, globals);
+    // restore raw CommonMark HTML blocks now, after decodeEntities, so their verbatim
+    // content (e.g. `<a href="&ouml;&ouml;.html">`) keeps its entities undecoded
+    if (globals.gHtmlRawBlocks.length) {
+      text = text.replace(/¨R(\d+)R/g, function (wm, n) {
+        return globals.gHtmlRawBlocks[n];
+      });
+    }
     text = showdown.subParser('makehtml.unhashHTMLSpans')(text, options, globals);
     text = showdown.subParser('makehtml.unescapeSpecialChars')(text, options, globals);
 
@@ -8160,10 +13706,15 @@ showdown.Converter = function (converterOptions) {
     // render a complete html document instead of a partial if the option is enabled
     text = showdown.subParser('makehtml.completeHTMLDocument')(text, options, globals);
 
-    // Run output modifiers
-    showdown.helper.forEach(outputModifiers, function (ext) {
-      text = showdown.subParser('makehtml.runExtension')(ext, text, options, globals);
-    });
+    // document level onEnd event, emitted with the final HTML. This is where `output`
+    // extensions are invoked (as listeners) and where listeners can post-process the output.
+    let endEvent = new showdown.Event('makehtml.onEnd', text);
+    endEvent
+      .setOutput(text)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    endEvent = this.dispatch(endEvent);
+    text = endEvent.output;
 
     // update metadata
     metadata = globals.metadata;
@@ -8181,16 +13732,25 @@ showdown.Converter = function (converterOptions) {
     src = src.replace(/\r\n/g, '\n');
     src = src.replace(/\r/g, '\n'); // old macs
 
+    // document level onStart event (lets listeners rewrite the raw html before parsing)
+    let mdStartEvent = new showdown.Event('makeMarkdown.onStart', src);
+    mdStartEvent
+      .setOutput(src)
+      ._setOptions(options);
+    mdStartEvent = this.dispatch(mdStartEvent);
+    src = mdStartEvent.output;
+
     // due to an edge case, we need to find this: > <
     // to prevent removing of non silent white spaces
     // ex: <em>this is</em> <strong>sparta</strong>
     src = src.replace(/>[ \t]+</, '>¨NBSP;<');
 
-    var doc = showdown.helper.document.createElement('div');
+    let doc = showdown.helper.document.createElement('div');
     doc.innerHTML = src;
 
-    var globals = {
-      preList: substitutePreCodeTags(doc)
+    let globals = {
+      preList: substitutePreCodeTags(doc),
+      converter: this
     };
 
     // remove all newlines and collapse spaces
@@ -8200,18 +13760,18 @@ showdown.Converter = function (converterOptions) {
     // TODO
     // doc.innerHTML = doc.innerHTML.replace(/\[[\S\t ]]/);
 
-    var nodes = doc.childNodes,
+    let nodes = doc.childNodes,
         mdDoc = '';
 
-    for (var i = 0; i < nodes.length; i++) {
+    for (let i = 0; i < nodes.length; i++) {
       mdDoc += showdown.subParser('makeMarkdown.node')(nodes[i], options, globals);
     }
 
     function clean (node) {
-      for (var n = 0; n < node.childNodes.length; ++n) {
-        var child = node.childNodes[n];
+      for (let n = 0; n < node.childNodes.length; ++n) {
+        let child = node.childNodes[n];
         if (child.nodeType === 3) {
-          if (!/\S/.test(child.nodeValue) && !/^[ ]+$/.test(child.nodeValue)) {
+          if (!/\S/.test(child.nodeValue) && !/^ +$/.test(child.nodeValue)) {
             node.removeChild(child);
             --n;
           } else {
@@ -8229,20 +13789,20 @@ showdown.Converter = function (converterOptions) {
     // to ease up parsing
     function substitutePreCodeTags (doc) {
 
-      var pres = doc.querySelectorAll('pre'),
+      let pres = doc.querySelectorAll('pre'),
           presPH = [];
 
-      for (var i = 0; i < pres.length; ++i) {
+      for (let i = 0; i < pres.length; ++i) {
 
         if (pres[i].childElementCount === 1 && pres[i].firstChild.tagName.toLowerCase() === 'code') {
-          var content = pres[i].firstChild.innerHTML.trim(),
+          let content = pres[i].firstChild.innerHTML.trim(),
               language = pres[i].firstChild.getAttribute('data-language') || '';
 
           // if data-language attribute is not defined, then we look for class language-*
           if (language === '') {
-            var classes = pres[i].firstChild.className.split(' ');
-            for (var c = 0; c < classes.length; ++c) {
-              var matches = classes[c].match(/^language-(.+)$/);
+            let classes = pres[i].firstChild.className.split(' ');
+            for (let c = 0; c < classes.length; ++c) {
+              let matches = classes[c].match(/^language-(.+)$/);
               if (matches !== null) {
                 language = matches[1];
                 break;
@@ -8263,6 +13823,15 @@ showdown.Converter = function (converterOptions) {
       }
       return presPH;
     }
+
+    // document level onEnd event (lets listeners post-process the generated markdown)
+    let mdEndEvent = new showdown.Event('makeMarkdown.onEnd', mdDoc);
+    mdEndEvent
+      .setOutput(mdDoc)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    mdEndEvent = this.dispatch(mdEndEvent);
+    mdDoc = mdEndEvent.output;
 
     return mdDoc;
   };
@@ -8319,9 +13888,9 @@ showdown.Converter = function (converterOptions) {
     if (!flavor.hasOwnProperty(name)) {
       throw Error(name + ' flavor was not found');
     }
-    var preset = flavor[name];
+    let preset = flavor[name];
     setConvFlavor = name;
-    for (var option in preset) {
+    for (let option in preset) {
       if (preset.hasOwnProperty(option)) {
         options[option] = preset[option];
       }
@@ -8334,42 +13903,6 @@ showdown.Converter = function (converterOptions) {
    */
   this.getFlavor = function () {
     return setConvFlavor;
-  };
-
-  /**
-   * Remove an extension from THIS converter.
-   * Note: This is a costly operation. It's better to initialize a new converter
-   * and specify the extensions you wish to use
-   * @param {Array} extension
-   */
-  this.removeExtension = function (extension) {
-    if (!showdown.helper.isArray(extension)) {
-      extension = [extension];
-    }
-    for (var a = 0; a < extension.length; ++a) {
-      var ext = extension[a];
-      for (var i = 0; i < langExtensions.length; ++i) {
-        if (langExtensions[i] === ext) {
-          langExtensions.splice(i, 1);
-        }
-      }
-      for (var ii = 0; ii < outputModifiers.length; ++ii) {
-        if (outputModifiers[ii] === ext) {
-          outputModifiers.splice(ii, 1);
-        }
-      }
-    }
-  };
-
-  /**
-   * Get all extension of THIS converter
-   * @returns {{language: Array, output: Array}}
-   */
-  this.getAllExtensions = function () {
-    return {
-      language: langExtensions,
-      output: outputModifiers
-    };
   };
 
   /**
@@ -8419,7 +13952,9 @@ showdown.Converter = function (converterOptions) {
   };
 };
 
-var root = this;
+// noinspection JSUnresolvedReference
+
+let root = this || globalThis;
 
 // AMD Loader
 if (typeof define === 'function' && define.amd) {

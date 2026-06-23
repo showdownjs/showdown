@@ -14,16 +14,16 @@ showdown.subParser('makeMarkdown.links', function (node, options, globals) {
     result = startEvent.output;
   } else {
     result = (function () {
-      var txt = '';
+      let txt = '';
       if (!node.hasChildNodes()) {
         return txt;
       }
-      var children = node.childNodes,
+      let children = node.childNodes,
           childrenLength = children.length;
 
       // anchors without an href (e.g. named anchors) lose their link semantics but keep their text
       if (!node.hasAttribute('href')) {
-        for (var n = 0; n < childrenLength; ++n) {
+        for (let n = 0; n < childrenLength; ++n) {
           txt += showdown.subParser('makeMarkdown.node')(children[n], options, globals);
         }
         return txt;
@@ -34,19 +34,19 @@ showdown.subParser('makeMarkdown.links', function (node, options, globals) {
       // <a class="user-mention" href="https://github.com/user">@user</a>
       // that is, if there's a "user-mention" class and option ghMentions is true
       // otherwise is ignored
-      var classes = node.getAttribute('class');
+      let classes = node.getAttribute('class');
       if (options.ghMentions && /(?:^| )user-mention\b/.test(classes)) {
-        for (var ii = 0; ii < childrenLength; ++ii) {
+        for (let ii = 0; ii < childrenLength; ++ii) {
           txt += showdown.subParser('makeMarkdown.node')(children[ii], options, globals);
         }
         return txt;
       }
 
-      var innerTxt = '';
-      for (var i = 0; i < childrenLength; ++i) {
+      let innerTxt = '';
+      for (let i = 0; i < childrenLength; ++i) {
         innerTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
       }
-      var href = node.getAttribute('href');
+      let href = node.getAttribute('href');
 
       // autolink: when the link text is identical to the href and there's no title,
       // emit the compact <href> form instead of [href](<href>)

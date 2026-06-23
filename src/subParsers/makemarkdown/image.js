@@ -14,13 +14,21 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
     result = startEvent.output;
   } else {
     result = (function () {
-      var txt = '';
+      let txt = '';
       if (node.hasAttribute('src') && node.getAttribute('src') !== '') {
+        let hasDimensions = node.hasAttribute('width') && node.hasAttribute('height');
+
+        // image dimensions are a showdown-specific syntax; when the option is disabled but the
+        // image carries dimensions, fall back to raw HTML so the size isn't silently lost
+        if (hasDimensions && !options.parseImgDimensions) {
+          return node.outerHTML;
+        }
+
         txt += '![' + (node.getAttribute('alt') || '') + '](';
         txt += '<' + node.getAttribute('src') + '>';
-        if (node.hasAttribute('width') && node.hasAttribute('height')) {
-          var width = node.getAttribute('width');
-          var height = node.getAttribute('height');
+        if (hasDimensions) {
+          let width = node.getAttribute('width');
+          let height = node.getAttribute('height');
           txt += ' =' + (width === 'auto' ? '*' : width) + 'x' + (height === 'auto' ? '*' : height);
         }
 

@@ -67,6 +67,27 @@ or the (deprecated) `align="left|center|right"` attribute. `<caption>` and `<col
 currently ignored, and — since Markdown tables are single-header — only the first heading row is
 treated as the header.
 
+## Feature options (matching makeHtml)
+
+`makeMarkdown` honours the same options as `makeHtml`, so the two directions stay symmetric: a
+non-standard construct that `makeHtml` wouldn't parse is **not** emitted as Markdown in reverse —
+instead the source element is kept as **raw HTML**. These options also respond to the converter's
+[flavor](flavors.md): for example `commonmark` disables all of them except fenced code, and
+`vanilla` (the default) only keeps fenced code on.
+
+| Construct | Option | Enabled output | Disabled output (raw HTML) |
+|-----------|--------|----------------|----------------------------|
+| Strikethrough (`<del>`/`<s>`/`<strike>`) | `strikethrough` | `~~text~~` | `<del>…</del>` |
+| Underline (`<u>`) | `underline` | `__text__` | `<u>…</u>` |
+| Tables (`<table>`) | `tables` | pipe table | `<table>…</table>` (verbatim) |
+| Fenced code (`<pre><code>`) | `ghCodeBlocks` | ```` ```lang ```` | `<pre><code>…</code></pre>` |
+| Task lists (`<input type="checkbox">`) | `tasklists` | `[ ]` / `[x]` | `<input …>` |
+| Image dimensions | `parseImgDimensions` | `![alt](<src> =WxH)` | `<img …>` (only if it has width+height) |
+
+For an inline fallback the wrapper tag is kept but its children are still converted (e.g.
+`<del>**b**</del>` → `<del>**b**</del>`). `ghCodeBlocks` defaults **on**; the other five default
+**off** in the `vanilla` flavor, so by default only those five fall back to raw HTML.
+
 ## Unknown tags and wrappers
 
 Tags without a dedicated sub-parser are handled by a fallback:

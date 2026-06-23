@@ -37,31 +37,37 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   });
 
   // 2. Handle inline-style links: [link text](url "optional title")
-  // 2.1. Look for empty cases: []() and [empty]() and []("title")
-  let inlineEmptyRegex = /\[(.*?)]\(<? ?>? ?(["'](.*)["'])?\)/g;
-  text = text.replace(inlineEmptyRegex, function (wholeMatch, text, m1, title) {
-    return writeAnchorTag ('inline', inlineEmptyRegex, wholeMatch, text, null, null, title, true);
-  });
+  if (options.cmSpec) {
+    // CommonMark inline-link parsing: a manual scanner that handles balanced-paren
+    // and `<...>` destinations, titles in "...", '...' or (...), and backslash escapes.
+    text = parseCmInlineLinks(text);
+  } else {
+    // 2.1. Look for empty cases: []() and [empty]() and []("title")
+    let inlineEmptyRegex = /\[(.*?)]\(<? ?>? ?(["'](.*)["'])?\)/g;
+    text = text.replace(inlineEmptyRegex, function (wholeMatch, text, m1, title) {
+      return writeAnchorTag ('inline', inlineEmptyRegex, wholeMatch, text, null, null, title, true);
+    });
 
-  // 2.2. Look for cases with crazy urls like ./image/cat1).png
-  // the url mus be enclosed in <>
-  let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
-  text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
-    return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
-  });
+    // 2.2. Look for cases with crazy urls like ./image/cat1).png
+    // the url mus be enclosed in <>
+    let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
+    text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
+      return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
+    });
 
-  // 2.3. inline links with no title or titles wrapped in ' or ":
-  // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
-  let inlineNormalRegex1 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s*(?:(['"])(.*?)\3)? *\)/g;
-  text = text.replace(inlineNormalRegex1, function (wholeMatch, text, url, m1, title) {
-    return writeAnchorTag ('inline', inlineNormalRegex1, wholeMatch, text, null, url, title);
-  });
+    // 2.3. inline links with no title or titles wrapped in ' or ":
+    // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
+    let inlineNormalRegex1 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s*(?:(['"])(.*?)\3)? *\)/g;
+    text = text.replace(inlineNormalRegex1, function (wholeMatch, text, url, m1, title) {
+      return writeAnchorTag ('inline', inlineNormalRegex1, wholeMatch, text, null, url, title);
+    });
 
-  // 2.4. inline links with titles wrapped in (): [foo](bar.com (title))
-  let inlineNormalRegex2 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s+\((.*?)\) *\)/g;
-  text = text.replace(inlineNormalRegex2, function (wholeMatch, text, url, title) {
-    return writeAnchorTag ('inline', inlineNormalRegex2, wholeMatch, text, null, url, title);
-  });
+    // 2.4. inline links with titles wrapped in (): [foo](bar.com (title))
+    let inlineNormalRegex2 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S*?\)\S*?)?)>?\s+\((.*?)\) *\)/g;
+    text = text.replace(inlineNormalRegex2, function (wholeMatch, text, url, title) {
+      return writeAnchorTag ('inline', inlineNormalRegex2, wholeMatch, text, null, url, title);
+    });
+  }
 
 
   // 3. Handle reference-style shortcuts: [link text]
@@ -74,29 +80,51 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   // 4. Handle angle brackets links -> `<http://example.com/>`
   // Must come after links, because you can use < and > delimiters in inline links like [this](<url>).
 
-  // 4.1. Handle links first
-  let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
-  text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
+  if (options.cmSpec) {
+    // CommonMark autolinks: any scheme (2-32 chars) URI, and emails, with no entity encoding.
+    // 4.1. URI autolinks: <scheme:rest>
+    let cmUriAutolinkRegex = /<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*)>/g;
+    text = text.replace(cmUriAutolinkRegex, function (wholeMatch, uri) {
+      // backslash escapes do not work inside autolinks, so restore them to literal backslash + char
+      let raw = showdown.subParser('makehtml.unescapeSpecialChars')(uri.replace(/(¨E\d+E)/g, '\\$1'), options, globals);
+      let otp = '<a href="' + cmEscapeHref(showdown.helper.cmEncodeURI(raw)) + '">' + cmEscapeText(raw) + '</a>';
+      return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+    });
 
-    // backslash escaped characters do not work inside autolinks (according to commonmark spec... sure)
-    // so let's unescape them (and add a backslash html entity before)
-    url = url.replace(/(¨E\d+E)/g, '\\$1');
-    url = showdown.subParser('makehtml.unescapeSpecialChars')(url, options, globals);
-    let text = url;
+    // 4.2. Email autolinks: <foo@bar.example.com>
+    let cmEmailAutolinkRegex = /<([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)>/g;
+    text = text.replace(cmEmailAutolinkRegex, function (wholeMatch, email) {
+      let raw = showdown.subParser('makehtml.unescapeSpecialChars')(email.replace(/(¨E\d+E)/g, '\\$1'), options, globals);
+      let otp = '<a href="' + cmEscapeHref('mailto:' + raw) + '">' + cmEscapeText(raw) + '</a>';
+      return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
+    });
 
-    // now let's replace some entities which should be properly url encoded
-    url = showdown.helper.urlASCIIEncoding(url);
+  } else {
+    // 4.1. Handle links first
+    let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
+    text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
 
-    url = (urlStart === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
-    return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
-  });
+      // backslash escaped characters do not work inside autolinks (according to commonmark spec... sure)
+      // so let's unescape them (and add a backslash html entity before)
+      url = url.replace(/(¨E\d+E)/g, '\\$1');
+      url = showdown.subParser('makehtml.unescapeSpecialChars')(url, options, globals);
+      let text = url;
 
-  // 4.2. Then mail adresses
-  let angleBracketsMailRegex = /<(?:mailto:)?([-.\w]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)>/gi;
-  text = text.replace(angleBracketsMailRegex, function (wholeMatch, mail) {
-    const m = parseMail(mail);
-    return writeAnchorTag ('angleBrackets', angleBracketsMailRegex, wholeMatch, m.mail, null, m.url);
-  });
+      // now let's replace some entities which should be properly url encoded
+      url = showdown.helper.urlASCIIEncoding(url);
+
+      // noinspection HttpUrlsUsage
+      url = (urlStart === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+      return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
+    });
+
+    // 4.2. Then mail adresses
+    let angleBracketsMailRegex = /<(?:mailto:)?([-.\w]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)>/gi;
+    text = text.replace(angleBracketsMailRegex, function (wholeMatch, mail) {
+      const m = parseMail(mail);
+      return writeAnchorTag ('angleBrackets', angleBracketsMailRegex, wholeMatch, m.mail, null, m.url);
+    });
+  }
 
   // 5. Handle GithubMentions (if option is enabled)
   if (options.ghMentions) {
@@ -174,6 +202,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
       // we copy the treated url to the text variable
       let txt = url;
       // finally, if it's a www shortcut, we prepend http(s)
+      // noinspection HttpUrlsUsage
       url = (urlPrefix === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
 
       // url part is done so let's take care of text now
@@ -207,6 +236,133 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
 
   /**
+   * CommonMark inline-link scanner. Finds `[label](destination "title")` spans,
+   * parsing the destination and title with a hand-written cursor so that balanced
+   * parentheses, `<...>` destinations, the three title delimiters and backslash
+   * escapes are handled per the spec. Anything that does not parse as a valid
+   * inline link is left untouched (to be handled by the reference/shortcut passes).
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmInlineLinks (str) {
+    let inlineLinkRegexp = /\[[\s\S]*?]\([\s\S]*?\)/, // representative pattern (for event metadata only)
+        n = str.length,
+        out = '',
+        last = 0,
+        i = 0;
+    while (i < n) {
+      if (str.charAt(i) !== '[') { i++; continue; }
+      // find the matching `]`, counting nested brackets and honoring backslash escapes
+      let depth = 1, k = i + 1, labelEnd = -1;
+      while (k < n) {
+        let c = str.charAt(k);
+        if (c === '\\' && k + 1 < n) { k += 2; continue; }
+        if (c === '[') { depth++; } else if (c === ']') {
+          depth--;
+          if (depth === 0) { labelEnd = k; break; }
+        }
+        k++;
+      }
+      if (labelEnd !== -1 && str.charAt(labelEnd + 1) === '(') {
+        let parsed = parseCmDestTitle(str, labelEnd + 2);
+        if (parsed) {
+          let label = str.slice(i + 1, labelEnd);
+          out += str.slice(last, i);
+          out += writeAnchorTag('inline', inlineLinkRegexp, str.slice(i, parsed.end + 1), label, null, parsed.url, parsed.title, parsed.emptyCase);
+          i = parsed.end + 1;
+          last = i;
+          continue;
+        }
+      }
+      // not a valid inline link here; advance past this `[` so a nested `[...]( )`
+      // still gets a chance to match
+      i++;
+    }
+    out += str.slice(last);
+    return out;
+  }
+
+  /**
+   * Parse a CommonMark link destination and optional title starting just after the
+   * opening `(`. Returns `{url, title, emptyCase, end}` where `end` is the index of
+   * the closing `)`, or `null` if the span is not a valid destination/title.
+   * @param {string} str
+   * @param {number} j index right after the opening `(`
+   * @returns {{url: string, title: (string|null), emptyCase: boolean, end: number}|null}
+   */
+  function parseCmDestTitle (str, j) {
+    let n = str.length,
+        isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; },
+        url = '',
+        emptyCase = false;
+
+    // optional leading whitespace
+    while (j < n && isWs(str.charAt(j))) { j++; }
+
+    if (str.charAt(j) === '<') {
+      // angle-bracket destination: up to an unescaped `>`, no raw newline or `<`
+      j++;
+      let buf = '';
+      while (j < n && str.charAt(j) !== '>') {
+        let c = str.charAt(j);
+        if (c === '\n' || c === '<') { return null; }
+        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+        buf += c; j++;
+      }
+      if (j >= n || str.charAt(j) !== '>') { return null; }
+      j++; // consume `>`
+      url = buf;
+      if (url === '') { emptyCase = true; }
+    } else {
+      // bare destination: balanced parentheses, ends at whitespace or an unbalanced `)`
+      let depth = 0, buf = '';
+      while (j < n) {
+        let c = str.charAt(j);
+        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+        if (isWs(c)) { break; }
+        if (c === '(') { depth++; buf += c; j++; continue; }
+        if (c === ')') {
+          if (depth === 0) { break; }
+          depth--; buf += c; j++; continue;
+        }
+        buf += c; j++;
+      }
+      if (depth !== 0) { return null; } // unbalanced parens -> not a link
+      url = buf;
+      if (url === '') { emptyCase = true; }
+    }
+
+    // optional whitespace separating destination and title
+    let hadWs = false;
+    while (j < n && isWs(str.charAt(j))) { hadWs = true; j++; }
+
+    let title = null,
+        tc = str.charAt(j);
+    if (j < n && (tc === '"' || tc === '\'' || tc === '(')) {
+      // a title must be separated from the destination by whitespace
+      if (!hadWs) { return null; }
+      let close = (tc === '(') ? ')' : tc,
+          buf = '';
+      j++;
+      let closed = false;
+      while (j < n) {
+        let c = str.charAt(j);
+        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
+        if (tc === '(' && c === '(') { return null; } // unescaped `(` invalid in (...) title
+        if (c === close) { closed = true; j++; break; }
+        buf += c; j++;
+      }
+      if (!closed) { return null; }
+      title = buf;
+    }
+
+    // optional trailing whitespace, then the required closing `)`
+    while (j < n && isWs(str.charAt(j))) { j++; }
+    if (j >= n || str.charAt(j) !== ')') { return null; }
+    return {url: url, title: title, emptyCase: emptyCase, end: j};
+  }
+
+  /**
    *
    * @param {string} subEvtName
    * @param {RegExp} pattern
@@ -232,7 +388,11 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
     title = title || null;
     url = url || null;
-    linkId = (linkId) ? linkId.toLowerCase() : null;
+    if (linkId) {
+      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
+    } else {
+      linkId = null;
+    }
     emptyCase = !!emptyCase;
 
     if (emptyCase) {
@@ -240,7 +400,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     } else if (!url) {
       if (!linkId) {
         // lower-case and turn embedded newlines into spaces
-        linkId = text.toLowerCase().replace(/ ?\n/g, ' ');
+        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
       }
       url = '#' + linkId;
 
@@ -255,22 +415,21 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
     }
 
     url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+    if (options.cmSpec) {
+      url = showdown.helper.cmNormalizeURL(url);
+    }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
     attributes.href = url;
 
     if (title && showdown.helper.isString(title)) {
-      title = title
-        .replace(/"/g, '&quot;')
-        .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+      if (options.cmSpec) {
+        title = showdown.helper.cmEscapeTitle(title);
+      } else {
+        title = title
+          .replace(/"/g, '&quot;');
+      }
+      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
       attributes.title = title;
-    }
-
-    // optionLinksInNewWindow only applies
-    // to external links. Hash links (#) open in same page
-    if (options.openLinksInNewWindow && !/^#/.test(url)) {
-      attributes.rel = 'noopener noreferrer';
-      attributes.target = '¨E95Eblank'; // escaped _
-
     }
 
     let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
@@ -328,5 +487,23 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
       mail: mail,
       url: url
     };
+  }
+
+  // HTML-escape an autolink href (the URL is already percent-encoded)
+  function cmEscapeHref (url) {
+    return url
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // HTML-escape the visible autolink text (no percent-encoding)
+  function cmEscapeText (txt) {
+    return txt
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
 });

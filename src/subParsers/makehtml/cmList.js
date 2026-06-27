@@ -256,9 +256,15 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     if (taskMatch) {
       let checked = taskMatch[1].trim() !== '';
       body = cmProcessTaskListItem(body, checked);
-      let attributes = { classes: ['task-list-item'], style: 'list-style-type: none;' };
-      if (options.moreStyling && checked) {
-        attributes.classes.push('task-list-item-complete');
+      // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
+      // when `moreStyling` is enabled.
+      let attributes = {};
+      if (options.moreStyling) {
+        attributes.classes = ['task-list-item'];
+        attributes.style = 'list-style-type: none;';
+        if (checked) {
+          attributes.classes.push('task-list-item-complete');
+        }
       }
       liAttrs = showdown.helper._populateAttributes(attributes);
     }
@@ -282,12 +288,19 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
   function cmProcessTaskListItem (body, checked) {
     const checkboxRgx = /^([ \t]*(?:<p>)?[ \t]*)\[([xX ])]/;
     return body.replace(checkboxRgx, function (wm, prefix, checkedRaw) {
-      let attributes = {
-        type: 'checkbox',
-        disabled: true,
-        style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
-        checked: !!checked
-      };
+      // GFM spec output is a bare `<input disabled type="checkbox">` (checked items add a
+      // leading `checked`). Only when `moreStyling` is enabled do we keep the legacy inline
+      // style that visually aligns the checkbox.
+      let attributes = options.moreStyling ?
+        {
+          type: 'checkbox',
+          disabled: true,
+          style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
+          checked: !!checked
+        } :
+        (checked ?
+          { checked: true, disabled: true, type: 'checkbox' } :
+          { disabled: true, type: 'checkbox' });
       let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', body);
       captureStartEvent
         .setOutput(null)

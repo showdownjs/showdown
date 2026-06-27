@@ -73,12 +73,19 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
     const checkboxRgx = /^[ \t]*\[([xX ])]/m;
     item = item.replace(checkboxRgx, function (wm, checkedRaw) {
 
-      let attributes = {
-        type: 'checkbox',
-        disabled: true,
-        style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
-        checked: !!checked
-      };
+      // GFM spec output is a bare `<input disabled type="checkbox">` (checked items add a
+      // leading `checked`). Only when `moreStyling` is enabled do we keep the legacy inline
+      // style that visually aligns the checkbox.
+      let attributes = options.moreStyling ?
+        {
+          type: 'checkbox',
+          disabled: true,
+          style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
+          checked: !!checked
+        } :
+        (checked ?
+          { checked: true, disabled: true, type: 'checkbox' } :
+          { disabled: true, type: 'checkbox' });
       let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', item);
 
       captureStartEvent
@@ -177,11 +184,14 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
       if (taskbtn && options.tasklists) {
         // it's a github tasklist and tasklists are enabled
 
-        // Style used for tasklist bullets
-        attributes.classes = ['task-list-item'];
-        attributes.style = 'list-style-type: none;';
-        if (options.moreStyling && checked) {
-          attributes.classes.push('task-list-item-complete');
+        // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
+        // when `moreStyling` is enabled.
+        if (options.moreStyling) {
+          attributes.classes = ['task-list-item'];
+          attributes.style = 'list-style-type: none;';
+          if (checked) {
+            attributes.classes.push('task-list-item-complete');
+          }
         }
         eventName = 'makehtml.list.taskListItem';
         matches._taskListButton = taskbtn;

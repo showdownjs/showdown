@@ -39,9 +39,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
   // top-level opening fence. The closing fence keeps its 0-3 indent allowance either way.
   const open = topLevelOnly ? '' : ' {0,3}';
   //const accentRegex = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)(?:(\n {0,3}\1[`~]*)|¨0)/g;
-  const closedBlockRegex   = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)\\n {0,3}\\1[`~]*', 'gm');
-  const unclosedBlockRegex = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)¨0', 'gm');
-  const emptyBlockRegex    = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n {0,3}\\1[`~]*', 'gm');
+  // The info string is the rest of the opening line. CommonMark forbids backticks only in a
+  // *backtick* fence's info string (a tilde fence may contain backticks and tildes); that
+  // restriction is enforced in parse() since it needs to know the fence type. The `(?!`)` /
+  // `(?!~)` lookaheads keep the opening fence maximal: without them the now-permissive info
+  // class lets the delimiter backtrack (e.g. `~~~~~~` splitting into a `~~~` fence + `~~~`
+  // info), inventing a spurious shorter fence.
+  const fence = '(```+(?!`)|~~~+(?!~))';
+  const closedBlockRegex   = new RegExp('^' + open + fence + ' *([^\\n]*)\\n([\\s\\S]*?)\\n {0,3}\\1[`~]*', 'gm');
+  const unclosedBlockRegex = new RegExp('^' + open + fence + ' *([^\\n]*)\\n([\\s\\S]*?)¨0', 'gm');
+  const emptyBlockRegex    = new RegExp('^' + open + fence + ' *([^\\n]*)\\n {0,3}\\1[`~]*', 'gm');
 
   text = text.replace(closedBlockRegex, function (wholeMatch, delim, language, codeblock) {
     return parse(closedBlockRegex, wholeMatch, delim, language, codeblock);
@@ -75,6 +82,11 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
 
 
   function parse (pattern, wholeMatch, delim, language, codeblock) {
+    // CommonMark: a backtick info string may not contain backticks (tilde fences may). When it
+    // does, this is not a code block, so leave the text for inline/paragraph parsing.
+    if (delim.charAt(0) === '`' && language.indexOf('`') !== -1) {
+      return wholeMatch;
+    }
     let end = (options.omitExtraWLInCodeBlocks) ? '' : '\n',
         otp,
         attributes = {

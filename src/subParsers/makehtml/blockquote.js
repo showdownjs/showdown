@@ -175,6 +175,12 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
           prevParagraph = isParagraphLine(stripped);
           i++;
         } else if (prevParagraph && isLazyParagraph(line)) {
+          // CommonMark: a setext underline may not be a lazy continuation line. Escape the
+          // leading marker so the recursive setext parser can't claim it as an underline;
+          // encodeBackslashEscapes restores the literal `=`/`-` downstream.
+          if (/^ {0,3}(?:=+|-+)[ \t]*$/.test(line)) {
+            line = line.replace(/^( {0,3})([=-])/, '$1\\$2');
+          }
           bqLines.push(line);
           prevParagraph = isParagraphLine(line);
           i++;

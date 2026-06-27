@@ -148,6 +148,78 @@ Showdown emits both the bare language name and the `language-`-prefixed class.
 A few spec examples are intentionally not followed because they are self-contradictory,
 malformed, or describe behavior that GitHub Flavored Markdown also rejects:
 
- - Setext heading lazy continuation (spec example 93 — the spec text and the example disagree)
  - Thematic breaks examples 43 and 61 (malformed input / `<hr>` inside a list)
- - Fenced code block example 146 (not supported by GitHub either)
+
+
+## GitHub Flavored Markdown (GFM)
+
+Showdown ships a **`gfm` flavor** (also reachable under its former name `github`, kept as an alias)
+that targets the [GitHub Flavored Markdown spec](https://github.github.com/gfm/). GFM is defined as
+CommonMark plus a set of extensions, so the flavor builds on [`cmSpec`](#commonmark) and layers the
+GFM extensions (tables, task lists, strikethrough, autolink literals, `@`-mentions, emoji, …) on top.
+
+Because the flavor uses the CommonMark base, **every [CommonMark known difference](#known-differences)
+also applies to `gfm`** — empty ATX headings, the dual fenced-code language classes, and the
+malformed thematic-break examples included. The items below are the additional, intentional
+deviations specific to the GFM table extension.
+
+### Known differences (GFM extensions)
+
+#### Table column alignment
+
+GFM renders per-column alignment with the HTML `align` attribute. Showdown uses an inline
+`style="text-align:…"` instead: the `align` attribute is obsolete in HTML5, so the CSS form is the
+modern equivalent.
+
+=== "input"
+
+    ```md
+    | abc | defghi |
+    | :-: | -----------: |
+    | bar | baz |
+    ```
+
+=== "Showdown output"
+
+    ```html
+    <th style="text-align:center;">abc</th>
+    <th style="text-align:right;">defghi</th>
+    ```
+
+=== "GFM output"
+
+    ```html
+    <th align="center">abc</th>
+    <th align="right">defghi</th>
+    ```
+
+#### Empty table body
+
+For a table with a header and delimiter row but no body rows, Showdown always emits an empty
+`<tbody></tbody>`; GFM omits the `<tbody>` entirely. The empty element is invisible and most
+browsers inject one anyway, so Showdown keeps its table output shape consistent regardless of
+whether the table has body rows.
+
+=== "input"
+
+    ```md
+    | abc | def |
+    | --- | --- |
+    ```
+
+=== "Showdown output"
+
+    ```html
+    <table>
+    <thead><tr><th>abc</th><th>def</th></tr></thead>
+    <tbody></tbody>
+    </table>
+    ```
+
+=== "GFM output"
+
+    ```html
+    <table>
+    <thead><tr><th>abc</th><th>def</th></tr></thead>
+    </table>
+    ```

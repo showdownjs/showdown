@@ -3937,7 +3937,7 @@
     "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>bar</td>\n<td>baz</td>\n</tr>\n</tbody>\n</table>\n<blockquote>\n<p>bar</p>\n</blockquote>\n",
     "section": "Tables (extension)",
     "number": 1003,
-    "source": "gfm-spec",
+    "source": "gfm-spec"
   },
   {
     "markdown": "| abc | def |\n| --- | --- |\n| bar | baz |\nbar\n\nbar\n",

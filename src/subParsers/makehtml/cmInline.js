@@ -75,8 +75,11 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   if (options.simplifiedAutoLink) {
     // 8.1. Check for naked URLs
     // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
-    let nakedUrlRegex = /([_*~]*?)(((?:https?|ftp):\/\/|www\.)[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*)\1/gi;
-    text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url, urlPrefix) {
+    // An explicit scheme (http/https/ftp) does not require the host to contain a dot;
+    // a `www.` shortcut does (and is domain-validated below).
+    let nakedUrlRegex = /([_*~]*?)((?:(?:https?|ftp):\/\/[^\s<>"'`´]+|www\.[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*))\1/gi;
+    text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url) {
+      let isWww = /^www\./i.test(url);
       // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
       const len = url.length;
       let suffix = '';
@@ -115,11 +118,39 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         }
       }
 
+      // GFM: a trailing ";" that completes an entity-reference-like "&name" is excluded
+      // from the link, so move the whole "&name;" into the suffix.
+      if (suffix.charAt(0) === ';') {
+        let entity = url.match(/&(?:amp;)?[a-z\d]+$/i);
+        if (entity) {
+          url = url.slice(0, -entity[0].length);
+          suffix = entity[0] + suffix;
+        }
+      }
+
+      // GFM: "<" terminates the link. By this pass it has already been escaped to "&lt;"
+      // (and ">" to "&gt;"), so split there and keep the remainder as plain text.
+      let ltMatch = url.match(/&(?:lt|gt);/);
+      if (ltMatch) {
+        let at = url.indexOf(ltMatch[0]);
+        suffix = url.slice(at) + suffix;
+        url = url.slice(0, at);
+      }
+
+      // GFM: the last two labels of the host may not contain "_"; otherwise it is not a
+      // valid autolink.
+      if (!validAutolinkHost(url, isWww)) {
+        return wholeMatch;
+      }
+
       // we copy the treated url to the text variable
       let txt = url;
       // finally, if it's a www shortcut, we prepend http(s)
       // noinspection HttpUrlsUsage
-      url = (urlPrefix === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+      url = isWww ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+      // GFM: percent-encode non-ASCII characters in the href (the display text keeps the
+      // literal characters)
+      url = url.replace(/[^\x00-\x7F]+/g, function (s) { return encodeURI(s); });
 
       // url part is done so let's take care of text now
       // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
@@ -133,11 +164,53 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         leadingMDChars;
     });
 
-    // 8.2. Now check for naked mail
-    let nakedMailRegex = /(^|\s)(?:mailto:)?([A-Za-z\d!#$%&'*+-/=?^_`{|}~.]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)(?=$|\s)/gmi;
-    text = text.replace(nakedMailRegex, function (wholeMatch, leadingChar, mail) {
-      const m = parseMail(mail);
-      return leadingChar + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
+    // 8.2. Check for naked mail (GFM extended email autolink).
+    let localPart = '[A-Za-z\\d._+-]+',
+        domainPart = '[A-Za-z\\d_-]+(?:\\.[A-Za-z\\d_-]+)*';
+
+    // A scheme is only recognised when it is not part of a preceding word (so `mmmmailto:`
+    // does not count) — any non-alphanumeric character (including `/`) is a valid boundary.
+    let schemeBoundary = '(^|[^A-Za-z\\d])';
+
+    // 8.2.1. `xmpp:` addresses keep their scheme and an optional `/resource`.
+    let xmppMailRegex = new RegExp(schemeBoundary + '(xmpp:)(' + localPart + '@' + domainPart + ')(\\/[A-Za-z\\d._-]*)?', 'gi');
+    text = text.replace(xmppMailRegex, function (wholeMatch, lead, scheme, addr, resource) {
+      resource = resource || '';
+      let trail = '',
+          body = resource || addr,
+          tm;
+      while ((tm = /[.,;:!?]$/.exec(body))) {
+        trail = body.slice(-1) + trail;
+        body = body.slice(0, -1);
+      }
+      if (resource) { resource = body; } else { addr = body; }
+      if (!validMailAddr(addr)) { return wholeMatch; }
+      let target = 'xmpp:' + addr + resource;
+      return lead + writeAnchorTag ('autoLink', xmppMailRegex, wholeMatch, target, null, target) + trail;
+    });
+
+    // 8.2.2. `mailto:` addresses keep their scheme but never carry a path.
+    let mailtoRegex = new RegExp(schemeBoundary + '(mailto:)(' + localPart + '@' + domainPart + ')', 'gi');
+    text = text.replace(mailtoRegex, function (wholeMatch, lead, scheme, addr) {
+      let trail = '',
+          tm;
+      while ((tm = /[.,;:!?]$/.exec(addr))) {
+        trail = addr.slice(-1) + trail;
+        addr = addr.slice(0, -1);
+      }
+      if (!validMailAddr(addr)) { return wholeMatch; }
+      let target = 'mailto:' + addr;
+      return lead + writeAnchorTag ('autoLink', mailtoRegex, wholeMatch, target, null, target) + trail;
+    });
+
+    // 8.2.3. Bare addresses become mailto: links. The address must be preceded by the
+    // string start or a character that cannot be part of the local-part (this also keeps
+    // us out of hash placeholders like the `¨E43E` produced for an escaped char).
+    let nakedMailRegex = new RegExp('(^|[^A-Za-z\\d._+\\-\\u00a8])(' + localPart + '@' + domainPart + ')', 'g');
+    text = text.replace(nakedMailRegex, function (wholeMatch, lead, addr) {
+      if (!validMailAddr(addr)) { return wholeMatch; }
+      const m = parseMail(addr);
+      return lead + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
     });
   }
   // ==== end copied region ====
@@ -805,6 +878,28 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
     };
   }
   // ==== end copied region ====
+
+  // GFM extended www autolink: the host must have at least two labels and the last two
+  // must not contain "_". Explicit-scheme (http/https/ftp) urls are not domain-validated.
+  function validAutolinkHost (url, isWww) {
+    if (!isWww) { return true; }
+    let host = url.split(/[\/?#]/)[0],
+        labels = host.split('.');
+    if (labels.length < 2) { return false; }
+    return !/_/.test(labels.slice(-2).join('.'));
+  }
+
+  // GFM extended email autolink: the domain must have at least two labels, must not end in
+  // "-" or "_", and its last two labels must not contain "_".
+  function validMailAddr (addr) {
+    let at = addr.lastIndexOf('@');
+    if (at < 1) { return false; }
+    let domain = addr.slice(at + 1),
+        labels = domain.split('.');
+    if (labels.length < 2) { return false; }
+    if (/[-_]$/.test(domain)) { return false; }
+    return !/_/.test(labels.slice(-2).join('.'));
+  }
 
   function parseRawHTML (str, i) {
     if (!options.cmSpec) { return null; }

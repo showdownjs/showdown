@@ -7,6 +7,12 @@ let bootstrap = require('./makehtml.bootstrap.js'),
     // Run the gfm suite in gfm mode: derive options from the `gfm`
     // flavor so that flavor-gated gfm behaviors (e.g. decodeEntities) are exercised.
     converter = new bootstrap.showdown.Converter(bootstrap.showdown.getFlavorOptions('gfm')),
+    // disallowRawHTML is off by default (even in the gfm flavor), so the inherited CommonMark
+    // HTML-block cases keep their raw <script>/<style>/<textarea> output. The dedicated
+    // "Disallowed Raw HTML (extension)" cases are run against a converter that opts in.
+    disallowRawHTMLConverter = new bootstrap.showdown.Converter(
+      Object.assign({}, bootstrap.showdown.getFlavorOptions('gfm'), {disallowRawHTML: true})
+    ),
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getJsonTestSuite('test/functional/makehtml/cases/gfm.testsuite.json');
 
@@ -18,6 +24,7 @@ describe('makeHtml() gfm testsuite', function () {
       describe(section, function () {
         for (let i = 0; i < testsuite[section].length; ++i) {
           let name = testsuite[section][i].name;
+          let useConverter = converter;
           switch (name) {
             case 'ATX headings_79': // empty headings don't make sense
             case 'Thematic breaks_43': // malformed input of test case
@@ -43,8 +50,13 @@ describe('makeHtml() gfm testsuite', function () {
               testsuite[section][i].expected = testsuite[section][i].expected.replace('language-foo+bar', 'foo+bar language-foo+bar');
               break;
 
+            case 'Disallowed Raw HTML (extension)_1400': // GFM tagfilter extension, off by default
+            case 'Disallowed Raw HTML (extension)_1500':
+              useConverter = disallowRawHTMLConverter;
+              break;
+
           }
-          it(name, assertion(testsuite[section][i], converter, true));
+          it(name, assertion(testsuite[section][i], useConverter, true));
         }
       });
     }

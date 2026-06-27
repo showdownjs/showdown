@@ -168,6 +168,11 @@ function getDefaultOpts (simple) {
       describe: 'Enable CommonMark spec compliance: parse blocks (lists, block quotes, HTML blocks, containers, tabs) and inlines (emphasis, links, images, autolinks, raw HTML) per the CommonMark spec instead of Showdown\'s legacy matching',
       type: 'boolean'
     },
+    disallowRawHTML: {
+      defaultValue: false,
+      describe: 'Filter the GFM "disallowed raw HTML" tags (title, textarea, style, xmp, iframe, noembed, noframes, script, plaintext) by escaping their leading < to &lt; in the output',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));

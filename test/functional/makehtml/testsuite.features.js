@@ -11,6 +11,7 @@ const bootstrap = require('./makehtml.bootstrap.js'),
     rawHeaderIdSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/rawHeaderId/'),
     emojisSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/emojis/'),
     underlineSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/underline/'),
+    disallowRawHTMLSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/disallowRawHTML/'),
     ellipsisSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/ellipsis/'),
     literalMidWordUnderscoresSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/literalMidWordUnderscores/'),
     completeHTMLOutputSuite = bootstrap.getTestSuite('test/functional/makehtml/cases/features/completeHTMLOutput/'),
@@ -236,6 +237,16 @@ describe('makeHtml() features testsuite', function () {
       } else {
         converter = new showdown.Converter({underline: true});
       }
+      it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
+    }
+  });
+
+  /** test disallowRawHTML option (GFM tagfilter) **/
+  describe('disallowRawHTML option', function () {
+    let converter,
+        suite = disallowRawHTMLSuite;
+    for (let i = 0; i < suite.length; ++i) {
+      converter = new showdown.Converter({disallowRawHTML: true});
       it(suite[i].name.replace(/-/g, ' '), assertion(suite[i], converter));
     }
   });

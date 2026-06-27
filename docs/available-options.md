@@ -130,6 +130,36 @@ Disable the rule of 4 spaces to indent sub-lists. If enabled, this option effect
     </ul>
     ```
 
+### disallowRawHTML
+
+Enable GFM's [disallowed raw HTML extension](https://github.github.com/gfm/#disallowed-raw-html-extension-) (the *tagfilter*). When turned on, a small blacklist of raw HTML tags — `title`, `textarea`, `style`, `xmp`, `iframe`, `noembed`, `noframes`, `script`, `plaintext` — is neutralized in the output by escaping the leading `<` to `&lt;`. All other tags pass through untouched.
+
+These tags are singled out because they change how the surrounding markup is interpreted. Enabling this option mitigates a class of HTML/script injection when rendering untrusted Markdown, but it is **not** a full XSS filter (see [xss](xss.md)) — you should still sanitize the output.
+
+This option is **off by default in every flavor, including `gfm`**, so it must be enabled explicitly.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+=== "input"
+
+    ```
+    <strong>kept</strong> <script>alert(1)</script> <style>x</style>
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <p><strong>kept</strong> <script>alert(1)</script> <style>x</style></p>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p><strong>kept</strong> &lt;script>alert(1)&lt;/script> &lt;style>x&lt;/style></p>
+    ```
+
 ### ellipsis
 
 Replace three consecutive dots (`...`) with the ellipsis unicode character (`…`).

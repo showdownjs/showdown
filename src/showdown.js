@@ -34,6 +34,7 @@ let showdown = {},
         //literalMidWordUnderscores:            true,
         //disableForced4SpacesIndentedSublists: true,
         //backslashEscapesHTMLTags:             true,
+        //disallowRawHTML:                       true, // GFM tagfilter (opt-in, see options)
       },
       original: {
         noHeaderId:                           true,

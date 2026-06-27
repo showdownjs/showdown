@@ -404,6 +404,9 @@ showdown.Converter = function (converterOptions) {
     }
     text = showdown.subParser('makehtml.unhashHTMLSpans')(text, options, globals);
     text = showdown.subParser('makehtml.unescapeSpecialChars')(text, options, globals);
+    // GFM disallowed-raw-html tagfilter (opt-in): neutralize a small HTML tag blacklist in
+    // the now-restored raw HTML. Runs late so it sees the final tags, not placeholders.
+    text = showdown.subParser('makehtml.disallowedHtmlTags')(text, options, globals);
 
     // attacklab: Restore dollar signs
     text = text.replace(/¨D/g, '$$');

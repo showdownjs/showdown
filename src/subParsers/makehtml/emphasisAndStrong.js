@@ -142,10 +142,10 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
    * @returns {string}
    */
   function parseCommonmarkEmphasis (str) {
-    // CommonMark punctuation = ASCII punctuation + Unicode P categories
+    // CommonMark punctuation = ASCII punctuation + Unicode P and S categories
     const asciiPunct = /[!-/:-@[-`{-~]/;
     function isPunct (ch) {
-      return ch !== undefined && (asciiPunct.test(ch) || /\p{P}/u.test(ch));
+      return ch !== undefined && (asciiPunct.test(ch) || /[\p{P}\p{S}]/u.test(ch));
     }
     function isWhitespace (ch) {
       return ch === undefined || /\s/.test(ch) || /\p{Z}/u.test(ch);

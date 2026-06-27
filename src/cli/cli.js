@@ -45,7 +45,7 @@ addConversionOptions(
     .addHelpText('after', '  showdown makehtml -i                     Reads from stdin and outputs to stdout')
     .addHelpText('after', '  showdown makehtml -i foo.md -o bar.html  Reads \'foo.md\' and writes to \'bar.html\'')
     .addHelpText('after', '  showdown makehtml -i *.md -o out/         Converts every md file into the \'out\' directory')
-    .addHelpText('after', '  showdown makehtml -i --flavor="github"   Parses stdin using GFM style')
+    .addHelpText('after', '  showdown makehtml -i --flavor="gfm"      Parses stdin using GFM style')
 
     .addHelpText('after', '\nNote for windows users:')
     .addHelpText('after', 'When reading from stdin, use option -u to set the proper encoding or run `chcp 65001` prior to calling showdown cli to set the command line to utf-8'),
@@ -239,7 +239,11 @@ function getAvailableFlavors () {
   if (typeof showdown.getFlavors === 'function') {
     return showdown.getFlavors();
   }
-  return ['github', 'original', 'commonmark', 'vanilla'];
+  // TODO: remove this dead fallback. The CLI always loads a complete showdown build that
+  // ships from the same source tree, so getFlavors() is always present; this hardcoded
+  // list is unreachable and only drifts out of sync (e.g. it lagged behind the gfm rename).
+  // Call showdown.getFlavors() directly and drop the guard.
+  return ['commonmark', 'gfm', 'original', 'vanilla', 'github'];
 }
 
 /**
@@ -252,7 +256,7 @@ function showFlavors () {
   for (let i = 0; i < flavors.length; ++i) {
     console.log('  ' + flavors[i] + ((flavors[i] === 'vanilla') ? ' (default)' : ''));
   }
-  console.log('\nExample: showdown makehtml -i foo.md -o bar.html -p github');
+  console.log('\nExample: showdown makehtml -i foo.md -o bar.html -p gfm');
 }
 
 /**

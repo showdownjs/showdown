@@ -132,15 +132,15 @@ describe('showdown.getAllExtensions()', function () {
 
 describe('showdown.setFlavor()', function () {
   'use strict';
-  it('should set flavor to github', function () {
-    showdown.setFlavor('github');
-    showdown.getFlavor().should.equal('github');
+  it('should set flavor to gfm', function () {
+    showdown.setFlavor('gfm');
+    showdown.getFlavor().should.equal('gfm');
     showdown.setFlavor('vanilla');
   });
 
   it('should set options correctly', function () {
-    showdown.setFlavor('github');
-    let ghOpts = showdown.getFlavorOptions('github'),
+    showdown.setFlavor('gfm');
+    let ghOpts = showdown.getFlavorOptions('gfm'),
         shOpts = showdown.getOptions();
     for (let opt in ghOpts) {
       if (ghOpts.hasOwnProperty(opt)) {
@@ -152,8 +152,8 @@ describe('showdown.setFlavor()', function () {
   });
 
   it('should switch between flavors correctly', function () {
-    showdown.setFlavor('github');
-    let ghOpts = showdown.getFlavorOptions('github'),
+    showdown.setFlavor('gfm');
+    let ghOpts = showdown.getFlavorOptions('gfm'),
         shOpts = showdown.getOptions(),
         dfOpts = showdown.getDefaultOptions();
     for (let opt in dfOpts) {

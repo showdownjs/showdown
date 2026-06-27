@@ -1098,7 +1098,7 @@ let cmAttributeName = '[a-zA-Z_:][a-zA-Z0-9:._-]*',
     cmAttribute = '(?:\\s+' + cmAttributeName + '(?:\\s*=\\s*' + cmAttributeValue + ')?)',
     cmOpenTag = '<[A-Za-z][A-Za-z0-9\\-]*' + cmAttribute + '*\\s*/?>',
     cmCloseTag = '</[A-Za-z][A-Za-z0-9\\-]*\\s*>',
-    cmHTMLComment = '<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->',
+    cmHTMLComment = '<!-->|<!--->|<!--(?:[^-]|-[^-]|--[^>])*-->',
     cmProcessingInstruction = '<[?][\\s\\S]*?[?]>',
     cmDeclaration = '<![A-Za-z]+[^>]*>',
     cmCDATA = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>';

@@ -379,18 +379,18 @@ Currently, the following flavors are available:
 
  * original - original markdown flavor as in [John Gruber's spec](https://daringfireball.net/projects/markdown/)
  * vanilla  - showdown base flavor (as from v1.3.1)
- * github   - GFM (GitHub Flavored Markdown)
+ * gfm      - GFM (GitHub Flavored Markdown); `github` is a backwards-compatible alias
  * commonmark - [CommonMark](https://spec.commonmark.org/) CommonMark flavor (as from v3.0.0)
 
 
 ### Global
 ```javascript
-showdown.setFlavor('github');
+showdown.setFlavor('gfm');
 ```
 
 ### Instance
 ```javascript
-converter.setFlavor('github');
+converter.setFlavor('gfm');
 ```
 
 

@@ -123,12 +123,12 @@ describe('showdown cli', function () {
     describe('makehtml -p', function () {
 
       it('should enable a flavor', function () {
-        var proc = spawnCLI('makehtml', ['-p', 'github'], {
+        var proc = spawnCLI('makehtml', ['-p', 'gfm'], {
           input: 'this is a :smile:', // test the emoji option as a proxy
           encoding: 'utf-8'
         });
         proc.status.should.equal(0);
-        proc.stderr.should.contain('Enabling flavor github...');
+        proc.stderr.should.contain('Enabling flavor gfm...');
         proc.stdout.trim().should.equal('<p>this is a 😄</p>');
         //'Here in London'.should.match(/(here|there) in (\w+)/i).and.capture(1).equals('London');
       });
@@ -157,7 +157,8 @@ describe('showdown cli', function () {
         var proc = spawnCLI('makehtml', ['--list-flavors'], {encoding: 'utf-8'});
         proc.status.should.equal(0);
         proc.stdout.should.contain('Available flavors:');
-        proc.stdout.should.contain('github');
+        proc.stdout.should.contain('gfm');
+        proc.stdout.should.contain('commonmark');
         proc.stdout.should.contain('vanilla');
       });
     });
@@ -222,7 +223,7 @@ describe('showdown cli', function () {
       });
 
       it('should let -c disable an option enabled by a flavor', function () {
-        var proc = spawnCLI('makehtml', ['-p', 'github', '-c', 'tables=false'], {
+        var proc = spawnCLI('makehtml', ['-p', 'gfm', '-c', 'tables=false'], {
           input: 'a | b\n- | -\n1 | 2',
           encoding: 'utf-8'
         });

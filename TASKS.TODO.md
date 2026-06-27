@@ -100,6 +100,12 @@
 
 ## CLI
 - [ ] Refactor the CLI
+- [ ] Remove the dead hardcoded flavor fallback in `getAvailableFlavors()` (`src/cli/cli.js`).
+
+    The CLI always loads a complete showdown build from the same source tree, so
+    `showdown.getFlavors()` is always present and the hardcoded list is unreachable. It only
+    drifts out of sync (it lagged behind the `gfm` rename). Call `showdown.getFlavors()`
+    directly and drop the `typeof ... === 'function'` guard.
 - [ ] **#381**: *Support for src and dst directories in showdown cli*
 - [X] **#584**: *Fails to read from stdin*
 - [X] **#554**: *CLI not working with jsdom v10*

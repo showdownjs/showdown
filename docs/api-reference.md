@@ -47,7 +47,7 @@ Return the full options object for this converter.
 
 ### `converter.setFlavor(name)`
 
-Apply a [flavor](flavors.md) preset (`'github'`, `'original'`, `'commonmark'`, `'vanilla'`) to this converter. Throws if the flavor is unknown.
+Apply a [flavor](flavors.md) preset (`'gfm'`, `'original'`, `'commonmark'`, `'vanilla'`) to this converter. Throws if the flavor is unknown. `'github'` is accepted as a backwards-compatible alias for `'gfm'`.
 
 ### `converter.getFlavor()`
 
@@ -119,7 +119,7 @@ Return the name of the currently set global flavor.
 
 ### `showdown.getFlavors()`
 
-Return an array of the available [flavor](flavors.md) names (e.g. `['github', 'original', 'commonmark', 'vanilla', 'allOn']`).
+Return an array of the available [flavor](flavors.md) names (e.g. `['commonmark', 'gfm', 'original', 'vanilla', 'github']`). `github` appears alongside `gfm` because it is a backwards-compatible alias for it.
 
 ### `showdown.getFlavorOptions(name)`
 

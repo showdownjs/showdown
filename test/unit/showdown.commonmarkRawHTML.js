@@ -30,9 +30,14 @@ describe('showdown.Converter cmSpec option (RawHTML)', function () {
       converter.makeHtml('<a h*#ref="hi">').should.equal('<p>&lt;a h*#ref=&quot;hi&quot;&gt;</p>');
     });
 
-    it('should escape an invalid HTML comment (-- inside)', function () {
-      converter.makeHtml('foo <!-- not a comment -- two hyphens -->')
-        .should.equal('<p>foo &lt;!-- not a comment -- two hyphens --&gt;</p>');
+    it('should keep an HTML comment containing -- raw', function () {
+      converter.makeHtml('foo <!-- a comment -- two hyphens -->')
+        .should.equal('<p>foo <!-- a comment -- two hyphens --></p>');
+    });
+
+    it('should keep the empty comments <!--> and <!---> raw', function () {
+      converter.makeHtml('foo <!--> <!---> bar')
+        .should.equal('<p>foo <!--> <!---> bar</p>');
     });
 
     it('should keep a CDATA section raw (no & encoding inside)', function () {

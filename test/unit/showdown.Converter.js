@@ -42,13 +42,13 @@ describe('showdown.Converter', function () {
   describe('converter.setFlavor()', function () {
 
     /**
-     * Test setFlavor('github')
+     * Test setFlavor('gfm')
      */
-    describe('github', function () {
+    describe('gfm', function () {
       let converter = new showdown.Converter(),
-          ghOpts = showdown.getFlavorOptions('github');
+          ghOpts = showdown.getFlavorOptions('gfm');
 
-      converter.setFlavor('github');
+      converter.setFlavor('gfm');
 
       for (let opt in ghOpts) {
         if (ghOpts.hasOwnProperty(opt)) {
@@ -75,15 +75,15 @@ describe('showdown.Converter', function () {
       });
 
       it('should be changed if global option is changed', function () {
-        showdown.setFlavor('github');
+        showdown.setFlavor('gfm');
         let converter = new showdown.Converter();
-        converter.getFlavor().should.equal('github');
+        converter.getFlavor().should.equal('gfm');
         showdown.setFlavor('vanilla');
       });
 
       it('should not be changed if converter is initialized before global change', function () {
         let converter = new showdown.Converter();
-        showdown.setFlavor('github');
+        showdown.setFlavor('gfm');
         converter.getFlavor().should.equal('vanilla');
         showdown.setFlavor('vanilla');
       });

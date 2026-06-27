@@ -153,7 +153,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   // ---- shared character helpers (flanking rules) -------------------------------
 
   function isPunct (ch) {
-    return ch !== undefined && (asciiPunct.test(ch) || /\p{P}/u.test(ch));
+    return ch !== undefined && (asciiPunct.test(ch) || /[\p{P}\p{S}]/u.test(ch));
   }
   function isWhitespace (ch) {
     return ch === undefined || /\s/.test(ch) || /\p{Z}/u.test(ch);
@@ -311,8 +311,18 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         while (i < len && str.charAt(i) === ch) { ++i; }
         let run = str.slice(start, i),
             before = (start === 0) ? undefined : str.charAt(start - 1),
-            after = (i >= len) ? undefined : str.charAt(i),
-            beforeWs = isWhitespace(before),
+            after = (i >= len) ? undefined : str.charAt(i);
+        // `$` and `¨` are swapped for the two-char placeholders `¨D`/`¨T` before inline
+        // parsing (see converter.js) and only restored at the end. Resolve them here so
+        // flanking sees the real adjacent character rather than the placeholder's
+        // trailing/leading letter (e.g. the `D` of `¨D` would otherwise read as a letter).
+        if ((before === 'D' || before === 'T') && str.charAt(start - 2) === '¨') {
+          before = (before === 'D') ? '$' : '¨';
+        }
+        if (after === '¨' && (str.charAt(i + 1) === 'D' || str.charAt(i + 1) === 'T')) {
+          after = (str.charAt(i + 1) === 'D') ? '$' : '¨';
+        }
+        let beforeWs = isWhitespace(before),
             afterWs = isWhitespace(after),
             beforePt = isPunct(before),
             afterPt = isPunct(after),

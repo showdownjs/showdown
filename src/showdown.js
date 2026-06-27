@@ -8,26 +8,6 @@ let showdown = {},
     globalOptions = getDefaultOpts(true),
     setFlavor = 'vanilla',
     flavor = {
-      github: {
-        omitExtraWLInCodeBlocks:              true,
-        simplifiedAutoLink:                   true,
-        literalMidWordUnderscores:            true,
-        tables:                               true,
-        tablesHeaderId:                       true,
-        ghCodeBlocks:                         true,
-        tasklists:                            true,
-        disableForced4SpacesIndentedSublists: true,
-        requireSpaceBeforeHeadingText:        true,
-        ghMentions:                           true,
-        backslashEscapesHTMLTags:             true,
-        emoji:                                true,
-        splitAdjacentBlockquotes:             true
-      },
-      original: {
-        noHeaderId:                           true,
-        ghCodeBlocks:                         false,
-        strikethrough:                        false
-      },
       commonmark: {
         noHeaderId:                           true,
         requireSpaceBeforeHeadingText:        true,
@@ -36,8 +16,35 @@ let showdown = {},
         strikethrough:                        false,
         encodeEmails:                         false
       },
+      gfm: {
+        noHeaderId:                           true,
+        requireSpaceBeforeHeadingText:        true,
+        decodeEntities:                       true,
+        cmSpec:                               true,
+        strikethrough:                        true,
+        encodeEmails:                         false,
+        ghCodeBlocks:                         true,
+        tables:                               true,
+        tasklists:                            true,
+        ghMentions:                           true,
+        simplifiedAutoLink:                   true,
+        emoji:                                true,
+        omitExtraWLInCodeBlocks:              true,
+
+        //literalMidWordUnderscores:            true,
+        //disableForced4SpacesIndentedSublists: true,
+        //backslashEscapesHTMLTags:             true,
+      },
+      original: {
+        noHeaderId:                           true,
+        ghCodeBlocks:                         false,
+        strikethrough:                        false
+      },
       vanilla: getDefaultOpts(true)
     };
+
+// alias github to gfm for backwards compatibility
+flavor.github = flavor.gfm;
 
 /**
  * helper namespace

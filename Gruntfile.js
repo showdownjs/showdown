@@ -2,7 +2,7 @@
  * Created by Tivie on 12-11-2014.
  */
 
-const commonmark = require('commonmark-spec');
+//const commonmark = require('commonmark-spec');
 module.exports = function (grunt) {
 
   if (grunt.option('q') || grunt.option('quiet')) {
@@ -147,7 +147,16 @@ module.exports = function (grunt) {
         }
       },
       commonmark: {
-        src: 'test/functional/makehtml/extra.testsuite.commonmark.js',
+        src: 'test/functional/makehtml/testsuite.commonmark.js',
+        options: {
+          timeout: 3000,
+          ignoreLeaks: true,
+          reporter: 'spec',
+          require: ['test/bootstrap.js']
+        }
+      },
+      gfm: {
+        src: 'test/functional/makehtml/testsuite.gfm.js',
         options: {
           timeout: 3000,
           ignoreLeaks: true,
@@ -240,11 +249,12 @@ module.exports = function (grunt) {
   /**
    * Tasks
    */
-  grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'mochaTest:unit', 'mochaTest:functional', 'mochaTest:commonmark', 'clean']);
+  grunt.registerTask('test', ['clean', 'lint', 'concat:test', 'mochaTest:unit', 'mochaTest:functional', 'clean']);
   grunt.registerTask('test-functional', ['clean', 'lint', 'concat:test', 'mochaTest:functional', 'clean']);
   grunt.registerTask('test-unit', ['clean', 'lint', 'concat:test', 'mochaTest:unit', 'clean']);
   grunt.registerTask('test-cli', ['clean', 'lint', 'concat:test', 'mochaTest:cli', 'clean']);
   grunt.registerTask('test-commonmark', ['clean', 'lint', 'concat:test', 'extract-commonmark-tests', 'mochaTest:commonmark', 'clean']);
+  grunt.registerTask('test-gfm', ['clean', 'lint', 'concat:test', 'mochaTest:gfm', 'clean']);
 
   grunt.registerTask('performance', ['concat:test', 'performancejs', 'clean']);
   grunt.registerTask('build', ['test', 'concat:dist', 'concat:cli', 'uglify:dist', 'uglify:cli', 'endline']);

@@ -199,8 +199,9 @@ showdown makehtml [options]
 * Short format: `-p`
 * Alias: `--flavor`
 * Description: Run with a predetermined [flavor](available-options.md) of options. Defaults to `vanilla`.
-* Available flavors: `github`, `original`, `commonmark`, `vanilla`. Use `--list-flavors` to print the
-  list at any time. An unrecognised flavor is reported as an error listing the valid flavors.
+* Available flavors: `gfm`, `original`, `commonmark`, `vanilla` (`github` is a backwards-compatible
+  alias for `gfm`). Use `--list-flavors` to print the list at any time. An unrecognised flavor is
+  reported as an error listing the valid flavors.
 * Example:
 
     !!! example ""
@@ -219,7 +220,7 @@ showdown makehtml [options]
 * Value handling:
     * A bare option name enables a boolean option: `-c strikethrough`.
     * Booleans can also be set explicitly with `=true`/`=false`. Use `=false` to **disable** an
-      option that a flavor enables, e.g. `-p github -c tables=false`.
+      option that a flavor enables, e.g. `-p gfm -c tables=false`.
     * Number options take a numeric value: `-c headerLevelStart=2`.
     * String options take a string value: `-c ghMentionsLink=https://github.com/{u}`.
     * Values are coerced to the option's declared type. Unknown option names and values that
@@ -232,7 +233,7 @@ showdown makehtml [options]
         showdown makehtml -i foo.md -o bar.html -c strikethrough
         showdown makehtml -i foo.md -o bar.html -c strikethrough -c emoji
         showdown makehtml -i foo.md -o bar.html -c headerLevelStart=2
-        showdown makehtml -i foo.md -o bar.html -p github -c tables=false
+        showdown makehtml -i foo.md -o bar.html -p gfm -c tables=false
         ```
 
 ### `makemarkdown`

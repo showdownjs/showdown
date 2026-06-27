@@ -4148,16 +4148,32 @@
   {
     "markdown": "A proper ~strikethrough~.\n",
     "html": "<p>A proper <del>strikethrough</del>.</p>\n",
-    "section": "extensions.txt — Strikethroughs",
+    "section": "Strikethrough (extension)",
     "number": 1202,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "These are ~not strikethroughs.\n\nNo, they are not~\n\nThis ~is ~ legit~ isn't ~ legit.\n\nThis is not ~~~~~one~~~~~ huge strikethrough.\n\n~one~ ~~two~~ ~~~three~~~\n\nNo ~mismatch~~\n",
     "html": "<p>These are ~not strikethroughs.</p>\n<p>No, they are not~</p>\n<p>This <del>is ~ legit</del> isn't ~ legit.</p>\n<p>This is not ~~~~~one~~~~~ huge strikethrough.</p>\n<p><del>one</del> <del>two</del> ~~~three~~~</p>\n<p>No ~mismatch~~</p>\n",
-    "section": "extensions.txt — Strikethroughs",
+    "section": "Strikethrough (extension)",
     "number": 1203,
     "source": "cmark-gfm-extensions"
+  },
+  {
+    "markdown": "~foo~~\n",
+    "html": "<p>~foo~~</p>\n",
+    "section": "Strikethrough (extension)",
+    "notes": "mismatched delimiter run lengths (1 open, 2 close) are not strikethrough",
+    "number": 1204,
+    "source": "showdown"
+  },
+  {
+    "markdown": "~~foo~\n",
+    "html": "<p>~~foo~</p>\n",
+    "section": "Strikethrough (extension)",
+    "notes": "mismatched delimiter run lengths (2 open, 1 close) are not strikethrough",
+    "number": 1205,
+    "source": "showdown"
   },
   {
     "markdown": "www.commonmark.org\n",

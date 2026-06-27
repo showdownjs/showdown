@@ -12,8 +12,12 @@ showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  const strikethroughRegex = /~{2}([\s\S]+?)~{2}/g;
-  text = text.replace(strikethroughRegex, function (wholeMatch, txt) {
+  // GFM strikethrough: a run of one or two tildes, matched in length, with flanking
+  // (the run must hug non-whitespace on the inside) and rejecting runs of three or more.
+  // Group 1 captures the character before the opening run (or the string start) so it can
+  // be restored; group 3 is the struck-through content.
+  const strikethroughRegex = /(^|[^~])(~{1,2})(?=[^\s~])([\s\S]*?[^\s~])\2(?!~)/g;
+  text = text.replace(strikethroughRegex, function (wholeMatch, prefix, run, txt) {
 
     let otp;
     let captureStartEvent = new showdown.Event('makehtml.strikethrough.onCapture', txt);
@@ -44,7 +48,8 @@ showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
       ._setGlobals(globals)
       ._setOptions(options);
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    return beforeHashEvent.output;
+    // restore the character that preceded the opening run
+    return prefix + beforeHashEvent.output;
   });
 
   let afterEvent = new showdown.Event('makehtml.strikethrough.onEnd', text);

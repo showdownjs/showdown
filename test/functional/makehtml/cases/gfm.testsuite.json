@@ -3607,7 +3607,7 @@
   },
   {
     "markdown": "<https://foo.bar/baz bim>\n",
-    "html": "<p>&lt;https://foo.bar/baz bim&gt;</p>\n",
+    "html": "<p>\n&lt;\n<a href=\"https://foo.bar/baz\">\nhttps://foo.bar/baz\n</a>\nbim&gt;</p>\n",
     "section": "Autolinks",
     "number": 602
   },
@@ -3643,7 +3643,7 @@
   },
   {
     "markdown": "< https://foo.bar >\n",
-    "html": "<p>&lt; https://foo.bar &gt;</p>\n",
+    "html": "<p>\n&lt;\n<a href=\"https://foo.bar\">\nhttps://foo.bar\n</a>\n&gt;\n</p>\n",
     "section": "Autolinks",
     "number": 608
   },
@@ -3661,13 +3661,13 @@
   },
   {
     "markdown": "https://example.com\n",
-    "html": "<p>https://example.com</p>\n",
+    "html": "<p>\n<a href=\"https://example.com\">\nhttps://example.com\n</a>\n</p>\n",
     "section": "Autolinks",
     "number": 611
   },
   {
     "markdown": "foo@bar.example.com\n",
-    "html": "<p>foo@bar.example.com</p>\n",
+    "html": "<p>\n<a href=\"mailto:foo@bar.example.com\">\nfoo@bar.example.com\n</a>\n</p>\n",
     "section": "Autolinks",
     "number": 612
   },
@@ -4255,21 +4255,21 @@
   {
     "markdown": ": http://google.com https://google.com\n\n<http://google.com/å> http://google.com/å\n\nscyther@pokemon.com\n\nscy.the_rbe-edr+ill@pokemon.com\n\nscyther@pokemon.com.\n\nscyther@pokemon.com/\n\nscyther@pokemon.com/beedrill@pokemon.com\n\nmailto:scyther@pokemon.com\n\nThis is a mailto:scyther@pokemon.com\n\nmailto:scyther@pokemon.com.\n\nmmmmailto:scyther@pokemon.com\n\nmailto:scyther@pokemon.com/\n\nmailto:scyther@pokemon.com/message\n\nmailto:scyther@pokemon.com/mailto:beedrill@pokemon.com\n\nxmpp:scyther@pokemon.com\n\nxmpp:scyther@pokemon.com.\n\nxmpp:scyther@pokemon.com/message\n\nxmpp:scyther@pokemon.com/message.\n\nEmail me at:scyther@pokemon.com\n\nwww.github.com www.github.com/á\n\nwww.google.com/a_b\n\nUnderscores not allowed in host name www.xxx.yyy._zzz\n\nUnderscores not allowed in host name www.xxx._yyy.zzz\n\nUnderscores allowed in domain name www._xxx.yyy.zzz\n\n**Autolink and http://inlines**\n\n![http://inline.com/image](http://inline.com/image)\n\na.w@b.c\n\nFull stop outside parens shouldn't be included http://google.com/ok.\n\n(Full stop inside parens shouldn't be included http://google.com/ok.)\n\n\"http://google.com\"\n\n'http://google.com'\n\nhttp://🍄.ga/ http://x🍄.ga/\n",
     "html": "<p>: <a href=\"http://google.com\">http://google.com</a> <a href=\"https://google.com\">https://google.com</a></p>\n<p><a href=\"http://google.com/%C3%A5\">http://google.com/å</a> <a href=\"http://google.com/%C3%A5\">http://google.com/å</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a></p>\n<p><a href=\"mailto:scy.the_rbe-edr+ill@pokemon.com\">scy.the_rbe-edr+ill@pokemon.com</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a>.</p>\n<p><a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a>/</p>\n<p><a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a>/<a href=\"mailto:beedrill@pokemon.com\">beedrill@pokemon.com</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a></p>\n<p>This is a <a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a>.</p>\n<p>mmmmailto:<a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a>/</p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a>/message</p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a>/<a href=\"mailto:beedrill@pokemon.com\">mailto:beedrill@pokemon.com</a></p>\n<p><a href=\"xmpp:scyther@pokemon.com\">xmpp:scyther@pokemon.com</a></p>\n<p><a href=\"xmpp:scyther@pokemon.com\">xmpp:scyther@pokemon.com</a>.</p>\n<p><a href=\"xmpp:scyther@pokemon.com/message\">xmpp:scyther@pokemon.com/message</a></p>\n<p><a href=\"xmpp:scyther@pokemon.com/message\">xmpp:scyther@pokemon.com/message</a>.</p>\n<p>Email me at:<a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a></p>\n<p><a href=\"http://www.github.com\">www.github.com</a> <a href=\"http://www.github.com/%C3%A1\">www.github.com/á</a></p>\n<p><a href=\"http://www.google.com/a_b\">www.google.com/a_b</a></p>\n<p>Underscores not allowed in host name www.xxx.yyy._zzz</p>\n<p>Underscores not allowed in host name www.xxx._yyy.zzz</p>\n<p>Underscores allowed in domain name <a href=\"http://www._xxx.yyy.zzz\">www._xxx.yyy.zzz</a></p>\n<p><strong>Autolink and <a href=\"http://inlines\">http://inlines</a></strong></p>\n<p><img src=\"http://inline.com/image\" alt=\"http://inline.com/image\" /></p>\n<p><a href=\"mailto:a.w@b.c\">a.w@b.c</a></p>\n<p>Full stop outside parens shouldn't be included <a href=\"http://google.com/ok\">http://google.com/ok</a>.</p>\n<p>(Full stop inside parens shouldn't be included <a href=\"http://google.com/ok\">http://google.com/ok</a>.)</p>\n<p>&quot;<a href=\"http://google.com\">http://google.com</a>&quot;</p>\n<p>'<a href=\"http://google.com\">http://google.com</a>'</p>\n<p><a href=\"http://%F0%9F%8D%84.ga/\">http://🍄.ga/</a> <a href=\"http://x%F0%9F%8D%84.ga/\">http://x🍄.ga/</a></p>\n",
-    "section": "extensions.txt — Autolinks",
+    "section": "Autolinks (extension)",
     "number": 1311,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "This shouldn't crash everything: (_A_@_.A\n",
     "html": "<IGNORE>\n",
-    "section": "extensions.txt — Autolinks",
+    "section": "Autolinks (extension)",
     "number": 1312,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "These should not link:\n\n* @a.b.c@. x\n* n@.  b\n",
     "html": "<p>These should not link:</p>\n<ul>\n<li>@a.b.c@. x</li>\n<li>n@.  b</li>\n</ul>\n",
-    "section": "extensions.txt — Autolinks",
+    "section": "Autolinks (extension)",
     "number": 1313,
     "source": "cmark-gfm-extensions"
   },
@@ -4283,42 +4283,45 @@
   {
     "markdown": "This is <xmp> not okay, but **this** <strong>is</strong>.\n\n<p>This is <xmp> not okay, but **this** <strong>is</strong>.</p>\n\nNope, I won't have <textarea>.\n\n<p>No <textarea> here either.</p>\n\n<p>This <random /> <thing> is okay</thing> though.</p>\n\nYep, <totally>okay</totally>.\n\n<!-- HTML comments are okay, though. -->\n<!- But we're strict. ->\n<! No nonsense. >\n<!-- Leave multiline comments the heck alone, though, okay?\nEven with {\"x\":\"y\"} or 1 > 2 or whatever. Even **markdown**.\n-->\n<!--- Support everything CommonMark's parser does. -->\n<!---->\n<!--thistoo-->\n",
     "html": "<p>This is &lt;xmp> not okay, but <strong>this</strong> <strong>is</strong>.</p>\n<p>This is &lt;xmp> not okay, but **this** <strong>is</strong>.</p>\n<p>Nope, I won't have &lt;textarea>.</p>\n<p>No &lt;textarea> here either.</p>\n<p>This <random /> <thing> is okay</thing> though.</p>\n<p>Yep, <totally>okay</totally>.</p>\n<!-- HTML comments are okay, though. -->\n<p>&lt;!- But we're strict. -&gt;\n&lt;! No nonsense. &gt;</p>\n<!-- Leave multiline comments the heck alone, though, okay?\nEven with {\"x\":\"y\"} or 1 > 2 or whatever. Even **markdown**.\n-->\n<!--- Support everything CommonMark's parser does. -->\n<!---->\n<!--thistoo-->\n",
-    "section": "extensions.txt — HTML tag filter",
+    "section": "Disallowed Raw HTML (extension)",
+    "notes": "HTML tag filter",
     "number": 1500,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "This is some text![^1]. Other text.[^footnote].\n\nHere's a thing[^other-note].\n\nAnd another thing[^codeblock-note].\n\nThis doesn't have a referent[^nope].\n\n\n[^other-note]:       no code block here (spaces are stripped away)\n\n[^codeblock-note]:\n        this is now a code block (8 spaces indentation)\n\n[^1]: Some *bolded* footnote definition.\n\nHi!\n\n[^footnote]:\n    > Blockquotes can be in a footnote.\n\n        as well as code blocks\n\n    or, naturally, simple paragraphs.\n\n[^unused]: This is unused.\n",
     "html": "<p>This is some text!<sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\" data-footnote-ref>1</a></sup>. Other text.<sup class=\"footnote-ref\"><a href=\"#fn-footnote\" id=\"fnref-footnote\" data-footnote-ref>2</a></sup>.</p>\n<p>Here's a thing<sup class=\"footnote-ref\"><a href=\"#fn-other-note\" id=\"fnref-other-note\" data-footnote-ref>3</a></sup>.</p>\n<p>And another thing<sup class=\"footnote-ref\"><a href=\"#fn-codeblock-note\" id=\"fnref-codeblock-note\" data-footnote-ref>4</a></sup>.</p>\n<p>This doesn't have a referent[^nope].</p>\n<p>Hi!</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-1\">\n<p>Some <em>bolded</em> footnote definition. <a href=\"#fnref-1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n<li id=\"fn-footnote\">\n<blockquote>\n<p>Blockquotes can be in a footnote.</p>\n</blockquote>\n<pre><code>as well as code blocks\n</code></pre>\n<p>or, naturally, simple paragraphs. <a href=\"#fnref-footnote\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n</li>\n<li id=\"fn-other-note\">\n<p>no code block here (spaces are stripped away) <a href=\"#fnref-other-note\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"3\" aria-label=\"Back to reference 3\">↩</a></p>\n</li>\n<li id=\"fn-codeblock-note\">\n<pre><code>this is now a code block (8 spaces indentation)\n</code></pre>\n<a href=\"#fnref-codeblock-note\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"4\" aria-label=\"Back to reference 4\">↩</a>\n</li>\n</ol>\n</section>\n",
-    "section": "extensions.txt — Footnotes",
+    "section": "Footnotes (extension)",
     "number": 1600,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "This is some text. It has a footnote[^a-footnote].\n\nThis footnote is referenced[^a-footnote] multiple times, in lots of different places.[^a-footnote]\n\n[^a-footnote]: This footnote definition should have three backrefs.\n",
     "html": "<p>This is some text. It has a footnote<sup class=\"footnote-ref\"><a href=\"#fn-a-footnote\" id=\"fnref-a-footnote\" data-footnote-ref>1</a></sup>.</p>\n<p>This footnote is referenced<sup class=\"footnote-ref\"><a href=\"#fn-a-footnote\" id=\"fnref-a-footnote-2\" data-footnote-ref>1</a></sup> multiple times, in lots of different places.<sup class=\"footnote-ref\"><a href=\"#fn-a-footnote\" id=\"fnref-a-footnote-3\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-a-footnote\">\n<p>This footnote definition should have three backrefs. <a href=\"#fnref-a-footnote\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a> <a href=\"#fnref-a-footnote-2\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1-2\" aria-label=\"Back to reference 1-2\">↩<sup class=\"footnote-ref\">2</sup></a> <a href=\"#fnref-a-footnote-3\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1-3\" aria-label=\"Back to reference 1-3\">↩<sup class=\"footnote-ref\">3</sup></a></p>\n</li>\n</ol>\n</section>\n",
-    "section": "extensions.txt — When a footnote is used multiple times, we insert multiple backrefs.",
+    "section": "Footnotes (extension)",
+    "notes": "When a footnote is used multiple times, we insert multiple backrefs.",
     "number": 1601,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "Hello[^\"><script>alert(1)</script>]\n\n[^\"><script>alert(1)</script>]: pwned\n",
     "html": "<p>Hello<sup class=\"footnote-ref\"><a href=\"#fn-%22%3E%3Cscript%3Ealert(1)%3C/script%3E\" id=\"fnref-%22%3E%3Cscript%3Ealert(1)%3C/script%3E\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-%22%3E%3Cscript%3Ealert(1)%3C/script%3E\">\n<p>pwned <a href=\"#fnref-%22%3E%3Cscript%3Ealert(1)%3C/script%3E\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
-    "section": "extensions.txt — Footnote reference labels are href escaped",
+    "section": "Footnotes (extension)",
+    "notes": "Footnote reference labels are href escaped",
     "number": 1602,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "~~www.google.com~~\n\n~~http://google.com~~\n",
     "html": "<p><del><a href=\"http://www.google.com\">www.google.com</a></del></p>\n<p><del><a href=\"http://google.com\">http://google.com</a></del></p>\n",
-    "section": "extensions.txt — Interop",
+    "section": "Interop (extension)",
     "number": 1700,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| a | b |\n| --- | --- |\n| https://github.com www.github.com | http://pokemon.com |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><a href=\"https://github.com\">https://github.com</a> <a href=\"http://www.github.com\">www.github.com</a></td>\n<td><a href=\"http://pokemon.com\">http://pokemon.com</a></td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Interop",
+    "section": "Interop (extension)",
     "number": 1701,
     "source": "cmark-gfm-extensions"
   },
@@ -4365,7 +4368,8 @@
   {
     "markdown": "This sentence uses `$` delimiters to show math inline: $\\sqrt{3x-1}+(1+x)^2$\n",
     "html": "<p>This sentence uses <code>$</code> delimiters to show math inline: <span class=\"math-inline\">\\sqrt{3x-1}+(1+x)^2</span></p>\n",
-    "section": "Math — inline (GitHub renderer)",
+    "section": "Math (GitHub renderer)",
+    "notes": "inline",
     "number": 1900,
     "source": "github-renderer",
     "note": "Inline $...$ math. GitHub preserves the LaTeX and renders it client-side with MathJax; the exact server-emitted wrapper is undocumented/volatile, so the html shown is illustrative of the contract (expression preserved), not byte-exact."
@@ -4373,7 +4377,8 @@
   {
     "markdown": "**The Cauchy-Schwarz Inequality**\n\n```math\n\\left( \\sum_{k=1}^n a_k b_k \\right)^2\n```\n",
     "html": "<p><strong>The Cauchy-Schwarz Inequality</strong></p>\n<div class=\"math-display\">\\left( \\sum_{k=1}^n a_k b_k \\right)^2</div>\n",
-    "section": "Math — block via ```math (GitHub renderer)",
+    "section": "Math (GitHub renderer)",
+    "notes": "block via ```math",
     "number": 1901,
     "source": "github-renderer",
     "note": "The ```math fenced block is a GitHub renderer feature: instead of producing a <pre><code> block, the content is rendered as display math by MathJax. html is illustrative, not byte-exact; not in the formal spec."

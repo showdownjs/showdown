@@ -5,9 +5,6 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
     return text;
   }
 
-  // find escaped pipe characters
-  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
-
   //
   // parser starts here
   //
@@ -19,15 +16,29 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
+  // GFM §4.10: a table is broken at the first line that begins another
+  // block-level construct (blockquote, ATX heading, fenced code, thematic
+  // break). Such a line is not a table row, so we split it — and everything
+  // after it — off the match. Because `table` runs immediately before
+  // `blockquote` (and the rest of blockGamut) in the pipeline, the returned
+  // tail is reprocessed and converted normally.
+  const blockStartRgx = /^ {0,3}(?:>|#{1,6}(?:[ \t]|$)|```|~~~|(?:\*[ \t]*){3,}$|(?:-[ \t]*){3,}$|(?:_[ \t]*){3,}$)/;
+
   // parse multi column tables
-  const tableRgx = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*[-=]{2,}[\s\S]+?(?:\n\n|¨0)/gm;
+  const tableRgx = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*[-=]+[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*[-=]+[\s\S]+?(?:\n\n|¨0)/gm;
   text = text.replace(tableRgx, function (wholeMatch) {
-    return parse(tableRgx, wholeMatch);
+    let split = breakOnBlock(wholeMatch);
+    // Neutralize escaped pipes only within the actual table text (not the trailing block
+    // or any non-table content) so `\|` inside code spans elsewhere is left for the normal
+    // backslash-escape / code-span passes to handle.
+    let table = split.table.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+    return parse(tableRgx, table) + split.tail;
   });
 
-  const singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
+  const singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|?[ \t]*:?[ \t]*[-=]+[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
   text = text.replace(singeColTblRgx, function (wholeMatch) {
-    return parse(singeColTblRgx, wholeMatch);
+    let table = wholeMatch.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+    return parse(singeColTblRgx, table);
   });
 
   let afterEvent = new showdown.Event('makehtml.table.onEnd', text);
@@ -40,6 +51,25 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
 
 
 
+  /**
+   * Split a greedily-matched table block at the first body line that begins
+   * another block-level construct. The header (line 0) and delimiter (line 1)
+   * are never terminators; scanning starts at the first body row.
+   * @param {string} wholeMatch
+   * @returns {{table: string, tail: string}}
+   */
+  function breakOnBlock (wholeMatch) {
+    let lines = wholeMatch.split('\n');
+    for (let i = 2; i < lines.length; ++i) {
+      if (blockStartRgx.test(lines[i])) {
+        return {
+          table: lines.slice(0, i).join('\n') + '\n',
+          tail: lines.slice(i).join('\n')
+        };
+      }
+    }
+    return { table: wholeMatch, tail: '' };
+  }
 
   /**
    *
@@ -171,7 +201,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
       );
     }
 
-    if (rawHeaders.length < rawStyles.length) {
+    if (rawHeaders.length !== rawStyles.length) {
       return null;
     }
 

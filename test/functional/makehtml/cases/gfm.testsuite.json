@@ -3920,7 +3920,7 @@
   },
   {
     "markdown": "| abc | defghi |\n:-: | -----------:\nbar | baz\n",
-    "html": "<table>\n<thead>\n<tr>\n<th align=\"center\">abc</th>\n<th align=\"right\">defghi</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td align=\"center\">bar</td>\n<td align=\"right\">baz</td>\n</tr>\n</tbody>\n</table>\n",
+    "html": "<table>\n<thead>\n<tr>\n<th style=\"text-align:center;\">abc</th>\n<th style=\"text-align:right;\">defghi</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td style=\"text-align:center;\">bar</td>\n<td style=\"text-align:right;\">baz</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
     "number": 1001,
     "source": "gfm-spec"
@@ -3962,7 +3962,7 @@
   },
   {
     "markdown": "| abc | def |\n| --- | --- |\n",
-    "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n</table>\n",
+    "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
     "number": 1007,
     "source": "gfm-spec"
@@ -3970,113 +3970,130 @@
   {
     "markdown": "| abc | def |\n| --- | --- |\n| ghi | jkl |\n| mno | pqr |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>ghi</td>\n<td>jkl</td>\n</tr>\n<tr>\n<td>mno</td>\n<td>pqr</td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables",
+    "section": "Tables (extension)",
     "number": 1008,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "Hello!\n\n| _abc_ | セン |\n| ----- | ---- |\n| 1. Block elements inside cells don't work. | |\n| But _**inline elements do**_. | x |\n\nHi!\n",
     "html": "<p>Hello!</p>\n<table>\n<thead>\n<tr>\n<th><em>abc</em></th>\n<th>セン</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1. Block elements inside cells don't work.</td>\n<td></td>\n</tr>\n<tr>\n<td>But <em><strong>inline elements do</strong></em>.</td>\n<td>x</td>\n</tr>\n</tbody>\n</table>\n<p>Hi!</p>\n",
-    "section": "extensions.txt — Tables",
+    "section": "Tables (extension)",
     "number": 1009,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| Not enough table | to be considered table |\n\n| Not enough table | to be considered table |\n| Not enough table | to be considered table |\n\n| Just enough table | to be considered table |\n| ----------------- | ---------------------- |\n\n| ---- | --- |\n\n|x|\n|-|\n\n| xyz |\n| --- |\n",
-    "html": "<p>| Not enough table | to be considered table |</p>\n<p>| Not enough table | to be considered table |\n| Not enough table | to be considered table |</p>\n<table>\n<thead>\n<tr>\n<th>Just enough table</th>\n<th>to be considered table</th>\n</tr>\n</thead>\n</table>\n<p>| ---- | --- |</p>\n<table>\n<thead>\n<tr>\n<th>x</th>\n</tr>\n</thead>\n</table>\n<table>\n<thead>\n<tr>\n<th>xyz</th>\n</tr>\n</thead>\n</table>\n",
-    "section": "extensions.txt — Tables",
+    "html": "<p>| Not enough table | to be considered table |</p>\n<p>| Not enough table | to be considered table |\n| Not enough table | to be considered table |</p>\n<table>\n<thead>\n<tr>\n<th>Just enough table</th>\n<th>to be considered table</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n<p>| ---- | --- |</p>\n<table>\n<thead>\n<tr>\n<th>x</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n<table>\n<thead>\n<tr>\n<th>xyz</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n",
+    "section": "Tables (extension)",
     "number": 1010,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "abc | def\n--- | ---\nxyz | ghi\n",
     "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>xyz</td>\n<td>ghi</td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables",
+    "section": "Tables (extension)",
     "number": 1011,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "Hello!\n\n| _abc_ | セン |\n| ----- | ---- |\n| this row has a space at the end | | \n| But _**inline elements do**_. | x |\n\nHi!\n",
     "html": "<p>Hello!</p>\n<table>\n<thead>\n<tr>\n<th><em>abc</em></th>\n<th>セン</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>this row has a space at the end</td>\n<td></td>\n</tr>\n<tr>\n<td>But <em><strong>inline elements do</strong></em>.</td>\n<td>x</td>\n</tr>\n</tbody>\n</table>\n<p>Hi!</p>\n",
-    "section": "extensions.txt — Tables",
+    "section": "Tables (extension)",
     "number": 1012,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "aaa | bbb | ccc | ddd | eee\n:-- | --- | :-: | --- | --:\nfff | ggg | hhh | iii | jjj\n",
-    "html": "<table>\n<thead>\n<tr>\n<th align=\"left\">aaa</th>\n<th>bbb</th>\n<th align=\"center\">ccc</th>\n<th>ddd</th>\n<th align=\"right\">eee</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td align=\"left\">fff</td>\n<td>ggg</td>\n<td align=\"center\">hhh</td>\n<td>iii</td>\n<td align=\"right\">jjj</td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables",
+    "html": "<table>\n<thead>\n<tr>\n<th style=\"text-align:left;\">aaa</th>\n<th>bbb</th>\n<th style=\"text-align:center;\">ccc</th>\n<th>ddd</th>\n<th style=\"text-align:right;\">eee</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td style=\"text-align:left;\">fff</td>\n<td>ggg</td>\n<td style=\"text-align:center;\">hhh</td>\n<td>iii</td>\n<td style=\"text-align:right;\">jjj</td>\n</tr>\n</tbody>\n</table>\n",
+    "section": "Tables (extension)",
     "number": 1013,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| a | b | c |\n| --- | --- |\n| this | isn't | okay |\n",
     "html": "<p>| a | b | c |\n| --- | --- |\n| this | isn't | okay |</p>\n",
-    "section": "extensions.txt — Tables — Table cell count mismatches",
+    "section": "Tables (extension)",
+    "notes": "Table cell count mismatches",
     "number": 1014,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| a | b | c |\n| --- | --- | ---\n| x\n| a | b\n| 1 | 2 | 3 | 4 | 5 |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n<th>c</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>x</td>\n<td></td>\n<td></td>\n</tr>\n<tr>\n<td>a</td>\n<td>b</td>\n<td></td>\n</tr>\n<tr>\n<td>1</td>\n<td>2</td>\n<td>3</td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables — Table cell count mismatches",
+    "section": "Tables (extension)",
+    "notes": "Table cell count mismatches",
     "number": 1015,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| a | b |\n| --- | --- |\n| Escaped pipes are \\|okay\\|. | Like \\| this. |\n| Within `\\|code\\| is okay` too. |\n| _**`c\\|`**_ \\| complex\n| don't **\\_reparse\\_**\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Escaped pipes are |okay|.</td>\n<td>Like | this.</td>\n</tr>\n<tr>\n<td>Within <code>|code| is okay</code> too.</td>\n<td></td>\n</tr>\n<tr>\n<td><em><strong><code>c|</code></strong></em> | complex</td>\n<td></td>\n</tr>\n<tr>\n<td>don't <strong>_reparse_</strong></td>\n<td></td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables — Embedded pipes",
+    "section": "Tables (extension)",
+    "notes": "Embedded pipes",
     "number": 1016,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| a |\n--- |\n",
-    "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n</tr>\n</thead>\n</table>\n",
-    "section": "extensions.txt — Tables — Oddly-formatted markers",
+    "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n",
+    "section": "Tables (extension)",
+    "notes": "Oddly-formatted markers",
     "number": 1017,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| a | b |\n| --- | --- |\n| \\\\ | `\\\\` |\n| \\\\\\\\ | `\\\\\\\\` |\n| \\_ | `\\_` |\n| \\| | `\\|` |\n| \\a | `\\a` |\n\n\\\\ `\\\\`\n\n\\\\\\\\ `\\\\\\\\`\n\n\\_ `\\_`\n\n\\| `\\|`\n\n\\a `\\a`\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>\\</td>\n<td><code>\\\\</code></td>\n</tr>\n<tr>\n<td>\\\\</td>\n<td><code>\\\\\\\\</code></td>\n</tr>\n<tr>\n<td>_</td>\n<td><code>\\_</code></td>\n</tr>\n<tr>\n<td>|</td>\n<td><code>|</code></td>\n</tr>\n<tr>\n<td>\\a</td>\n<td><code>\\a</code></td>\n</tr>\n</tbody>\n</table>\n<p>\\ <code>\\\\</code></p>\n<p>\\\\ <code>\\\\\\\\</code></p>\n<p>_ <code>\\_</code></p>\n<p>| <code>\\|</code></p>\n<p>\\a <code>\\a</code></p>\n",
-    "section": "extensions.txt — Tables — Escaping",
+    "section": "Tables (extension)",
+    "notes": "Escaping",
     "number": 1018,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| a |\n| --- |\n| <strong>hello</strong> |\n| ok <br> sure |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><strong>hello</strong></td>\n</tr>\n<tr>\n<td>ok <br> sure</td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables — Embedded HTML",
+    "section": "Tables (extension)",
+    "notes": "Embedded HTML",
     "number": 1019,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "Here's a link to [Freedom Planet 2][].\n\n| Here's a link to [Freedom Planet 2][] in a table header. |\n| --- |\n| Here's a link to [Freedom Planet 2][] in a table row. |\n\n[Freedom Planet 2]: http://www.freedomplanet2.com/\n",
     "html": "<p>Here's a link to <a href=\"http://www.freedomplanet2.com/\">Freedom Planet 2</a>.</p>\n<table>\n<thead>\n<tr>\n<th>Here's a link to <a href=\"http://www.freedomplanet2.com/\">Freedom Planet 2</a> in a table header.</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Here's a link to <a href=\"http://www.freedomplanet2.com/\">Freedom Planet 2</a> in a table row.</td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables — Reference-style links",
+    "section": "Tables (extension)",
+    "notes": "Reference-style links",
     "number": 1020,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| a | b | c |\n| --- | --- | --- |\n| d || e |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n<th>c</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>d</td>\n<td></td>\n<td>e</td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables — Sequential cells",
+    "section": "Tables (extension)",
+    "notes": "Sequential cells",
     "number": 1021,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "| a | b |\n| --- | --- |\n|***(a)***|\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><em><strong>(a)</strong></em></td>\n<td></td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables — Interaction with emphasis",
+    "section": "Tables (extension)",
+    "notes": "Interaction with emphasis",
     "number": 1022,
     "source": "cmark-gfm-extensions"
   },
   {
     "markdown": "123\n456\n| a | b |\n| ---| --- |\nd | e\n",
     "html": "<p>123\n456</p>\n<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>d</td>\n<td>e</td>\n</tr>\n</tbody>\n</table>\n",
-    "section": "extensions.txt — Tables — a table can be recognised when separated from a paragraph of text without an empty line",
+    "section": "Tables (extension)",
+    "notes": "a table can be recognised when separated from a paragraph of text without an empty line",
     "number": 1023,
+    "source": "cmark-gfm-extensions"
+  },
+  {
+    "markdown": "bla\n:-:\nfoo\nbar\nbaz\n",
+    "html": "<p>bla\n:-:\nfoo\nbar\nbaz</p>\n",
+    "section": "Tables (extension)",
+    "number": 1050,
     "source": "cmark-gfm-extensions"
   },
   {

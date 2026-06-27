@@ -31,6 +31,15 @@ describe('makeHtml() gfm testsuite', function () {
             case 'Thematic breaks_61': // hr inside lists does not make sense
             case 'Autolinks (extension)_1312': // cmark-gfm "<IGNORE>" sentinel — undefined behavior, not assertable
             case 'Autolinks (extension)_1313': // @a.b.c is linked by ghMentions (separate subparser); tracked as a ghMentions fix
+            // GitHub.com renderer-only features, not part of the GFM spec — showdown does not produce them
+            case 'Alerts (GitHub renderer)_1800':
+            case 'Alerts (GitHub renderer)_1801':
+            case 'Alerts (GitHub renderer)_1802':
+            case 'Alerts (GitHub renderer)_1803':
+            case 'Alerts (GitHub renderer)_1804':
+            case 'Math (GitHub renderer)_1900':
+            case 'Math (GitHub renderer)_1901':
+            case 'Mermaid diagrams (GitHub renderer)_2000':
               continue;
 
             case 'Fenced code blocks_142': // we use different classes to mark languages in fenced code blocks

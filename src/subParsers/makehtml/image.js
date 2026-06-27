@@ -148,6 +148,13 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       url = showdown.helper.cmNormalizeURL(url);
     }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+    // escape characters that would otherwise break out of the quoted src attribute
+    // (a `"` in the URL is an attribute-injection vector). cmSpec flavors already
+    // percent-encode the URL above, so this is a no-op there.
+    url = url
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
 
     if (title && showdown.helper.isString(title)) {
       if (options.cmSpec) {

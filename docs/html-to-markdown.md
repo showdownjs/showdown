@@ -39,6 +39,7 @@ extension.)
 | `<pre><code>`   | fenced code block (language taken from `data-language` or a `language-*` class) |
 | `<pre>`         | raw `<pre>` passthrough                                                         |
 | `<table>`       | pipe table — see [Tables](#tables)                                              |
+| `<section class="footnotes">` | footnote definitions `[^id]: …` (back-references stripped, with the `footnotes` option) |
 
 ### Inline
 
@@ -53,6 +54,7 @@ extension.)
 | `<img>`                      | `![alt](<src> "title")` (also supports the `=WxH` size syntax)                           |
 | `<br>`                       | hard line break                                                                          |
 | `<input type="checkbox">`    | `[ ]` / `[x]` task-list marker (inside a list, with the `tasklists` option)              |
+| `<sup class="footnote-ref">` | `[^id]` footnote reference (with the `footnotes` option)                                  |
 
 <sup id="fn-underline">1</sup> `<u>` is emitted as `__…__`, which is showdown's underline syntax.
 This only round-trips back to `<u>` through a converter that has the
@@ -85,6 +87,7 @@ instead the source element is kept as **raw HTML**. These options also respond t
 | Image dimensions | `parseImgDimensions` | `![alt](<src> =WxH)` | `<img …>` (only if it has width+height) |
 | Emoji (unicode char, or `<img>` for the "special" emoji) | `emoji` | `:code:` | unicode char / `<img>` kept as-is <sup>[2](#fn-emoji)</sup> |
 | Ellipsis (`…` in text) | `ellipsis` | `...` | `…` kept verbatim |
+| Footnotes (`<sup class="footnote-ref">` / `<section class="footnotes">`) | `footnotes` | `[^id]` + `[^id]: …` | `<sup>…</sup>` / `<section>…</section>` |
 
 For an inline fallback the wrapper tag is kept but its children are still converted (e.g.
 `<del>**b**</del>` → `<del>**b**</del>`). In the `vanilla` (default) flavor `ghCodeBlocks` and
@@ -120,4 +123,9 @@ HTML comments (`<!-- … -->`) are preserved.
   into `:code:`. Because the lookup is by character/`src`, a literal emoji the author typed by
   hand is also converted — this keeps the two directions symmetric but means the option rewrites
   more than just showdown-generated emoji.
+* Footnotes (with the `footnotes` option) recover the `[^id]` label from the `#fn-…` href, so the
+  numbering and definition order are canonicalised to first-reference order (the markdown round-trips
+  to the same HTML, but not necessarily byte-for-byte to the original source). Information that the
+  forward direction discards — an unreferenced definition, or the original label casing — cannot be
+  recovered.
 * Tables, captions, and any HTML feature with no Markdown equivalent are lossy by nature.

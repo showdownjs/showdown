@@ -172,6 +172,26 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
           txt = showdown.subParser('makeMarkdown.input')(node, options, globals);
           break;
 
+        case 'sup':
+          // GFM footnote reference; otherwise an ordinary inline <sup> kept as raw HTML
+          if (options.footnotes && /(?:^| )footnote-ref(?: |$)/.test(node.getAttribute('class') || '')) {
+            txt = showdown.subParser('makeMarkdown.footnotes')(node, options, globals);
+          } else {
+            txt = renderRawElement(node, tagName);
+            if (!spansOnly) { txt += '\n\n'; }
+          }
+          break;
+
+        case 'section':
+          // GFM footnotes section; otherwise an ordinary <section> kept as raw HTML
+          if (!spansOnly && options.footnotes && /(?:^| )footnotes(?: |$)/.test(node.getAttribute('class') || '')) {
+            txt = showdown.subParser('makeMarkdown.footnotes')(node, options, globals) + '\n\n';
+          } else {
+            txt = renderRawElement(node, tagName);
+            if (!spansOnly) { txt += '\n\n'; }
+          }
+          break;
+
         default:
           // unknown tag: keep the wrapper as raw HTML but still convert its children
           txt = renderRawElement(node, tagName);

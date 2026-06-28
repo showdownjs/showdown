@@ -594,6 +594,53 @@ For example, setting this option to `http://mysite.com/{u}/profile`:
 [mentions]: available-options.md#ghmentions
 [ghMentionsLink]: available-options.md#ghmentionslink
 
+## Footnotes
+
+Showdown supports [GFM footnotes](https://github.github.com/gfm/) when the option
+[**`footnotes`**][footnotes] is enabled (it is on in the [`gfm`](flavors.md) flavor). A footnote
+has two parts: a **reference** `[^id]` somewhere in the text, and a **definition** `[^id]: …`
+(usually at the bottom of the document).
+
+```md
+Here is a footnote reference.[^1] And another.[^note]
+
+[^1]: The first footnote.
+[^note]: The second footnote, with *inline* markdown.
+```
+
+References are numbered automatically, in **order of first reference** (not definition order), and
+the definitions are collected into a footnotes section at the end of the document:
+
+```html
+<p>Here is a footnote reference.<sup class="footnote-ref"><a href="#fn-1" id="fnref-1" data-footnote-ref>1</a></sup> And another.<sup class="footnote-ref"><a href="#fn-note" id="fnref-note" data-footnote-ref>2</a></sup></p>
+<section class="footnotes" data-footnotes>
+<ol>
+<li id="fn-1"><p>The first footnote. <a href="#fnref-1" class="footnote-backref" ...>↩</a></p></li>
+<li id="fn-note"><p>The second footnote, with <em>inline</em> markdown. <a href="#fnref-note" class="footnote-backref" ...>↩</a></p></li>
+</ol>
+</section>
+```
+
+A few rules:
+
+* **Multi-paragraph / block definitions** — continuation content is indented by four spaces, so a
+  definition can hold several paragraphs, block quotes or code blocks:
+
+  ```md
+  [^long]: First paragraph.
+
+      Second paragraph, still part of the footnote.
+  ```
+
+* **A footnote can be referenced multiple times** — each reference gets its own back-reference link
+  in the definition.
+* **Labels can be words or numbers** but **may not contain whitespace** (`[^a b]` is left literal),
+  and matching is case-insensitive.
+* **A reference with no matching definition is left literal** (`[^missing]` stays as text), and an
+  **unreferenced definition is dropped**.
+
+[footnotes]: available-options.md#footnotes
+
 ## Handle HTML in markdown documents
 
 Showdown, in most cases, leaves HTML tags untouched in the output document:

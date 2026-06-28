@@ -8,6 +8,7 @@ var bootstrap = require('./makemarkdown.bootstrap.js'),
     ghMentions = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/ghMentions/'),
     emoji = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/emoji/'),
     ellipsis = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/ellipsis/'),
+    footnotes = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/footnotes/'),
     fallback = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/fallback/');
 
 describe('makeMarkdown() features testsuite', function () {
@@ -41,6 +42,13 @@ describe('makeMarkdown() features testsuite', function () {
     var converter = new showdown.Converter({ ellipsis: true });
     for (var i = 0; i < ellipsis.length; ++i) {
       it(ellipsis[i].name.replace(/-/g, ' '), assertion(ellipsis[i], converter));
+    }
+  });
+
+  describe('footnotes', function () {
+    var converter = new showdown.Converter({ footnotes: true });
+    for (var i = 0; i < footnotes.length; ++i) {
+      it(footnotes[i].name.replace(/-/g, ' '), assertion(footnotes[i], converter));
     }
   });
 

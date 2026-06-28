@@ -253,6 +253,53 @@ Enable automatic obfuscation of email addresses. During this process, email addr
     <a href="&#109;&#97;&#105;&#108;t&#x6f;&#x3a;&#109;&#x79;s&#x65;&#x6c;&#102;&#64;&#x65;xa&#109;&#112;&#108;&#101;&#x2e;c&#x6f;&#109;">&#x6d;&#121;s&#101;&#108;f&#x40;&#x65;&#120;a&#x6d;&#x70;&#108;&#x65;&#x2e;&#99;&#x6f;&#109;</a>
     ```
 
+### footnotes
+
+Enable [GFM footnotes](https://github.github.com/gfm/). A `[^id]` reference plus a matching
+`[^id]: …` definition becomes a numbered superscript link, and all referenced footnotes are
+collected into a `<section class="footnotes">` at the end of the document (with back-references).
+A reference with no definition is left literal, and an unreferenced definition is dropped. Labels
+may not contain whitespace and are href-escaped. Enabled by the [`gfm`](flavors.md) flavor.
+
+* type: `boolean`
+* default value: `false`
+* introduced in: `3.0.0`
+
+=== "input"
+
+    ```
+    Here is a footnote reference.[^1]
+
+    [^1]: And the footnote definition.
+    ```
+
+=== "output (value is `false`)"
+
+    ```html
+    <p>Here is a footnote reference.[^1]</p>
+    <p>[^1]: And the footnote definition.</p>
+    ```
+
+=== "output (value is `true`)"
+
+    ```html
+    <p>Here is a footnote reference.<sup class="footnote-ref"><a href="#fn-1" id="fnref-1" data-footnote-ref>1</a></sup></p>
+    <section class="footnotes" data-footnotes>
+    <ol>
+    <li id="fn-1">
+    <p>And the footnote definition. <a href="#fnref-1" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="1" aria-label="Back to reference 1">↩</a></p>
+    </li>
+    </ol>
+    </section>
+    ```
+
+!!! note "Reverse direction"
+
+    When enabled, `makeMarkdown` also reverses this: a `<sup class="footnote-ref">` becomes its
+    `[^id]` reference and the `<section class="footnotes">` becomes the `[^id]: …` definitions
+    (back-references are dropped). See
+    [HTML to Markdown](html-to-markdown.md#feature-options-matching-makehtml).
+
 ### ghCodeBlocks
 
 Enable support for GFM code block style syntax (fenced codeblocks).

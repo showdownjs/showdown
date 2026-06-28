@@ -156,7 +156,9 @@ malformed, or describe behavior that GitHub Flavored Markdown also rejects:
 Showdown ships a **`gfm` flavor** (also reachable under its former name `github`, kept as an alias)
 that targets the [GitHub Flavored Markdown spec](https://github.github.com/gfm/). GFM is defined as
 CommonMark plus a set of extensions, so the flavor builds on [`cmSpec`](#commonmark) and layers the
-GFM extensions (tables, task lists, strikethrough, autolink literals, `@`-mentions, emoji, …) on top.
+GFM extensions (tables, task lists, strikethrough, autolink literals, `@`-mentions, emoji,
+[footnotes](available-options.md#footnotes), …) on top. Footnotes are also reversible via
+`makeMarkdown` (see [HTML to Markdown](html-to-markdown.md#feature-options-matching-makehtml)).
 
 Because the flavor uses the CommonMark base, **every [CommonMark known difference](#known-differences)
 also applies to `gfm`** — empty ATX headings, the dual fenced-code language classes, and the

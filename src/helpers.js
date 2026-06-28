@@ -2925,3 +2925,50 @@ showdown.helper.emojis = {
   'trollface': '<img alt="trollface" width="20" height="20" align="absmiddle" src="https://github.githubassets.com/images/icons/emoji/trollface.png?v8">',
   'showdown': '<img alt="showdown" width="20" height="20" align="absmiddle" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC">'
 };
+
+/**
+ * Reverse lookup tables for emoji, used by the HTML->Markdown converters to turn
+ * showdown-generated emoji back into `:code:` form. Built lazily from showdown.helper.emojis
+ * and cached, since the table is large and never changes at runtime.
+ *
+ * Returns an object with:
+ *  - images:  { <img src> : <code> }  for the "special" image-based emoji
+ *  - unicode: { <unicode value> : <code> } for normal emoji (first code wins on duplicates)
+ *  - regex:   a single global RegExp matching any unicode emoji value, alternatives sorted
+ *             longest-first so multi-codepoint / ZWJ sequences win over their prefixes
+ * @returns {{images: Object, unicode: Object, regex: RegExp}}
+ */
+showdown.helper.emojiReverse = (function () {
+  'use strict';
+  var cache = null;
+  return function () {
+    if (cache) { return cache; }
+    var images = {},
+        unicode = {},
+        values = [];
+    for (var code in showdown.helper.emojis) {
+      if (!showdown.helper.emojis.hasOwnProperty(code)) { continue; }
+      var val = showdown.helper.emojis[code];
+      if (/^\s*<img/.test(val)) {
+        var srcMatch = val.match(/src="([^"]*)"/);
+        if (srcMatch && !images.hasOwnProperty(srcMatch[1])) {
+          images[srcMatch[1]] = code;
+        }
+      } else if (!unicode.hasOwnProperty(val)) {
+        unicode[val] = code;
+        values.push(val);
+      }
+    }
+    // longest first so e.g. `zombie_woman` (🧟‍♀️) matches before `zombie` (🧟)
+    values.sort(function (a, b) { return b.length - a.length; });
+    var escaped = values.map(function (v) {
+      return v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    });
+    cache = {
+      images: images,
+      unicode: unicode,
+      regex: new RegExp('(' + escaped.join('|') + ')', 'g')
+    };
+    return cache;
+  };
+})();

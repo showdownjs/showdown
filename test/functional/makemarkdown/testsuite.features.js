@@ -6,6 +6,8 @@ var bootstrap = require('./makemarkdown.bootstrap.js'),
     assertion = bootstrap.assertion,
     issues = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/issues/'),
     ghMentions = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/ghMentions/'),
+    emoji = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/emoji/'),
+    ellipsis = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/ellipsis/'),
     fallback = bootstrap.getTestSuite('test/functional/makemarkdown/cases/features/fallback/');
 
 describe('makeMarkdown() features testsuite', function () {
@@ -28,11 +30,27 @@ describe('makeMarkdown() features testsuite', function () {
     }
   });
 
+  describe('emoji', function () {
+    var converter = new showdown.Converter({ emoji: true });
+    for (var i = 0; i < emoji.length; ++i) {
+      it(emoji[i].name.replace(/-/g, ' '), assertion(emoji[i], converter));
+    }
+  });
+
+  describe('ellipsis', function () {
+    var converter = new showdown.Converter({ ellipsis: true });
+    for (var i = 0; i < ellipsis.length; ++i) {
+      it(ellipsis[i].name.replace(/-/g, ' '), assertion(ellipsis[i], converter));
+    }
+  });
+
   describe('raw HTML fallback (feature disabled)', function () {
     // every non-standard feature is turned off, so each construct falls back to raw HTML
+    // (or, for emoji/ellipsis, to literal pass-through)
     var converter = new showdown.Converter({
       strikethrough: false, tables: false, tasklists: false,
-      underline: false, parseImgDimensions: false, ghCodeBlocks: false
+      underline: false, parseImgDimensions: false, ghCodeBlocks: false,
+      emoji: false, ellipsis: false
     });
     for (var i = 0; i < fallback.length; ++i) {
       it(fallback[i].name.replace(/-/g, ' '), assertion(fallback[i], converter));

@@ -15,6 +15,18 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
   } else {
     result = (function () {
       let txt = '';
+
+      // reverse the `emoji` option: "special" emoji render as an <img> whose src is known.
+      // Map that back to its :code:. When emoji is off (or the src isn't an emoji) this falls
+      // through to normal image handling, so a disabled feature degrades to plain image markdown.
+      if (options.emoji && node.hasAttribute('src')) {
+        let emojiImages = showdown.helper.emojiReverse().images,
+            src = node.getAttribute('src');
+        if (emojiImages.hasOwnProperty(src)) {
+          return ':' + emojiImages[src] + ':';
+        }
+      }
+
       if (node.hasAttribute('src') && node.getAttribute('src') !== '') {
         let hasDimensions = node.hasAttribute('width') && node.hasAttribute('height');
 

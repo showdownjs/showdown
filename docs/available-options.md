@@ -186,6 +186,11 @@ Replace three consecutive dots (`...`) with the ellipsis unicode character (`…
     <p>Lorem ipsum…</p>
     ```
 
+!!! note "Reverse direction"
+
+    When enabled, `makeMarkdown` also reverses this: `…` in text becomes `...`. See
+    [HTML to Markdown](html-to-markdown.md#feature-options-matching-makehtml).
+
 ### emoji
 
 Enable emoji support. For more info on available emojis, see https://github.com/showdownjs/showdown/wiki/Emojis (since v.1.8.0)
@@ -215,6 +220,12 @@ Enable emoji support. For more info on available emojis, see https://github.com/
 !!! hint "Full list of supported emojies"
 
     Check the [Showdown Wiki](https://github.com/showdownjs/showdown/wiki/Emojis#emoji-list) for a full list of supported emojies.    
+
+!!! note "Reverse direction"
+
+    When enabled, `makeMarkdown` also reverses this: unicode emoji and recognized emoji `<img>`
+    tags become `:code:`. See
+    [HTML to Markdown](html-to-markdown.md#feature-options-matching-makehtml).
 
 ### encodeEmails
 

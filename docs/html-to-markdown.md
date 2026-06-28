@@ -83,10 +83,17 @@ instead the source element is kept as **raw HTML**. These options also respond t
 | Fenced code (`<pre><code>`) | `ghCodeBlocks` | ```` ```lang ```` | `<pre><code>…</code></pre>` |
 | Task lists (`<input type="checkbox">`) | `tasklists` | `[ ]` / `[x]` | `<input …>` |
 | Image dimensions | `parseImgDimensions` | `![alt](<src> =WxH)` | `<img …>` (only if it has width+height) |
+| Emoji (unicode char, or `<img>` for the "special" emoji) | `emoji` | `:code:` | unicode char / `<img>` kept as-is <sup>[2](#fn-emoji)</sup> |
+| Ellipsis (`…` in text) | `ellipsis` | `...` | `…` kept verbatim |
 
 For an inline fallback the wrapper tag is kept but its children are still converted (e.g.
-`<del>**b**</del>` → `<del>**b**</del>`). `ghCodeBlocks` defaults **on**; the other five default
-**off** in the `vanilla` flavor, so by default only those five fall back to raw HTML.
+`<del>**b**</del>` → `<del>**b**</del>`). In the `vanilla` (default) flavor `ghCodeBlocks` and
+`ellipsis` default **on** while the rest default **off**, so by default only the disabled
+constructs fall back.
+
+<sup id="fn-emoji">2</sup> The emoji reverse is symmetric but **opt-in**: with `emoji` enabled,
+*any* matching unicode emoji already present in the source HTML is rewritten to its `:code:`,
+not only ones that showdown itself generated.
 
 ## Unknown tags and wrappers
 
@@ -109,4 +116,8 @@ HTML comments (`<!-- … -->`) are preserved.
 * `<u>` → `__…__` round-trips only with the `underline` option enabled (see the note above).
 * Autolinks: `<a href="u">u</a>` is emitted as `<u>` only when the visible text is identical to
   the `href` and there is no `title`; otherwise the full `[text](<href>)` form is used.
+* Emoji: with `emoji` enabled, unicode emoji and recognized emoji `<img>` tags are turned back
+  into `:code:`. Because the lookup is by character/`src`, a literal emoji the author typed by
+  hand is also converted — this keeps the two directions symmetric but means the option rewrites
+  more than just showdown-generated emoji.
 * Tables, captions, and any HTML feature with no Markdown equivalent are lossy by nature.

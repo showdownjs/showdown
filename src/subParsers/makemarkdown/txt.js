@@ -25,6 +25,23 @@ showdown.subParser('makeMarkdown.txt', function (node, options, globals) {
       // ", <, > and & should replace escaped html entities
       txt = showdown.helper.unescapeHTMLEntities(txt);
 
+      // reverse the `ellipsis` option: … -> ...  (only when the converter would have produced it)
+      if (options.ellipsis) {
+        txt = txt.replace(/…/g, '...');
+      }
+
+      // reverse the `emoji` option: turn unicode emoji back into their `:code:` form.
+      // Done before the magic-char escaping below so an emoji whose value contains a markdown
+      // metachar (e.g. asterisk -> *️⃣) becomes :asterisk: instead of an escaped \*.
+      // Note: like underline, this is symmetric but opt-in - any literal emoji the source HTML
+      // already contained is also rewritten to a code when this option is on.
+      if (options.emoji) {
+        let emojiReverse = showdown.helper.emojiReverse();
+        txt = txt.replace(emojiReverse.regex, function (wholeMatch) {
+          return ':' + emojiReverse.unicode[wholeMatch] + ':';
+        });
+      }
+
       // escape markdown magic characters
       // emphasis, strong and strikethrough - can appear everywhere
       // we also escape pipe (|) because of tables

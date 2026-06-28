@@ -1,1 +1,0 @@
-[W3C](http://www.w3.org/)

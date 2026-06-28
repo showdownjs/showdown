@@ -1,3 +1,0 @@
- * Red
- * Green
- * Blue

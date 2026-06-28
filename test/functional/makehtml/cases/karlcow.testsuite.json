@@ -1,0 +1,1022 @@
+[
+  {
+    "name": "2-paragraphs-hard-return",
+    "markdown": "This is a first paragraph,\non multiple lines.\n\nThis is a second paragraph\nwhich has multiple lines too.\n",
+    "html": "<p>This is a first paragraph,\non multiple lines.</p>\n<p>This is a second paragraph\nwhich has multiple lines too.</p>",
+    "section": "karlcow",
+    "number": 1,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "2-paragraphs-hard-return-spaces",
+    "markdown": "This is a first paragraph,\non multiple lines.\n     \nThis is a second paragraph.\nThere are spaces in between the two.\n",
+    "html": "<p>This is a first paragraph,\non multiple lines.</p>\n<p>This is a second paragraph.\nThere are spaces in between the two.</p>",
+    "section": "karlcow",
+    "number": 2,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "2-paragraphs-line",
+    "markdown": "This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph on 1 line.\n\nA new long long long long long long long long long long long long long long long long paragraph on 1 line.\n",
+    "html": "<p>This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph on 1 line.</p>\n<p>A new long long long long long long long long long long long long long long long long paragraph on 1 line.</p>",
+    "section": "karlcow",
+    "number": 3,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "2-paragraphs-line-returns",
+    "markdown": "A first paragraph.\n\n\n\nA second paragraph after 3 CR (carriage return).\n",
+    "html": "<p>A first paragraph.</p>\n<p>A second paragraph after 3 CR (carriage return).</p>",
+    "section": "karlcow",
+    "number": 4,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "2-paragraphs-line-spaces",
+    "markdown": "This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph on 1 line.\n     \nA few spaces and a new long long long long long long long long long long long long long long long long paragraph on 1 line.\n",
+    "html": "<p>This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph on 1 line.</p>\n<p>A few spaces and a new long long long long long long long long long long long long long long long long paragraph on 1 line.</p>",
+    "section": "karlcow",
+    "number": 5,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "2-paragraphs-line-tab",
+    "markdown": "This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph on 1 line.\n→\n1 tab to separate them and a new long long long long long long long long long long long long long long long long paragraph on 1 line.\n",
+    "html": "<p>This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph on 1 line.</p>\n<p>1 tab to separate them and a new long long long long long long long long long long long long long long long long paragraph on 1 line.</p>",
+    "section": "karlcow",
+    "number": 6,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "ampersand-text-flow",
+    "markdown": "An ampersand & in the text flow is escaped as an html entity.\n",
+    "html": "<p>An ampersand &amp; in the text flow is escaped as an html entity.</p>",
+    "section": "karlcow",
+    "number": 7,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "ampersand-uri",
+    "markdown": "There is an [ampersand](http://validator.w3.org/check?uri=http://www.w3.org/&verbose=1) in the URI.\n",
+    "html": "<p>There is an <a href=\"http://validator.w3.org/check?uri=http://www.w3.org/&verbose=1\">ampersand</a> in the URI.</p>",
+    "section": "karlcow",
+    "number": 8,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "asterisk",
+    "markdown": "This is * an asterisk which should stay as is.\n",
+    "html": "<p>This is * an asterisk which should stay as is.</p>",
+    "section": "karlcow",
+    "number": 9,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "asterisk-near-text",
+    "markdown": "This is \\*an asterisk which should stay as is.\n",
+    "html": "<p>This is *an asterisk which should stay as is.</p>",
+    "section": "karlcow",
+    "number": 10,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "backslash-escape",
+    "markdown": "\\\\   backslash\n\\`   backtick\n\\*   asterisk\n\\_   underscore\n\\{\\}  curly braces\n\\[\\]  square brackets\n\\(\\)  parentheses\n\\#   hash mark\n\\+   plus sign\n\\-   minus sign (hyphen)\n\\.   dot\n\\!   exclamation mark\n",
+    "html": "<p>\\   backslash\n`   backtick\n*   asterisk\n_   underscore\n{}  curly braces\n[]  square brackets\n()  parentheses\n#   hash mark\n+   plus sign\n-   minus sign (hyphen)\n.   dot\n!   exclamation mark</p>",
+    "section": "karlcow",
+    "number": 11,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-added-markup",
+    "markdown": "> # heading level 1\n> \n> paragraph\n",
+    "html": "<blockquote>\n<h1>heading level 1</h1>\n<p>paragraph</p>\n</blockquote>\n",
+    "section": "karlcow",
+    "number": 12,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-line",
+    "markdown": ">This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph in a blockquote.\n",
+    "html": "<blockquote>\n<p>This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph in a blockquote.</p>\n</blockquote>",
+    "section": "karlcow",
+    "number": 13,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-line-2-paragraphs",
+    "markdown": ">A blockquote with a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long line.\n\n>and a second very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long line.\n",
+    "html": "<blockquote>\n<p>A blockquote with a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long line.</p>\n<p>and a second very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long line.</p>\n</blockquote>",
+    "section": "karlcow",
+    "number": 14,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-multiline",
+    "markdown": ">A blockquote\n>on multiple lines\n>like this\n",
+    "html": "<blockquote>\n<p>A blockquote\non multiple lines\nlike this</p>\n</blockquote>",
+    "section": "karlcow",
+    "number": 15,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-multiline-1-space-begin",
+    "markdown": "> A blockquote\n> on multiple lines\n> like this.\n",
+    "html": "<blockquote>\n<p>A blockquote\non multiple lines\nlike this.</p>\n</blockquote>",
+    "section": "karlcow",
+    "number": 16,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-multiline-1-space-end",
+    "markdown": ">A blockquote \n>on multiple lines \n>like this. \n",
+    "html": "<blockquote>\n<p>A blockquote \non multiple lines \nlike this. </p>\n</blockquote>",
+    "section": "karlcow",
+    "number": 17,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-multiline-2-paragraphs",
+    "markdown": ">A blockquote\n>on multiple lines\n>like this.\n>\n>But it has\n>two paragraphs.\n",
+    "html": "<blockquote>\n<p>A blockquote\non multiple lines\nlike this.</p>\n<p>But it has\ntwo paragraphs.</p>\n</blockquote>",
+    "section": "karlcow",
+    "number": 18,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-nested",
+    "markdown": "> This is the first level of quoting.\n> > This is nested blockquote.\n",
+    "html": "<blockquote>\n<p>This is the first level of quoting.</p>\n<blockquote>\n<p>This is nested blockquote.</p>\n</blockquote>\n</blockquote>",
+    "section": "karlcow",
+    "number": 19,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-nested-multiplereturn",
+    "markdown": "> This is the first level of quoting.\n>\n> > This is nested blockquote.\n",
+    "html": "<blockquote>\n<p>This is the first level of quoting.</p>\n<blockquote>\n<p>This is nested blockquote.</p>\n</blockquote>\n</blockquote>",
+    "section": "karlcow",
+    "number": 20,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-nested-multiplereturn-level1",
+    "markdown": "> This is the first level of quoting.\n>\n> > This is nested blockquote.\n>\n> Back to the first level.\n",
+    "html": "<blockquote>\n<p>This is the first level of quoting.</p>\n<blockquote>\n<p>This is nested blockquote.</p>\n</blockquote>\n<p>Back to the first level.</p>\n</blockquote>",
+    "section": "karlcow",
+    "number": 21,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "blockquote-nested-return-level1",
+    "markdown": "> This is the first level of quoting.\n> > This is nested blockquote.\n> Back to the first level.\n",
+    "html": "<blockquote>\n<p>This is the first level of quoting.</p>\n<blockquote>\n<p>This is nested blockquote.\nBack to the first level.</p>\n</blockquote>\n</blockquote>",
+    "section": "karlcow",
+    "number": 22,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "code-1-tab",
+    "markdown": "→10 PRINT HELLO INFINITE\n→20 GOTO 10\n",
+    "html": "<pre><code>10 PRINT HELLO INFINITE\n20 GOTO 10\n</code></pre>",
+    "section": "karlcow",
+    "number": 23,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "code-4-spaces",
+    "markdown": "    10 PRINT HELLO INFINITE\n    20 GOTO 10\n",
+    "html": "<pre><code>10 PRINT HELLO INFINITE\n20 GOTO 10\n</code></pre>",
+    "section": "karlcow",
+    "number": 24,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "code-4-spaces-escaping",
+    "markdown": "    10 PRINT < > &\n    20 GOTO 10\n",
+    "html": "<pre><code>10 PRINT &lt; &gt; &amp;\n20 GOTO 10\n</code></pre>",
+    "section": "karlcow",
+    "number": 25,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "em-middle-word",
+    "markdown": "as*te*risks\n",
+    "html": "<p>as<em>te</em>risks</p>",
+    "section": "karlcow",
+    "number": 26,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "em-star",
+    "markdown": "*single asterisks*\n",
+    "html": "<p><em>single asterisks</em></p>",
+    "section": "karlcow",
+    "number": 27,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "em-underscore",
+    "markdown": "_single underscores_\n",
+    "html": "<p><em>single underscores</em></p>",
+    "section": "karlcow",
+    "number": 28,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "entities-text-flow",
+    "markdown": "HTML entities are written using ampersand notation: &copy;\n",
+    "html": "<p>HTML entities are written using ampersand notation: &copy;</p>",
+    "section": "karlcow",
+    "number": 29,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "EOL-CR",
+    "markdown": "These lines all end with end of line (EOL) sequences.\r\rSeriously, they really do.\r\rIf you don't believe me: HEX EDIT!\r\r",
+    "html": "<p>These lines all end with end of line (EOL) sequences.</p>\r<p>Seriously, they really do.</p>\r<p>If you don't believe me: HEX EDIT!</p>",
+    "section": "karlcow",
+    "number": 30,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "EOL-CR+LF",
+    "markdown": "These lines all end with end of line (EOL) sequences.\n\nSeriously, they really do.\n\nIf you don't believe me: HEX EDIT!\n\n",
+    "html": "<p>These lines all end with end of line (EOL) sequences.</p>\n<p>Seriously, they really do.</p>\n<p>If you don't believe me: HEX EDIT!</p>",
+    "section": "karlcow",
+    "number": 31,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "EOL-LF",
+    "markdown": "These lines all end with end of line (EOL) sequences.\n\nSeriously, they really do.\n\nIf you don't believe me: HEX EDIT!\n\n",
+    "html": "<p>These lines all end with end of line (EOL) sequences.</p>\n<p>Seriously, they really do.</p>\n<p>If you don't believe me: HEX EDIT!</p>",
+    "section": "karlcow",
+    "number": 32,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level1-equal-underlined",
+    "markdown": "This is an H1\n=============\n",
+    "html": "<h1>This is an H1</h1>",
+    "section": "karlcow",
+    "number": 33,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level1-hash-sign",
+    "markdown": "# This is an H1\n",
+    "html": "<h1>This is an H1</h1>",
+    "section": "karlcow",
+    "number": 34,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level1-hash-sign-closed",
+    "markdown": "# This is an H1 #\n",
+    "html": "<h1>This is an H1</h1>",
+    "section": "karlcow",
+    "number": 35,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level1-hash-sign-trailing-1-space",
+    "markdown": " # This is an H1\n ",
+    "html": "<h1>This is an H1</h1>",
+    "section": "karlcow",
+    "number": 36,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level1-hash-sign-trailing-2-spaces",
+    "markdown": "# this is an h1 with two trailing spaces  \nA new paragraph.\n",
+    "html": "<h1>this is an h1 with two trailing spaces</h1>\n<p>A new paragraph.</p>",
+    "section": "karlcow",
+    "number": 37,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level2-dash-underlined",
+    "markdown": "This is an H2\n-------------\n",
+    "html": "<h2>This is an H2</h2>",
+    "section": "karlcow",
+    "number": 38,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level2-hash-sign",
+    "markdown": "## This is an H2\n",
+    "html": "<h2>This is an H2</h2>",
+    "section": "karlcow",
+    "number": 39,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level2-hash-sign-closed",
+    "markdown": "## This is an H2 ##\n",
+    "html": "<h2>This is an H2</h2>",
+    "section": "karlcow",
+    "number": 40,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level3-hash-sign",
+    "markdown": "### This is an H3\n",
+    "html": "<h3>This is an H3</h3>",
+    "section": "karlcow",
+    "number": 41,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level3-hash-sign-closed",
+    "markdown": "### This is an H3 ###\n",
+    "html": "<h3>This is an H3</h3>",
+    "section": "karlcow",
+    "number": 42,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level4-hash-sign",
+    "markdown": "#### This is an H4\n",
+    "html": "<h4>This is an H4</h4>",
+    "section": "karlcow",
+    "number": 43,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level4-hash-sign-closed",
+    "markdown": "#### This is an H4 ####\n",
+    "html": "<h4>This is an H4</h4>",
+    "section": "karlcow",
+    "number": 44,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level5-hash-sign",
+    "markdown": "##### This is an H5\n",
+    "html": "<h5>This is an H5</h5>",
+    "section": "karlcow",
+    "number": 45,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level5-hash-sign-closed",
+    "markdown": "##### This is an H5 #####\n",
+    "html": "<h5>This is an H5</h5>",
+    "section": "karlcow",
+    "number": 46,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level6-hash-sign",
+    "markdown": "###### This is an H6\n",
+    "html": "<h6>This is an H6</h6>",
+    "section": "karlcow",
+    "number": 47,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "header-level6-hash-sign-closed",
+    "markdown": "###### This is an H6  ######\n",
+    "html": "<h6>This is an H6</h6>",
+    "section": "karlcow",
+    "number": 48,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "horizontal-rule-3-dashes",
+    "markdown": "---\n",
+    "html": "<hr />",
+    "section": "karlcow",
+    "number": 49,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "horizontal-rule-3-dashes-spaces",
+    "markdown": "- - -\n",
+    "html": "<hr />",
+    "section": "karlcow",
+    "number": 50,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "horizontal-rule-3-stars",
+    "markdown": "***\n",
+    "html": "<hr />",
+    "section": "karlcow",
+    "number": 51,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "horizontal-rule-3-underscores",
+    "markdown": "___\n",
+    "html": "<hr />",
+    "section": "karlcow",
+    "number": 52,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "horizontal-rule-7-dashes",
+    "markdown": "-------\n",
+    "html": "<hr />",
+    "section": "karlcow",
+    "number": 53,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "img",
+    "markdown": "![HTML5](http://www.w3.org/html/logo/img/mark-word-icon.png)\n",
+    "html": "<p><img src=\"http://www.w3.org/html/logo/img/mark-word-icon.png\" alt=\"HTML5\" /></p>",
+    "section": "karlcow",
+    "number": 54,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "img-idref",
+    "markdown": "![HTML5][h5]\n\n[h5]: http://www.w3.org/html/logo/img/mark-word-icon.png\n",
+    "html": "<p><img src=\"http://www.w3.org/html/logo/img/mark-word-icon.png\" alt=\"HTML5\" /></p>",
+    "section": "karlcow",
+    "number": 55,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "img-idref-title",
+    "markdown": "![HTML5][h5]\n\n[h5]: http://www.w3.org/html/logo/img/mark-word-icon.png \"HTML5 for everyone\"\n",
+    "html": "<p><img src=\"http://www.w3.org/html/logo/img/mark-word-icon.png\" alt=\"HTML5\" title=\"HTML5 for everyone\" /></p>",
+    "section": "karlcow",
+    "number": 56,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "img-title",
+    "markdown": "![HTML5](http://www.w3.org/html/logo/img/mark-word-icon.png \"HTML5 logo for everyone\")\n",
+    "html": "<p><img src=\"http://www.w3.org/html/logo/img/mark-word-icon.png\" alt=\"HTML5\" title=\"HTML5 logo for everyone\" /></p>",
+    "section": "karlcow",
+    "number": 57,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "inline-code",
+    "markdown": "``We love `code` for everything``\n",
+    "html": "<p><code>We love `code` for everything</code></p>",
+    "section": "karlcow",
+    "number": 58,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "inline-code-escaping-entities",
+    "markdown": "We love `<code> and &` for everything\n",
+    "html": "<p>We love <code>&lt;code&gt; and &amp;</code> for everything</p>",
+    "section": "karlcow",
+    "number": 59,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "inline-code-with-visible-backtick",
+    "markdown": "``We love `code` for everything``\n",
+    "html": "<p><code>We love `code` for everything</code></p>",
+    "section": "karlcow",
+    "number": 60,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "line-break-2-spaces",
+    "markdown": "A first sentence  \nand a line break.\n",
+    "html": "<p>A first sentence<br />\nand a line break.</p>\n",
+    "section": "karlcow",
+    "number": 61,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "line-break-5-spaces",
+    "markdown": "A first sentence     \nand a line break.\n",
+    "html": "<p>A first sentence<br />\nand a line break.</p>\n",
+    "section": "karlcow",
+    "number": 62,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-automatic",
+    "markdown": "This is an automatic link <http://www.w3.org/>\n",
+    "html": "<p>This is an automatic link <a href=\"http://www.w3.org/\">http://www.w3.org/</a></p>",
+    "section": "karlcow",
+    "number": 63,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-bracket-paranthesis",
+    "markdown": "[W3C](http://www.w3.org/)\n",
+    "html": "<p><a href=\"http://www.w3.org/\">W3C</a></p>",
+    "section": "karlcow",
+    "number": 64,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-bracket-paranthesis-title",
+    "markdown": "[W3C](http://www.w3.org/ \"Discover w3c\")\n",
+    "html": "<p><a href=\"http://www.w3.org/\" title=\"Discover w3c\">W3C</a></p>",
+    "section": "karlcow",
+    "number": 65,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-idref",
+    "markdown": "[World Wide Web Consortium][w3c]\n\n[w3c]: http://www.w3.org/\n",
+    "html": "<p><a href=\"http://www.w3.org/\">World Wide Web Consortium</a></p>",
+    "section": "karlcow",
+    "number": 66,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-idref-angle-bracket",
+    "markdown": "[World Wide Web Consortium][w3c]\n\n[w3c]: <http://www.w3.org/>\n",
+    "html": "<p><a href=\"http://www.w3.org/\">World Wide Web Consortium</a></p>",
+    "section": "karlcow",
+    "number": 67,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-idref-implicit",
+    "markdown": "[w3c][]\n\n[w3c]: http://www.w3.org/\n",
+    "html": "<p><a href=\"http://www.w3.org/\">w3c</a></p>",
+    "section": "karlcow",
+    "number": 68,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-idref-implicit-spaces",
+    "markdown": "[World Wide Web Consortium][]\n\n[World Wide Web Consortium]: http://www.w3.org/\n",
+    "html": "<p><a href=\"http://www.w3.org/\">World Wide Web Consortium</a></p>",
+    "section": "karlcow",
+    "number": 69,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-idref-space",
+    "markdown": "[World Wide Web Consortium] [w3c]\n\n[w3c]: http://www.w3.org/\n",
+    "html": "<p><a href=\"http://www.w3.org/\">World Wide Web Consortium</a></p>",
+    "section": "karlcow",
+    "number": 70,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-idref-title",
+    "markdown": "[World Wide Web Consortium][w3c]\n\n[w3c]: http://www.w3.org/ \"Discover w3c\"\n",
+    "html": "<p><a href=\"http://www.w3.org/\" title=\"Discover w3c\">World Wide Web Consortium</a></p>",
+    "section": "karlcow",
+    "number": 71,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-idref-title-next-line",
+    "markdown": "[World Wide Web Consortium][w3c]\n\n[w3c]: http://www.w3.org/\n   \"Discover W3C\"\n",
+    "html": "<p><a href=\"http://www.w3.org/\" title=\"Discover W3C\">World Wide Web Consortium</a></p>",
+    "section": "karlcow",
+    "number": 72,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-idref-title-paranthesis",
+    "markdown": "[World Wide Web Consortium][w3c]\n\n[w3c]: http://www.w3.org/ (Discover w3c)\n",
+    "html": "<p><a href=\"http://www.w3.org/\" title=\"Discover w3c\">World Wide Web Consortium</a></p>",
+    "section": "karlcow",
+    "number": 73,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "link-idref-title-single-quote",
+    "markdown": "[World Wide Web Consortium][w3c]\n\n[w3c]: http://www.w3.org/ 'Discover w3c'\n",
+    "html": "<p><a href=\"http://www.w3.org/\" title=\"Discover w3c\">World Wide Web Consortium</a></p>",
+    "section": "karlcow",
+    "number": 74,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "list-blockquote",
+    "markdown": "*   a list containing a blockquote\n\n    > this the blockquote in the list\n",
+    "html": "<ul>\n<li><p>a list containing a blockquote</p>\n<blockquote>\n<p>this the blockquote in the list</p>\n</blockquote></li>\n</ul>\n",
+    "section": "karlcow",
+    "number": 75,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "list-code",
+    "markdown": "*   a list containing a block of code\n\n→    10 PRINT HELLO INFINITE\n→    20 GOTO 10\n",
+    "html": "<ul>\n    <li><p>a list containing a block of code</p>\n        <pre><code>10 PRINT HELLO INFINITE\n20 GOTO 10\n</code></pre></li>\n</ul>",
+    "section": "karlcow",
+    "number": 76,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "list-multiparagraphs",
+    "markdown": "*   This is a list item with two paragraphs. Lorem ipsum dolor\n    sit amet, consectetuer adipiscing elit. Aliquam hendrerit\n    mi posuere lectus.\n\n    Vestibulum enim wisi, viverra nec, fringilla in, laoreet\n    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum\n    sit amet velit.\n\n*   Suspendisse id sem consectetuer libero luctus adipiscing.\n",
+    "html": "<ul>\n<li><p>This is a list item with two paragraphs. Lorem ipsum dolor\nsit amet, consectetuer adipiscing elit. Aliquam hendrerit\nmi posuere lectus.</p>\n<p>Vestibulum enim wisi, viverra nec, fringilla in, laoreet\nvitae, risus. Donec sit amet nisl. Aliquam semper ipsum\nsit amet velit.</p></li>\n<li><p>Suspendisse id sem consectetuer libero luctus adipiscing.</p></li>\n</ul>",
+    "section": "karlcow",
+    "number": 77,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "list-multiparagraphs-tab",
+    "markdown": "*   This is a list item with two paragraphs. Lorem ipsum dolor\n→sit amet, consectetuer adipiscing elit. Aliquam hendrerit\n→mi posuere lectus.\n\n→Vestibulum enim wisi, viverra nec, fringilla in, laoreet\n→vitae, risus. Donec sit amet nisl. Aliquam semper ipsum\n→sit amet velit.\n\n*   Suspendisse id sem consectetuer libero luctus adipiscing.\n",
+    "html": "<ul>\n<li><p>This is a list item with two paragraphs. Lorem ipsum dolor\nsit amet, consectetuer adipiscing elit. Aliquam hendrerit\nmi posuere lectus.</p>\n<p>Vestibulum enim wisi, viverra nec, fringilla in, laoreet\nvitae, risus. Donec sit amet nisl. Aliquam semper ipsum\nsit amet velit.</p></li>\n<li><p>Suspendisse id sem consectetuer libero luctus adipiscing.</p></li>\n</ul>",
+    "section": "karlcow",
+    "number": 78,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "ordered-list-escaped",
+    "markdown": "1\\. ordered list escape\n",
+    "html": "<p>1. ordered list escape</p>",
+    "section": "karlcow",
+    "number": 79,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "ordered-list-inner-par-list",
+    "markdown": "1. 1\n\n    - inner par list\n\n2. 2\n",
+    "html": "<ol>\n  <li><p>1</p>\n    <ul>\n      <li>inner par list</li></ul></li>\n  <li><p>2</p></li>\n</ol>\n",
+    "section": "karlcow",
+    "number": 80,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "ordered-list-items",
+    "markdown": "1. list item 1\n2. list item 2\n3. list item 3\n",
+    "html": "<ol>\n    <li>list item 1</li>\n    <li>list item 2</li>\n    <li>list item 3</li>\n</ol>",
+    "section": "karlcow",
+    "number": 81,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "ordered-list-items-random-number",
+    "markdown": "1. list item 1\n8. list item 2\n1. list item 3\n",
+    "html": "<ol>\n    <li>list item 1</li>\n    <li>list item 2</li>\n    <li>list item 3</li>\n</ol>",
+    "section": "karlcow",
+    "number": 82,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "paragraph-hard-return",
+    "markdown": "This is a paragraph\non multiple lines\nwith hard return.\n",
+    "html": "<p>This is a paragraph\non multiple lines\nwith hard return.</p>",
+    "section": "karlcow",
+    "number": 83,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "paragraph-line",
+    "markdown": "This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph on 1 line.\n",
+    "html": "<p>This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph on 1 line.</p>",
+    "section": "karlcow",
+    "number": 84,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "paragraph-trailing-leading-spaces",
+    "markdown": " This is a paragraph with a trailing and leading space. \n",
+    "html": "<p>This is a paragraph with a trailing and leading space. </p>",
+    "section": "karlcow",
+    "number": 85,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "paragraph-trailing-tab",
+    "markdown": "This is a paragraph with 1 trailing tab.→\n",
+    "html": "<p>This is a paragraph with 1 trailing tab.→</p>",
+    "section": "karlcow",
+    "number": 86,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "paragraphs-2-leading-spaces",
+    "markdown": "  This is a paragraph with 2 leading spaces.\n",
+    "html": "<p>This is a paragraph with 2 leading spaces.</p>",
+    "section": "karlcow",
+    "number": 87,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "paragraphs-3-leading-spaces",
+    "markdown": "   This is a paragraph with 3 leading spaces.\n",
+    "html": "<p>This is a paragraph with 3 leading spaces.</p>",
+    "section": "karlcow",
+    "number": 88,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "paragraphs-leading-space",
+    "markdown": " This is a paragraph with 1 leading space.\n",
+    "html": "<p>This is a paragraph with 1 leading space.</p>",
+    "section": "karlcow",
+    "number": 89,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "paragraphs-trailing-spaces",
+    "markdown": "This is a paragraph with a trailing space. ",
+    "html": "<p>This is a paragraph with a trailing space. </p>",
+    "section": "karlcow",
+    "number": 90,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "strong-middle-word",
+    "markdown": "as**te**risks\n",
+    "html": "<p>as<strong>te</strong>risks</p>",
+    "section": "karlcow",
+    "number": 91,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "strong-star",
+    "markdown": "**double asterisks**\n",
+    "html": "<p><strong>double asterisks</strong></p>",
+    "section": "karlcow",
+    "number": 92,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "strong-underscore",
+    "markdown": "__double underscores__\n",
+    "html": "<p><strong>double underscores</strong></p>",
+    "section": "karlcow",
+    "number": 93,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "unordered-list-items-asterisk",
+    "markdown": "* list item 1\n* list item 2\n* list item 3\n",
+    "html": "<ul>\n    <li>list item 1</li>\n    <li>list item 2</li>\n    <li>list item 3</li>\n</ul>\n",
+    "section": "karlcow",
+    "number": 94,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "unordered-list-items-dashsign",
+    "markdown": "- list item 1\n- list item 2\n- list item 3\n",
+    "html": "<ul>\n    <li>list item 1</li>\n    <li>list item 2</li>\n    <li>list item 3</li>\n</ul>",
+    "section": "karlcow",
+    "number": 95,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "unordered-list-items-leading-1space",
+    "markdown": " * list item 1\n * list item 2\n * list item 3\n",
+    "html": "<ul>\n    <li>list item 1</li>\n    <li>list item 2</li>\n    <li>list item 3</li>\n</ul>\n",
+    "section": "karlcow",
+    "number": 96,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "unordered-list-items-leading-2spaces",
+    "markdown": "  * list item 1\n  * list item 2\n  * list item 3\n",
+    "html": "<ul>\n    <li>list item 1</li>\n    <li>list item 2</li>\n    <li>list item 3</li>\n</ul>",
+    "section": "karlcow",
+    "number": 97,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "unordered-list-items-leading-3spaces",
+    "markdown": "   * list item 1\n   * list item 2\n   * list item 3\n",
+    "html": "<ul>\n    <li>list item 1</li>\n    <li>list item 2</li>\n    <li>list item 3</li>\n</ul>",
+    "section": "karlcow",
+    "number": 98,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "unordered-list-items-plussign",
+    "markdown": "+ list item 1\n+ list item 2\n+ list item 3\n",
+    "html": "<ul>\n    <li>list item 1</li>\n    <li>list item 2</li>\n    <li>list item 3</li>\n</ul>",
+    "section": "karlcow",
+    "number": 99,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "unordered-list-paragraphs",
+    "markdown": "* list item in paragraph\n\n* another list item in paragraph\n",
+    "html": "<ul>\n<li><p>list item in paragraph</p></li>\n<li><p>another list item in paragraph</p></li>\n</ul>",
+    "section": "karlcow",
+    "number": 100,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "unordered-list-unindented-content",
+    "markdown": "*   This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph in a list.\n*   and yet another long long long long long long long long long long long long long long long long long long long long long long line.\n",
+    "html": "<ul>\n<li>This a very long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long long paragraph in a list.</li>\n<li>and yet another long long long long long long long long long long long long long long long long long long long long long long line.</li>\n</ul>",
+    "section": "karlcow",
+    "number": 101,
+    "options": {
+      "noHeaderId": true
+    }
+  },
+  {
+    "name": "unordered-list-with-indented-content",
+    "markdown": "*   This is a list item\n    with the content on\n    multiline and indented.\n*   And this another list item\n    with the same principle.\n",
+    "html": "<ul>\n<li>This is a list item\nwith the content on\nmultiline and indented.</li>\n<li>And this another list item\nwith the same principle.</li>\n</ul>",
+    "section": "karlcow",
+    "number": 102,
+    "options": {
+      "noHeaderId": true
+    }
+  }
+]

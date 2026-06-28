@@ -53,7 +53,9 @@
     let tcObj = {};
     for (let i = 0; i < jsonArray.length; ++i) {
       let section = jsonArray[i].section;
-      let name = jsonArray[i].section + '_' + (jsonArray[i].example || jsonArray[i].number);
+      let number = jsonArray[i].number;
+      // prefer an explicit name (feature suites), fall back to section_number (spec suites)
+      let name = jsonArray[i].name || (jsonArray[i].section + '_' + (jsonArray[i].example || jsonArray[i].number));
       let md = jsonArray[i].markdown;
       // transformations
       md = md.replace(/→/g, '\t'); // replace → with tabs
@@ -67,8 +69,10 @@
       }
       tcObj[section].push({
         name: name,
+        number: number,
         input: md,
         expected: html,
+        options: jsonArray[i].options || {},
         file: process.cwd().replace(/\\/g, '/') + file
       });
     }

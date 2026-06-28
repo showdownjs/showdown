@@ -1,4402 +1,5028 @@
 [
   {
+    "name": "leading-tab-forms-code-block",
     "markdown": "→foo→baz→→bim\n",
     "html": "<pre><code>foo→baz→→bim\n</code></pre>\n",
     "section": "Tabs",
     "number": 1
   },
   {
+    "name": "spaces-then-tab-form-code-block",
     "markdown": "  →foo→baz→→bim\n",
     "html": "<pre><code>foo→baz→→bim\n</code></pre>\n",
     "section": "Tabs",
     "number": 2
   },
   {
+    "name": "code-block-preserves-internal-tabs",
     "markdown": "    a→a\n    ὐ→a\n",
     "html": "<pre><code>a→a\nὐ→a\n</code></pre>\n",
     "section": "Tabs",
     "number": 3
   },
   {
+    "name": "tab-continues-list-item-paragraph",
     "markdown": "  - foo\n\n→bar\n",
     "html": "<ul>\n<li>\n<p>foo</p>\n<p>bar</p>\n</li>\n</ul>\n",
     "section": "Tabs",
     "number": 4
   },
   {
+    "name": "two-tabs-form-code-block-in-list",
     "markdown": "- foo\n\n→→bar\n",
     "html": "<ul>\n<li>\n<p>foo</p>\n<pre><code>  bar\n</code></pre>\n</li>\n</ul>\n",
     "section": "Tabs",
     "number": 5
   },
   {
+    "name": "tab-after-blockquote-marker-code-block",
     "markdown": ">→→foo\n",
     "html": "<blockquote>\n<pre><code>  foo\n</code></pre>\n</blockquote>\n",
     "section": "Tabs",
     "number": 6
   },
   {
+    "name": "tab-after-list-marker-code-block",
     "markdown": "-→→foo\n",
     "html": "<ul>\n<li>\n<pre><code>  foo\n</code></pre>\n</li>\n</ul>\n",
     "section": "Tabs",
     "number": 7
   },
   {
+    "name": "tab-continues-indented-code-block",
     "markdown": "    foo\n→bar\n",
     "html": "<pre><code>foo\nbar\n</code></pre>\n",
     "section": "Tabs",
     "number": 8
   },
   {
+    "name": "tab-indents-nested-list-item",
     "markdown": " - foo\n   - bar\n→ - baz\n",
     "html": "<ul>\n<li>foo\n<ul>\n<li>bar\n<ul>\n<li>baz</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n",
     "section": "Tabs",
     "number": 9
   },
   {
+    "name": "tab-after-atx-heading-marker",
     "markdown": "#→Foo\n",
     "html": "<h1>Foo</h1>\n",
     "section": "Tabs",
     "number": 10
   },
   {
+    "name": "tabs-between-thematic-break-markers",
     "markdown": "*→*→*→\n",
     "html": "<hr />\n",
     "section": "Tabs",
     "number": 11
   },
   {
+    "name": "escapes-all-ascii-punctuation",
     "markdown": "\\!\\\"\\#\\$\\%\\&\\'\\(\\)\\*\\+\\,\\-\\.\\/\\:\\;\\<\\=\\>\\?\\@\\[\\\\\\]\\^\\_\\`\\{\\|\\}\\~\n",
     "html": "<p>!&quot;#$%&amp;'()*+,-./:;&lt;=&gt;?@[\\]^_`{|}~</p>\n",
     "section": "Backslash escapes",
     "number": 12
   },
   {
+    "name": "backslash-before-non-punctuation-stays-literal",
     "markdown": "\\→\\A\\a\\ \\3\\φ\\«\n",
     "html": "<p>\\→\\A\\a\\ \\3\\φ\\«</p>\n",
     "section": "Backslash escapes",
     "number": 13
   },
   {
+    "name": "escapes-disable-markdown-constructs",
     "markdown": "\\*not emphasized*\n\\<br/> not a tag\n\\[not a link](/foo)\n\\`not code`\n1\\. not a list\n\\* not a list\n\\# not a heading\n\\[foo]: /url \"not a reference\"\n\\&ouml; not a character entity\n",
     "html": "<p>*not emphasized*\n&lt;br/&gt; not a tag\n[not a link](/foo)\n`not code`\n1. not a list\n* not a list\n# not a heading\n[foo]: /url &quot;not a reference&quot;\n&amp;ouml; not a character entity</p>\n",
     "section": "Backslash escapes",
     "number": 14
   },
   {
+    "name": "escaped-backslash-then-emphasis-works",
     "markdown": "\\\\*emphasis*\n",
     "html": "<p>\\<em>emphasis</em></p>\n",
     "section": "Backslash escapes",
     "number": 15
   },
   {
+    "name": "backslash-before-newline-is-hard-break",
     "markdown": "foo\\\nbar\n",
     "html": "<p>foo<br />\nbar</p>\n",
     "section": "Backslash escapes",
     "number": 16
   },
   {
+    "name": "backslash-not-escaped-in-code-span",
     "markdown": "`` \\[\\` ``\n",
     "html": "<p><code>\\[\\`</code></p>\n",
     "section": "Backslash escapes",
     "number": 17
   },
   {
+    "name": "backslash-not-escaped-in-indented-code",
     "markdown": "    \\[\\]\n",
     "html": "<pre><code>\\[\\]\n</code></pre>\n",
     "section": "Backslash escapes",
     "number": 18
   },
   {
+    "name": "backslash-not-escaped-in-fenced-code",
     "markdown": "~~~\n\\[\\]\n~~~\n",
     "html": "<pre><code>\\[\\]\n</code></pre>\n",
     "section": "Backslash escapes",
     "number": 19
   },
   {
+    "name": "backslash-not-escaped-in-autolink",
     "markdown": "<https://example.com?find=\\*>\n",
     "html": "<p><a href=\"https://example.com?find=%5C*\">https://example.com?find=\\*</a></p>\n",
     "section": "Backslash escapes",
     "number": 20
   },
   {
+    "name": "backslash-not-escaped-in-raw-html",
     "markdown": "<a href=\"/bar\\/)\">\n",
     "html": "<a href=\"/bar\\/)\">\n",
     "section": "Backslash escapes",
     "number": 21
   },
   {
+    "name": "escapes-in-link-destination-and-title",
     "markdown": "[foo](/bar\\* \"ti\\*tle\")\n",
     "html": "<p><a href=\"/bar*\" title=\"ti*tle\">foo</a></p>\n",
     "section": "Backslash escapes",
     "number": 22
   },
   {
+    "name": "escapes-in-link-reference-definition",
     "markdown": "[foo]\n\n[foo]: /bar\\* \"ti\\*tle\"\n",
     "html": "<p><a href=\"/bar*\" title=\"ti*tle\">foo</a></p>\n",
     "section": "Backslash escapes",
     "number": 23
   },
   {
+    "name": "escapes-in-code-fence-info-string",
     "markdown": "``` foo\\+bar\nfoo\n```\n",
     "html": "<pre><code class=\"language-foo+bar\">foo\n</code></pre>\n",
     "section": "Backslash escapes",
     "number": 24
   },
   {
+    "name": "named-entity-references-decoded",
     "markdown": "&nbsp; &amp; &copy; &AElig; &Dcaron;\n&frac34; &HilbertSpace; &DifferentialD;\n&ClockwiseContourIntegral; &ngE;\n",
     "html": "<p>  &amp; © Æ Ď\n¾ ℋ ⅆ\n∲ ≧̸</p>\n",
     "section": "Entity and numeric character references",
     "number": 25
   },
   {
+    "name": "decimal-numeric-references-decoded",
     "markdown": "&#35; &#1234; &#992; &#0;\n",
     "html": "<p># Ӓ Ϡ �</p>\n",
     "section": "Entity and numeric character references",
     "number": 26
   },
   {
+    "name": "hexadecimal-numeric-references-decoded",
     "markdown": "&#X22; &#XD06; &#xcab;\n",
     "html": "<p>&quot; ആ ಫ</p>\n",
     "section": "Entity and numeric character references",
     "number": 27
   },
   {
+    "name": "invalid-references-left-literal",
     "markdown": "&nbsp &x; &#; &#x;\n&#87654321;\n&#abcdef0;\n&ThisIsNotDefined; &hi?;\n",
     "html": "<p>&amp;nbsp &amp;x; &amp;#; &amp;#x;\n&amp;#87654321;\n&amp;#abcdef0;\n&amp;ThisIsNotDefined; &amp;hi?;</p>\n",
     "section": "Entity and numeric character references",
     "number": 28
   },
   {
+    "name": "named-entity-without-semicolon-literal",
     "markdown": "&copy\n",
     "html": "<p>&amp;copy</p>\n",
     "section": "Entity and numeric character references",
     "number": 29
   },
   {
+    "name": "nonexistent-named-entity-literal",
     "markdown": "&MadeUpEntity;\n",
     "html": "<p>&amp;MadeUpEntity;</p>\n",
     "section": "Entity and numeric character references",
     "number": 30
   },
   {
+    "name": "entities-preserved-in-raw-html-attribute",
     "markdown": "<a href=\"&ouml;&ouml;.html\">\n",
     "html": "<a href=\"&ouml;&ouml;.html\">\n",
     "section": "Entity and numeric character references",
     "number": 31
   },
   {
+    "name": "entities-in-link-destination-and-title",
     "markdown": "[foo](/f&ouml;&ouml; \"f&ouml;&ouml;\")\n",
     "html": "<p><a href=\"/f%C3%B6%C3%B6\" title=\"föö\">foo</a></p>\n",
     "section": "Entity and numeric character references",
     "number": 32
   },
   {
+    "name": "entities-in-link-reference-definition",
     "markdown": "[foo]\n\n[foo]: /f&ouml;&ouml; \"f&ouml;&ouml;\"\n",
     "html": "<p><a href=\"/f%C3%B6%C3%B6\" title=\"föö\">foo</a></p>\n",
     "section": "Entity and numeric character references",
     "number": 33
   },
   {
+    "name": "entities-in-code-fence-info-string",
     "markdown": "``` f&ouml;&ouml;\nfoo\n```\n",
     "html": "<pre><code class=\"language-föö\">foo\n</code></pre>\n",
     "section": "Entity and numeric character references",
     "number": 34
   },
   {
+    "name": "entities-not-decoded-in-code-span",
     "markdown": "`f&ouml;&ouml;`\n",
     "html": "<p><code>f&amp;ouml;&amp;ouml;</code></p>\n",
     "section": "Entity and numeric character references",
     "number": 35
   },
   {
+    "name": "entities-not-decoded-in-indented-code",
     "markdown": "    f&ouml;f&ouml;\n",
     "html": "<pre><code>f&amp;ouml;f&amp;ouml;\n</code></pre>\n",
     "section": "Entity and numeric character references",
     "number": 36
   },
   {
+    "name": "numeric-reference-not-emphasis-delimiter",
     "markdown": "&#42;foo&#42;\n*foo*\n",
     "html": "<p>*foo*\n<em>foo</em></p>\n",
     "section": "Entity and numeric character references",
     "number": 37
   },
   {
+    "name": "numeric-reference-not-list-marker",
     "markdown": "&#42; foo\n\n* foo\n",
     "html": "<p>* foo</p>\n<ul>\n<li>foo</li>\n</ul>\n",
     "section": "Entity and numeric character references",
     "number": 38
   },
   {
+    "name": "newline-numeric-reference-in-paragraph",
     "markdown": "foo&#10;&#10;bar\n",
     "html": "<p>foo\n\nbar</p>\n",
     "section": "Entity and numeric character references",
     "number": 39
   },
   {
+    "name": "tab-numeric-reference-in-paragraph",
     "markdown": "&#9;foo\n",
     "html": "<p>→foo</p>\n",
     "section": "Entity and numeric character references",
     "number": 40
   },
   {
+    "name": "quot-entity-not-link-title-delimiter",
     "markdown": "[a](url &quot;tit&quot;)\n",
     "html": "<p>[a](url &quot;tit&quot;)</p>\n",
     "section": "Entity and numeric character references",
     "number": 41
   },
   {
+    "name": "list-structure-over-inline-code-span",
     "markdown": "- `one\n- two`\n",
     "html": "<ul>\n<li>`one</li>\n<li>two`</li>\n</ul>\n",
     "section": "Precedence",
     "number": 42
   },
   {
+    "name": "asterisks-dashes-underscores-all-work",
     "markdown": "***\n---\n___\n",
     "html": "<hr />\n<hr />\n<hr />\n",
     "section": "Thematic breaks",
     "number": 43
   },
   {
+    "name": "plus-signs-not-thematic-break",
     "markdown": "+++\n",
     "html": "<p>+++</p>\n",
     "section": "Thematic breaks",
     "number": 44
   },
   {
+    "name": "equals-signs-not-thematic-break",
     "markdown": "===\n",
     "html": "<p>===</p>\n",
     "section": "Thematic breaks",
     "number": 45
   },
   {
+    "name": "fewer-than-three-characters-fails",
     "markdown": "--\n**\n__\n",
     "html": "<p>--\n**\n__</p>\n",
     "section": "Thematic breaks",
     "number": 46
   },
   {
+    "name": "up-to-three-spaces-indentation-allowed",
     "markdown": " ***\n  ***\n   ***\n",
     "html": "<hr />\n<hr />\n<hr />\n",
     "section": "Thematic breaks",
     "number": 47
   },
   {
+    "name": "four-spaces-becomes-code-block",
     "markdown": "    ***\n",
     "html": "<pre><code>***\n</code></pre>\n",
     "section": "Thematic breaks",
     "number": 48
   },
   {
+    "name": "indented-after-paragraph-not-break",
     "markdown": "Foo\n    ***\n",
     "html": "<p>Foo\n***</p>\n",
     "section": "Thematic breaks",
     "number": 49
   },
   {
+    "name": "long-run-of-underscores",
     "markdown": "_____________________________________\n",
     "html": "<hr />\n",
     "section": "Thematic breaks",
     "number": 50
   },
   {
+    "name": "spaces-between-dash-characters",
     "markdown": " - - -\n",
     "html": "<hr />\n",
     "section": "Thematic breaks",
     "number": 51
   },
   {
+    "name": "spaces-between-asterisk-characters",
     "markdown": " **  * ** * ** * **\n",
     "html": "<hr />\n",
     "section": "Thematic breaks",
     "number": 52
   },
   {
+    "name": "multiple-spaces-between-dashes",
     "markdown": "-     -      -      -\n",
     "html": "<hr />\n",
     "section": "Thematic breaks",
     "number": 53
   },
   {
+    "name": "trailing-spaces-allowed",
     "markdown": "- - - -    \n",
     "html": "<hr />\n",
     "section": "Thematic breaks",
     "number": 54
   },
   {
+    "name": "other-characters-not-allowed",
     "markdown": "_ _ _ _ a\n\na------\n\n---a---\n",
     "html": "<p>_ _ _ _ a</p>\n<p>a------</p>\n<p>---a---</p>\n",
     "section": "Thematic breaks",
     "number": 55
   },
   {
+    "name": "single-dash-emphasis-not-break",
     "markdown": " *-*\n",
     "html": "<p><em>-</em></p>\n",
     "section": "Thematic breaks",
     "number": 56
   },
   {
+    "name": "separates-two-lists",
     "markdown": "- foo\n***\n- bar\n",
     "html": "<ul>\n<li>foo</li>\n</ul>\n<hr />\n<ul>\n<li>bar</li>\n</ul>\n",
     "section": "Thematic breaks",
     "number": 57
   },
   {
+    "name": "interrupts-paragraph",
     "markdown": "Foo\n***\nbar\n",
     "html": "<p>Foo</p>\n<hr />\n<p>bar</p>\n",
     "section": "Thematic breaks",
     "number": 58
   },
   {
+    "name": "dashes-prefer-setext-heading",
     "markdown": "Foo\n---\nbar\n",
     "html": "<h2>Foo</h2>\n<p>bar</p>\n",
     "section": "Thematic breaks",
     "number": 59
   },
   {
+    "name": "asterisk-break-separates-lists",
     "markdown": "* Foo\n* * *\n* Bar\n",
     "html": "<ul>\n<li>Foo</li>\n</ul>\n<hr />\n<ul>\n<li>Bar</li>\n</ul>\n",
     "section": "Thematic breaks",
     "number": 60
   },
   {
+    "name": "break-as-nested-list-item",
     "markdown": "- Foo\n- * * *\n",
     "html": "<ul>\n<li>Foo</li>\n<li>\n<hr />\n</li>\n</ul>\n",
     "section": "Thematic breaks",
     "number": 61
   },
   {
+    "name": "levels-one-through-six",
     "markdown": "# foo\n## foo\n### foo\n#### foo\n##### foo\n###### foo\n",
     "html": "<h1>foo</h1>\n<h2>foo</h2>\n<h3>foo</h3>\n<h4>foo</h4>\n<h5>foo</h5>\n<h6>foo</h6>\n",
     "section": "ATX headings",
     "number": 62
   },
   {
+    "name": "more-than-six-hashes-not-heading",
     "markdown": "####### foo\n",
     "html": "<p>####### foo</p>\n",
     "section": "ATX headings",
     "number": 63
   },
   {
+    "name": "space-required-after-hashes",
     "markdown": "#5 bolt\n\n#hashtag\n",
     "html": "<p>#5 bolt</p>\n<p>#hashtag</p>\n",
     "section": "ATX headings",
     "number": 64
   },
   {
+    "name": "escaped-leading-hash-not-heading",
     "markdown": "\\## foo\n",
     "html": "<p>## foo</p>\n",
     "section": "ATX headings",
     "number": 65
   },
   {
+    "name": "inline-content-and-escapes-parsed",
     "markdown": "# foo *bar* \\*baz\\*\n",
     "html": "<h1>foo <em>bar</em> *baz*</h1>\n",
     "section": "ATX headings",
     "number": 66
   },
   {
+    "name": "leading-trailing-spaces-stripped",
     "markdown": "#                  foo                     \n",
     "html": "<h1>foo</h1>\n",
     "section": "ATX headings",
     "number": 67
   },
   {
+    "name": "up-to-three-spaces-indentation-allowed",
     "markdown": " ### foo\n  ## foo\n   # foo\n",
     "html": "<h3>foo</h3>\n<h2>foo</h2>\n<h1>foo</h1>\n",
     "section": "ATX headings",
     "number": 68
   },
   {
+    "name": "four-spaces-becomes-code-block",
     "markdown": "    # foo\n",
     "html": "<pre><code># foo\n</code></pre>\n",
     "section": "ATX headings",
     "number": 69
   },
   {
+    "name": "indented-after-paragraph-not-heading",
     "markdown": "foo\n    # bar\n",
     "html": "<p>foo\n# bar</p>\n",
     "section": "ATX headings",
     "number": 70
   },
   {
+    "name": "closing-sequence-removed",
     "markdown": "## foo ##\n  ###   bar    ###\n",
     "html": "<h2>foo</h2>\n<h3>bar</h3>\n",
     "section": "ATX headings",
     "number": 71
   },
   {
+    "name": "closing-sequence-any-length",
     "markdown": "# foo ##################################\n##### foo ##\n",
     "html": "<h1>foo</h1>\n<h5>foo</h5>\n",
     "section": "ATX headings",
     "number": 72
   },
   {
+    "name": "spaces-after-closing-sequence",
     "markdown": "### foo ###     \n",
     "html": "<h3>foo</h3>\n",
     "section": "ATX headings",
     "number": 73
   },
   {
+    "name": "hashes-not-at-end-kept",
     "markdown": "### foo ### b\n",
     "html": "<h3>foo ### b</h3>\n",
     "section": "ATX headings",
     "number": 74
   },
   {
+    "name": "trailing-hash-without-space-kept",
     "markdown": "# foo#\n",
     "html": "<h1>foo#</h1>\n",
     "section": "ATX headings",
     "number": 75
   },
   {
+    "name": "escaped-closing-hashes-kept",
     "markdown": "### foo \\###\n## foo #\\##\n# foo \\#\n",
     "html": "<h3>foo ###</h3>\n<h2>foo ###</h2>\n<h1>foo #</h1>\n",
     "section": "ATX headings",
     "number": 76
   },
   {
+    "name": "between-thematic-breaks-no-blank-lines",
     "markdown": "****\n## foo\n****\n",
     "html": "<hr />\n<h2>foo</h2>\n<hr />\n",
     "section": "ATX headings",
     "number": 77
   },
   {
+    "name": "interrupts-paragraph",
     "markdown": "Foo bar\n# baz\nBar foo\n",
     "html": "<p>Foo bar</p>\n<h1>baz</h1>\n<p>Bar foo</p>\n",
     "section": "ATX headings",
     "number": 78
   },
   {
+    "name": "empty-headings-allowed",
     "markdown": "## \n#\n### ###\n",
     "html": "<h2></h2>\n<h1></h1>\n<h3></h3>\n",
     "section": "ATX headings",
     "number": 79
   },
   {
+    "name": "h1-and-h2-with-inline-content",
     "markdown": "Foo *bar*\n=========\n\nFoo *bar*\n---------\n",
     "html": "<h1>Foo <em>bar</em></h1>\n<h2>Foo <em>bar</em></h2>\n",
     "section": "Setext headings",
     "number": 80
   },
   {
+    "name": "multiline-content",
     "markdown": "Foo *bar\nbaz*\n====\n",
     "html": "<h1>Foo <em>bar\nbaz</em></h1>\n",
     "section": "Setext headings",
     "number": 81
   },
   {
+    "name": "content-with-surrounding-whitespace",
     "markdown": "  Foo *bar\nbaz*→\n====\n",
     "html": "<h1>Foo <em>bar\nbaz</em></h1>\n",
     "section": "Setext headings",
     "number": 82
   },
   {
+    "name": "underline-any-length",
     "markdown": "Foo\n-------------------------\n\nFoo\n=\n",
     "html": "<h2>Foo</h2>\n<h1>Foo</h1>\n",
     "section": "Setext headings",
     "number": 83
   },
   {
+    "name": "content-and-underline-indented",
     "markdown": "   Foo\n---\n\n  Foo\n-----\n\n  Foo\n  ===\n",
     "html": "<h2>Foo</h2>\n<h2>Foo</h2>\n<h1>Foo</h1>\n",
     "section": "Setext headings",
     "number": 84
   },
   {
+    "name": "four-spaces-becomes-code-block",
     "markdown": "    Foo\n    ---\n\n    Foo\n---\n",
     "html": "<pre><code>Foo\n---\n\nFoo\n</code></pre>\n<hr />\n",
     "section": "Setext headings",
     "number": 85
   },
   {
+    "name": "underline-indented-with-trailing-spaces",
     "markdown": "Foo\n   ----      \n",
     "html": "<h2>Foo</h2>\n",
     "section": "Setext headings",
     "number": 86
   },
   {
+    "name": "underline-four-spaces-indent-not-heading",
     "markdown": "Foo\n    ---\n",
     "html": "<p>Foo\n---</p>\n",
     "section": "Setext headings",
     "number": 87
   },
   {
+    "name": "underline-no-internal-spaces",
     "markdown": "Foo\n= =\n\nFoo\n--- -\n",
     "html": "<p>Foo\n= =</p>\n<p>Foo</p>\n<hr />\n",
     "section": "Setext headings",
     "number": 88
   },
   {
+    "name": "trailing-content-spaces-no-line-break",
     "markdown": "Foo  \n-----\n",
     "html": "<h2>Foo</h2>\n",
     "section": "Setext headings",
     "number": 89
   },
   {
+    "name": "backslash-at-content-end",
     "markdown": "Foo\\\n----\n",
     "html": "<h2>Foo\\</h2>\n",
     "section": "Setext headings",
     "number": 90
   },
   {
+    "name": "no-code-span-or-html-interpretation",
     "markdown": "`Foo\n----\n`\n\n<a title=\"a lot\n---\nof dashes\"/>\n",
     "html": "<h2>`Foo</h2>\n<p>`</p>\n<h2>&lt;a title=&quot;a lot</h2>\n<p>of dashes&quot;/&gt;</p>\n",
     "section": "Setext headings",
     "number": 91
   },
   {
+    "name": "dashes-after-blockquote-are-break",
     "markdown": "> Foo\n---\n",
     "html": "<blockquote>\n<p>Foo</p>\n</blockquote>\n<hr />\n",
     "section": "Setext headings",
     "number": 92
   },
   {
+    "name": "no-setext-in-lazy-blockquote",
     "markdown": "> foo\nbar\n===\n",
     "html": "<blockquote>\n<p>foo\nbar\n===</p>\n</blockquote>\n",
     "section": "Setext headings",
     "number": 93
   },
   {
+    "name": "dashes-after-list-item-are-break",
     "markdown": "- Foo\n---\n",
     "html": "<ul>\n<li>Foo</li>\n</ul>\n<hr />\n",
     "section": "Setext headings",
     "number": 94
   },
   {
+    "name": "multiple-content-lines",
     "markdown": "Foo\nBar\n---\n",
     "html": "<h2>Foo\nBar</h2>\n",
     "section": "Setext headings",
     "number": 95
   },
   {
+    "name": "dashes-as-break-or-underline-mixed",
     "markdown": "---\nFoo\n---\nBar\n---\nBaz\n",
     "html": "<hr />\n<h2>Foo</h2>\n<h2>Bar</h2>\n<p>Baz</p>\n",
     "section": "Setext headings",
     "number": 96
   },
   {
+    "name": "underline-without-content-above",
     "markdown": "\n====\n",
     "html": "<p>====</p>\n",
     "section": "Setext headings",
     "number": 97
   },
   {
+    "name": "two-dash-lines-are-breaks",
     "markdown": "---\n---\n",
     "html": "<hr />\n<hr />\n",
     "section": "Setext headings",
     "number": 98
   },
   {
+    "name": "longer-dashes-after-list-are-break",
     "markdown": "- foo\n-----\n",
     "html": "<ul>\n<li>foo</li>\n</ul>\n<hr />\n",
     "section": "Setext headings",
     "number": 99
   },
   {
+    "name": "dashes-after-indented-code-are-break",
     "markdown": "    foo\n---\n",
     "html": "<pre><code>foo\n</code></pre>\n<hr />\n",
     "section": "Setext headings",
     "number": 100
   },
   {
+    "name": "dashes-after-blockquote-are-break-longer",
     "markdown": "> foo\n-----\n",
     "html": "<blockquote>\n<p>foo</p>\n</blockquote>\n<hr />\n",
     "section": "Setext headings",
     "number": 101
   },
   {
+    "name": "escaped-blockquote-marker-then-heading",
     "markdown": "\\> foo\n------\n",
     "html": "<h2>&gt; foo</h2>\n",
     "section": "Setext headings",
     "number": 102
   },
   {
+    "name": "underline-needs-adjacent-paragraph",
     "markdown": "Foo\n\nbar\n---\nbaz\n",
     "html": "<p>Foo</p>\n<h2>bar</h2>\n<p>baz</p>\n",
     "section": "Setext headings",
     "number": 103
   },
   {
+    "name": "blank-lines-make-thematic-break",
     "markdown": "Foo\nbar\n\n---\n\nbaz\n",
     "html": "<p>Foo\nbar</p>\n<hr />\n<p>baz</p>\n",
     "section": "Setext headings",
     "number": 104
   },
   {
+    "name": "asterisk-break-not-underline",
     "markdown": "Foo\nbar\n* * *\nbaz\n",
     "html": "<p>Foo\nbar</p>\n<hr />\n<p>baz</p>\n",
     "section": "Setext headings",
     "number": 105
   },
   {
+    "name": "escaped-dashes-not-underline",
     "markdown": "Foo\nbar\n\\---\nbaz\n",
     "html": "<p>Foo\nbar\n---\nbaz</p>\n",
     "section": "Setext headings",
     "number": 106
   },
   {
+    "name": "four-space-indent-preserves-extra-spaces",
     "markdown": "    a simple\n      indented code block\n",
     "html": "<pre><code>a simple\n  indented code block\n</code></pre>\n",
     "section": "Indented code blocks",
     "number": 107
   },
   {
+    "name": "indented-content-in-list-is-paragraph",
     "markdown": "  - foo\n\n    bar\n",
     "html": "<ul>\n<li>\n<p>foo</p>\n<p>bar</p>\n</li>\n</ul>\n",
     "section": "Indented code blocks",
     "number": 108
   },
   {
+    "name": "indented-sublist-not-code-block",
     "markdown": "1.  foo\n\n    - bar\n",
     "html": "<ol>\n<li>\n<p>foo</p>\n<ul>\n<li>bar</li>\n</ul>\n</li>\n</ol>\n",
     "section": "Indented code blocks",
     "number": 109
   },
   {
+    "name": "preserves-literal-markup-and-list",
     "markdown": "    <a/>\n    *hi*\n\n    - one\n",
     "html": "<pre><code>&lt;a/&gt;\n*hi*\n\n- one\n</code></pre>\n",
     "section": "Indented code blocks",
     "number": 110
   },
   {
+    "name": "blank-lines-join-separate-chunks",
     "markdown": "    chunk1\n\n    chunk2\n  \n \n \n    chunk3\n",
     "html": "<pre><code>chunk1\n\nchunk2\n\n\n\nchunk3\n</code></pre>\n",
     "section": "Indented code blocks",
     "number": 111
   },
   {
+    "name": "internal-blank-lines-keep-spaces",
     "markdown": "    chunk1\n      \n      chunk2\n",
     "html": "<pre><code>chunk1\n  \n  chunk2\n</code></pre>\n",
     "section": "Indented code blocks",
     "number": 112
   },
   {
+    "name": "indent-cannot-interrupt-paragraph",
     "markdown": "Foo\n    bar\n\n",
     "html": "<p>Foo\nbar</p>\n",
     "section": "Indented code blocks",
     "number": 113
   },
   {
+    "name": "code-block-then-lazy-paragraph",
     "markdown": "    foo\nbar\n",
     "html": "<pre><code>foo\n</code></pre>\n<p>bar</p>\n",
     "section": "Indented code blocks",
     "number": 114
   },
   {
+    "name": "between-headings-and-thematic-break",
     "markdown": "# Heading\n    foo\nHeading\n------\n    foo\n----\n",
     "html": "<h1>Heading</h1>\n<pre><code>foo\n</code></pre>\n<h2>Heading</h2>\n<pre><code>foo\n</code></pre>\n<hr />\n",
     "section": "Indented code blocks",
     "number": 115
   },
   {
+    "name": "eight-spaces-keeps-four-leading",
     "markdown": "        foo\n    bar\n",
     "html": "<pre><code>    foo\nbar\n</code></pre>\n",
     "section": "Indented code blocks",
     "number": 116
   },
   {
+    "name": "leading-trailing-blank-lines-trimmed",
     "markdown": "\n    \n    foo\n    \n\n",
     "html": "<pre><code>foo\n</code></pre>\n",
     "section": "Indented code blocks",
     "number": 117
   },
   {
+    "name": "trailing-spaces-preserved",
     "markdown": "    foo  \n",
     "html": "<pre><code>foo  \n</code></pre>\n",
     "section": "Indented code blocks",
     "number": 118
   },
   {
+    "name": "backtick-fence-escapes-html",
     "markdown": "```\n<\n >\n```\n",
     "html": "<pre><code>&lt;\n &gt;\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 119
   },
   {
+    "name": "tilde-fence-escapes-html",
     "markdown": "~~~\n<\n >\n~~~\n",
     "html": "<pre><code>&lt;\n &gt;\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 120
   },
   {
+    "name": "two-backticks-is-code-span",
     "markdown": "``\nfoo\n``\n",
     "html": "<p><code>foo</code></p>\n",
     "section": "Fenced code blocks",
     "number": 121
   },
   {
+    "name": "tildes-inside-backtick-fence",
     "markdown": "```\naaa\n~~~\n```\n",
     "html": "<pre><code>aaa\n~~~\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 122
   },
   {
+    "name": "backticks-inside-tilde-fence",
     "markdown": "~~~\naaa\n```\n~~~\n",
     "html": "<pre><code>aaa\n```\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 123
   },
   {
+    "name": "longer-closing-backtick-fence",
     "markdown": "````\naaa\n```\n``````\n",
     "html": "<pre><code>aaa\n```\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 124
   },
   {
+    "name": "longer-closing-tilde-fence",
     "markdown": "~~~~\naaa\n~~~\n~~~~\n",
     "html": "<pre><code>aaa\n~~~\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 125
   },
   {
+    "name": "unclosed-fence-empty-content",
     "markdown": "```\n",
     "html": "<pre><code></code></pre>\n",
     "section": "Fenced code blocks",
     "number": 126
   },
   {
+    "name": "unclosed-fence-with-shorter-inner-fence",
     "markdown": "`````\n\n```\naaa\n",
     "html": "<pre><code>\n```\naaa\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 127
   },
   {
+    "name": "fence-in-blockquote-ends-at-blank",
     "markdown": "> ```\n> aaa\n\nbbb\n",
     "html": "<blockquote>\n<pre><code>aaa\n</code></pre>\n</blockquote>\n<p>bbb</p>\n",
     "section": "Fenced code blocks",
     "number": 128
   },
   {
+    "name": "fence-with-blank-content-lines",
     "markdown": "```\n\n  \n```\n",
     "html": "<pre><code>\n  \n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 129
   },
   {
+    "name": "empty-fenced-block",
     "markdown": "```\n```\n",
     "html": "<pre><code></code></pre>\n",
     "section": "Fenced code blocks",
     "number": 130
   },
   {
+    "name": "one-space-indent-stripped",
     "markdown": " ```\n aaa\naaa\n```\n",
     "html": "<pre><code>aaa\naaa\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 131
   },
   {
+    "name": "two-space-indent-removed-from-content",
     "markdown": "  ```\naaa\n  aaa\naaa\n  ```\n",
     "html": "<pre><code>aaa\naaa\naaa\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 132
   },
   {
+    "name": "three-space-indent-relative-stripped",
     "markdown": "   ```\n   aaa\n    aaa\n  aaa\n   ```\n",
     "html": "<pre><code>aaa\n aaa\naaa\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 133
   },
   {
+    "name": "four-spaces-becomes-indented-code",
     "markdown": "    ```\n    aaa\n    ```\n",
     "html": "<pre><code>```\naaa\n```\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 134
   },
   {
+    "name": "closing-fence-indented-two-spaces",
     "markdown": "```\naaa\n  ```\n",
     "html": "<pre><code>aaa\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 135
   },
   {
+    "name": "open-and-close-fence-both-indented",
     "markdown": "   ```\naaa\n  ```\n",
     "html": "<pre><code>aaa\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 136
   },
   {
+    "name": "closing-fence-four-spaces-not-closing",
     "markdown": "```\naaa\n    ```\n",
     "html": "<pre><code>aaa\n    ```\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 137
   },
   {
+    "name": "backtick-info-cannot-contain-backtick",
     "markdown": "``` ```\naaa\n",
     "html": "<p><code> </code>\naaa</p>\n",
     "section": "Fenced code blocks",
     "number": 138
   },
   {
+    "name": "tilde-close-with-trailing-text-invalid",
     "markdown": "~~~~~~\naaa\n~~~ ~~\n",
     "html": "<pre><code>aaa\n~~~ ~~\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 139
   },
   {
+    "name": "fence-interrupts-paragraph",
     "markdown": "foo\n```\nbar\n```\nbaz\n",
     "html": "<p>foo</p>\n<pre><code>bar\n</code></pre>\n<p>baz</p>\n",
     "section": "Fenced code blocks",
     "number": 140
   },
   {
+    "name": "fence-between-setext-and-atx-headings",
     "markdown": "foo\n---\n~~~\nbar\n~~~\n# baz\n",
     "html": "<h2>foo</h2>\n<pre><code>bar\n</code></pre>\n<h1>baz</h1>\n",
     "section": "Fenced code blocks",
     "number": 141
   },
   {
+    "name": "info-string-sets-language-class",
     "markdown": "```ruby\ndef foo(x)\n  return 3\nend\n```\n",
     "html": "<pre><code class=\"language-ruby\">def foo(x)\n  return 3\nend\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 142
   },
   {
+    "name": "info-string-only-first-word-used",
     "markdown": "~~~~    ruby startline=3 $%@#$\ndef foo(x)\n  return 3\nend\n~~~~~~~\n",
     "html": "<pre><code class=\"language-ruby\">def foo(x)\n  return 3\nend\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 143
   },
   {
+    "name": "info-string-semicolon-only",
     "markdown": "````;\n````\n",
     "html": "<pre><code class=\"language-;\"></code></pre>\n",
     "section": "Fenced code blocks",
     "number": 144
   },
   {
+    "name": "single-line-backticks-is-code-span",
     "markdown": "``` aa ```\nfoo\n",
     "html": "<p><code>aa</code>\nfoo</p>\n",
     "section": "Fenced code blocks",
     "number": 145
   },
   {
+    "name": "tilde-info-can-contain-backticks",
     "markdown": "~~~ aa ``` ~~~\nfoo\n~~~\n",
     "html": "<pre><code class=\"language-aa\">foo\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 146
   },
   {
+    "name": "closing-fence-cannot-have-info-string",
     "markdown": "```\n``` aaa\n```\n",
     "html": "<pre><code>``` aaa\n</code></pre>\n",
     "section": "Fenced code blocks",
     "number": 147
   },
   {
+    "name": "pre-tag-block-with-blank-line-paragraph",
     "markdown": "<table><tr><td>\n<pre>\n**Hello**,\n\n_world_.\n</pre>\n</td></tr></table>\n",
     "html": "<table><tr><td>\n<pre>\n**Hello**,\n<p><em>world</em>.\n</pre></p>\n</td></tr></table>\n",
     "section": "HTML blocks",
     "number": 148
   },
   {
+    "name": "table-block-followed-by-paragraph",
     "markdown": "<table>\n  <tr>\n    <td>\n           hi\n    </td>\n  </tr>\n</table>\n\nokay.\n",
     "html": "<table>\n  <tr>\n    <td>\n           hi\n    </td>\n  </tr>\n</table>\n<p>okay.</p>\n",
     "section": "HTML blocks",
     "number": 149
   },
   {
+    "name": "indented-div-block-content-not-parsed",
     "markdown": " <div>\n  *hello*\n         <foo><a>\n",
     "html": " <div>\n  *hello*\n         <foo><a>\n",
     "section": "HTML blocks",
     "number": 150
   },
   {
+    "name": "closing-div-tag-starts-block",
     "markdown": "</div>\n*foo*\n",
     "html": "</div>\n*foo*\n",
     "section": "HTML blocks",
     "number": 151
   },
   {
+    "name": "uppercase-div-with-markdown-between-blanks",
     "markdown": "<DIV CLASS=\"foo\">\n\n*Markdown*\n\n</DIV>\n",
     "html": "<DIV CLASS=\"foo\">\n<p><em>Markdown</em></p>\n</DIV>\n",
     "section": "HTML blocks",
     "number": 152
   },
   {
+    "name": "div-open-tag-spanning-multiple-lines",
     "markdown": "<div id=\"foo\"\n  class=\"bar\">\n</div>\n",
     "html": "<div id=\"foo\"\n  class=\"bar\">\n</div>\n",
     "section": "HTML blocks",
     "number": 153
   },
   {
+    "name": "div-attribute-value-across-lines",
     "markdown": "<div id=\"foo\" class=\"bar\n  baz\">\n</div>\n",
     "html": "<div id=\"foo\" class=\"bar\n  baz\">\n</div>\n",
     "section": "HTML blocks",
     "number": 154
   },
   {
+    "name": "div-block-ended-by-blank-line",
     "markdown": "<div>\n*foo*\n\n*bar*\n",
     "html": "<div>\n*foo*\n<p><em>bar</em></p>\n",
     "section": "HTML blocks",
     "number": 155
   },
   {
+    "name": "incomplete-div-open-tag-continues-block",
     "markdown": "<div id=\"foo\"\n*hi*\n",
     "html": "<div id=\"foo\"\n*hi*\n",
     "section": "HTML blocks",
     "number": 156
   },
   {
+    "name": "div-with-valueless-attribute-name",
     "markdown": "<div class\nfoo\n",
     "html": "<div class\nfoo\n",
     "section": "HTML blocks",
     "number": 157
   },
   {
+    "name": "div-with-invalid-attribute-characters",
     "markdown": "<div *???-&&&-<---\n*foo*\n",
     "html": "<div *???-&&&-<---\n*foo*\n",
     "section": "HTML blocks",
     "number": 158
   },
   {
+    "name": "complete-div-on-one-line-preserved",
     "markdown": "<div><a href=\"bar\">*foo*</a></div>\n",
     "html": "<div><a href=\"bar\">*foo*</a></div>\n",
     "section": "HTML blocks",
     "number": 159
   },
   {
+    "name": "table-block-inner-text-preserved",
     "markdown": "<table><tr><td>\nfoo\n</td></tr></table>\n",
     "html": "<table><tr><td>\nfoo\n</td></tr></table>\n",
     "section": "HTML blocks",
     "number": 160
   },
   {
+    "name": "div-followed-by-code-fence-not-parsed",
     "markdown": "<div></div>\n``` c\nint x = 33;\n```\n",
     "html": "<div></div>\n``` c\nint x = 33;\n```\n",
     "section": "HTML blocks",
     "number": 161
   },
   {
+    "name": "anchor-tag-block-content-preserved",
     "markdown": "<a href=\"foo\">\n*bar*\n</a>\n",
     "html": "<a href=\"foo\">\n*bar*\n</a>\n",
     "section": "HTML blocks",
     "number": 162
   },
   {
+    "name": "custom-tag-block-content-preserved",
     "markdown": "<Warning>\n*bar*\n</Warning>\n",
     "html": "<Warning>\n*bar*\n</Warning>\n",
     "section": "HTML blocks",
     "number": 163
   },
   {
+    "name": "inline-tag-with-attribute-block",
     "markdown": "<i class=\"foo\">\n*bar*\n</i>\n",
     "html": "<i class=\"foo\">\n*bar*\n</i>\n",
     "section": "HTML blocks",
     "number": 164
   },
   {
+    "name": "closing-ins-tag-starts-block",
     "markdown": "</ins>\n*bar*\n",
     "html": "</ins>\n*bar*\n",
     "section": "HTML blocks",
     "number": 165
   },
   {
+    "name": "del-block-without-blank-lines-preserved",
     "markdown": "<del>\n*foo*\n</del>\n",
     "html": "<del>\n*foo*\n</del>\n",
     "section": "HTML blocks",
     "number": 166
   },
   {
+    "name": "del-block-with-blank-lines-parses-markdown",
     "markdown": "<del>\n\n*foo*\n\n</del>\n",
     "html": "<del>\n<p><em>foo</em></p>\n</del>\n",
     "section": "HTML blocks",
     "number": 167
   },
   {
+    "name": "del-inline-on-one-line-becomes-paragraph",
     "markdown": "<del>*foo*</del>\n",
     "html": "<p><del><em>foo</em></del></p>\n",
     "section": "HTML blocks",
     "number": 168
   },
   {
+    "name": "pre-code-block-preserved-then-paragraph",
     "markdown": "<pre language=\"haskell\"><code>\nimport Text.HTML.TagSoup\n\nmain :: IO ()\nmain = print $ parseTags tags\n</code></pre>\nokay\n",
     "html": "<pre language=\"haskell\"><code>\nimport Text.HTML.TagSoup\n\nmain :: IO ()\nmain = print $ parseTags tags\n</code></pre>\n<p>okay</p>\n",
     "section": "HTML blocks",
     "number": 169
   },
   {
+    "name": "script-block-preserved-then-paragraph",
     "markdown": "<script type=\"text/javascript\">\n// JavaScript example\n\ndocument.getElementById(\"demo\").innerHTML = \"Hello JavaScript!\";\n</script>\nokay\n",
     "html": "<script type=\"text/javascript\">\n// JavaScript example\n\ndocument.getElementById(\"demo\").innerHTML = \"Hello JavaScript!\";\n</script>\n<p>okay</p>\n",
     "section": "HTML blocks",
     "number": 170
   },
   {
+    "name": "textarea-block-content-preserved",
     "markdown": "<textarea>\n\n*foo*\n\n_bar_\n\n</textarea>\n",
     "html": "<textarea>\n\n*foo*\n\n_bar_\n\n</textarea>\n",
     "section": "HTML blocks",
     "number": 171
   },
   {
+    "name": "style-block-preserved-then-paragraph",
     "markdown": "<style\n  type=\"text/css\">\nh1 {color:red;}\n\np {color:blue;}\n</style>\nokay\n",
     "html": "<style\n  type=\"text/css\">\nh1 {color:red;}\n\np {color:blue;}\n</style>\n<p>okay</p>\n",
     "section": "HTML blocks",
     "number": 172
   },
   {
+    "name": "unclosed-style-block-runs-to-eof",
     "markdown": "<style\n  type=\"text/css\">\n\nfoo\n",
     "html": "<style\n  type=\"text/css\">\n\nfoo\n",
     "section": "HTML blocks",
     "number": 173
   },
   {
+    "name": "html-block-inside-blockquote",
     "markdown": "> <div>\n> foo\n\nbar\n",
     "html": "<blockquote>\n<div>\nfoo\n</blockquote>\n<p>bar</p>\n",
     "section": "HTML blocks",
     "number": 174
   },
   {
+    "name": "html-block-inside-list-item",
     "markdown": "- <div>\n- foo\n",
     "html": "<ul>\n<li>\n<div>\n</li>\n<li>foo</li>\n</ul>\n",
     "section": "HTML blocks",
     "number": 175
   },
   {
+    "name": "single-line-style-then-markdown",
     "markdown": "<style>p{color:red;}</style>\n*foo*\n",
     "html": "<style>p{color:red;}</style>\n<p><em>foo</em></p>\n",
     "section": "HTML blocks",
     "number": 176
   },
   {
+    "name": "comment-block-with-trailing-text-same-line",
     "markdown": "<!-- foo -->*bar*\n*baz*\n",
     "html": "<!-- foo -->*bar*\n<p><em>baz</em></p>\n",
     "section": "HTML blocks",
     "number": 177
   },
   {
+    "name": "script-block-trailing-text-preserved",
     "markdown": "<script>\nfoo\n</script>1. *bar*\n",
     "html": "<script>\nfoo\n</script>1. *bar*\n",
     "section": "HTML blocks",
     "number": 178
   },
   {
+    "name": "multiline-comment-block-then-paragraph",
     "markdown": "<!-- Foo\n\nbar\n   baz -->\nokay\n",
     "html": "<!-- Foo\n\nbar\n   baz -->\n<p>okay</p>\n",
     "section": "HTML blocks",
     "number": 179
   },
   {
+    "name": "processing-instruction-block",
     "markdown": "<?php\n\n  echo '>';\n\n?>\nokay\n",
     "html": "<?php\n\n  echo '>';\n\n?>\n<p>okay</p>\n",
     "section": "HTML blocks",
     "number": 180
   },
   {
+    "name": "doctype-declaration-block",
     "markdown": "<!DOCTYPE html>\n",
     "html": "<!DOCTYPE html>\n",
     "section": "HTML blocks",
     "number": 181
   },
   {
+    "name": "cdata-block-then-paragraph",
     "markdown": "<![CDATA[\nfunction matchwo(a,b)\n{\n  if (a < b && a < 0) then {\n    return 1;\n\n  } else {\n\n    return 0;\n  }\n}\n]]>\nokay\n",
     "html": "<![CDATA[\nfunction matchwo(a,b)\n{\n  if (a < b && a < 0) then {\n    return 1;\n\n  } else {\n\n    return 0;\n  }\n}\n]]>\n<p>okay</p>\n",
     "section": "HTML blocks",
     "number": 182
   },
   {
+    "name": "indented-comment-vs-code-block",
     "markdown": "  <!-- foo -->\n\n    <!-- foo -->\n",
     "html": "  <!-- foo -->\n<pre><code>&lt;!-- foo --&gt;\n</code></pre>\n",
     "section": "HTML blocks",
     "number": 183
   },
   {
+    "name": "indented-div-vs-code-block",
     "markdown": "  <div>\n\n    <div>\n",
     "html": "  <div>\n<pre><code>&lt;div&gt;\n</code></pre>\n",
     "section": "HTML blocks",
     "number": 184
   },
   {
+    "name": "div-block-interrupts-paragraph",
     "markdown": "Foo\n<div>\nbar\n</div>\n",
     "html": "<p>Foo</p>\n<div>\nbar\n</div>\n",
     "section": "HTML blocks",
     "number": 185
   },
   {
+    "name": "div-block-includes-following-text",
     "markdown": "<div>\nbar\n</div>\n*foo*\n",
     "html": "<div>\nbar\n</div>\n*foo*\n",
     "section": "HTML blocks",
     "number": 186
   },
   {
+    "name": "anchor-cannot-interrupt-paragraph",
     "markdown": "Foo\n<a href=\"bar\">\nbaz\n",
     "html": "<p>Foo\n<a href=\"bar\">\nbaz</p>\n",
     "section": "HTML blocks",
     "number": 187
   },
   {
+    "name": "div-block-blank-lines-parses-markdown",
     "markdown": "<div>\n\n*Emphasized* text.\n\n</div>\n",
     "html": "<div>\n<p><em>Emphasized</em> text.</p>\n</div>\n",
     "section": "HTML blocks",
     "number": 188
   },
   {
+    "name": "div-block-no-blanks-preserves-markdown",
     "markdown": "<div>\n*Emphasized* text.\n</div>\n",
     "html": "<div>\n*Emphasized* text.\n</div>\n",
     "section": "HTML blocks",
     "number": 189
   },
   {
+    "name": "table-block-with-blank-lines-preserved",
     "markdown": "<table>\n\n<tr>\n\n<td>\nHi\n</td>\n\n</tr>\n\n</table>\n",
     "html": "<table>\n<tr>\n<td>\nHi\n</td>\n</tr>\n</table>\n",
     "section": "HTML blocks",
     "number": 190
   },
   {
+    "name": "table-with-indented-td-as-code",
     "markdown": "<table>\n\n  <tr>\n\n    <td>\n      Hi\n    </td>\n\n  </tr>\n\n</table>\n",
     "html": "<table>\n  <tr>\n<pre><code>&lt;td&gt;\n  Hi\n&lt;/td&gt;\n</code></pre>\n  </tr>\n</table>\n",
     "section": "HTML blocks",
     "number": 191
   },
   {
+    "name": "basic-definition-with-title",
     "markdown": "[foo]: /url \"title\"\n\n[foo]\n",
     "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 192
   },
   {
+    "name": "definition-wrapped-across-indented-lines",
     "markdown": "   [foo]: \n      /url  \n           'the title'  \n\n[foo]\n",
     "html": "<p><a href=\"/url\" title=\"the title\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 193
   },
   {
+    "name": "label-with-escaped-bracket-and-parens",
     "markdown": "[Foo*bar\\]]:my_(url) 'title (with parens)'\n\n[Foo*bar\\]]\n",
     "html": "<p><a href=\"my_(url)\" title=\"title (with parens)\">Foo*bar]</a></p>\n",
     "section": "Link reference definitions",
     "number": 194
   },
   {
+    "name": "angle-bracket-destination-with-space",
     "markdown": "[Foo bar]:\n<my url>\n'title'\n\n[Foo bar]\n",
     "html": "<p><a href=\"my%20url\" title=\"title\">Foo bar</a></p>\n",
     "section": "Link reference definitions",
     "number": 195
   },
   {
+    "name": "multiline-title",
     "markdown": "[foo]: /url '\ntitle\nline1\nline2\n'\n\n[foo]\n",
     "html": "<p><a href=\"/url\" title=\"\ntitle\nline1\nline2\n\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 196
   },
   {
+    "name": "title-with-blank-line-invalid",
     "markdown": "[foo]: /url 'title\n\nwith blank line'\n\n[foo]\n",
     "html": "<p>[foo]: /url 'title</p>\n<p>with blank line'</p>\n<p>[foo]</p>\n",
     "section": "Link reference definitions",
     "number": 197
   },
   {
+    "name": "destination-on-next-line-no-title",
     "markdown": "[foo]:\n/url\n\n[foo]\n",
     "html": "<p><a href=\"/url\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 198
   },
   {
+    "name": "missing-destination-not-definition",
     "markdown": "[foo]:\n\n[foo]\n",
     "html": "<p>[foo]:</p>\n<p>[foo]</p>\n",
     "section": "Link reference definitions",
     "number": 199
   },
   {
+    "name": "empty-angle-bracket-destination",
     "markdown": "[foo]: <>\n\n[foo]\n",
     "html": "<p><a href=\"\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 200
   },
   {
+    "name": "destination-with-invalid-title",
     "markdown": "[foo]: <bar>(baz)\n\n[foo]\n",
     "html": "<p>[foo]: <bar>(baz)</p>\n<p>[foo]</p>\n",
     "section": "Link reference definitions",
     "number": 201
   },
   {
+    "name": "backslash-escapes-in-destination-and-title",
     "markdown": "[foo]: /url\\bar\\*baz \"foo\\\"bar\\baz\"\n\n[foo]\n",
     "html": "<p><a href=\"/url%5Cbar*baz\" title=\"foo&quot;bar\\baz\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 202
   },
   {
+    "name": "definition-after-its-reference",
     "markdown": "[foo]\n\n[foo]: url\n",
     "html": "<p><a href=\"url\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 203
   },
   {
+    "name": "duplicate-label-uses-first-definition",
     "markdown": "[foo]\n\n[foo]: first\n[foo]: second\n",
     "html": "<p><a href=\"first\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 204
   },
   {
+    "name": "label-match-case-insensitive",
     "markdown": "[FOO]: /url\n\n[Foo]\n",
     "html": "<p><a href=\"/url\">Foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 205
   },
   {
+    "name": "label-match-unicode-case-fold",
     "markdown": "[ΑΓΩ]: /φου\n\n[αγω]\n",
     "html": "<p><a href=\"/%CF%86%CE%BF%CF%85\">αγω</a></p>\n",
     "section": "Link reference definitions",
     "number": 206
   },
   {
+    "name": "unused-definition-produces-no-output",
     "markdown": "[foo]: /url\n",
     "html": "",
     "section": "Link reference definitions",
     "number": 207
   },
   {
+    "name": "label-spanning-multiple-lines",
     "markdown": "[\nfoo\n]: /url\nbar\n",
     "html": "<p>bar</p>\n",
     "section": "Link reference definitions",
     "number": 208
   },
   {
+    "name": "extra-text-after-title-invalid",
     "markdown": "[foo]: /url \"title\" ok\n",
     "html": "<p>[foo]: /url &quot;title&quot; ok</p>\n",
     "section": "Link reference definitions",
     "number": 209
   },
   {
+    "name": "stray-text-after-destination-line",
     "markdown": "[foo]: /url\n\"title\" ok\n",
     "html": "<p>&quot;title&quot; ok</p>\n",
     "section": "Link reference definitions",
     "number": 210
   },
   {
+    "name": "indented-four-spaces-is-code-block",
     "markdown": "    [foo]: /url \"title\"\n\n[foo]\n",
     "html": "<pre><code>[foo]: /url &quot;title&quot;\n</code></pre>\n<p>[foo]</p>\n",
     "section": "Link reference definitions",
     "number": 211
   },
   {
+    "name": "inside-fenced-code-block",
     "markdown": "```\n[foo]: /url\n```\n\n[foo]\n",
     "html": "<pre><code>[foo]: /url\n</code></pre>\n<p>[foo]</p>\n",
     "section": "Link reference definitions",
     "number": 212
   },
   {
+    "name": "after-paragraph-text-not-definition",
     "markdown": "Foo\n[bar]: /baz\n\n[bar]\n",
     "html": "<p>Foo\n[bar]: /baz</p>\n<p>[bar]</p>\n",
     "section": "Link reference definitions",
     "number": 213
   },
   {
+    "name": "between-heading-and-blockquote",
     "markdown": "# [Foo]\n[foo]: /url\n> bar\n",
     "html": "<h1><a href=\"/url\">Foo</a></h1>\n<blockquote>\n<p>bar</p>\n</blockquote>\n",
     "section": "Link reference definitions",
     "number": 214
   },
   {
+    "name": "followed-by-setext-heading",
     "markdown": "[foo]: /url\nbar\n===\n[foo]\n",
     "html": "<h1>bar</h1>\n<p><a href=\"/url\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 215
   },
   {
+    "name": "setext-underline-after-definition-is-text",
     "markdown": "[foo]: /url\n===\n[foo]\n",
     "html": "<p>===\n<a href=\"/url\">foo</a></p>\n",
     "section": "Link reference definitions",
     "number": 216
   },
   {
+    "name": "several-definitions-used-together",
     "markdown": "[foo]: /foo-url \"foo\"\n[bar]: /bar-url\n  \"bar\"\n[baz]: /baz-url\n\n[foo],\n[bar],\n[baz]\n",
     "html": "<p><a href=\"/foo-url\" title=\"foo\">foo</a>,\n<a href=\"/bar-url\" title=\"bar\">bar</a>,\n<a href=\"/baz-url\">baz</a></p>\n",
     "section": "Link reference definitions",
     "number": 217
   },
   {
+    "name": "definition-inside-blockquote-referenced-outside",
     "markdown": "[foo]\n\n> [foo]: /url\n",
     "html": "<p><a href=\"/url\">foo</a></p>\n<blockquote>\n</blockquote>\n",
     "section": "Link reference definitions",
     "number": 218
   },
   {
+    "name": "two-paragraphs-split-by-blank-line",
     "markdown": "aaa\n\nbbb\n",
     "html": "<p>aaa</p>\n<p>bbb</p>\n",
     "section": "Paragraphs",
     "number": 219
   },
   {
+    "name": "multiline-paragraphs-preserve-line-breaks",
     "markdown": "aaa\nbbb\n\nccc\nddd\n",
     "html": "<p>aaa\nbbb</p>\n<p>ccc\nddd</p>\n",
     "section": "Paragraphs",
     "number": 220
   },
   {
+    "name": "multiple-blank-lines-collapse",
     "markdown": "aaa\n\n\nbbb\n",
     "html": "<p>aaa</p>\n<p>bbb</p>\n",
     "section": "Paragraphs",
     "number": 221
   },
   {
+    "name": "leading-spaces-stripped",
     "markdown": "  aaa\n bbb\n",
     "html": "<p>aaa\nbbb</p>\n",
     "section": "Paragraphs",
     "number": 222
   },
   {
+    "name": "leading-spaces-on-continuation-lines-stripped",
     "markdown": "aaa\n             bbb\n                                       ccc\n",
     "html": "<p>aaa\nbbb\nccc</p>\n",
     "section": "Paragraphs",
     "number": 223
   },
   {
+    "name": "three-leading-spaces-allowed",
     "markdown": "   aaa\nbbb\n",
     "html": "<p>aaa\nbbb</p>\n",
     "section": "Paragraphs",
     "number": 224
   },
   {
+    "name": "four-leading-spaces-form-code-block",
     "markdown": "    aaa\nbbb\n",
     "html": "<pre><code>aaa\n</code></pre>\n<p>bbb</p>\n",
     "section": "Paragraphs",
     "number": 225
   },
   {
+    "name": "trailing-spaces-cause-hard-break",
     "markdown": "aaa     \nbbb     \n",
     "html": "<p>aaa<br />\nbbb</p>\n",
     "section": "Paragraphs",
     "number": 226
   },
   {
+    "name": "blank-lines-at-document-edges-ignored",
     "markdown": "  \n\naaa\n  \n\n# aaa\n\n  \n",
     "html": "<p>aaa</p>\n<h1>aaa</h1>\n",
     "section": "Blank lines",
     "number": 227
   },
   {
+    "name": "basic-with-heading-and-paragraph",
     "markdown": "> # Foo\n> bar\n> baz\n",
     "html": "<blockquote>\n<h1>Foo</h1>\n<p>bar\nbaz</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 228
   },
   {
+    "name": "marker-without-following-space",
     "markdown": "># Foo\n>bar\n> baz\n",
     "html": "<blockquote>\n<h1>Foo</h1>\n<p>bar\nbaz</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 229
   },
   {
+    "name": "marker-indented-up-to-three-spaces",
     "markdown": "   > # Foo\n   > bar\n > baz\n",
     "html": "<blockquote>\n<h1>Foo</h1>\n<p>bar\nbaz</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 230
   },
   {
+    "name": "four-space-indent-becomes-code",
     "markdown": "    > # Foo\n    > bar\n    > baz\n",
     "html": "<pre><code>&gt; # Foo\n&gt; bar\n&gt; baz\n</code></pre>\n",
     "section": "Block quotes",
     "number": 231
   },
   {
+    "name": "lazy-continuation-final-line",
     "markdown": "> # Foo\n> bar\nbaz\n",
     "html": "<blockquote>\n<h1>Foo</h1>\n<p>bar\nbaz</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 232
   },
   {
+    "name": "lazy-continuation-between-marked-lines",
     "markdown": "> bar\nbaz\n> foo\n",
     "html": "<blockquote>\n<p>bar\nbaz\nfoo</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 233
   },
   {
+    "name": "followed-by-thematic-break",
     "markdown": "> foo\n---\n",
     "html": "<blockquote>\n<p>foo</p>\n</blockquote>\n<hr />\n",
     "section": "Block quotes",
     "number": 234
   },
   {
+    "name": "list-inside-then-list-outside",
     "markdown": "> - foo\n- bar\n",
     "html": "<blockquote>\n<ul>\n<li>foo</li>\n</ul>\n</blockquote>\n<ul>\n<li>bar</li>\n</ul>\n",
     "section": "Block quotes",
     "number": 235
   },
   {
+    "name": "indented-code-no-lazy-continuation",
     "markdown": ">     foo\n    bar\n",
     "html": "<blockquote>\n<pre><code>foo\n</code></pre>\n</blockquote>\n<pre><code>bar\n</code></pre>\n",
     "section": "Block quotes",
     "number": 236
   },
   {
+    "name": "fenced-code-lazy-lines-excluded",
     "markdown": "> ```\nfoo\n```\n",
     "html": "<blockquote>\n<pre><code></code></pre>\n</blockquote>\n<p>foo</p>\n<pre><code></code></pre>\n",
     "section": "Block quotes",
     "number": 237
   },
   {
+    "name": "lazy-continuation-with-list-marker-text",
     "markdown": "> foo\n    - bar\n",
     "html": "<blockquote>\n<p>foo\n- bar</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 238
   },
   {
+    "name": "empty-single-marker",
     "markdown": ">\n",
     "html": "<blockquote>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 239
   },
   {
+    "name": "empty-multiple-blank-marker-lines",
     "markdown": ">\n>  \n> \n",
     "html": "<blockquote>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 240
   },
   {
+    "name": "leading-trailing-blank-marker-lines",
     "markdown": ">\n> foo\n>  \n",
     "html": "<blockquote>\n<p>foo</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 241
   },
   {
+    "name": "blank-line-splits-two-blockquotes",
     "markdown": "> foo\n\n> bar\n",
     "html": "<blockquote>\n<p>foo</p>\n</blockquote>\n<blockquote>\n<p>bar</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 242
   },
   {
+    "name": "two-lines-single-paragraph",
     "markdown": "> foo\n> bar\n",
     "html": "<blockquote>\n<p>foo\nbar</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 243
   },
   {
+    "name": "interior-blank-marker-splits-paragraphs",
     "markdown": "> foo\n>\n> bar\n",
     "html": "<blockquote>\n<p>foo</p>\n<p>bar</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 244
   },
   {
+    "name": "paragraph-then-blockquote-no-lazy",
     "markdown": "foo\n> bar\n",
     "html": "<p>foo</p>\n<blockquote>\n<p>bar</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 245
   },
   {
+    "name": "thematic-break-interrupts-blockquote",
     "markdown": "> aaa\n***\n> bbb\n",
     "html": "<blockquote>\n<p>aaa</p>\n</blockquote>\n<hr />\n<blockquote>\n<p>bbb</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 246
   },
   {
+    "name": "lazy-continuation-single-line",
     "markdown": "> bar\nbaz\n",
     "html": "<blockquote>\n<p>bar\nbaz</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 247
   },
   {
+    "name": "blank-line-ends-then-paragraph",
     "markdown": "> bar\n\nbaz\n",
     "html": "<blockquote>\n<p>bar</p>\n</blockquote>\n<p>baz</p>\n",
     "section": "Block quotes",
     "number": 248
   },
   {
+    "name": "blank-marker-line-prevents-lazy",
     "markdown": "> bar\n>\nbaz\n",
     "html": "<blockquote>\n<p>bar</p>\n</blockquote>\n<p>baz</p>\n",
     "section": "Block quotes",
     "number": 249
   },
   {
+    "name": "nested-triple-with-lazy-continuation",
     "markdown": "> > > foo\nbar\n",
     "html": "<blockquote>\n<blockquote>\n<blockquote>\n<p>foo\nbar</p>\n</blockquote>\n</blockquote>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 250
   },
   {
+    "name": "nested-mixed-marker-spacing",
     "markdown": ">>> foo\n> bar\n>>baz\n",
     "html": "<blockquote>\n<blockquote>\n<blockquote>\n<p>foo\nbar\nbaz</p>\n</blockquote>\n</blockquote>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 251
   },
   {
+    "name": "five-space-code-vs-paragraph",
     "markdown": ">     code\n\n>    not code\n",
     "html": "<blockquote>\n<pre><code>code\n</code></pre>\n</blockquote>\n<blockquote>\n<p>not code</p>\n</blockquote>\n",
     "section": "Block quotes",
     "number": 252
   },
   {
+    "name": "standalone-blocks-without-list-marker",
     "markdown": "A paragraph\nwith two lines.\n\n    indented code\n\n> A block quote.\n",
     "html": "<p>A paragraph\nwith two lines.</p>\n<pre><code>indented code\n</code></pre>\n<blockquote>\n<p>A block quote.</p>\n</blockquote>\n",
     "section": "List items",
     "number": 253
   },
   {
+    "name": "ordered-item-with-code-and-blockquote",
     "markdown": "1.  A paragraph\n    with two lines.\n\n        indented code\n\n    > A block quote.\n",
     "html": "<ol>\n<li>\n<p>A paragraph\nwith two lines.</p>\n<pre><code>indented code\n</code></pre>\n<blockquote>\n<p>A block quote.</p>\n</blockquote>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 254
   },
   {
+    "name": "insufficient-indent-ends-list",
     "markdown": "- one\n\n two\n",
     "html": "<ul>\n<li>one</li>\n</ul>\n<p>two</p>\n",
     "section": "List items",
     "number": 255
   },
   {
+    "name": "two-space-indent-keeps-second-paragraph",
     "markdown": "- one\n\n  two\n",
     "html": "<ul>\n<li>\n<p>one</p>\n<p>two</p>\n</li>\n</ul>\n",
     "section": "List items",
     "number": 256
   },
   {
+    "name": "extra-indent-continuation-becomes-code-block",
     "markdown": " -    one\n\n     two\n",
     "html": "<ul>\n<li>one</li>\n</ul>\n<pre><code> two\n</code></pre>\n",
     "section": "List items",
     "number": 257
   },
   {
+    "name": "matching-indent-keeps-second-paragraph",
     "markdown": " -    one\n\n      two\n",
     "html": "<ul>\n<li>\n<p>one</p>\n<p>two</p>\n</li>\n</ul>\n",
     "section": "List items",
     "number": 258
   },
   {
+    "name": "nested-blockquotes-ordered-item-paragraphs",
     "markdown": "   > > 1.  one\n>>\n>>     two\n",
     "html": "<blockquote>\n<blockquote>\n<ol>\n<li>\n<p>one</p>\n<p>two</p>\n</li>\n</ol>\n</blockquote>\n</blockquote>\n",
     "section": "List items",
     "number": 259
   },
   {
+    "name": "blockquote-bullet-with-varied-marker-indent",
     "markdown": ">>- one\n>>\n  >  > two\n",
     "html": "<blockquote>\n<blockquote>\n<ul>\n<li>one</li>\n</ul>\n<p>two</p>\n</blockquote>\n</blockquote>\n",
     "section": "List items",
     "number": 260
   },
   {
+    "name": "marker-without-following-space-not-list",
     "markdown": "-one\n\n2.two\n",
     "html": "<p>-one</p>\n<p>2.two</p>\n",
     "section": "List items",
     "number": 261
   },
   {
+    "name": "multiple-blank-lines-between-paragraphs",
     "markdown": "- foo\n\n\n  bar\n",
     "html": "<ul>\n<li>\n<p>foo</p>\n<p>bar</p>\n</li>\n</ul>\n",
     "section": "List items",
     "number": 262
   },
   {
+    "name": "ordered-item-with-multiple-block-types",
     "markdown": "1.  foo\n\n    ```\n    bar\n    ```\n\n    baz\n\n    > bam\n",
     "html": "<ol>\n<li>\n<p>foo</p>\n<pre><code>bar\n</code></pre>\n<p>baz</p>\n<blockquote>\n<p>bam</p>\n</blockquote>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 263
   },
   {
+    "name": "item-code-block-with-blank-lines",
     "markdown": "- Foo\n\n      bar\n\n\n      baz\n",
     "html": "<ul>\n<li>\n<p>Foo</p>\n<pre><code>bar\n\n\nbaz\n</code></pre>\n</li>\n</ul>\n",
     "section": "List items",
     "number": 264
   },
   {
+    "name": "nine-digit-start-number",
     "markdown": "123456789. ok\n",
     "html": "<ol start=\"123456789\">\n<li>ok</li>\n</ol>\n",
     "section": "List items",
     "number": 265
   },
   {
+    "name": "ten-digit-number-not-list",
     "markdown": "1234567890. not ok\n",
     "html": "<p>1234567890. not ok</p>\n",
     "section": "List items",
     "number": 266
   },
   {
+    "name": "zero-start-number",
     "markdown": "0. ok\n",
     "html": "<ol start=\"0\">\n<li>ok</li>\n</ol>\n",
     "section": "List items",
     "number": 267
   },
   {
+    "name": "leading-zeros-start-number",
     "markdown": "003. ok\n",
     "html": "<ol start=\"3\">\n<li>ok</li>\n</ol>\n",
     "section": "List items",
     "number": 268
   },
   {
+    "name": "negative-number-not-list",
     "markdown": "-1. not ok\n",
     "html": "<p>-1. not ok</p>\n",
     "section": "List items",
     "number": 269
   },
   {
+    "name": "item-paragraph-then-code-block",
     "markdown": "- foo\n\n      bar\n",
     "html": "<ul>\n<li>\n<p>foo</p>\n<pre><code>bar\n</code></pre>\n</li>\n</ul>\n",
     "section": "List items",
     "number": 270
   },
   {
+    "name": "ordered-start-ten-with-code-block",
     "markdown": "  10.  foo\n\n           bar\n",
     "html": "<ol start=\"10\">\n<li>\n<p>foo</p>\n<pre><code>bar\n</code></pre>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 271
   },
   {
+    "name": "code-paragraph-code-without-list",
     "markdown": "    indented code\n\nparagraph\n\n    more code\n",
     "html": "<pre><code>indented code\n</code></pre>\n<p>paragraph</p>\n<pre><code>more code\n</code></pre>\n",
     "section": "List items",
     "number": 272
   },
   {
+    "name": "ordered-item-five-space-indent-code",
     "markdown": "1.     indented code\n\n   paragraph\n\n       more code\n",
     "html": "<ol>\n<li>\n<pre><code>indented code\n</code></pre>\n<p>paragraph</p>\n<pre><code>more code\n</code></pre>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 273
   },
   {
+    "name": "ordered-item-extra-space-preserved-in-code",
     "markdown": "1.      indented code\n\n   paragraph\n\n       more code\n",
     "html": "<ol>\n<li>\n<pre><code> indented code\n</code></pre>\n<p>paragraph</p>\n<pre><code>more code\n</code></pre>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 274
   },
   {
+    "name": "indented-text-without-marker",
     "markdown": "   foo\n\nbar\n",
     "html": "<p>foo</p>\n<p>bar</p>\n",
     "section": "List items",
     "number": 275
   },
   {
+    "name": "under-indented-continuation-ends-list",
     "markdown": "-    foo\n\n  bar\n",
     "html": "<ul>\n<li>foo</li>\n</ul>\n<p>bar</p>\n",
     "section": "List items",
     "number": 276
   },
   {
+    "name": "aligned-continuation-keeps-item-loose",
     "markdown": "-  foo\n\n   bar\n",
     "html": "<ul>\n<li>\n<p>foo</p>\n<p>bar</p>\n</li>\n</ul>\n",
     "section": "List items",
     "number": 277
   },
   {
+    "name": "empty-marker-content-on-next-line",
     "markdown": "-\n  foo\n-\n  ```\n  bar\n  ```\n-\n      baz\n",
     "html": "<ul>\n<li>foo</li>\n<li>\n<pre><code>bar\n</code></pre>\n</li>\n<li>\n<pre><code>baz\n</code></pre>\n</li>\n</ul>\n",
     "section": "List items",
     "number": 278
   },
   {
+    "name": "marker-trailing-spaces-content-next-line",
     "markdown": "-   \n  foo\n",
     "html": "<ul>\n<li>foo</li>\n</ul>\n",
     "section": "List items",
     "number": 279
   },
   {
+    "name": "blank-line-after-empty-marker",
     "markdown": "-\n\n  foo\n",
     "html": "<ul>\n<li></li>\n</ul>\n<p>foo</p>\n",
     "section": "List items",
     "number": 280
   },
   {
+    "name": "empty-bullet-item-between-items",
     "markdown": "- foo\n-\n- bar\n",
     "html": "<ul>\n<li>foo</li>\n<li></li>\n<li>bar</li>\n</ul>\n",
     "section": "List items",
     "number": 281
   },
   {
+    "name": "empty-item-with-trailing-spaces",
     "markdown": "- foo\n-   \n- bar\n",
     "html": "<ul>\n<li>foo</li>\n<li></li>\n<li>bar</li>\n</ul>\n",
     "section": "List items",
     "number": 282
   },
   {
+    "name": "empty-ordered-item-between-items",
     "markdown": "1. foo\n2.\n3. bar\n",
     "html": "<ol>\n<li>foo</li>\n<li></li>\n<li>bar</li>\n</ol>\n",
     "section": "List items",
     "number": 283
   },
   {
+    "name": "single-empty-bullet",
     "markdown": "*\n",
     "html": "<ul>\n<li></li>\n</ul>\n",
     "section": "List items",
     "number": 284
   },
   {
+    "name": "empty-marker-cannot-interrupt-paragraph",
     "markdown": "foo\n*\n\nfoo\n1.\n",
     "html": "<p>foo\n*</p>\n<p>foo\n1.</p>\n",
     "section": "List items",
     "number": 285
   },
   {
+    "name": "one-space-indented-ordered-item-blocks",
     "markdown": " 1.  A paragraph\n     with two lines.\n\n         indented code\n\n     > A block quote.\n",
     "html": "<ol>\n<li>\n<p>A paragraph\nwith two lines.</p>\n<pre><code>indented code\n</code></pre>\n<blockquote>\n<p>A block quote.</p>\n</blockquote>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 286
   },
   {
+    "name": "two-space-indented-ordered-item-blocks",
     "markdown": "  1.  A paragraph\n      with two lines.\n\n          indented code\n\n      > A block quote.\n",
     "html": "<ol>\n<li>\n<p>A paragraph\nwith two lines.</p>\n<pre><code>indented code\n</code></pre>\n<blockquote>\n<p>A block quote.</p>\n</blockquote>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 287
   },
   {
+    "name": "three-space-indented-ordered-item-blocks",
     "markdown": "   1.  A paragraph\n       with two lines.\n\n           indented code\n\n       > A block quote.\n",
     "html": "<ol>\n<li>\n<p>A paragraph\nwith two lines.</p>\n<pre><code>indented code\n</code></pre>\n<blockquote>\n<p>A block quote.</p>\n</blockquote>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 288
   },
   {
+    "name": "four-space-indent-becomes-code-block",
     "markdown": "    1.  A paragraph\n        with two lines.\n\n            indented code\n\n        > A block quote.\n",
     "html": "<pre><code>1.  A paragraph\n    with two lines.\n\n        indented code\n\n    &gt; A block quote.\n</code></pre>\n",
     "section": "List items",
     "number": 289
   },
   {
+    "name": "lazy-continuation-paragraph-line",
     "markdown": "  1.  A paragraph\nwith two lines.\n\n          indented code\n\n      > A block quote.\n",
     "html": "<ol>\n<li>\n<p>A paragraph\nwith two lines.</p>\n<pre><code>indented code\n</code></pre>\n<blockquote>\n<p>A block quote.</p>\n</blockquote>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 290
   },
   {
+    "name": "lazy-continuation-two-lines",
     "markdown": "  1.  A paragraph\n    with two lines.\n",
     "html": "<ol>\n<li>A paragraph\nwith two lines.</li>\n</ol>\n",
     "section": "List items",
     "number": 291
   },
   {
+    "name": "lazy-continuation-nested-blockquote-list",
     "markdown": "> 1. > Blockquote\ncontinued here.\n",
     "html": "<blockquote>\n<ol>\n<li>\n<blockquote>\n<p>Blockquote\ncontinued here.</p>\n</blockquote>\n</li>\n</ol>\n</blockquote>\n",
     "section": "List items",
     "number": 292
   },
   {
+    "name": "nested-blockquote-list-explicit-continuation",
     "markdown": "> 1. > Blockquote\n> continued here.\n",
     "html": "<blockquote>\n<ol>\n<li>\n<blockquote>\n<p>Blockquote\ncontinued here.</p>\n</blockquote>\n</li>\n</ol>\n</blockquote>\n",
     "section": "List items",
     "number": 293
   },
   {
+    "name": "nested-lists-by-increasing-indent",
     "markdown": "- foo\n  - bar\n    - baz\n      - boo\n",
     "html": "<ul>\n<li>foo\n<ul>\n<li>bar\n<ul>\n<li>baz\n<ul>\n<li>boo</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n",
     "section": "List items",
     "number": 294
   },
   {
+    "name": "small-indents-stay-single-level",
     "markdown": "- foo\n - bar\n  - baz\n   - boo\n",
     "html": "<ul>\n<li>foo</li>\n<li>bar</li>\n<li>baz</li>\n<li>boo</li>\n</ul>\n",
     "section": "List items",
     "number": 295
   },
   {
+    "name": "wide-marker-allows-nested-sublist",
     "markdown": "10) foo\n    - bar\n",
     "html": "<ol start=\"10\">\n<li>foo\n<ul>\n<li>bar</li>\n</ul>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 296
   },
   {
+    "name": "under-indented-sublist-separate-list",
     "markdown": "10) foo\n   - bar\n",
     "html": "<ol start=\"10\">\n<li>foo</li>\n</ol>\n<ul>\n<li>bar</li>\n</ul>\n",
     "section": "List items",
     "number": 297
   },
   {
+    "name": "two-markers-create-nested-item",
     "markdown": "- - foo\n",
     "html": "<ul>\n<li>\n<ul>\n<li>foo</li>\n</ul>\n</li>\n</ul>\n",
     "section": "List items",
     "number": 298
   },
   {
+    "name": "mixed-markers-deeply-nested",
     "markdown": "1. - 2. foo\n",
     "html": "<ol>\n<li>\n<ul>\n<li>\n<ol start=\"2\">\n<li>foo</li>\n</ol>\n</li>\n</ul>\n</li>\n</ol>\n",
     "section": "List items",
     "number": 299
   },
   {
+    "name": "items-with-atx-and-setext-headings",
     "markdown": "- # Foo\n- Bar\n  ---\n  baz\n",
     "html": "<ul>\n<li>\n<h1>Foo</h1>\n</li>\n<li>\n<h2>Bar</h2>\nbaz</li>\n</ul>\n",
     "section": "List items",
     "number": 300
   },
   {
+    "name": "changing-bullet-starts-new-list",
     "markdown": "- foo\n- bar\n+ baz\n",
     "html": "<ul>\n<li>foo</li>\n<li>bar</li>\n</ul>\n<ul>\n<li>baz</li>\n</ul>\n",
     "section": "Lists",
     "number": 301
   },
   {
+    "name": "changing-ordered-delimiter-starts-new-list",
     "markdown": "1. foo\n2. bar\n3) baz\n",
     "html": "<ol>\n<li>foo</li>\n<li>bar</li>\n</ol>\n<ol start=\"3\">\n<li>baz</li>\n</ol>\n",
     "section": "Lists",
     "number": 302
   },
   {
+    "name": "bullet-list-interrupts-paragraph",
     "markdown": "Foo\n- bar\n- baz\n",
     "html": "<p>Foo</p>\n<ul>\n<li>bar</li>\n<li>baz</li>\n</ul>\n",
     "section": "Lists",
     "number": 303
   },
   {
+    "name": "nonone-ordered-cannot-interrupt-paragraph",
     "markdown": "The number of windows in my house is\n14.  The number of doors is 6.\n",
     "html": "<p>The number of windows in my house is\n14.  The number of doors is 6.</p>\n",
     "section": "Lists",
     "number": 304
   },
   {
+    "name": "ordered-one-interrupts-paragraph",
     "markdown": "The number of windows in my house is\n1.  The number of doors is 6.\n",
     "html": "<p>The number of windows in my house is</p>\n<ol>\n<li>The number of doors is 6.</li>\n</ol>\n",
     "section": "Lists",
     "number": 305
   },
   {
+    "name": "blank-lines-make-list-loose",
     "markdown": "- foo\n\n- bar\n\n\n- baz\n",
     "html": "<ul>\n<li>\n<p>foo</p>\n</li>\n<li>\n<p>bar</p>\n</li>\n<li>\n<p>baz</p>\n</li>\n</ul>\n",
     "section": "Lists",
     "number": 306
   },
   {
+    "name": "nested-item-loose-via-blank-line",
     "markdown": "- foo\n  - bar\n    - baz\n\n\n      bim\n",
     "html": "<ul>\n<li>foo\n<ul>\n<li>bar\n<ul>\n<li>\n<p>baz</p>\n<p>bim</p>\n</li>\n</ul>\n</li>\n</ul>\n</li>\n</ul>\n",
     "section": "Lists",
     "number": 307
   },
   {
+    "name": "html-comment-separates-two-lists",
     "markdown": "- foo\n- bar\n\n<!-- -->\n\n- baz\n- bim\n",
     "html": "<ul>\n<li>foo</li>\n<li>bar</li>\n</ul>\n<!-- -->\n<ul>\n<li>baz</li>\n<li>bim</li>\n</ul>\n",
     "section": "Lists",
     "number": 308
   },
   {
+    "name": "comment-separates-list-from-code",
     "markdown": "-   foo\n\n    notcode\n\n-   foo\n\n<!-- -->\n\n    code\n",
     "html": "<ul>\n<li>\n<p>foo</p>\n<p>notcode</p>\n</li>\n<li>\n<p>foo</p>\n</li>\n</ul>\n<!-- -->\n<pre><code>code\n</code></pre>\n",
     "section": "Lists",
     "number": 309
   },
   {
+    "name": "varied-indent-flat-bullets",
     "markdown": "- a\n - b\n  - c\n   - d\n  - e\n - f\n- g\n",
     "html": "<ul>\n<li>a</li>\n<li>b</li>\n<li>c</li>\n<li>d</li>\n<li>e</li>\n<li>f</li>\n<li>g</li>\n</ul>\n",
     "section": "Lists",
     "number": 310
   },
   {
+    "name": "indented-ordered-items-stay-loose",
     "markdown": "1. a\n\n  2. b\n\n   3. c\n",
     "html": "<ol>\n<li>\n<p>a</p>\n</li>\n<li>\n<p>b</p>\n</li>\n<li>\n<p>c</p>\n</li>\n</ol>\n",
     "section": "Lists",
     "number": 311
   },
   {
+    "name": "over-indented-final-item-as-text",
     "markdown": "- a\n - b\n  - c\n   - d\n    - e\n",
     "html": "<ul>\n<li>a</li>\n<li>b</li>\n<li>c</li>\n<li>d\n- e</li>\n</ul>\n",
     "section": "Lists",
     "number": 312
   },
   {
+    "name": "over-indented-ordered-item-becomes-code",
     "markdown": "1. a\n\n  2. b\n\n    3. c\n",
     "html": "<ol>\n<li>\n<p>a</p>\n</li>\n<li>\n<p>b</p>\n</li>\n</ol>\n<pre><code>3. c\n</code></pre>\n",
     "section": "Lists",
     "number": 313
   },
   {
+    "name": "blank-line-makes-whole-list-loose",
     "markdown": "- a\n- b\n\n- c\n",
     "html": "<ul>\n<li>\n<p>a</p>\n</li>\n<li>\n<p>b</p>\n</li>\n<li>\n<p>c</p>\n</li>\n</ul>\n",
     "section": "Lists",
     "number": 314
   },
   {
+    "name": "loose-list-with-empty-item",
     "markdown": "* a\n*\n\n* c\n",
     "html": "<ul>\n<li>\n<p>a</p>\n</li>\n<li></li>\n<li>\n<p>c</p>\n</li>\n</ul>\n",
     "section": "Lists",
     "number": 315
   },
   {
+    "name": "loose-list-from-continuation-paragraph",
     "markdown": "- a\n- b\n\n  c\n- d\n",
     "html": "<ul>\n<li>\n<p>a</p>\n</li>\n<li>\n<p>b</p>\n<p>c</p>\n</li>\n<li>\n<p>d</p>\n</li>\n</ul>\n",
     "section": "Lists",
     "number": 316
   },
   {
+    "name": "reference-definition-inside-item",
     "markdown": "- a\n- b\n\n  [ref]: /url\n- d\n",
     "html": "<ul>\n<li>\n<p>a</p>\n</li>\n<li>\n<p>b</p>\n</li>\n<li>\n<p>d</p>\n</li>\n</ul>\n",
     "section": "Lists",
     "number": 317
   },
   {
+    "name": "blank-lines-in-code-block-stay-tight",
     "markdown": "- a\n- ```\n  b\n\n\n  ```\n- c\n",
     "html": "<ul>\n<li>a</li>\n<li>\n<pre><code>b\n\n\n</code></pre>\n</li>\n<li>c</li>\n</ul>\n",
     "section": "Lists",
     "number": 318
   },
   {
+    "name": "nested-list-loose-inner-only",
     "markdown": "- a\n  - b\n\n    c\n- d\n",
     "html": "<ul>\n<li>a\n<ul>\n<li>\n<p>b</p>\n<p>c</p>\n</li>\n</ul>\n</li>\n<li>d</li>\n</ul>\n",
     "section": "Lists",
     "number": 319
   },
   {
+    "name": "item-with-blockquote-tight-list",
     "markdown": "* a\n  > b\n  >\n* c\n",
     "html": "<ul>\n<li>a\n<blockquote>\n<p>b</p>\n</blockquote>\n</li>\n<li>c</li>\n</ul>\n",
     "section": "Lists",
     "number": 320
   },
   {
+    "name": "item-with-blockquote-and-code",
     "markdown": "- a\n  > b\n  ```\n  c\n  ```\n- d\n",
     "html": "<ul>\n<li>a\n<blockquote>\n<p>b</p>\n</blockquote>\n<pre><code>c\n</code></pre>\n</li>\n<li>d</li>\n</ul>\n",
     "section": "Lists",
     "number": 321
   },
   {
+    "name": "single-item-tight-list",
     "markdown": "- a\n",
     "html": "<ul>\n<li>a</li>\n</ul>\n",
     "section": "Lists",
     "number": 322
   },
   {
+    "name": "single-nested-sublist-tight",
     "markdown": "- a\n  - b\n",
     "html": "<ul>\n<li>a\n<ul>\n<li>b</li>\n</ul>\n</li>\n</ul>\n",
     "section": "Lists",
     "number": 323
   },
   {
+    "name": "ordered-item-code-then-paragraph-loose",
     "markdown": "1. ```\n   foo\n   ```\n\n   bar\n",
     "html": "<ol>\n<li>\n<pre><code>foo\n</code></pre>\n<p>bar</p>\n</li>\n</ol>\n",
     "section": "Lists",
     "number": 324
   },
   {
+    "name": "outer-loose-item-after-nested-list",
     "markdown": "* foo\n  * bar\n\n  baz\n",
     "html": "<ul>\n<li>\n<p>foo</p>\n<ul>\n<li>bar</li>\n</ul>\n<p>baz</p>\n</li>\n</ul>\n",
     "section": "Lists",
     "number": 325
   },
   {
+    "name": "outer-loose-inner-tight-nested",
     "markdown": "- a\n  - b\n  - c\n\n- d\n  - e\n  - f\n",
     "html": "<ul>\n<li>\n<p>a</p>\n<ul>\n<li>b</li>\n<li>c</li>\n</ul>\n</li>\n<li>\n<p>d</p>\n<ul>\n<li>e</li>\n<li>f</li>\n</ul>\n</li>\n</ul>\n",
     "section": "Lists",
     "number": 326
   },
   {
+    "name": "leftmost-backtick-pair-forms-code-span",
     "markdown": "`hi`lo`\n",
     "html": "<p><code>hi</code>lo`</p>\n",
     "section": "Inlines",
     "number": 327
   },
   {
+    "name": "simple-single-backtick-span",
     "markdown": "`foo`\n",
     "html": "<p><code>foo</code></p>\n",
     "section": "Code spans",
     "number": 328
   },
   {
+    "name": "double-backticks-contain-single-backtick",
     "markdown": "`` foo ` bar ``\n",
     "html": "<p><code>foo ` bar</code></p>\n",
     "section": "Code spans",
     "number": 329
   },
   {
+    "name": "strips-single-space-around-backtick-pair",
     "markdown": "` `` `\n",
     "html": "<p><code>``</code></p>\n",
     "section": "Code spans",
     "number": 330
   },
   {
+    "name": "strips-only-one-space-each-side",
     "markdown": "`  ``  `\n",
     "html": "<p><code> `` </code></p>\n",
     "section": "Code spans",
     "number": 331
   },
   {
+    "name": "leading-space-kept-when-not-both-sides",
     "markdown": "` a`\n",
     "html": "<p><code> a</code></p>\n",
     "section": "Code spans",
     "number": 332
   },
   {
+    "name": "single-spaces-around-letter-kept",
     "markdown": "` b `\n",
     "html": "<p><code> b </code></p>\n",
     "section": "Code spans",
     "number": 333
   },
   {
+    "name": "space-only-code-spans",
     "markdown": "` `\n`  `\n",
     "html": "<p><code> </code>\n<code>  </code></p>\n",
     "section": "Code spans",
     "number": 334
   },
   {
+    "name": "line-endings-become-single-spaces",
     "markdown": "``\nfoo\nbar  \nbaz\n``\n",
     "html": "<p><code>foo bar   baz</code></p>\n",
     "section": "Code spans",
     "number": 335
   },
   {
+    "name": "interior-trailing-space-preserved",
     "markdown": "``\nfoo \n``\n",
     "html": "<p><code>foo </code></p>\n",
     "section": "Code spans",
     "number": 336
   },
   {
+    "name": "newline-to-space-keeps-internal-spaces",
     "markdown": "`foo   bar \nbaz`\n",
     "html": "<p><code>foo   bar  baz</code></p>\n",
     "section": "Code spans",
     "number": 337
   },
   {
+    "name": "backslash-does-not-escape-backtick",
     "markdown": "`foo\\`bar`\n",
     "html": "<p><code>foo\\</code>bar`</p>\n",
     "section": "Code spans",
     "number": 338
   },
   {
+    "name": "double-backtick-span-contains-backtick",
     "markdown": "``foo`bar``\n",
     "html": "<p><code>foo`bar</code></p>\n",
     "section": "Code spans",
     "number": 339
   },
   {
+    "name": "single-backtick-span-contains-double",
     "markdown": "` foo `` bar `\n",
     "html": "<p><code>foo `` bar</code></p>\n",
     "section": "Code spans",
     "number": 340
   },
   {
+    "name": "code-span-over-emphasis-marker",
     "markdown": "*foo`*`\n",
     "html": "<p>*foo<code>*</code></p>\n",
     "section": "Code spans",
     "number": 341
   },
   {
+    "name": "backticks-bind-tighter-than-link",
     "markdown": "[not a `link](/foo`)\n",
     "html": "<p>[not a <code>link](/foo</code>)</p>\n",
     "section": "Code spans",
     "number": 342
   },
   {
+    "name": "code-span-precedence-over-html-tag",
     "markdown": "`<a href=\"`\">`\n",
     "html": "<p><code>&lt;a href=&quot;</code>&quot;&gt;`</p>\n",
     "section": "Code spans",
     "number": 343
   },
   {
+    "name": "html-tag-precedence-over-backtick",
     "markdown": "<a href=\"`\">`\n",
     "html": "<p><a href=\"`\">`</p>\n",
     "section": "Code spans",
     "number": 344
   },
   {
+    "name": "code-span-precedence-over-autolink",
     "markdown": "`<https://foo.bar.`baz>`\n",
     "html": "<p><code>&lt;https://foo.bar.</code>baz&gt;`</p>\n",
     "section": "Code spans",
     "number": 345
   },
   {
+    "name": "autolink-precedence-over-backtick",
     "markdown": "<https://foo.bar.`baz>`\n",
     "html": "<p><a href=\"https://foo.bar.%60baz\">https://foo.bar.`baz</a>`</p>\n",
     "section": "Code spans",
     "number": 346
   },
   {
+    "name": "unmatched-backtick-run-lengths",
     "markdown": "```foo``\n",
     "html": "<p>```foo``</p>\n",
     "section": "Code spans",
     "number": 347
   },
   {
+    "name": "unclosed-backtick-rendered-literal",
     "markdown": "`foo\n",
     "html": "<p>`foo</p>\n",
     "section": "Code spans",
     "number": 348
   },
   {
+    "name": "shorter-run-unmatched-longer-matches",
     "markdown": "`foo``bar``\n",
     "html": "<p>`foo<code>bar</code></p>\n",
     "section": "Code spans",
     "number": 349
   },
   {
+    "name": "single-asterisk-opens-emphasis",
     "markdown": "*foo bar*\n",
     "html": "<p><em>foo bar</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 350
   },
   {
+    "name": "space-after-opening-asterisk-not-emphasis",
     "markdown": "a * foo bar*\n",
     "html": "<p>a * foo bar*</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 351
   },
   {
+    "name": "asterisk-between-alnum-and-quote-not-emphasis",
     "markdown": "a*\"foo\"*\n",
     "html": "<p>a*&quot;foo&quot;*</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 352
   },
   {
+    "name": "asterisks-surrounded-by-spaces-literal",
     "markdown": "* a *\n",
     "html": "<p>* a *</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 353
   },
   {
+    "name": "asterisk-before-currency-punctuation-not-emphasis",
     "markdown": "*$*alpha.\n\n*£*bravo.\n\n*€*charlie.\n",
     "html": "<p>*$*alpha.</p>\n<p>*£*bravo.</p>\n<p>*€*charlie.</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 354
   },
   {
+    "name": "intraword-asterisk-emphasis-allowed",
     "markdown": "foo*bar*\n",
     "html": "<p>foo<em>bar</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 355
   },
   {
+    "name": "asterisk-emphasis-between-digits",
     "markdown": "5*6*78\n",
     "html": "<p>5<em>6</em>78</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 356
   },
   {
+    "name": "single-underscore-opens-emphasis",
     "markdown": "_foo bar_\n",
     "html": "<p><em>foo bar</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 357
   },
   {
+    "name": "space-after-opening-underscore-not-emphasis",
     "markdown": "_ foo bar_\n",
     "html": "<p>_ foo bar_</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 358
   },
   {
+    "name": "underscore-between-alnum-and-quote-not-emphasis",
     "markdown": "a_\"foo\"_\n",
     "html": "<p>a_&quot;foo&quot;_</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 359
   },
   {
+    "name": "intraword-underscore-not-emphasis",
     "markdown": "foo_bar_\n",
     "html": "<p>foo_bar_</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 360
   },
   {
+    "name": "underscore-between-digits-not-emphasis",
     "markdown": "5_6_78\n",
     "html": "<p>5_6_78</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 361
   },
   {
+    "name": "intraword-underscore-cyrillic-not-emphasis",
     "markdown": "пристаням_стремятся_\n",
     "html": "<p>пристаням_стремятся_</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 362
   },
   {
+    "name": "underscore-flanked-by-alnum-and-quotes-literal",
     "markdown": "aa_\"bb\"_cc\n",
     "html": "<p>aa_&quot;bb&quot;_cc</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 363
   },
   {
+    "name": "underscore-after-hyphen-opens-emphasis",
     "markdown": "foo-_(bar)_\n",
     "html": "<p>foo-<em>(bar)</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 364
   },
   {
+    "name": "mismatched-underscore-asterisk-delimiters-literal",
     "markdown": "_foo*\n",
     "html": "<p>_foo*</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 365
   },
   {
+    "name": "space-before-closing-asterisk-not-emphasis",
     "markdown": "*foo bar *\n",
     "html": "<p>*foo bar *</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 366
   },
   {
+    "name": "newline-before-closing-asterisk-not-emphasis",
     "markdown": "*foo bar\n*\n",
     "html": "<p>*foo bar\n*</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 367
   },
   {
+    "name": "inner-asterisk-left-flanking-only-not-closer",
     "markdown": "*(*foo)\n",
     "html": "<p>*(*foo)</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 368
   },
   {
+    "name": "nested-asterisk-emphasis-with-parens",
     "markdown": "*(*foo*)*\n",
     "html": "<p><em>(<em>foo</em>)</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 369
   },
   {
+    "name": "asterisk-emphasis-closes-before-word",
     "markdown": "*foo*bar\n",
     "html": "<p><em>foo</em>bar</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 370
   },
   {
+    "name": "space-before-closing-underscore-not-emphasis",
     "markdown": "_foo bar _\n",
     "html": "<p>_foo bar _</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 371
   },
   {
+    "name": "inner-underscore-left-flanking-only-not-closer",
     "markdown": "_(_foo)\n",
     "html": "<p>_(_foo)</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 372
   },
   {
+    "name": "nested-underscore-emphasis-with-parens",
     "markdown": "_(_foo_)_\n",
     "html": "<p><em>(<em>foo</em>)</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 373
   },
   {
+    "name": "underscore-cannot-close-before-word",
     "markdown": "_foo_bar\n",
     "html": "<p>_foo_bar</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 374
   },
   {
+    "name": "underscore-cannot-close-intraword-cyrillic",
     "markdown": "_пристаням_стремятся\n",
     "html": "<p>_пристаням_стремятся</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 375
   },
   {
+    "name": "underscore-emphasis-spans-intraword-underscores",
     "markdown": "_foo_bar_baz_\n",
     "html": "<p><em>foo_bar_baz</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 376
   },
   {
+    "name": "underscore-emphasis-closes-before-period",
     "markdown": "_(bar)_.\n",
     "html": "<p><em>(bar)</em>.</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 377
   },
   {
+    "name": "double-asterisk-opens-strong",
     "markdown": "**foo bar**\n",
     "html": "<p><strong>foo bar</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 378
   },
   {
+    "name": "space-after-opening-double-asterisk-not-strong",
     "markdown": "** foo bar**\n",
     "html": "<p>** foo bar**</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 379
   },
   {
+    "name": "double-asterisk-between-alnum-and-quote-not-strong",
     "markdown": "a**\"foo\"**\n",
     "html": "<p>a**&quot;foo&quot;**</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 380
   },
   {
+    "name": "intraword-double-asterisk-strong-allowed",
     "markdown": "foo**bar**\n",
     "html": "<p>foo<strong>bar</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 381
   },
   {
+    "name": "double-underscore-opens-strong",
     "markdown": "__foo bar__\n",
     "html": "<p><strong>foo bar</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 382
   },
   {
+    "name": "space-after-opening-double-underscore-not-strong",
     "markdown": "__ foo bar__\n",
     "html": "<p>__ foo bar__</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 383
   },
   {
+    "name": "newline-after-opening-double-underscore-not-strong",
     "markdown": "__\nfoo bar__\n",
     "html": "<p>__\nfoo bar__</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 384
   },
   {
+    "name": "double-underscore-between-alnum-and-quote-not-strong",
     "markdown": "a__\"foo\"__\n",
     "html": "<p>a__&quot;foo&quot;__</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 385
   },
   {
+    "name": "intraword-double-underscore-not-strong",
     "markdown": "foo__bar__\n",
     "html": "<p>foo__bar__</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 386
   },
   {
+    "name": "double-underscore-between-digits-not-strong",
     "markdown": "5__6__78\n",
     "html": "<p>5__6__78</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 387
   },
   {
+    "name": "intraword-double-underscore-cyrillic-not-strong",
     "markdown": "пристаням__стремятся__\n",
     "html": "<p>пристаням__стремятся__</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 388
   },
   {
+    "name": "nested-double-underscore-strong-inside-strong",
     "markdown": "__foo, __bar__, baz__\n",
     "html": "<p><strong>foo, <strong>bar</strong>, baz</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 389
   },
   {
+    "name": "double-underscore-after-hyphen-opens-strong",
     "markdown": "foo-__(bar)__\n",
     "html": "<p>foo-<strong>(bar)</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 390
   },
   {
+    "name": "space-before-closing-double-asterisk-not-strong",
     "markdown": "**foo bar **\n",
     "html": "<p>**foo bar **</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 391
   },
   {
+    "name": "inner-double-asterisk-after-paren-not-closer",
     "markdown": "**(**foo)\n",
     "html": "<p>**(**foo)</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 392
   },
   {
+    "name": "strong-nested-in-asterisk-emphasis-with-parens",
     "markdown": "*(**foo**)*\n",
     "html": "<p><em>(<strong>foo</strong>)</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 393
   },
   {
+    "name": "strong-with-nested-emphasis-multiline",
     "markdown": "**Gomphocarpus (*Gomphocarpus physocarpus*, syn.\n*Asclepias physocarpa*)**\n",
     "html": "<p><strong>Gomphocarpus (<em>Gomphocarpus physocarpus</em>, syn.\n<em>Asclepias physocarpa</em>)</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 394
   },
   {
+    "name": "strong-with-nested-emphasis-in-quotes",
     "markdown": "**foo \"*bar*\" foo**\n",
     "html": "<p><strong>foo &quot;<em>bar</em>&quot; foo</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 395
   },
   {
+    "name": "double-asterisk-strong-closes-before-word",
     "markdown": "**foo**bar\n",
     "html": "<p><strong>foo</strong>bar</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 396
   },
   {
+    "name": "space-before-closing-double-underscore-not-strong",
     "markdown": "__foo bar __\n",
     "html": "<p>__foo bar __</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 397
   },
   {
+    "name": "inner-double-underscore-after-paren-not-closer",
     "markdown": "__(__foo)\n",
     "html": "<p>__(__foo)</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 398
   },
   {
+    "name": "strong-nested-in-underscore-emphasis-with-parens",
     "markdown": "_(__foo__)_\n",
     "html": "<p><em>(<strong>foo</strong>)</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 399
   },
   {
+    "name": "double-underscore-cannot-close-before-word",
     "markdown": "__foo__bar\n",
     "html": "<p>__foo__bar</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 400
   },
   {
+    "name": "double-underscore-cannot-close-intraword-cyrillic",
     "markdown": "__пристаням__стремятся\n",
     "html": "<p>__пристаням__стремятся</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 401
   },
   {
+    "name": "double-underscore-strong-spans-intraword-underscores",
     "markdown": "__foo__bar__baz__\n",
     "html": "<p><strong>foo__bar__baz</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 402
   },
   {
+    "name": "double-underscore-strong-closes-before-period",
     "markdown": "__(bar)__.\n",
     "html": "<p><strong>(bar)</strong>.</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 403
   },
   {
+    "name": "asterisk-emphasis-contains-link",
     "markdown": "*foo [bar](/url)*\n",
     "html": "<p><em>foo <a href=\"/url\">bar</a></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 404
   },
   {
+    "name": "asterisk-emphasis-across-line-break",
     "markdown": "*foo\nbar*\n",
     "html": "<p><em>foo\nbar</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 405
   },
   {
+    "name": "underscore-emphasis-contains-double-underscore-strong",
     "markdown": "_foo __bar__ baz_\n",
     "html": "<p><em>foo <strong>bar</strong> baz</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 406
   },
   {
+    "name": "nested-underscore-emphasis-inside-emphasis",
     "markdown": "_foo _bar_ baz_\n",
     "html": "<p><em>foo <em>bar</em> baz</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 407
   },
   {
+    "name": "double-underscore-opens-nested-emphasis",
     "markdown": "__foo_ bar_\n",
     "html": "<p><em><em>foo</em> bar</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 408
   },
   {
+    "name": "nested-asterisk-emphasis-inside-emphasis",
     "markdown": "*foo *bar**\n",
     "html": "<p><em>foo <em>bar</em></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 409
   },
   {
+    "name": "asterisk-emphasis-contains-double-asterisk-strong",
     "markdown": "*foo **bar** baz*\n",
     "html": "<p><em>foo <strong>bar</strong> baz</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 410
   },
   {
+    "name": "asterisk-emphasis-contains-strong-no-spaces",
     "markdown": "*foo**bar**baz*\n",
     "html": "<p><em>foo<strong>bar</strong>baz</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 411
   },
   {
+    "name": "leftover-double-asterisk-literal-inside-emphasis",
     "markdown": "*foo**bar*\n",
     "html": "<p><em>foo**bar</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 412
   },
   {
+    "name": "leading-triple-asterisk-strong-inside-emphasis",
     "markdown": "***foo** bar*\n",
     "html": "<p><em><strong>foo</strong> bar</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 413
   },
   {
+    "name": "emphasis-with-trailing-strong-triple-close",
     "markdown": "*foo **bar***\n",
     "html": "<p><em>foo <strong>bar</strong></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 414
   },
   {
+    "name": "emphasis-with-trailing-strong-no-space-triple-close",
     "markdown": "*foo**bar***\n",
     "html": "<p><em>foo<strong>bar</strong></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 415
   },
   {
+    "name": "intraword-triple-asterisk-emphasis-and-strong",
     "markdown": "foo***bar***baz\n",
     "html": "<p>foo<em><strong>bar</strong></em>baz</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 416
   },
   {
+    "name": "many-asterisks-triple-nested-strong-with-leftover",
     "markdown": "foo******bar*********baz\n",
     "html": "<p>foo<strong><strong><strong>bar</strong></strong></strong>***baz</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 417
   },
   {
+    "name": "deeply-nested-emphasis-strong-emphasis",
     "markdown": "*foo **bar *baz* bim** bop*\n",
     "html": "<p><em>foo <strong>bar <em>baz</em> bim</strong> bop</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 418
   },
   {
+    "name": "emphasis-with-link-containing-emphasis",
     "markdown": "*foo [*bar*](/url)*\n",
     "html": "<p><em>foo <a href=\"/url\"><em>bar</em></a></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 419
   },
   {
+    "name": "lone-double-asterisk-not-empty-emphasis",
     "markdown": "** is not an empty emphasis\n",
     "html": "<p>** is not an empty emphasis</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 420
   },
   {
+    "name": "four-asterisks-not-empty-strong-emphasis",
     "markdown": "**** is not an empty strong emphasis\n",
     "html": "<p>**** is not an empty strong emphasis</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 421
   },
   {
+    "name": "double-asterisk-strong-contains-link",
     "markdown": "**foo [bar](/url)**\n",
     "html": "<p><strong>foo <a href=\"/url\">bar</a></strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 422
   },
   {
+    "name": "double-asterisk-strong-across-line-break",
     "markdown": "**foo\nbar**\n",
     "html": "<p><strong>foo\nbar</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 423
   },
   {
+    "name": "double-underscore-strong-contains-underscore-emphasis",
     "markdown": "__foo _bar_ baz__\n",
     "html": "<p><strong>foo <em>bar</em> baz</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 424
   },
   {
+    "name": "nested-double-underscore-strong-inside-strong-spaced",
     "markdown": "__foo __bar__ baz__\n",
     "html": "<p><strong>foo <strong>bar</strong> baz</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 425
   },
   {
+    "name": "quad-underscore-asymmetric-nested-strong",
     "markdown": "____foo__ bar__\n",
     "html": "<p><strong><strong>foo</strong> bar</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 426
   },
   {
+    "name": "nested-double-asterisk-strong-inside-strong",
     "markdown": "**foo **bar****\n",
     "html": "<p><strong>foo <strong>bar</strong></strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 427
   },
   {
+    "name": "double-asterisk-strong-contains-asterisk-emphasis",
     "markdown": "**foo *bar* baz**\n",
     "html": "<p><strong>foo <em>bar</em> baz</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 428
   },
   {
+    "name": "double-asterisk-strong-contains-emphasis-no-spaces",
     "markdown": "**foo*bar*baz**\n",
     "html": "<p><strong>foo<em>bar</em>baz</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 429
   },
   {
+    "name": "leading-triple-asterisk-emphasis-inside-strong",
     "markdown": "***foo* bar**\n",
     "html": "<p><strong><em>foo</em> bar</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 430
   },
   {
+    "name": "strong-with-trailing-emphasis-triple-close",
     "markdown": "**foo *bar***\n",
     "html": "<p><strong>foo <em>bar</em></strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 431
   },
   {
+    "name": "deeply-nested-strong-emphasis-strong-multiline",
     "markdown": "**foo *bar **baz**\nbim* bop**\n",
     "html": "<p><strong>foo <em>bar <strong>baz</strong>\nbim</em> bop</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 432
   },
   {
+    "name": "strong-with-link-containing-emphasis",
     "markdown": "**foo [*bar*](/url)**\n",
     "html": "<p><strong>foo <a href=\"/url\"><em>bar</em></a></strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 433
   },
   {
+    "name": "lone-double-underscore-not-empty-emphasis",
     "markdown": "__ is not an empty emphasis\n",
     "html": "<p>__ is not an empty emphasis</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 434
   },
   {
+    "name": "four-underscores-not-empty-strong-emphasis",
     "markdown": "____ is not an empty strong emphasis\n",
     "html": "<p>____ is not an empty strong emphasis</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 435
   },
   {
+    "name": "trailing-triple-asterisk-literal",
     "markdown": "foo ***\n",
     "html": "<p>foo ***</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 436
   },
   {
+    "name": "escaped-asterisk-inside-asterisk-emphasis",
     "markdown": "foo *\\**\n",
     "html": "<p>foo <em>*</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 437
   },
   {
+    "name": "underscore-literal-inside-asterisk-emphasis",
     "markdown": "foo *_*\n",
     "html": "<p>foo <em>_</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 438
   },
   {
+    "name": "five-asterisks-literal",
     "markdown": "foo *****\n",
     "html": "<p>foo *****</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 439
   },
   {
+    "name": "escaped-asterisk-inside-double-asterisk-strong",
     "markdown": "foo **\\***\n",
     "html": "<p>foo <strong>*</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 440
   },
   {
+    "name": "underscore-literal-inside-double-asterisk-strong",
     "markdown": "foo **_**\n",
     "html": "<p>foo <strong>_</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 441
   },
   {
+    "name": "leftover-asterisk-before-emphasis",
     "markdown": "**foo*\n",
     "html": "<p>*<em>foo</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 442
   },
   {
+    "name": "leftover-asterisk-after-emphasis",
     "markdown": "*foo**\n",
     "html": "<p><em>foo</em>*</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 443
   },
   {
+    "name": "leftover-asterisk-before-strong",
     "markdown": "***foo**\n",
     "html": "<p>*<strong>foo</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 444
   },
   {
+    "name": "three-leftover-asterisks-before-emphasis",
     "markdown": "****foo*\n",
     "html": "<p>***<em>foo</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 445
   },
   {
+    "name": "leftover-asterisk-after-strong",
     "markdown": "**foo***\n",
     "html": "<p><strong>foo</strong>*</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 446
   },
   {
+    "name": "three-leftover-asterisks-after-emphasis",
     "markdown": "*foo****\n",
     "html": "<p><em>foo</em>***</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 447
   },
   {
+    "name": "trailing-triple-underscore-literal",
     "markdown": "foo ___\n",
     "html": "<p>foo ___</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 448
   },
   {
+    "name": "escaped-underscore-inside-underscore-emphasis",
     "markdown": "foo _\\__\n",
     "html": "<p>foo <em>_</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 449
   },
   {
+    "name": "asterisk-literal-inside-underscore-emphasis",
     "markdown": "foo _*_\n",
     "html": "<p>foo <em>*</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 450
   },
   {
+    "name": "five-underscores-literal",
     "markdown": "foo _____\n",
     "html": "<p>foo _____</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 451
   },
   {
+    "name": "escaped-underscore-inside-double-underscore-strong",
     "markdown": "foo __\\___\n",
     "html": "<p>foo <strong>_</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 452
   },
   {
+    "name": "asterisk-literal-inside-double-underscore-strong",
     "markdown": "foo __*__\n",
     "html": "<p>foo <strong>*</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 453
   },
   {
+    "name": "leftover-underscore-before-emphasis",
     "markdown": "__foo_\n",
     "html": "<p>_<em>foo</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 454
   },
   {
+    "name": "leftover-underscore-after-emphasis",
     "markdown": "_foo__\n",
     "html": "<p><em>foo</em>_</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 455
   },
   {
+    "name": "leftover-underscore-before-strong",
     "markdown": "___foo__\n",
     "html": "<p>_<strong>foo</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 456
   },
   {
+    "name": "three-leftover-underscores-before-emphasis",
     "markdown": "____foo_\n",
     "html": "<p>___<em>foo</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 457
   },
   {
+    "name": "leftover-underscore-after-strong",
     "markdown": "__foo___\n",
     "html": "<p><strong>foo</strong>_</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 458
   },
   {
+    "name": "three-leftover-underscores-after-emphasis",
     "markdown": "_foo____\n",
     "html": "<p><em>foo</em>___</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 459
   },
   {
+    "name": "double-asterisk-strong-single-word",
     "markdown": "**foo**\n",
     "html": "<p><strong>foo</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 460
   },
   {
+    "name": "asterisk-emphasis-wraps-underscore-emphasis",
     "markdown": "*_foo_*\n",
     "html": "<p><em><em>foo</em></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 461
   },
   {
+    "name": "double-underscore-strong-single-word",
     "markdown": "__foo__\n",
     "html": "<p><strong>foo</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 462
   },
   {
+    "name": "underscore-emphasis-wraps-asterisk-emphasis",
     "markdown": "_*foo*_\n",
     "html": "<p><em><em>foo</em></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 463
   },
   {
+    "name": "quad-asterisk-balanced-nested-strong",
     "markdown": "****foo****\n",
     "html": "<p><strong><strong>foo</strong></strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 464
   },
   {
+    "name": "quad-underscore-balanced-nested-strong",
     "markdown": "____foo____\n",
     "html": "<p><strong><strong>foo</strong></strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 465
   },
   {
+    "name": "six-asterisks-triple-nested-strong",
     "markdown": "******foo******\n",
     "html": "<p><strong><strong><strong>foo</strong></strong></strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 466
   },
   {
+    "name": "triple-asterisk-emphasis-wraps-strong",
     "markdown": "***foo***\n",
     "html": "<p><em><strong>foo</strong></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 467
   },
   {
+    "name": "five-underscores-emphasis-wraps-nested-strong",
     "markdown": "_____foo_____\n",
     "html": "<p><em><strong><strong>foo</strong></strong></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 468
   },
   {
+    "name": "overlapping-asterisk-underscore-no-cross-nesting",
     "markdown": "*foo _bar* baz_\n",
     "html": "<p><em>foo _bar</em> baz_</p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 469
   },
   {
+    "name": "emphasis-strong-with-stray-inner-asterisk",
     "markdown": "*foo __bar *baz bim__ bam*\n",
     "html": "<p><em>foo <strong>bar *baz bim</strong> bam</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 470
   },
   {
+    "name": "unmatched-leading-double-asterisk-then-strong",
     "markdown": "**foo **bar baz**\n",
     "html": "<p>**foo <strong>bar baz</strong></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 471
   },
   {
+    "name": "unmatched-leading-asterisk-then-emphasis",
     "markdown": "*foo *bar baz*\n",
     "html": "<p>*foo <em>bar baz</em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 472
   },
   {
+    "name": "asterisk-emphasis-cannot-cross-link-boundary",
     "markdown": "*[bar*](/url)\n",
     "html": "<p>*<a href=\"/url\">bar*</a></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 473
   },
   {
+    "name": "underscore-emphasis-cannot-cross-link-boundary",
     "markdown": "_foo [bar_](/url)\n",
     "html": "<p>_foo <a href=\"/url\">bar_</a></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 474
   },
   {
+    "name": "asterisk-emphasis-cannot-cross-html-tag",
     "markdown": "*<img src=\"foo\" title=\"*\"/>\n",
     "html": "<p>*<img src=\"foo\" title=\"*\"/></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 475
   },
   {
+    "name": "double-asterisk-strong-cannot-cross-html-attribute",
     "markdown": "**<a href=\"**\">\n",
     "html": "<p>**<a href=\"**\"></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 476
   },
   {
+    "name": "double-underscore-strong-cannot-cross-html-attribute",
     "markdown": "__<a href=\"__\">\n",
     "html": "<p>__<a href=\"__\"></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 477
   },
   {
+    "name": "asterisk-emphasis-with-code-span-containing-asterisk",
     "markdown": "*a `*`*\n",
     "html": "<p><em>a <code>*</code></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 478
   },
   {
+    "name": "underscore-emphasis-with-code-span-containing-underscore",
     "markdown": "_a `_`_\n",
     "html": "<p><em>a <code>_</code></em></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 479
   },
   {
+    "name": "double-asterisk-strong-cannot-cross-autolink",
     "markdown": "**a<https://foo.bar/?q=**>\n",
     "html": "<p>**a<a href=\"https://foo.bar/?q=**\">https://foo.bar/?q=**</a></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 480
   },
   {
+    "name": "double-underscore-strong-cannot-cross-autolink",
     "markdown": "__a<https://foo.bar/?q=__>\n",
     "html": "<p>__a<a href=\"https://foo.bar/?q=__\">https://foo.bar/?q=__</a></p>\n",
     "section": "Emphasis and strong emphasis",
     "number": 481
   },
   {
+    "name": "inline-link-with-title",
     "markdown": "[link](/uri \"title\")\n",
     "html": "<p><a href=\"/uri\" title=\"title\">link</a></p>\n",
     "section": "Links",
     "number": 482
   },
   {
+    "name": "inline-link-without-title",
     "markdown": "[link](/uri)\n",
     "html": "<p><a href=\"/uri\">link</a></p>\n",
     "section": "Links",
     "number": 483
   },
   {
+    "name": "link-with-empty-text",
     "markdown": "[](./target.md)\n",
     "html": "<p><a href=\"./target.md\"></a></p>\n",
     "section": "Links",
     "number": 484
   },
   {
+    "name": "link-with-empty-destination",
     "markdown": "[link]()\n",
     "html": "<p><a href=\"\">link</a></p>\n",
     "section": "Links",
     "number": 485
   },
   {
+    "name": "link-with-empty-angle-bracket-destination",
     "markdown": "[link](<>)\n",
     "html": "<p><a href=\"\">link</a></p>\n",
     "section": "Links",
     "number": 486
   },
   {
+    "name": "link-with-empty-text-and-destination",
     "markdown": "[]()\n",
     "html": "<p><a href=\"\"></a></p>\n",
     "section": "Links",
     "number": 487
   },
   {
+    "name": "destination-with-unescaped-space-not-link",
     "markdown": "[link](/my uri)\n",
     "html": "<p>[link](/my uri)</p>\n",
     "section": "Links",
     "number": 488
   },
   {
+    "name": "angle-bracket-destination-with-space",
     "markdown": "[link](</my uri>)\n",
     "html": "<p><a href=\"/my%20uri\">link</a></p>\n",
     "section": "Links",
     "number": 489
   },
   {
+    "name": "destination-spanning-lines-not-link",
     "markdown": "[link](foo\nbar)\n",
     "html": "<p>[link](foo\nbar)</p>\n",
     "section": "Links",
     "number": 490
   },
   {
+    "name": "angle-bracket-destination-with-newline-not-link",
     "markdown": "[link](<foo\nbar>)\n",
     "html": "<p>[link](<foo\nbar>)</p>\n",
     "section": "Links",
     "number": 491
   },
   {
+    "name": "angle-bracket-destination-with-parenthesis",
     "markdown": "[a](<b)c>)\n",
     "html": "<p><a href=\"b)c\">a</a></p>\n",
     "section": "Links",
     "number": 492
   },
   {
+    "name": "unmatched-angle-bracket-destination-not-link",
     "markdown": "[link](<foo\\>)\n",
     "html": "<p>[link](&lt;foo&gt;)</p>\n",
     "section": "Links",
     "number": 493
   },
   {
+    "name": "multiple-unmatched-angle-bracket-destinations",
     "markdown": "[a](<b)c\n[a](<b)c>\n[a](<b>c)\n",
     "html": "<p>[a](&lt;b)c\n[a](&lt;b)c&gt;\n[a](<b>c)</p>\n",
     "section": "Links",
     "number": 494
   },
   {
+    "name": "destination-with-escaped-parentheses",
     "markdown": "[link](\\(foo\\))\n",
     "html": "<p><a href=\"(foo)\">link</a></p>\n",
     "section": "Links",
     "number": 495
   },
   {
+    "name": "destination-with-balanced-nested-parentheses",
     "markdown": "[link](foo(and(bar)))\n",
     "html": "<p><a href=\"foo(and(bar))\">link</a></p>\n",
     "section": "Links",
     "number": 496
   },
   {
+    "name": "destination-with-unbalanced-parentheses-not-link",
     "markdown": "[link](foo(and(bar))\n",
     "html": "<p>[link](foo(and(bar))</p>\n",
     "section": "Links",
     "number": 497
   },
   {
+    "name": "destination-with-escaped-unbalanced-parentheses",
     "markdown": "[link](foo\\(and\\(bar\\))\n",
     "html": "<p><a href=\"foo(and(bar)\">link</a></p>\n",
     "section": "Links",
     "number": 498
   },
   {
+    "name": "angle-bracket-destination-with-unbalanced-parentheses",
     "markdown": "[link](<foo(and(bar)>)\n",
     "html": "<p><a href=\"foo(and(bar)\">link</a></p>\n",
     "section": "Links",
     "number": 499
   },
   {
+    "name": "destination-with-escaped-paren-and-colon",
     "markdown": "[link](foo\\)\\:)\n",
     "html": "<p><a href=\"foo):\">link</a></p>\n",
     "section": "Links",
     "number": 500
   },
   {
+    "name": "destination-with-fragment-and-query",
     "markdown": "[link](#fragment)\n\n[link](https://example.com#fragment)\n\n[link](https://example.com?foo=3#frag)\n",
     "html": "<p><a href=\"#fragment\">link</a></p>\n<p><a href=\"https://example.com#fragment\">link</a></p>\n<p><a href=\"https://example.com?foo=3#frag\">link</a></p>\n",
     "section": "Links",
     "number": 501
   },
   {
+    "name": "destination-with-backslash-percent-encoded",
     "markdown": "[link](foo\\bar)\n",
     "html": "<p><a href=\"foo%5Cbar\">link</a></p>\n",
     "section": "Links",
     "number": 502
   },
   {
+    "name": "destination-with-entity-and-percent-encoding",
     "markdown": "[link](foo%20b&auml;)\n",
     "html": "<p><a href=\"foo%20b%C3%A4\">link</a></p>\n",
     "section": "Links",
     "number": 503
   },
   {
+    "name": "quotes-as-destination-without-whitespace",
     "markdown": "[link](\"title\")\n",
     "html": "<p><a href=\"%22title%22\">link</a></p>\n",
     "section": "Links",
     "number": 504
   },
   {
+    "name": "title-with-different-delimiters",
     "markdown": "[link](/url \"title\")\n[link](/url 'title')\n[link](/url (title))\n",
     "html": "<p><a href=\"/url\" title=\"title\">link</a>\n<a href=\"/url\" title=\"title\">link</a>\n<a href=\"/url\" title=\"title\">link</a></p>\n",
     "section": "Links",
     "number": 505
   },
   {
+    "name": "title-with-escapes-and-entities",
     "markdown": "[link](/url \"title \\\"&quot;\")\n",
     "html": "<p><a href=\"/url\" title=\"title &quot;&quot;\">link</a></p>\n",
     "section": "Links",
     "number": 506
   },
   {
+    "name": "nonbreaking-space-not-title-separator",
     "markdown": "[link](/url \"title\")\n",
     "html": "<p><a href=\"/url%C2%A0%22title%22\">link</a></p>\n",
     "section": "Links",
     "number": 507
   },
   {
+    "name": "title-with-nested-double-quotes-not-link",
     "markdown": "[link](/url \"title \"and\" title\")\n",
     "html": "<p>[link](/url &quot;title &quot;and&quot; title&quot;)</p>\n",
     "section": "Links",
     "number": 508
   },
   {
+    "name": "single-quoted-title-with-double-quotes",
     "markdown": "[link](/url 'title \"and\" title')\n",
     "html": "<p><a href=\"/url\" title=\"title &quot;and&quot; title\">link</a></p>\n",
     "section": "Links",
     "number": 509
   },
   {
+    "name": "whitespace-around-destination-and-title",
     "markdown": "[link](   /uri\n  \"title\"  )\n",
     "html": "<p><a href=\"/uri\" title=\"title\">link</a></p>\n",
     "section": "Links",
     "number": 510
   },
   {
+    "name": "space-between-text-and-destination-not-link",
     "markdown": "[link] (/uri)\n",
     "html": "<p>[link] (/uri)</p>\n",
     "section": "Links",
     "number": 511
   },
   {
+    "name": "nested-brackets-in-link-text",
     "markdown": "[link [foo [bar]]](/uri)\n",
     "html": "<p><a href=\"/uri\">link [foo [bar]]</a></p>\n",
     "section": "Links",
     "number": 512
   },
   {
+    "name": "unbalanced-brackets-in-text-not-link",
     "markdown": "[link] bar](/uri)\n",
     "html": "<p>[link] bar](/uri)</p>\n",
     "section": "Links",
     "number": 513
   },
   {
+    "name": "inner-bracket-forms-link",
     "markdown": "[link [bar](/uri)\n",
     "html": "<p>[link <a href=\"/uri\">bar</a></p>\n",
     "section": "Links",
     "number": 514
   },
   {
+    "name": "escaped-bracket-in-link-text",
     "markdown": "[link \\[bar](/uri)\n",
     "html": "<p><a href=\"/uri\">link [bar</a></p>\n",
     "section": "Links",
     "number": 515
   },
   {
+    "name": "inline-markup-in-link-text",
     "markdown": "[link *foo **bar** `#`*](/uri)\n",
     "html": "<p><a href=\"/uri\">link <em>foo <strong>bar</strong> <code>#</code></em></a></p>\n",
     "section": "Links",
     "number": 516
   },
   {
+    "name": "image-inside-link",
     "markdown": "[![moon](moon.jpg)](/uri)\n",
     "html": "<p><a href=\"/uri\"><img src=\"moon.jpg\" alt=\"moon\" /></a></p>\n",
     "section": "Links",
     "number": 517
   },
   {
+    "name": "link-not-nested-inside-link",
     "markdown": "[foo [bar](/uri)](/uri)\n",
     "html": "<p>[foo <a href=\"/uri\">bar</a>](/uri)</p>\n",
     "section": "Links",
     "number": 518
   },
   {
+    "name": "nested-links-not-allowed-with-emphasis",
     "markdown": "[foo *[bar [baz](/uri)](/uri)*](/uri)\n",
     "html": "<p>[foo <em>[bar <a href=\"/uri\">baz</a>](/uri)</em>](/uri)</p>\n",
     "section": "Links",
     "number": 519
   },
   {
+    "name": "image-text-may-contain-links",
     "markdown": "![[[foo](uri1)](uri2)](uri3)\n",
     "html": "<p><img src=\"uri3\" alt=\"[foo](uri2)\" /></p>\n",
     "section": "Links",
     "number": 520
   },
   {
+    "name": "link-takes-precedence-over-emphasis",
     "markdown": "*[foo*](/uri)\n",
     "html": "<p>*<a href=\"/uri\">foo*</a></p>\n",
     "section": "Links",
     "number": 521
   },
   {
+    "name": "brackets-bind-tighter-than-emphasis",
     "markdown": "[foo *bar](baz*)\n",
     "html": "<p><a href=\"baz*\">foo *bar</a></p>\n",
     "section": "Links",
     "number": 522
   },
   {
+    "name": "emphasis-spanning-unmatched-bracket",
     "markdown": "*foo [bar* baz]\n",
     "html": "<p><em>foo [bar</em> baz]</p>\n",
     "section": "Links",
     "number": 523
   },
   {
+    "name": "html-tag-takes-precedence-over-link",
     "markdown": "[foo <bar attr=\"](baz)\">\n",
     "html": "<p>[foo <bar attr=\"](baz)\"></p>\n",
     "section": "Links",
     "number": 524
   },
   {
+    "name": "code-span-takes-precedence-over-link",
     "markdown": "[foo`](/uri)`\n",
     "html": "<p>[foo<code>](/uri)</code></p>\n",
     "section": "Links",
     "number": 525
   },
   {
+    "name": "autolink-takes-precedence-over-link",
     "markdown": "[foo<https://example.com/?search=](uri)>\n",
     "html": "<p>[foo<a href=\"https://example.com/?search=%5D(uri)\">https://example.com/?search=](uri)</a></p>\n",
     "section": "Links",
     "number": 526
   },
   {
+    "name": "full-reference-link",
     "markdown": "[foo][bar]\n\n[bar]: /url \"title\"\n",
     "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>\n",
     "section": "Links",
     "number": 527
   },
   {
+    "name": "nested-brackets-in-reference-text",
     "markdown": "[link [foo [bar]]][ref]\n\n[ref]: /uri\n",
     "html": "<p><a href=\"/uri\">link [foo [bar]]</a></p>\n",
     "section": "Links",
     "number": 528
   },
   {
+    "name": "escaped-bracket-in-reference-text",
     "markdown": "[link \\[bar][ref]\n\n[ref]: /uri\n",
     "html": "<p><a href=\"/uri\">link [bar</a></p>\n",
     "section": "Links",
     "number": 529
   },
   {
+    "name": "inline-markup-in-reference-text",
     "markdown": "[link *foo **bar** `#`*][ref]\n\n[ref]: /uri\n",
     "html": "<p><a href=\"/uri\">link <em>foo <strong>bar</strong> <code>#</code></em></a></p>\n",
     "section": "Links",
     "number": 530
   },
   {
+    "name": "image-in-reference-link-text",
     "markdown": "[![moon](moon.jpg)][ref]\n\n[ref]: /uri\n",
     "html": "<p><a href=\"/uri\"><img src=\"moon.jpg\" alt=\"moon\" /></a></p>\n",
     "section": "Links",
     "number": 531
   },
   {
+    "name": "inline-link-inside-reference-text",
     "markdown": "[foo [bar](/uri)][ref]\n\n[ref]: /uri\n",
     "html": "<p>[foo <a href=\"/uri\">bar</a>]<a href=\"/uri\">ref</a></p>\n",
     "section": "Links",
     "number": 532
   },
   {
+    "name": "nested-link-in-reference-text-with-emphasis",
     "markdown": "[foo *bar [baz][ref]*][ref]\n\n[ref]: /uri\n",
     "html": "<p>[foo <em>bar <a href=\"/uri\">baz</a></em>]<a href=\"/uri\">ref</a></p>\n",
     "section": "Links",
     "number": 533
   },
   {
+    "name": "reference-link-precedence-over-emphasis",
     "markdown": "*[foo*][ref]\n\n[ref]: /uri\n",
     "html": "<p>*<a href=\"/uri\">foo*</a></p>\n",
     "section": "Links",
     "number": 534
   },
   {
+    "name": "reference-link-binds-tighter-than-emphasis",
     "markdown": "[foo *bar][ref]*\n\n[ref]: /uri\n",
     "html": "<p><a href=\"/uri\">foo *bar</a>*</p>\n",
     "section": "Links",
     "number": 535
   },
   {
+    "name": "html-tag-precedence-over-reference-link",
     "markdown": "[foo <bar attr=\"][ref]\">\n\n[ref]: /uri\n",
     "html": "<p>[foo <bar attr=\"][ref]\"></p>\n",
     "section": "Links",
     "number": 536
   },
   {
+    "name": "code-span-precedence-over-reference-link",
     "markdown": "[foo`][ref]`\n\n[ref]: /uri\n",
     "html": "<p>[foo<code>][ref]</code></p>\n",
     "section": "Links",
     "number": 537
   },
   {
+    "name": "autolink-precedence-over-reference-link",
     "markdown": "[foo<https://example.com/?search=][ref]>\n\n[ref]: /uri\n",
     "html": "<p>[foo<a href=\"https://example.com/?search=%5D%5Bref%5D\">https://example.com/?search=][ref]</a></p>\n",
     "section": "Links",
     "number": 538
   },
   {
+    "name": "case-insensitive-reference-label",
     "markdown": "[foo][BaR]\n\n[bar]: /url \"title\"\n",
     "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>\n",
     "section": "Links",
     "number": 539
   },
   {
+    "name": "unicode-case-fold-label-matching",
     "markdown": "[ẞ]\n\n[SS]: /url\n",
     "html": "<p><a href=\"/url\">ẞ</a></p>\n",
     "section": "Links",
     "number": 540
   },
   {
+    "name": "reference-label-internal-whitespace-collapsed",
     "markdown": "[Foo\n  bar]: /url\n\n[Baz][Foo bar]\n",
     "html": "<p><a href=\"/url\">Baz</a></p>\n",
     "section": "Links",
     "number": 541
   },
   {
+    "name": "unmatched-label-followed-by-reference",
     "markdown": "[foo] [bar]\n\n[bar]: /url \"title\"\n",
     "html": "<p>[foo] <a href=\"/url\" title=\"title\">bar</a></p>\n",
     "section": "Links",
     "number": 542
   },
   {
+    "name": "labels-separated-by-newline",
     "markdown": "[foo]\n[bar]\n\n[bar]: /url \"title\"\n",
     "html": "<p>[foo]\n<a href=\"/url\" title=\"title\">bar</a></p>\n",
     "section": "Links",
     "number": 543
   },
   {
+    "name": "first-of-duplicate-definitions-wins",
     "markdown": "[foo]: /url1\n\n[foo]: /url2\n\n[bar][foo]\n",
     "html": "<p><a href=\"/url1\">bar</a></p>\n",
     "section": "Links",
     "number": 544
   },
   {
+    "name": "backslash-in-label-prevents-match",
     "markdown": "[bar][foo\\!]\n\n[foo!]: /url\n",
     "html": "<p>[bar][foo!]</p>\n",
     "section": "Links",
     "number": 545
   },
   {
+    "name": "unescaped-bracket-in-label-invalid",
     "markdown": "[foo][ref[]\n\n[ref[]: /uri\n",
     "html": "<p>[foo][ref[]</p>\n<p>[ref[]: /uri</p>\n",
     "section": "Links",
     "number": 546
   },
   {
+    "name": "nested-brackets-in-label-invalid",
     "markdown": "[foo][ref[bar]]\n\n[ref[bar]]: /uri\n",
     "html": "<p>[foo][ref[bar]]</p>\n<p>[ref[bar]]: /uri</p>\n",
     "section": "Links",
     "number": 547
   },
   {
+    "name": "triple-nested-brackets-invalid-label",
     "markdown": "[[[foo]]]\n\n[[[foo]]]: /url\n",
     "html": "<p>[[[foo]]]</p>\n<p>[[[foo]]]: /url</p>\n",
     "section": "Links",
     "number": 548
   },
   {
+    "name": "escaped-bracket-in-label-valid",
     "markdown": "[foo][ref\\[]\n\n[ref\\[]: /uri\n",
     "html": "<p><a href=\"/uri\">foo</a></p>\n",
     "section": "Links",
     "number": 549
   },
   {
+    "name": "escaped-backslash-in-label",
     "markdown": "[bar\\\\]: /uri\n\n[bar\\\\]\n",
     "html": "<p><a href=\"/uri\">bar\\</a></p>\n",
     "section": "Links",
     "number": 550
   },
   {
+    "name": "empty-label-not-link",
     "markdown": "[]\n\n[]: /uri\n",
     "html": "<p>[]</p>\n<p>[]: /uri</p>\n",
     "section": "Links",
     "number": 551
   },
   {
+    "name": "whitespace-only-label-not-link",
     "markdown": "[\n ]\n\n[\n ]: /uri\n",
     "html": "<p>[\n]</p>\n<p>[\n]: /uri</p>\n",
     "section": "Links",
     "number": 552
   },
   {
+    "name": "collapsed-reference-link",
     "markdown": "[foo][]\n\n[foo]: /url \"title\"\n",
     "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>\n",
     "section": "Links",
     "number": 553
   },
   {
+    "name": "collapsed-reference-with-emphasis",
     "markdown": "[*foo* bar][]\n\n[*foo* bar]: /url \"title\"\n",
     "html": "<p><a href=\"/url\" title=\"title\"><em>foo</em> bar</a></p>\n",
     "section": "Links",
     "number": 554
   },
   {
+    "name": "collapsed-reference-case-insensitive",
     "markdown": "[Foo][]\n\n[foo]: /url \"title\"\n",
     "html": "<p><a href=\"/url\" title=\"title\">Foo</a></p>\n",
     "section": "Links",
     "number": 555
   },
   {
+    "name": "collapsed-brackets-not-joined-across-lines",
     "markdown": "[foo] \n[]\n\n[foo]: /url \"title\"\n",
     "html": "<p><a href=\"/url\" title=\"title\">foo</a>\n[]</p>\n",
     "section": "Links",
     "number": 556
   },
   {
+    "name": "shortcut-reference-link",
     "markdown": "[foo]\n\n[foo]: /url \"title\"\n",
     "html": "<p><a href=\"/url\" title=\"title\">foo</a></p>\n",
     "section": "Links",
     "number": 557
   },
   {
+    "name": "shortcut-reference-with-emphasis",
     "markdown": "[*foo* bar]\n\n[*foo* bar]: /url \"title\"\n",
     "html": "<p><a href=\"/url\" title=\"title\"><em>foo</em> bar</a></p>\n",
     "section": "Links",
     "number": 558
   },
   {
+    "name": "shortcut-reference-inside-brackets",
     "markdown": "[[*foo* bar]]\n\n[*foo* bar]: /url \"title\"\n",
     "html": "<p>[<a href=\"/url\" title=\"title\"><em>foo</em> bar</a>]</p>\n",
     "section": "Links",
     "number": 559
   },
   {
+    "name": "shortcut-reference-after-unmatched-brackets",
     "markdown": "[[bar [foo]\n\n[foo]: /url\n",
     "html": "<p>[[bar <a href=\"/url\">foo</a></p>\n",
     "section": "Links",
     "number": 560
   },
   {
+    "name": "shortcut-reference-case-insensitive",
     "markdown": "[Foo]\n\n[foo]: /url \"title\"\n",
     "html": "<p><a href=\"/url\" title=\"title\">Foo</a></p>\n",
     "section": "Links",
     "number": 561
   },
   {
+    "name": "shortcut-reference-followed-by-text",
     "markdown": "[foo] bar\n\n[foo]: /url\n",
     "html": "<p><a href=\"/url\">foo</a> bar</p>\n",
     "section": "Links",
     "number": 562
   },
   {
+    "name": "escaped-opening-bracket-not-link",
     "markdown": "\\[foo]\n\n[foo]: /url \"title\"\n",
     "html": "<p>[foo]</p>\n",
     "section": "Links",
     "number": 563
   },
   {
+    "name": "shortcut-reference-with-asterisk-and-emphasis",
     "markdown": "[foo*]: /url\n\n*[foo*]\n",
     "html": "<p>*<a href=\"/url\">foo*</a></p>\n",
     "section": "Links",
     "number": 564
   },
   {
+    "name": "full-reference-uses-second-label",
     "markdown": "[foo][bar]\n\n[foo]: /url1\n[bar]: /url2\n",
     "html": "<p><a href=\"/url2\">foo</a></p>\n",
     "section": "Links",
     "number": 565
   },
   {
+    "name": "collapsed-reference-preferred-over-shortcut",
     "markdown": "[foo][]\n\n[foo]: /url1\n",
     "html": "<p><a href=\"/url1\">foo</a></p>\n",
     "section": "Links",
     "number": 566
   },
   {
+    "name": "inline-empty-destination-over-reference",
     "markdown": "[foo]()\n\n[foo]: /url1\n",
     "html": "<p><a href=\"\">foo</a></p>\n",
     "section": "Links",
     "number": 567
   },
   {
+    "name": "invalid-inline-falls-back-to-shortcut",
     "markdown": "[foo](not a link)\n\n[foo]: /url1\n",
     "html": "<p><a href=\"/url1\">foo</a>(not a link)</p>\n",
     "section": "Links",
     "number": 568
   },
   {
+    "name": "chained-references-only-baz-defined",
     "markdown": "[foo][bar][baz]\n\n[baz]: /url\n",
     "html": "<p>[foo]<a href=\"/url\">bar</a></p>\n",
     "section": "Links",
     "number": 569
   },
   {
+    "name": "chained-references-baz-and-bar-defined",
     "markdown": "[foo][bar][baz]\n\n[baz]: /url1\n[bar]: /url2\n",
     "html": "<p><a href=\"/url2\">foo</a><a href=\"/url1\">baz</a></p>\n",
     "section": "Links",
     "number": 570
   },
   {
+    "name": "chained-references-baz-and-foo-defined",
     "markdown": "[foo][bar][baz]\n\n[baz]: /url1\n[foo]: /url2\n",
     "html": "<p>[foo]<a href=\"/url1\">bar</a></p>\n",
     "section": "Links",
     "number": 571
   },
   {
+    "name": "inline-image-with-title",
     "markdown": "![foo](/url \"title\")\n",
     "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" /></p>\n",
     "section": "Images",
     "number": 572
   },
   {
+    "name": "reference-image-emphasis-stripped-in-alt",
     "markdown": "![foo *bar*]\n\n[foo *bar*]: train.jpg \"train & tracks\"\n",
     "html": "<p><img src=\"train.jpg\" alt=\"foo bar\" title=\"train &amp; tracks\" /></p>\n",
     "section": "Images",
     "number": 573
   },
   {
+    "name": "nested-image-in-alt-text",
     "markdown": "![foo ![bar](/url)](/url2)\n",
     "html": "<p><img src=\"/url2\" alt=\"foo bar\" /></p>\n",
     "section": "Images",
     "number": 574
   },
   {
+    "name": "link-in-image-alt-text",
     "markdown": "![foo [bar](/url)](/url2)\n",
     "html": "<p><img src=\"/url2\" alt=\"foo bar\" /></p>\n",
     "section": "Images",
     "number": 575
   },
   {
+    "name": "collapsed-reference-image-with-emphasis",
     "markdown": "![foo *bar*][]\n\n[foo *bar*]: train.jpg \"train & tracks\"\n",
     "html": "<p><img src=\"train.jpg\" alt=\"foo bar\" title=\"train &amp; tracks\" /></p>\n",
     "section": "Images",
     "number": 576
   },
   {
+    "name": "full-reference-image-case-insensitive",
     "markdown": "![foo *bar*][foobar]\n\n[FOOBAR]: train.jpg \"train & tracks\"\n",
     "html": "<p><img src=\"train.jpg\" alt=\"foo bar\" title=\"train &amp; tracks\" /></p>\n",
     "section": "Images",
     "number": 577
   },
   {
+    "name": "simple-inline-image",
     "markdown": "![foo](train.jpg)\n",
     "html": "<p><img src=\"train.jpg\" alt=\"foo\" /></p>\n",
     "section": "Images",
     "number": 578
   },
   {
+    "name": "inline-image-with-extra-whitespace",
     "markdown": "My ![foo bar](/path/to/train.jpg  \"title\"   )\n",
     "html": "<p>My <img src=\"/path/to/train.jpg\" alt=\"foo bar\" title=\"title\" /></p>\n",
     "section": "Images",
     "number": 579
   },
   {
+    "name": "image-with-angle-bracket-destination",
     "markdown": "![foo](<url>)\n",
     "html": "<p><img src=\"url\" alt=\"foo\" /></p>\n",
     "section": "Images",
     "number": 580
   },
   {
+    "name": "image-with-empty-alt",
     "markdown": "![](/url)\n",
     "html": "<p><img src=\"/url\" alt=\"\" /></p>\n",
     "section": "Images",
     "number": 581
   },
   {
+    "name": "full-reference-image",
     "markdown": "![foo][bar]\n\n[bar]: /url\n",
     "html": "<p><img src=\"/url\" alt=\"foo\" /></p>\n",
     "section": "Images",
     "number": 582
   },
   {
+    "name": "full-reference-image-uppercase-label",
     "markdown": "![foo][bar]\n\n[BAR]: /url\n",
     "html": "<p><img src=\"/url\" alt=\"foo\" /></p>\n",
     "section": "Images",
     "number": 583
   },
   {
+    "name": "collapsed-reference-image-with-title",
     "markdown": "![foo][]\n\n[foo]: /url \"title\"\n",
     "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" /></p>\n",
     "section": "Images",
     "number": 584
   },
   {
+    "name": "collapsed-reference-image-emphasis-in-alt",
     "markdown": "![*foo* bar][]\n\n[*foo* bar]: /url \"title\"\n",
     "html": "<p><img src=\"/url\" alt=\"foo bar\" title=\"title\" /></p>\n",
     "section": "Images",
     "number": 585
   },
   {
+    "name": "collapsed-reference-image-case-insensitive",
     "markdown": "![Foo][]\n\n[foo]: /url \"title\"\n",
     "html": "<p><img src=\"/url\" alt=\"Foo\" title=\"title\" /></p>\n",
     "section": "Images",
     "number": 586
   },
   {
+    "name": "collapsed-image-brackets-not-joined",
     "markdown": "![foo] \n[]\n\n[foo]: /url \"title\"\n",
     "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" />\n[]</p>\n",
     "section": "Images",
     "number": 587
   },
   {
+    "name": "shortcut-reference-image",
     "markdown": "![foo]\n\n[foo]: /url \"title\"\n",
     "html": "<p><img src=\"/url\" alt=\"foo\" title=\"title\" /></p>\n",
     "section": "Images",
     "number": 588
   },
   {
+    "name": "shortcut-reference-image-with-emphasis",
     "markdown": "![*foo* bar]\n\n[*foo* bar]: /url \"title\"\n",
     "html": "<p><img src=\"/url\" alt=\"foo bar\" title=\"title\" /></p>\n",
     "section": "Images",
     "number": 589
   },
   {
+    "name": "image-nested-brackets-invalid-label",
     "markdown": "![[foo]]\n\n[[foo]]: /url \"title\"\n",
     "html": "<p>![[foo]]</p>\n<p>[[foo]]: /url &quot;title&quot;</p>\n",
     "section": "Images",
     "number": 590
   },
   {
+    "name": "shortcut-reference-image-case-insensitive",
     "markdown": "![Foo]\n\n[foo]: /url \"title\"\n",
     "html": "<p><img src=\"/url\" alt=\"Foo\" title=\"title\" /></p>\n",
     "section": "Images",
     "number": 591
   },
   {
+    "name": "escaped-bracket-not-image",
     "markdown": "!\\[foo]\n\n[foo]: /url \"title\"\n",
     "html": "<p>![foo]</p>\n",
     "section": "Images",
     "number": 592
   },
   {
+    "name": "escaped-bang-produces-link",
     "markdown": "\\![foo]\n\n[foo]: /url \"title\"\n",
     "html": "<p>!<a href=\"/url\" title=\"title\">foo</a></p>\n",
     "section": "Images",
     "number": 593
   },
   {
+    "name": "autolink-absolute-uri",
     "markdown": "<http://foo.bar.baz>\n",
     "html": "<p><a href=\"http://foo.bar.baz\">http://foo.bar.baz</a></p>\n",
     "section": "Autolinks",
     "number": 594
   },
   {
+    "name": "autolink-uri-query-string-ampersands-escaped",
     "markdown": "<https://foo.bar.baz/test?q=hello&id=22&boolean>\n",
     "html": "<p><a href=\"https://foo.bar.baz/test?q=hello&amp;id=22&amp;boolean\">https://foo.bar.baz/test?q=hello&amp;id=22&amp;boolean</a></p>\n",
     "section": "Autolinks",
     "number": 595
   },
   {
+    "name": "autolink-irc-scheme",
     "markdown": "<irc://foo.bar:2233/baz>\n",
     "html": "<p><a href=\"irc://foo.bar:2233/baz\">irc://foo.bar:2233/baz</a></p>\n",
     "section": "Autolinks",
     "number": 596
   },
   {
+    "name": "autolink-uppercase-mailto-scheme",
     "markdown": "<MAILTO:FOO@BAR.BAZ>\n",
     "html": "<p><a href=\"MAILTO:FOO@BAR.BAZ\">MAILTO:FOO@BAR.BAZ</a></p>\n",
     "section": "Autolinks",
     "number": 597
   },
   {
+    "name": "autolink-scheme-with-plus-chars",
     "markdown": "<a+b+c:d>\n",
     "html": "<p><a href=\"a+b+c:d\">a+b+c:d</a></p>\n",
     "section": "Autolinks",
     "number": 598
   },
   {
+    "name": "autolink-made-up-scheme",
     "markdown": "<made-up-scheme://foo,bar>\n",
     "html": "<p><a href=\"made-up-scheme://foo,bar\">made-up-scheme://foo,bar</a></p>\n",
     "section": "Autolinks",
     "number": 599
   },
   {
+    "name": "autolink-uri-without-host",
     "markdown": "<https://../>\n",
     "html": "<p><a href=\"https://../\">https://../</a></p>\n",
     "section": "Autolinks",
     "number": 600
   },
   {
+    "name": "autolink-localhost-with-port",
     "markdown": "<localhost:5001/foo>\n",
     "html": "<p><a href=\"localhost:5001/foo\">localhost:5001/foo</a></p>\n",
     "section": "Autolinks",
     "number": 601
   },
   {
+    "name": "autolink-space-breaks-uri",
     "markdown": "<https://foo.bar/baz bim>\n",
     "html": "<p>\n&lt;\n<a href=\"https://foo.bar/baz\">\nhttps://foo.bar/baz\n</a>\nbim&gt;</p>\n",
     "section": "Autolinks",
     "number": 602
   },
   {
+    "name": "autolink-backslash-not-escaped-percent-encoded",
     "markdown": "<https://example.com/\\[\\>\n",
     "html": "<p><a href=\"https://example.com/%5C%5B%5C\">https://example.com/\\[\\</a></p>\n",
     "section": "Autolinks",
     "number": 603
   },
   {
+    "name": "autolink-email-address",
     "markdown": "<foo@bar.example.com>\n",
     "html": "<p><a href=\"mailto:foo@bar.example.com\">foo@bar.example.com</a></p>\n",
     "section": "Autolinks",
     "number": 604
   },
   {
+    "name": "autolink-email-with-special-chars",
     "markdown": "<foo+special@Bar.baz-bar0.com>\n",
     "html": "<p><a href=\"mailto:foo+special@Bar.baz-bar0.com\">foo+special@Bar.baz-bar0.com</a></p>\n",
     "section": "Autolinks",
     "number": 605
   },
   {
+    "name": "autolink-email-backslash-invalid",
     "markdown": "<foo\\+@bar.example.com>\n",
     "html": "<p>&lt;foo+@bar.example.com&gt;</p>\n",
     "section": "Autolinks",
     "number": 606
   },
   {
+    "name": "autolink-empty-brackets-not-link",
     "markdown": "<>\n",
     "html": "<p>&lt;&gt;</p>\n",
     "section": "Autolinks",
     "number": 607
   },
   {
+    "name": "autolink-spaces-around-uri-in-brackets",
     "markdown": "< https://foo.bar >\n",
     "html": "<p>\n&lt;\n<a href=\"https://foo.bar\">\nhttps://foo.bar\n</a>\n&gt;\n</p>\n",
     "section": "Autolinks",
     "number": 608
   },
   {
+    "name": "autolink-single-letter-scheme-invalid",
     "markdown": "<m:abc>\n",
     "html": "<p>&lt;m:abc&gt;</p>\n",
     "section": "Autolinks",
     "number": 609
   },
   {
+    "name": "autolink-no-scheme-not-link",
     "markdown": "<foo.bar.baz>\n",
     "html": "<p>&lt;foo.bar.baz&gt;</p>\n",
     "section": "Autolinks",
     "number": 610
   },
   {
+    "name": "autolink-bare-uri-without-brackets",
     "markdown": "https://example.com\n",
     "html": "<p>\n<a href=\"https://example.com\">\nhttps://example.com\n</a>\n</p>\n",
     "section": "Autolinks",
     "number": 611
   },
   {
+    "name": "autolink-bare-email-without-brackets",
     "markdown": "foo@bar.example.com\n",
     "html": "<p>\n<a href=\"mailto:foo@bar.example.com\">\nfoo@bar.example.com\n</a>\n</p>\n",
     "section": "Autolinks",
     "number": 612
   },
   {
+    "name": "open-tags-various-names-inline",
     "markdown": "<a><bab><c2c>\n",
     "html": "<p><a><bab><c2c></p>\n",
     "section": "Raw HTML",
     "number": 613
   },
   {
+    "name": "self-closing-tags-inline",
     "markdown": "<a/><b2/>\n",
     "html": "<p><a/><b2/></p>\n",
     "section": "Raw HTML",
     "number": 614
   },
   {
+    "name": "tags-with-whitespace-and-newline-attributes",
     "markdown": "<a  /><b2\ndata=\"foo\" >\n",
     "html": "<p><a  /><b2\ndata=\"foo\" ></p>\n",
     "section": "Raw HTML",
     "number": 615
   },
   {
+    "name": "tag-with-complex-attribute-values",
     "markdown": "<a foo=\"bar\" bam = 'baz <em>\"</em>'\n_boolean zoop:33=zoop:33 />\n",
     "html": "<p><a foo=\"bar\" bam = 'baz <em>\"</em>'\n_boolean zoop:33=zoop:33 /></p>\n",
     "section": "Raw HTML",
     "number": 616
   },
   {
+    "name": "custom-element-self-closing-tag",
     "markdown": "Foo <responsive-image src=\"foo.jpg\" />\n",
     "html": "<p>Foo <responsive-image src=\"foo.jpg\" /></p>\n",
     "section": "Raw HTML",
     "number": 617
   },
   {
+    "name": "invalid-tag-names-escaped",
     "markdown": "<33> <__>\n",
     "html": "<p>&lt;33&gt; &lt;__&gt;</p>\n",
     "section": "Raw HTML",
     "number": 618
   },
   {
+    "name": "invalid-attribute-name-escaped",
     "markdown": "<a h*#ref=\"hi\">\n",
     "html": "<p>&lt;a h*#ref=&quot;hi&quot;&gt;</p>\n",
     "section": "Raw HTML",
     "number": 619
   },
   {
+    "name": "unclosed-attribute-quotes-escaped",
     "markdown": "<a href=\"hi'> <a href=hi'>\n",
     "html": "<p>&lt;a href=&quot;hi'&gt; &lt;a href=hi'&gt;</p>\n",
     "section": "Raw HTML",
     "number": 620
   },
   {
+    "name": "malformed-tags-escaped",
     "markdown": "< a><\nfoo><bar/ >\n<foo bar=baz\nbim!bop />\n",
     "html": "<p>&lt; a&gt;&lt;\nfoo&gt;&lt;bar/ &gt;\n&lt;foo bar=baz\nbim!bop /&gt;</p>\n",
     "section": "Raw HTML",
     "number": 621
   },
   {
+    "name": "missing-whitespace-between-attributes-escaped",
     "markdown": "<a href='bar'title=title>\n",
     "html": "<p>&lt;a href='bar'title=title&gt;</p>\n",
     "section": "Raw HTML",
     "number": 622
   },
   {
+    "name": "closing-tags-preserved-inline",
     "markdown": "</a></foo >\n",
     "html": "<p></a></foo ></p>\n",
     "section": "Raw HTML",
     "number": 623
   },
   {
+    "name": "closing-tag-with-attribute-escaped",
     "markdown": "</a href=\"foo\">\n",
     "html": "<p>&lt;/a href=&quot;foo&quot;&gt;</p>\n",
     "section": "Raw HTML",
     "number": 624
   },
   {
+    "name": "comment-with-internal-hyphens-preserved",
     "markdown": "foo <!-- this is a --\ncomment - with hyphens -->\n",
     "html": "<p>foo <!-- this is a --\ncomment - with hyphens --></p>\n",
     "section": "Raw HTML",
     "number": 625
   },
   {
+    "name": "empty-comment-variants-preserved",
     "markdown": "foo <!--> foo -->\n\nfoo <!---> foo -->\n",
     "html": "<p>foo <!--> foo --&gt;</p>\n<p>foo <!---> foo --&gt;</p>\n",
     "section": "Raw HTML",
     "number": 626
   },
   {
+    "name": "processing-instruction-inline-preserved",
     "markdown": "foo <?php echo $a; ?>\n",
     "html": "<p>foo <?php echo $a; ?></p>\n",
     "section": "Raw HTML",
     "number": 627
   },
   {
+    "name": "declaration-inline-preserved",
     "markdown": "foo <!ELEMENT br EMPTY>\n",
     "html": "<p>foo <!ELEMENT br EMPTY></p>\n",
     "section": "Raw HTML",
     "number": 628
   },
   {
+    "name": "cdata-section-inline-preserved",
     "markdown": "foo <![CDATA[>&<]]>\n",
     "html": "<p>foo <![CDATA[>&<]]></p>\n",
     "section": "Raw HTML",
     "number": 629
   },
   {
+    "name": "entity-in-attribute-not-decoded",
     "markdown": "foo <a href=\"&ouml;\">\n",
     "html": "<p>foo <a href=\"&ouml;\"></p>\n",
     "section": "Raw HTML",
     "number": 630
   },
   {
+    "name": "backslash-escape-in-attribute-ignored",
     "markdown": "foo <a href=\"\\*\">\n",
     "html": "<p>foo <a href=\"\\*\"></p>\n",
     "section": "Raw HTML",
     "number": 631
   },
   {
+    "name": "backslash-quote-breaks-attribute-escaped",
     "markdown": "<a href=\"\\\"\">\n",
     "html": "<p>&lt;a href=&quot;&quot;&quot;&gt;</p>\n",
     "section": "Raw HTML",
     "number": 632
   },
   {
+    "name": "two-trailing-spaces-hard-break",
     "markdown": "foo  \nbaz\n",
     "html": "<p>foo<br />\nbaz</p>\n",
     "section": "Hard line breaks",
     "number": 633
   },
   {
+    "name": "trailing-backslash-hard-break",
     "markdown": "foo\\\nbaz\n",
     "html": "<p>foo<br />\nbaz</p>\n",
     "section": "Hard line breaks",
     "number": 634
   },
   {
+    "name": "many-trailing-spaces-hard-break",
     "markdown": "foo       \nbaz\n",
     "html": "<p>foo<br />\nbaz</p>\n",
     "section": "Hard line breaks",
     "number": 635
   },
   {
+    "name": "spaces-break-trims-next-line-leading-space",
     "markdown": "foo  \n     bar\n",
     "html": "<p>foo<br />\nbar</p>\n",
     "section": "Hard line breaks",
     "number": 636
   },
   {
+    "name": "backslash-break-trims-next-line-leading-space",
     "markdown": "foo\\\n     bar\n",
     "html": "<p>foo<br />\nbar</p>\n",
     "section": "Hard line breaks",
     "number": 637
   },
   {
+    "name": "spaces-hard-break-inside-emphasis",
     "markdown": "*foo  \nbar*\n",
     "html": "<p><em>foo<br />\nbar</em></p>\n",
     "section": "Hard line breaks",
     "number": 638
   },
   {
+    "name": "backslash-hard-break-inside-emphasis",
     "markdown": "*foo\\\nbar*\n",
     "html": "<p><em>foo<br />\nbar</em></p>\n",
     "section": "Hard line breaks",
     "number": 639
   },
   {
+    "name": "no-hard-break-from-spaces-in-code-span",
     "markdown": "`code  \nspan`\n",
     "html": "<p><code>code   span</code></p>\n",
     "section": "Hard line breaks",
     "number": 640
   },
   {
+    "name": "no-hard-break-from-backslash-in-code-span",
     "markdown": "`code\\\nspan`\n",
     "html": "<p><code>code\\ span</code></p>\n",
     "section": "Hard line breaks",
     "number": 641
   },
   {
+    "name": "no-hard-break-from-spaces-in-raw-html",
     "markdown": "<a href=\"foo  \nbar\">\n",
     "html": "<p><a href=\"foo  \nbar\"></p>\n",
     "section": "Hard line breaks",
     "number": 642
   },
   {
+    "name": "no-hard-break-from-backslash-in-raw-html",
     "markdown": "<a href=\"foo\\\nbar\">\n",
     "html": "<p><a href=\"foo\\\nbar\"></p>\n",
     "section": "Hard line breaks",
     "number": 643
   },
   {
+    "name": "backslash-at-paragraph-end-no-break",
     "markdown": "foo\\\n",
     "html": "<p>foo\\</p>\n",
     "section": "Hard line breaks",
     "number": 644
   },
   {
+    "name": "trailing-spaces-at-paragraph-end-no-break",
     "markdown": "foo  \n",
     "html": "<p>foo</p>\n",
     "section": "Hard line breaks",
     "number": 645
   },
   {
+    "name": "backslash-at-heading-end-no-break",
     "markdown": "### foo\\\n",
     "html": "<h3>foo\\</h3>\n",
     "section": "Hard line breaks",
     "number": 646
   },
   {
+    "name": "trailing-spaces-at-heading-end-no-break",
     "markdown": "### foo  \n",
     "html": "<h3>foo</h3>\n",
     "section": "Hard line breaks",
     "number": 647
   },
   {
+    "name": "newline-renders-as-soft-break",
     "markdown": "foo\nbaz\n",
     "html": "<p>foo\nbaz</p>\n",
     "section": "Soft line breaks",
     "number": 648
   },
   {
+    "name": "spaces-around-soft-break-trimmed",
     "markdown": "foo \n baz\n",
     "html": "<p>foo\nbaz</p>\n",
     "section": "Soft line breaks",
     "number": 649
   },
   {
+    "name": "ascii-punctuation-rendered-literally",
     "markdown": "hello $.;'there\n",
     "html": "<p>hello $.;'there</p>\n",
     "section": "Textual content",
     "number": 650
   },
   {
+    "name": "unicode-characters-preserved",
     "markdown": "Foo χρῆν\n",
     "html": "<p>Foo χρῆν</p>\n",
     "section": "Textual content",
     "number": 651
   },
   {
+    "name": "multiple-internal-spaces-preserved",
     "markdown": "Multiple     spaces\n",
     "html": "<p>Multiple     spaces</p>\n",
     "section": "Textual content",
     "number": 652
   },
   {
+    "name": "table-basic-header-and-row",
     "markdown": "| foo | bar |\n| --- | --- |\n| baz | bim |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>foo</th>\n<th>bar</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>baz</td>\n<td>bim</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "number": 1000,
-    "source": "gfm-spec"
+    "number": 1000
   },
   {
+    "name": "table-alignment-center-and-right-loose-delimiter",
     "markdown": "| abc | defghi |\n:-: | -----------:\nbar | baz\n",
     "html": "<table>\n<thead>\n<tr>\n<th style=\"text-align:center;\">abc</th>\n<th style=\"text-align:right;\">defghi</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td style=\"text-align:center;\">bar</td>\n<td style=\"text-align:right;\">baz</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "number": 1001,
-    "source": "gfm-spec"
+    "number": 1001
   },
   {
+    "name": "table-escaped-pipe-in-cells",
     "markdown": "| f\\|oo  |\n| ------ |\n| b `\\|` az |\n| b **\\|** im |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>f|oo</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>b <code>|</code> az</td>\n</tr>\n<tr>\n<td>b <strong>|</strong> im</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "number": 1002,
-    "source": "gfm-spec"
+    "number": 1002
   },
   {
+    "name": "table-followed-by-blockquote",
     "markdown": "| abc | def |\n| --- | --- |\n| bar | baz |\n> bar\n",
     "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>bar</td>\n<td>baz</td>\n</tr>\n</tbody>\n</table>\n<blockquote>\n<p>bar</p>\n</blockquote>\n",
     "section": "Tables (extension)",
-    "number": 1003,
-    "source": "gfm-spec"
+    "number": 1003
   },
   {
+    "name": "table-ends-at-paragraph-continuation",
     "markdown": "| abc | def |\n| --- | --- |\n| bar | baz |\nbar\n\nbar\n",
     "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>bar</td>\n<td>baz</td>\n</tr>\n<tr>\n<td>bar</td>\n<td></td>\n</tr>\n</tbody>\n</table>\n<p>bar</p>\n",
     "section": "Tables (extension)",
-    "number": 1004,
-    "source": "gfm-spec"
+    "number": 1004
   },
   {
+    "name": "table-delimiter-too-few-columns-invalid",
     "markdown": "| abc | def |\n| --- |\n| bar |\n",
     "html": "<p>| abc | def |\n| --- |\n| bar |</p>\n",
     "section": "Tables (extension)",
-    "number": 1005,
-    "source": "gfm-spec"
+    "number": 1005
   },
   {
+    "name": "table-row-cell-count-varies-from-header",
     "markdown": "| abc | def |\n| --- | --- |\n| bar |\n| bar | baz | boo |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>bar</td>\n<td></td>\n</tr>\n<tr>\n<td>bar</td>\n<td>baz</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "number": 1006,
-    "source": "gfm-spec"
+    "number": 1006
   },
   {
+    "name": "table-header-only-empty-body",
     "markdown": "| abc | def |\n| --- | --- |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "number": 1007,
-    "source": "gfm-spec"
+    "number": 1007
   },
   {
+    "name": "table-multiple-body-rows",
     "markdown": "| abc | def |\n| --- | --- |\n| ghi | jkl |\n| mno | pqr |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>ghi</td>\n<td>jkl</td>\n</tr>\n<tr>\n<td>mno</td>\n<td>pqr</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "number": 1008,
-    "source": "cmark-gfm-extensions"
+    "number": 1008
   },
   {
+    "name": "table-inline-only-no-block-elements",
     "markdown": "Hello!\n\n| _abc_ | セン |\n| ----- | ---- |\n| 1. Block elements inside cells don't work. | |\n| But _**inline elements do**_. | x |\n\nHi!\n",
     "html": "<p>Hello!</p>\n<table>\n<thead>\n<tr>\n<th><em>abc</em></th>\n<th>セン</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>1. Block elements inside cells don't work.</td>\n<td></td>\n</tr>\n<tr>\n<td>But <em><strong>inline elements do</strong></em>.</td>\n<td>x</td>\n</tr>\n</tbody>\n</table>\n<p>Hi!</p>\n",
     "section": "Tables (extension)",
-    "number": 1009,
-    "source": "cmark-gfm-extensions"
+    "number": 1009
   },
   {
+    "name": "table-minimum-rows-required",
     "markdown": "| Not enough table | to be considered table |\n\n| Not enough table | to be considered table |\n| Not enough table | to be considered table |\n\n| Just enough table | to be considered table |\n| ----------------- | ---------------------- |\n\n| ---- | --- |\n\n|x|\n|-|\n\n| xyz |\n| --- |\n",
     "html": "<p>| Not enough table | to be considered table |</p>\n<p>| Not enough table | to be considered table |\n| Not enough table | to be considered table |</p>\n<table>\n<thead>\n<tr>\n<th>Just enough table</th>\n<th>to be considered table</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n<p>| ---- | --- |</p>\n<table>\n<thead>\n<tr>\n<th>x</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n<table>\n<thead>\n<tr>\n<th>xyz</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "number": 1010,
-    "source": "cmark-gfm-extensions"
+    "number": 1010
   },
   {
+    "name": "table-without-outer-pipes",
     "markdown": "abc | def\n--- | ---\nxyz | ghi\n",
     "html": "<table>\n<thead>\n<tr>\n<th>abc</th>\n<th>def</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>xyz</td>\n<td>ghi</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "number": 1011,
-    "source": "cmark-gfm-extensions"
+    "number": 1011
   },
   {
+    "name": "table-row-with-trailing-space",
     "markdown": "Hello!\n\n| _abc_ | セン |\n| ----- | ---- |\n| this row has a space at the end | | \n| But _**inline elements do**_. | x |\n\nHi!\n",
     "html": "<p>Hello!</p>\n<table>\n<thead>\n<tr>\n<th><em>abc</em></th>\n<th>セン</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>this row has a space at the end</td>\n<td></td>\n</tr>\n<tr>\n<td>But <em><strong>inline elements do</strong></em>.</td>\n<td>x</td>\n</tr>\n</tbody>\n</table>\n<p>Hi!</p>\n",
     "section": "Tables (extension)",
-    "number": 1012,
-    "source": "cmark-gfm-extensions"
+    "number": 1012
   },
   {
+    "name": "table-five-columns-mixed-alignment",
     "markdown": "aaa | bbb | ccc | ddd | eee\n:-- | --- | :-: | --- | --:\nfff | ggg | hhh | iii | jjj\n",
     "html": "<table>\n<thead>\n<tr>\n<th style=\"text-align:left;\">aaa</th>\n<th>bbb</th>\n<th style=\"text-align:center;\">ccc</th>\n<th>ddd</th>\n<th style=\"text-align:right;\">eee</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td style=\"text-align:left;\">fff</td>\n<td>ggg</td>\n<td style=\"text-align:center;\">hhh</td>\n<td>iii</td>\n<td style=\"text-align:right;\">jjj</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "number": 1013,
-    "source": "cmark-gfm-extensions"
+    "number": 1013
   },
   {
+    "name": "table-header-body-column-mismatch-invalid",
     "markdown": "| a | b | c |\n| --- | --- |\n| this | isn't | okay |\n",
     "html": "<p>| a | b | c |\n| --- | --- |\n| this | isn't | okay |</p>\n",
     "section": "Tables (extension)",
-    "notes": "Table cell count mismatches",
-    "number": 1014,
-    "source": "cmark-gfm-extensions"
+    "number": 1014
   },
   {
+    "name": "table-rows-padded-and-truncated-to-header-count",
     "markdown": "| a | b | c |\n| --- | --- | ---\n| x\n| a | b\n| 1 | 2 | 3 | 4 | 5 |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n<th>c</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>x</td>\n<td></td>\n<td></td>\n</tr>\n<tr>\n<td>a</td>\n<td>b</td>\n<td></td>\n</tr>\n<tr>\n<td>1</td>\n<td>2</td>\n<td>3</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "notes": "Table cell count mismatches",
-    "number": 1015,
-    "source": "cmark-gfm-extensions"
+    "number": 1015
   },
   {
+    "name": "table-escaped-pipes-and-code-spans-complex",
     "markdown": "| a | b |\n| --- | --- |\n| Escaped pipes are \\|okay\\|. | Like \\| this. |\n| Within `\\|code\\| is okay` too. |\n| _**`c\\|`**_ \\| complex\n| don't **\\_reparse\\_**\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Escaped pipes are |okay|.</td>\n<td>Like | this.</td>\n</tr>\n<tr>\n<td>Within <code>|code| is okay</code> too.</td>\n<td></td>\n</tr>\n<tr>\n<td><em><strong><code>c|</code></strong></em> | complex</td>\n<td></td>\n</tr>\n<tr>\n<td>don't <strong>_reparse_</strong></td>\n<td></td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "notes": "Embedded pipes",
-    "number": 1016,
-    "source": "cmark-gfm-extensions"
+    "number": 1016
   },
   {
+    "name": "table-single-column-loose-delimiter",
     "markdown": "| a |\n--- |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n</tr>\n</thead>\n<tbody>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "notes": "Oddly-formatted markers",
-    "number": 1017,
-    "source": "cmark-gfm-extensions"
+    "number": 1017
   },
   {
+    "name": "table-backslash-escapes-in-cells-vs-paragraphs",
     "markdown": "| a | b |\n| --- | --- |\n| \\\\ | `\\\\` |\n| \\\\\\\\ | `\\\\\\\\` |\n| \\_ | `\\_` |\n| \\| | `\\|` |\n| \\a | `\\a` |\n\n\\\\ `\\\\`\n\n\\\\\\\\ `\\\\\\\\`\n\n\\_ `\\_`\n\n\\| `\\|`\n\n\\a `\\a`\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>\\</td>\n<td><code>\\\\</code></td>\n</tr>\n<tr>\n<td>\\\\</td>\n<td><code>\\\\\\\\</code></td>\n</tr>\n<tr>\n<td>_</td>\n<td><code>\\_</code></td>\n</tr>\n<tr>\n<td>|</td>\n<td><code>|</code></td>\n</tr>\n<tr>\n<td>\\a</td>\n<td><code>\\a</code></td>\n</tr>\n</tbody>\n</table>\n<p>\\ <code>\\\\</code></p>\n<p>\\\\ <code>\\\\\\\\</code></p>\n<p>_ <code>\\_</code></p>\n<p>| <code>\\|</code></p>\n<p>\\a <code>\\a</code></p>\n",
     "section": "Tables (extension)",
-    "notes": "Escaping",
-    "number": 1018,
-    "source": "cmark-gfm-extensions"
+    "number": 1018
   },
   {
+    "name": "table-raw-html-in-cells",
     "markdown": "| a |\n| --- |\n| <strong>hello</strong> |\n| ok <br> sure |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><strong>hello</strong></td>\n</tr>\n<tr>\n<td>ok <br> sure</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "notes": "Embedded HTML",
-    "number": 1019,
-    "source": "cmark-gfm-extensions"
+    "number": 1019
   },
   {
+    "name": "table-reference-links-in-cells",
     "markdown": "Here's a link to [Freedom Planet 2][].\n\n| Here's a link to [Freedom Planet 2][] in a table header. |\n| --- |\n| Here's a link to [Freedom Planet 2][] in a table row. |\n\n[Freedom Planet 2]: http://www.freedomplanet2.com/\n",
     "html": "<p>Here's a link to <a href=\"http://www.freedomplanet2.com/\">Freedom Planet 2</a>.</p>\n<table>\n<thead>\n<tr>\n<th>Here's a link to <a href=\"http://www.freedomplanet2.com/\">Freedom Planet 2</a> in a table header.</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>Here's a link to <a href=\"http://www.freedomplanet2.com/\">Freedom Planet 2</a> in a table row.</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "notes": "Reference-style links",
-    "number": 1020,
-    "source": "cmark-gfm-extensions"
+    "number": 1020
   },
   {
+    "name": "table-empty-cell-from-double-pipe",
     "markdown": "| a | b | c |\n| --- | --- | --- |\n| d || e |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n<th>c</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>d</td>\n<td></td>\n<td>e</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "notes": "Sequential cells",
-    "number": 1021,
-    "source": "cmark-gfm-extensions"
+    "number": 1021
   },
   {
+    "name": "table-emphasis-spanning-whole-cell",
     "markdown": "| a | b |\n| --- | --- |\n|***(a)***|\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><em><strong>(a)</strong></em></td>\n<td></td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "notes": "Interaction with emphasis",
-    "number": 1022,
-    "source": "cmark-gfm-extensions"
+    "number": 1022
   },
   {
+    "name": "table-preceded-by-paragraph-lines",
     "markdown": "123\n456\n| a | b |\n| ---| --- |\nd | e\n",
     "html": "<p>123\n456</p>\n<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>d</td>\n<td>e</td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Tables (extension)",
-    "notes": "a table can be recognised when separated from a paragraph of text without an empty line",
-    "number": 1023,
-    "source": "cmark-gfm-extensions"
+    "number": 1023
   },
   {
+    "name": "table-delimiter-without-valid-header-invalid",
     "markdown": "bla\n:-:\nfoo\nbar\nbaz\n",
     "html": "<p>bla\n:-:\nfoo\nbar\nbaz</p>\n",
     "section": "Tables (extension)",
-    "number": 1050,
-    "source": "cmark-gfm-extensions"
+    "number": 1050
   },
   {
+    "name": "unchecked-and-checked-checkboxes",
     "markdown": "- [ ] foo\n- [x] bar\n",
     "html": "<ul>\n<li><input disabled=\"\" type=\"checkbox\"> foo</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> bar</li>\n</ul>\n",
     "section": "Task lists (extension)",
-    "number": 1100,
-    "source": "gfm-spec"
+    "number": 1100
   },
   {
+    "name": "nested-task-list-checkboxes",
     "markdown": "- [x] foo\n  - [ ] bar\n  - [x] baz\n- [ ] bim\n",
     "html": "<ul>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> foo\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"> bar</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> baz</li>\n</ul>\n</li>\n<li><input disabled=\"\" type=\"checkbox\"> bim</li>\n</ul>\n",
     "section": "Task lists (extension)",
-    "number": 1101,
-    "source": "gfm-spec"
+    "number": 1101
   },
   {
+    "name": "checkbox-rendering-with-tasklists-option",
     "markdown": "- [ ] foo\n- [x] bar\n",
     "html": "<ul>\n<li><input disabled=\"\" type=\"checkbox\"> foo</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> bar</li>\n</ul>\n",
     "section": "Task lists (extension)",
-    "number": 1102,
-    "source": "cmark-gfm-extensions"
+    "number": 1102
   },
   {
+    "name": "non-task-brackets-left-literal",
     "markdown": "- [x] foo\n  - [ ] bar\n  - [x] baz\n- [ ] bim\n\nShow a regular (non task) list to show that it has the same structure\n- [@] foo\n  - [@] bar\n  - [@] baz\n- [@] bim\n",
     "html": "<ul>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> foo\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"> bar</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> baz</li>\n</ul>\n</li>\n<li><input disabled=\"\" type=\"checkbox\"> bim</li>\n</ul>\n<p>Show a regular (non task) list to show that it has the same structure</p>\n<ul>\n<li>[@] foo\n<ul>\n<li>[@] bar</li>\n<li>[@] baz</li>\n</ul>\n</li>\n<li>[@] bim</li>\n</ul>\n",
     "section": "Task lists (extension)",
-    "number": 1103,
-    "source": "cmark-gfm-extensions"
+    "number": 1103
   },
   {
+    "name": "non-task-brackets-literal-deep-indent",
     "markdown": "- [x] foo\n    - [ ] bar\n    - [x] baz\n- [ ] bim\n\nShow a regular (non task) list to show that it has the same structure\n- [@] foo\n    - [@] bar\n    - [@] baz\n- [@] bim\n",
     "html": "<ul>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> foo\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"> bar</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> baz</li>\n</ul>\n</li>\n<li><input disabled=\"\" type=\"checkbox\"> bim</li>\n</ul>\n<p>Show a regular (non task) list to show that it has the same structure</p>\n<ul>\n<li>[@] foo\n<ul>\n<li>[@] bar</li>\n<li>[@] baz</li>\n</ul>\n</li>\n<li>[@] bim</li>\n</ul>\n",
     "section": "Task lists (extension)",
-    "number": 1104,
-    "source": "cmark-gfm-extensions"
+    "number": 1104
   },
   {
+    "name": "double-tilde-strikethrough",
     "markdown": "~~Hi~~ Hello, world!\n",
     "html": "<p><del>Hi</del> Hello, world!</p>\n",
     "section": "Strikethrough (extension)",
-    "number": 1200,
-    "source": "gfm-spec"
+    "number": 1200
   },
   {
+    "name": "strikethrough-not-across-paragraphs",
     "markdown": "This ~~has a\n\nnew paragraph~~.\n",
     "html": "<p>This ~~has a</p>\n<p>new paragraph~~.</p>\n",
     "section": "Strikethrough (extension)",
-    "number": 1201,
-    "source": "gfm-spec"
+    "number": 1201
   },
   {
+    "name": "single-tilde-strikethrough",
     "markdown": "A proper ~strikethrough~.\n",
     "html": "<p>A proper <del>strikethrough</del>.</p>\n",
     "section": "Strikethrough (extension)",
-    "number": 1202,
-    "source": "cmark-gfm-extensions"
+    "number": 1202
   },
   {
+    "name": "tilde-run-lengths-and-mismatches",
     "markdown": "These are ~not strikethroughs.\n\nNo, they are not~\n\nThis ~is ~ legit~ isn't ~ legit.\n\nThis is not ~~~~~one~~~~~ huge strikethrough.\n\n~one~ ~~two~~ ~~~three~~~\n\nNo ~mismatch~~\n",
     "html": "<p>These are ~not strikethroughs.</p>\n<p>No, they are not~</p>\n<p>This <del>is ~ legit</del> isn't ~ legit.</p>\n<p>This is not ~~~~~one~~~~~ huge strikethrough.</p>\n<p><del>one</del> <del>two</del> ~~~three~~~</p>\n<p>No ~mismatch~~</p>\n",
     "section": "Strikethrough (extension)",
-    "number": 1203,
-    "source": "cmark-gfm-extensions"
+    "number": 1203
   },
   {
+    "name": "single-open-double-close-no-match",
     "markdown": "~foo~~\n",
     "html": "<p>~foo~~</p>\n",
     "section": "Strikethrough (extension)",
-    "notes": "mismatched delimiter run lengths (1 open, 2 close) are not strikethrough",
-    "number": 1204,
-    "source": "showdown"
+    "number": 1204
   },
   {
+    "name": "double-open-single-close-no-match",
     "markdown": "~~foo~\n",
     "html": "<p>~~foo~</p>\n",
     "section": "Strikethrough (extension)",
-    "notes": "mismatched delimiter run lengths (2 open, 1 close) are not strikethrough",
-    "number": 1205,
-    "source": "showdown"
+    "number": 1205
   },
   {
+    "name": "www-autolink-basic",
     "markdown": "www.commonmark.org\n",
     "html": "<p><a href=\"http://www.commonmark.org\">www.commonmark.org</a></p>\n",
     "section": "Autolinks (extension)",
-    "number": 1300,
-    "source": "gfm-spec"
+    "number": 1300
   },
   {
+    "name": "www-autolink-with-path-inline",
     "markdown": "Visit www.commonmark.org/help for more information.\n",
     "html": "<p>Visit <a href=\"http://www.commonmark.org/help\">www.commonmark.org/help</a> for more information.</p>\n",
     "section": "Autolinks (extension)",
-    "number": 1301,
-    "source": "gfm-spec"
+    "number": 1301
   },
   {
+    "name": "www-autolink-trailing-period-excluded",
     "markdown": "Visit www.commonmark.org.\n\nVisit www.commonmark.org/a.b.\n",
     "html": "<p>Visit <a href=\"http://www.commonmark.org\">www.commonmark.org</a>.</p>\n<p>Visit <a href=\"http://www.commonmark.org/a.b\">www.commonmark.org/a.b</a>.</p>\n",
     "section": "Autolinks (extension)",
-    "number": 1302,
-    "source": "gfm-spec"
+    "number": 1302
   },
   {
+    "name": "www-autolink-balanced-trailing-parentheses",
     "markdown": "www.google.com/search?q=Markup+(business)\n\nwww.google.com/search?q=Markup+(business)))\n\n(www.google.com/search?q=Markup+(business))\n\n(www.google.com/search?q=Markup+(business)\n",
     "html": "<p><a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a></p>\n<p><a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a>))</p>\n<p>(<a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a>)</p>\n<p>(<a href=\"http://www.google.com/search?q=Markup+(business)\">www.google.com/search?q=Markup+(business)</a></p>\n",
     "section": "Autolinks (extension)",
-    "number": 1303,
-    "source": "gfm-spec"
+    "number": 1303
   },
   {
+    "name": "www-autolink-parens-inside-query",
     "markdown": "www.google.com/search?q=(business))+ok\n",
     "html": "<p><a href=\"http://www.google.com/search?q=(business))+ok\">www.google.com/search?q=(business))+ok</a></p>\n",
     "section": "Autolinks (extension)",
-    "number": 1304,
-    "source": "gfm-spec"
+    "number": 1304
   },
   {
+    "name": "www-autolink-trailing-entity-excluded",
     "markdown": "www.google.com/search?q=commonmark&hl=en\n\nwww.google.com/search?q=commonmark&hl;\n",
     "html": "<p><a href=\"http://www.google.com/search?q=commonmark&amp;hl=en\">www.google.com/search?q=commonmark&amp;hl=en</a></p>\n<p><a href=\"http://www.google.com/search?q=commonmark\">www.google.com/search?q=commonmark</a>&amp;hl;</p>\n",
     "section": "Autolinks (extension)",
-    "number": 1305,
-    "source": "gfm-spec"
+    "number": 1305
   },
   {
+    "name": "www-autolink-stops-at-less-than",
     "markdown": "www.commonmark.org/he<lp\n",
     "html": "<p><a href=\"http://www.commonmark.org/he\">www.commonmark.org/he</a>&lt;lp</p>\n",
     "section": "Autolinks (extension)",
-    "number": 1306,
-    "source": "gfm-spec"
+    "number": 1306
   },
   {
+    "name": "url-autolink-http-https-ftp-schemes",
     "markdown": "http://commonmark.org\n\n(Visit https://encrypted.google.com/search?q=Markup+(business))\n\nAnonymous FTP is available at ftp://foo.bar.baz.\n",
     "html": "<p><a href=\"http://commonmark.org\">http://commonmark.org</a></p>\n<p>(Visit <a href=\"https://encrypted.google.com/search?q=Markup+(business)\">https://encrypted.google.com/search?q=Markup+(business)</a>)</p>\n<p>Anonymous FTP is available at <a href=\"ftp://foo.bar.baz\">ftp://foo.bar.baz</a>.</p>\n",
     "section": "Autolinks (extension)",
-    "number": 1307,
-    "source": "gfm-spec"
+    "number": 1307
   },
   {
+    "name": "email-autolink-basic",
     "markdown": "foo@bar.baz\n",
     "html": "<p><a href=\"mailto:foo@bar.baz\">foo@bar.baz</a></p>\n",
     "section": "Autolinks (extension)",
-    "number": 1308,
-    "source": "gfm-spec"
+    "number": 1308
   },
   {
+    "name": "email-autolink-plus-in-local-part-only",
     "markdown": "hello@mail+xyz.example isn't valid, but hello+xyz@mail.example is.\n",
     "html": "<p>hello@mail+xyz.example isn't valid, but <a href=\"mailto:hello+xyz@mail.example\">hello+xyz@mail.example</a> is.</p>\n",
     "section": "Autolinks (extension)",
-    "number": 1309,
-    "source": "gfm-spec"
+    "number": 1309
   },
   {
+    "name": "email-autolink-trailing-domain-punctuation",
     "markdown": "a.b-c_d@a.b\n\na.b-c_d@a.b.\n\na.b-c_d@a.b-\n\na.b-c_d@a.b_\n",
     "html": "<p><a href=\"mailto:a.b-c_d@a.b\">a.b-c_d@a.b</a></p>\n<p><a href=\"mailto:a.b-c_d@a.b\">a.b-c_d@a.b</a>.</p>\n<p>a.b-c_d@a.b-</p>\n<p>a.b-c_d@a.b_</p>\n",
     "section": "Autolinks (extension)",
-    "number": 1310,
-    "source": "gfm-spec"
+    "number": 1310
   },
   {
+    "name": "autolink-extension-comprehensive-mix",
     "markdown": ": http://google.com https://google.com\n\n<http://google.com/å> http://google.com/å\n\nscyther@pokemon.com\n\nscy.the_rbe-edr+ill@pokemon.com\n\nscyther@pokemon.com.\n\nscyther@pokemon.com/\n\nscyther@pokemon.com/beedrill@pokemon.com\n\nmailto:scyther@pokemon.com\n\nThis is a mailto:scyther@pokemon.com\n\nmailto:scyther@pokemon.com.\n\nmmmmailto:scyther@pokemon.com\n\nmailto:scyther@pokemon.com/\n\nmailto:scyther@pokemon.com/message\n\nmailto:scyther@pokemon.com/mailto:beedrill@pokemon.com\n\nxmpp:scyther@pokemon.com\n\nxmpp:scyther@pokemon.com.\n\nxmpp:scyther@pokemon.com/message\n\nxmpp:scyther@pokemon.com/message.\n\nEmail me at:scyther@pokemon.com\n\nwww.github.com www.github.com/á\n\nwww.google.com/a_b\n\nUnderscores not allowed in host name www.xxx.yyy._zzz\n\nUnderscores not allowed in host name www.xxx._yyy.zzz\n\nUnderscores allowed in domain name www._xxx.yyy.zzz\n\n**Autolink and http://inlines**\n\n![http://inline.com/image](http://inline.com/image)\n\na.w@b.c\n\nFull stop outside parens shouldn't be included http://google.com/ok.\n\n(Full stop inside parens shouldn't be included http://google.com/ok.)\n\n\"http://google.com\"\n\n'http://google.com'\n\nhttp://🍄.ga/ http://x🍄.ga/\n",
     "html": "<p>: <a href=\"http://google.com\">http://google.com</a> <a href=\"https://google.com\">https://google.com</a></p>\n<p><a href=\"http://google.com/%C3%A5\">http://google.com/å</a> <a href=\"http://google.com/%C3%A5\">http://google.com/å</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a></p>\n<p><a href=\"mailto:scy.the_rbe-edr+ill@pokemon.com\">scy.the_rbe-edr+ill@pokemon.com</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a>.</p>\n<p><a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a>/</p>\n<p><a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a>/<a href=\"mailto:beedrill@pokemon.com\">beedrill@pokemon.com</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a></p>\n<p>This is a <a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a>.</p>\n<p>mmmmailto:<a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a></p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a>/</p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a>/message</p>\n<p><a href=\"mailto:scyther@pokemon.com\">mailto:scyther@pokemon.com</a>/<a href=\"mailto:beedrill@pokemon.com\">mailto:beedrill@pokemon.com</a></p>\n<p><a href=\"xmpp:scyther@pokemon.com\">xmpp:scyther@pokemon.com</a></p>\n<p><a href=\"xmpp:scyther@pokemon.com\">xmpp:scyther@pokemon.com</a>.</p>\n<p><a href=\"xmpp:scyther@pokemon.com/message\">xmpp:scyther@pokemon.com/message</a></p>\n<p><a href=\"xmpp:scyther@pokemon.com/message\">xmpp:scyther@pokemon.com/message</a>.</p>\n<p>Email me at:<a href=\"mailto:scyther@pokemon.com\">scyther@pokemon.com</a></p>\n<p><a href=\"http://www.github.com\">www.github.com</a> <a href=\"http://www.github.com/%C3%A1\">www.github.com/á</a></p>\n<p><a href=\"http://www.google.com/a_b\">www.google.com/a_b</a></p>\n<p>Underscores not allowed in host name www.xxx.yyy._zzz</p>\n<p>Underscores not allowed in host name www.xxx._yyy.zzz</p>\n<p>Underscores allowed in domain name <a href=\"http://www._xxx.yyy.zzz\">www._xxx.yyy.zzz</a></p>\n<p><strong>Autolink and <a href=\"http://inlines\">http://inlines</a></strong></p>\n<p><img src=\"http://inline.com/image\" alt=\"http://inline.com/image\" /></p>\n<p><a href=\"mailto:a.w@b.c\">a.w@b.c</a></p>\n<p>Full stop outside parens shouldn't be included <a href=\"http://google.com/ok\">http://google.com/ok</a>.</p>\n<p>(Full stop inside parens shouldn't be included <a href=\"http://google.com/ok\">http://google.com/ok</a>.)</p>\n<p>&quot;<a href=\"http://google.com\">http://google.com</a>&quot;</p>\n<p>'<a href=\"http://google.com\">http://google.com</a>'</p>\n<p><a href=\"http://%F0%9F%8D%84.ga/\">http://🍄.ga/</a> <a href=\"http://x%F0%9F%8D%84.ga/\">http://x🍄.ga/</a></p>\n",
     "section": "Autolinks (extension)",
-    "number": 1311,
-    "source": "cmark-gfm-extensions"
+    "number": 1311
   },
   {
+    "name": "email-autolink-malformed-no-crash",
     "markdown": "This shouldn't crash everything: (_A_@_.A\n",
     "html": "<IGNORE>\n",
     "section": "Autolinks (extension)",
-    "number": 1312,
-    "source": "cmark-gfm-extensions"
+    "number": 1312
   },
   {
+    "name": "email-autolink-invalid-not-linked",
     "markdown": "These should not link:\n\n* @a.b.c@. x\n* n@.  b\n",
     "html": "<p>These should not link:</p>\n<ul>\n<li>@a.b.c@. x</li>\n<li>n@.  b</li>\n</ul>\n",
     "section": "Autolinks (extension)",
-    "number": 1313,
-    "source": "cmark-gfm-extensions"
+    "number": 1313
   },
   {
+    "name": "filtered-tags-escaped-allowed-tags-kept",
     "markdown": "<strong> <title> <style> <em>\n\n<blockquote>\n  <xmp> is disallowed.  <XMP> is also disallowed.\n</blockquote>\n",
     "html": "<p><strong> &lt;title> &lt;style> <em></p>\n<blockquote>\n  &lt;xmp> is disallowed.  &lt;XMP> is also disallowed.\n</blockquote>\n",
     "section": "Disallowed Raw HTML (extension)",
-    "number": 1400,
-    "source": "gfm-spec"
+    "number": 1400
   },
   {
+    "name": "disallowed-tags-escaped-comments-and-others-allowed",
     "markdown": "This is <xmp> not okay, but **this** <strong>is</strong>.\n\n<p>This is <xmp> not okay, but **this** <strong>is</strong>.</p>\n\nNope, I won't have <textarea>.\n\n<p>No <textarea> here either.</p>\n\n<p>This <random /> <thing> is okay</thing> though.</p>\n\nYep, <totally>okay</totally>.\n\n<!-- HTML comments are okay, though. -->\n<!- But we're strict. ->\n<! No nonsense. >\n<!-- Leave multiline comments the heck alone, though, okay?\nEven with {\"x\":\"y\"} or 1 > 2 or whatever. Even **markdown**.\n-->\n<!--- Support everything CommonMark's parser does. -->\n<!---->\n<!--thistoo-->\n",
     "html": "<p>This is &lt;xmp> not okay, but <strong>this</strong> <strong>is</strong>.</p>\n<p>This is &lt;xmp> not okay, but **this** <strong>is</strong>.</p>\n<p>Nope, I won't have &lt;textarea>.</p>\n<p>No &lt;textarea> here either.</p>\n<p>This <random /> <thing> is okay</thing> though.</p>\n<p>Yep, <totally>okay</totally>.</p>\n<!-- HTML comments are okay, though. -->\n<p>&lt;!- But we're strict. -&gt;\n&lt;! No nonsense. &gt;</p>\n<!-- Leave multiline comments the heck alone, though, okay?\nEven with {\"x\":\"y\"} or 1 > 2 or whatever. Even **markdown**.\n-->\n<!--- Support everything CommonMark's parser does. -->\n<!---->\n<!--thistoo-->\n",
     "section": "Disallowed Raw HTML (extension)",
-    "notes": "HTML tag filter",
-    "number": 1500,
-    "source": "cmark-gfm-extensions"
+    "number": 1500
   },
   {
+    "name": "footnote-definitions-with-block-content",
     "markdown": "This is some text![^1]. Other text.[^footnote].\n\nHere's a thing[^other-note].\n\nAnd another thing[^codeblock-note].\n\nThis doesn't have a referent[^nope].\n\n\n[^other-note]:       no code block here (spaces are stripped away)\n\n[^codeblock-note]:\n        this is now a code block (8 spaces indentation)\n\n[^1]: Some *bolded* footnote definition.\n\nHi!\n\n[^footnote]:\n    > Blockquotes can be in a footnote.\n\n        as well as code blocks\n\n    or, naturally, simple paragraphs.\n\n[^unused]: This is unused.\n",
     "html": "<p>This is some text!<sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\" data-footnote-ref>1</a></sup>. Other text.<sup class=\"footnote-ref\"><a href=\"#fn-footnote\" id=\"fnref-footnote\" data-footnote-ref>2</a></sup>.</p>\n<p>Here's a thing<sup class=\"footnote-ref\"><a href=\"#fn-other-note\" id=\"fnref-other-note\" data-footnote-ref>3</a></sup>.</p>\n<p>And another thing<sup class=\"footnote-ref\"><a href=\"#fn-codeblock-note\" id=\"fnref-codeblock-note\" data-footnote-ref>4</a></sup>.</p>\n<p>This doesn't have a referent[^nope].</p>\n<p>Hi!</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-1\">\n<p>Some <em>bolded</em> footnote definition. <a href=\"#fnref-1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n<li id=\"fn-footnote\">\n<blockquote>\n<p>Blockquotes can be in a footnote.</p>\n</blockquote>\n<pre><code>as well as code blocks\n</code></pre>\n<p>or, naturally, simple paragraphs. <a href=\"#fnref-footnote\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n</li>\n<li id=\"fn-other-note\">\n<p>no code block here (spaces are stripped away) <a href=\"#fnref-other-note\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"3\" aria-label=\"Back to reference 3\">↩</a></p>\n</li>\n<li id=\"fn-codeblock-note\">\n<pre><code>this is now a code block (8 spaces indentation)\n</code></pre>\n<a href=\"#fnref-codeblock-note\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"4\" aria-label=\"Back to reference 4\">↩</a>\n</li>\n</ol>\n</section>\n",
     "section": "Footnotes (extension)",
-    "number": 1600,
-    "source": "cmark-gfm-extensions"
+    "number": 1600
   },
   {
+    "name": "footnote-referenced-multiple-times-backrefs",
     "markdown": "This is some text. It has a footnote[^a-footnote].\n\nThis footnote is referenced[^a-footnote] multiple times, in lots of different places.[^a-footnote]\n\n[^a-footnote]: This footnote definition should have three backrefs.\n",
     "html": "<p>This is some text. It has a footnote<sup class=\"footnote-ref\"><a href=\"#fn-a-footnote\" id=\"fnref-a-footnote\" data-footnote-ref>1</a></sup>.</p>\n<p>This footnote is referenced<sup class=\"footnote-ref\"><a href=\"#fn-a-footnote\" id=\"fnref-a-footnote-2\" data-footnote-ref>1</a></sup> multiple times, in lots of different places.<sup class=\"footnote-ref\"><a href=\"#fn-a-footnote\" id=\"fnref-a-footnote-3\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-a-footnote\">\n<p>This footnote definition should have three backrefs. <a href=\"#fnref-a-footnote\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a> <a href=\"#fnref-a-footnote-2\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1-2\" aria-label=\"Back to reference 1-2\">↩<sup class=\"footnote-ref\">2</sup></a> <a href=\"#fnref-a-footnote-3\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1-3\" aria-label=\"Back to reference 1-3\">↩<sup class=\"footnote-ref\">3</sup></a></p>\n</li>\n</ol>\n</section>\n",
     "section": "Footnotes (extension)",
-    "notes": "When a footnote is used multiple times, we insert multiple backrefs.",
-    "number": 1601,
-    "source": "cmark-gfm-extensions"
+    "number": 1601
   },
   {
+    "name": "footnote-identifier-html-escaped",
     "markdown": "Hello[^\"><script>alert(1)</script>]\n\n[^\"><script>alert(1)</script>]: pwned\n",
     "html": "<p>Hello<sup class=\"footnote-ref\"><a href=\"#fn-%22%3E%3Cscript%3Ealert(1)%3C/script%3E\" id=\"fnref-%22%3E%3Cscript%3Ealert(1)%3C/script%3E\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-%22%3E%3Cscript%3Ealert(1)%3C/script%3E\">\n<p>pwned <a href=\"#fnref-%22%3E%3Cscript%3Ealert(1)%3C/script%3E\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
     "section": "Footnotes (extension)",
-    "notes": "Footnote reference labels are href escaped",
-    "number": 1602,
-    "source": "cmark-gfm-extensions"
+    "number": 1602
   },
   {
+    "name": "strikethrough-wrapping-autolinks",
     "markdown": "~~www.google.com~~\n\n~~http://google.com~~\n",
     "html": "<p><del><a href=\"http://www.google.com\">www.google.com</a></del></p>\n<p><del><a href=\"http://google.com\">http://google.com</a></del></p>\n",
     "section": "Interop (extension)",
-    "number": 1700,
-    "source": "cmark-gfm-extensions"
+    "number": 1700
   },
   {
+    "name": "autolinks-inside-table-cells",
     "markdown": "| a | b |\n| --- | --- |\n| https://github.com www.github.com | http://pokemon.com |\n",
     "html": "<table>\n<thead>\n<tr>\n<th>a</th>\n<th>b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td><a href=\"https://github.com\">https://github.com</a> <a href=\"http://www.github.com\">www.github.com</a></td>\n<td><a href=\"http://pokemon.com\">http://pokemon.com</a></td>\n</tr>\n</tbody>\n</table>\n",
     "section": "Interop (extension)",
-    "number": 1701,
-    "source": "cmark-gfm-extensions"
+    "number": 1701
   },
   {
+    "name": "note-alert",
     "markdown": "> [!NOTE]\n> Useful information that users should know, even when skimming content.\n",
     "html": "<div class=\"markdown-alert markdown-alert-note\" dir=\"auto\">\n<p class=\"markdown-alert-title\"><svg class=\"octicon octicon-info mr-2\" viewBox=\"0 0 16 16\" version=\"1.1\" width=\"16\" height=\"16\" aria-hidden=\"true\"><!-- octicon path omitted for stability --></svg>Note</p>\n<p>Useful information that users should know, even when skimming content.</p>\n</div>\n",
     "section": "Alerts (GitHub renderer)",
-    "number": 1800,
-    "source": "github-renderer",
-    "note": "GitHub renders [!TYPE] blockquotes as a styled <div>. Structure/classes are stable; the inline octicon SVG path is omitted here because it is volatile. Not part of the formal GFM spec."
+    "number": 1800
   },
   {
+    "name": "tip-alert",
     "markdown": "> [!TIP]\n> Helpful advice for doing things better or more easily.\n",
     "html": "<div class=\"markdown-alert markdown-alert-tip\" dir=\"auto\">\n<p class=\"markdown-alert-title\"><svg class=\"octicon octicon-light-bulb mr-2\" viewBox=\"0 0 16 16\" version=\"1.1\" width=\"16\" height=\"16\" aria-hidden=\"true\"><!-- octicon path omitted for stability --></svg>Tip</p>\n<p>Helpful advice for doing things better or more easily.</p>\n</div>\n",
     "section": "Alerts (GitHub renderer)",
-    "number": 1801,
-    "source": "github-renderer",
-    "note": "GitHub renders [!TYPE] blockquotes as a styled <div>. Structure/classes are stable; the inline octicon SVG path is omitted here because it is volatile. Not part of the formal GFM spec."
+    "number": 1801
   },
   {
+    "name": "important-alert",
     "markdown": "> [!IMPORTANT]\n> Key information users need to know to achieve their goal.\n",
     "html": "<div class=\"markdown-alert markdown-alert-important\" dir=\"auto\">\n<p class=\"markdown-alert-title\"><svg class=\"octicon octicon-report mr-2\" viewBox=\"0 0 16 16\" version=\"1.1\" width=\"16\" height=\"16\" aria-hidden=\"true\"><!-- octicon path omitted for stability --></svg>Important</p>\n<p>Key information users need to know to achieve their goal.</p>\n</div>\n",
     "section": "Alerts (GitHub renderer)",
-    "number": 1802,
-    "source": "github-renderer",
-    "note": "GitHub renders [!TYPE] blockquotes as a styled <div>. Structure/classes are stable; the inline octicon SVG path is omitted here because it is volatile. Not part of the formal GFM spec."
+    "number": 1802
   },
   {
+    "name": "warning-alert",
     "markdown": "> [!WARNING]\n> Urgent info that needs immediate user attention to avoid problems.\n",
     "html": "<div class=\"markdown-alert markdown-alert-warning\" dir=\"auto\">\n<p class=\"markdown-alert-title\"><svg class=\"octicon octicon-alert mr-2\" viewBox=\"0 0 16 16\" version=\"1.1\" width=\"16\" height=\"16\" aria-hidden=\"true\"><!-- octicon path omitted for stability --></svg>Warning</p>\n<p>Urgent info that needs immediate user attention to avoid problems.</p>\n</div>\n",
     "section": "Alerts (GitHub renderer)",
-    "number": 1803,
-    "source": "github-renderer",
-    "note": "GitHub renders [!TYPE] blockquotes as a styled <div>. Structure/classes are stable; the inline octicon SVG path is omitted here because it is volatile. Not part of the formal GFM spec."
+    "number": 1803
   },
   {
+    "name": "caution-alert",
     "markdown": "> [!CAUTION]\n> Advises about risks or negative outcomes of certain actions.\n",
     "html": "<div class=\"markdown-alert markdown-alert-caution\" dir=\"auto\">\n<p class=\"markdown-alert-title\"><svg class=\"octicon octicon-stop mr-2\" viewBox=\"0 0 16 16\" version=\"1.1\" width=\"16\" height=\"16\" aria-hidden=\"true\"><!-- octicon path omitted for stability --></svg>Caution</p>\n<p>Advises about risks or negative outcomes of certain actions.</p>\n</div>\n",
     "section": "Alerts (GitHub renderer)",
-    "number": 1804,
-    "source": "github-renderer",
-    "note": "GitHub renders [!TYPE] blockquotes as a styled <div>. Structure/classes are stable; the inline octicon SVG path is omitted here because it is volatile. Not part of the formal GFM spec."
+    "number": 1804
   },
   {
+    "name": "inline-math-dollar-delimiters",
     "markdown": "This sentence uses `$` delimiters to show math inline: $\\sqrt{3x-1}+(1+x)^2$\n",
     "html": "<p>This sentence uses <code>$</code> delimiters to show math inline: <span class=\"math-inline\">\\sqrt{3x-1}+(1+x)^2</span></p>\n",
     "section": "Math (GitHub renderer)",
-    "notes": "inline",
-    "number": 1900,
-    "source": "github-renderer",
-    "note": "Inline $...$ math. GitHub preserves the LaTeX and renders it client-side with MathJax; the exact server-emitted wrapper is undocumented/volatile, so the html shown is illustrative of the contract (expression preserved), not byte-exact."
+    "number": 1900
   },
   {
+    "name": "display-math-fenced-block",
     "markdown": "**The Cauchy-Schwarz Inequality**\n\n```math\n\\left( \\sum_{k=1}^n a_k b_k \\right)^2\n```\n",
     "html": "<p><strong>The Cauchy-Schwarz Inequality</strong></p>\n<div class=\"math-display\">\\left( \\sum_{k=1}^n a_k b_k \\right)^2</div>\n",
     "section": "Math (GitHub renderer)",
-    "notes": "block via ```math",
-    "number": 1901,
-    "source": "github-renderer",
-    "note": "The ```math fenced block is a GitHub renderer feature: instead of producing a <pre><code> block, the content is rendered as display math by MathJax. html is illustrative, not byte-exact; not in the formal spec."
+    "number": 1901
   },
   {
+    "name": "mermaid-fence-becomes-div",
     "markdown": "```mermaid\ngraph TD;\n    A-->B;\n```\n",
     "html": "<div class=\"mermaid\">graph TD;\n    A--&gt;B;\n</div>\n",
     "section": "Mermaid diagrams (GitHub renderer)",
-    "number": 2000,
-    "source": "github-renderer",
-    "note": "A ```mermaid fenced block is handed to mermaid.js and rendered as an SVG diagram in the browser. The exact server-side container markup varies; html shown is illustrative. Not part of the formal GFM spec."
+    "number": 2000
   },
   {
+    "name": "emoji-shortcodes-replaced-with-glyphs",
     "markdown": "I :heart: GitHub :+1:\n",
     "html": "<p>I ❤️ GitHub 👍</p>\n",
     "section": "Emoji shortcodes (GitHub renderer)",
-    "number": 2100,
-    "source": "github-renderer",
-    "note": "GitHub replaces :name: gemoji shortcodes with Unicode characters (older output wrapped them in <g-emoji>; custom repo emoji become <img class=\"emoji\">). Output is gemoji-version dependent. Not part of the formal GFM spec."
+    "number": 2100
   }
 ]

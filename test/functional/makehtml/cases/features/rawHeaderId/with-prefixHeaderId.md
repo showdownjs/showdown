@@ -1,3 +1,0 @@
-# some header
-
-# another !"#$%&/()=?»@£§{[]}«' header

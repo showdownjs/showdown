@@ -1,0 +1,1443 @@
+[
+  {
+    "name": "#374.escape-html-tags",
+    "markdown": "\\<div>foo\\</div>\n",
+    "html": "<p>&lt;div&gt;foo&lt;/div&gt;</p>",
+    "section": "backslashEscapesHTMLTags",
+    "number": 1,
+    "options": {
+      "backslashEscapesHTMLTags": true
+    }
+  },
+  {
+    "name": "simple",
+    "markdown": "This is a **markdown** file\n\nConverted into a full HTML document\n\n - this\n - is\n - awesome\n",
+    "html": "<!DOCTYPE HTML>\n<html>\n<head>\n<meta charset=\"utf-8\">\n</head>\n<body>\n<p>This is a <strong>markdown</strong> file</p>\n<p>Converted into a full HTML document</p>\n<ul>\n<li>this</li>\n<li>is</li>\n<li>awesome</li>\n</ul>\n</body>\n</html>\n",
+    "section": "completeHTMLDocument",
+    "number": 101,
+    "options": {
+      "completeHTMLDocument": true
+    }
+  },
+  {
+    "name": "disableForced4SpacesIndentedSublists",
+    "markdown": "* foo\n  * bar\n\n---\n\n* baz\n  1. bazinga\n",
+    "html": "<ul>\n  <li>foo<ul>\n    <li>bar</li></ul></li>\n</ul>\n<hr />\n<ul>\n  <li>baz<ol>\n    <li>bazinga</li></ol></li>\n</ul>\n",
+    "section": "disableForced4SpacesIndentedSublists",
+    "number": 201,
+    "options": {
+      "disableForced4SpacesIndentedSublists": true
+    }
+  },
+  {
+    "name": "case-insensitive",
+    "markdown": "<XMP>x</XMP> and <ScRiPt>y</ScRiPt>\n",
+    "html": "<p>&lt;XMP>x&lt;/XMP> and &lt;ScRiPt>y&lt;/ScRiPt></p>\n",
+    "section": "disallowRawHTML",
+    "number": 301,
+    "options": {
+      "disallowRawHTML": true
+    }
+  },
+  {
+    "name": "code-untouched",
+    "markdown": "Use `<script>` in code.\n\n    <script>literal</script>\n",
+    "html": "<p>Use <code>&lt;script&gt;</code> in code.</p>\n<pre><code>&lt;script&gt;literal&lt;/script&gt;\n</code></pre>\n",
+    "section": "disallowRawHTML",
+    "number": 302,
+    "options": {
+      "disallowRawHTML": true
+    }
+  },
+  {
+    "name": "iframe-block",
+    "markdown": "<iframe src=\"//evil\"></iframe>\n",
+    "html": "&lt;iframe src=\"//evil\">&lt;/iframe>\n",
+    "section": "disallowRawHTML",
+    "number": 303,
+    "options": {
+      "disallowRawHTML": true
+    }
+  },
+  {
+    "name": "inline-tags",
+    "markdown": "<strong> <title> <style> <em>\n",
+    "html": "<p><strong> &lt;title> &lt;style> <em></p>\n",
+    "section": "disallowRawHTML",
+    "number": 304,
+    "options": {
+      "disallowRawHTML": true
+    }
+  },
+  {
+    "name": "passthrough",
+    "markdown": "Allowed tags survive: <strong>bold</strong> <em>it</em> <random>z</random>.\n",
+    "html": "<p>Allowed tags survive: <strong>bold</strong> <em>it</em> <random>z</random>.</p>\n",
+    "section": "disallowRawHTML",
+    "number": 305,
+    "options": {
+      "disallowRawHTML": true
+    }
+  },
+  {
+    "name": "script-block",
+    "markdown": "A paragraph.\n\n<script>alert('x')</script>\n\nAnother paragraph.\n",
+    "html": "<p>A paragraph.</p>\n&lt;script>alert('x')&lt;/script>\n<p>Another paragraph.</p>\n",
+    "section": "disallowRawHTML",
+    "number": 306,
+    "options": {
+      "disallowRawHTML": true
+    }
+  },
+  {
+    "name": "textarea-inline",
+    "markdown": "Before <textarea>x</textarea> after.\n",
+    "html": "<p>Before &lt;textarea>x&lt;/textarea> after.</p>\n",
+    "section": "disallowRawHTML",
+    "number": 307,
+    "options": {
+      "disallowRawHTML": true
+    }
+  },
+  {
+    "name": "ellipsis",
+    "markdown": "ellipsis in text...\n\n…\n\n1. foo...\n2. bar\n\n> ellipsis in blockquote...\n\n```\nellipsis in code...\n```\n\n    ellipsis in code...\n\n# ellipsis in header...\n\n1...\n\n1. ..\n\n1…\n\n[Link](https://gitlab.com/gitlab-org/gitlab-ce/compare/v11.5.4...v11.5.5 \"title\")",
+    "html": "<p>ellipsis in text...</p>\n<p>…</p>\n<ol>\n    <li>foo...</li>\n    <li>bar</li>\n</ol>\n<blockquote>\n    <p>ellipsis in blockquote...</p>\n</blockquote>\n<pre><code>ellipsis in code...\n</code></pre>\n<pre><code>ellipsis in code...\n</code></pre>\n<h1 id=\"ellipsis-in-header\">ellipsis in header...</h1>\n<p>1...</p>\n<ol>\n    <li>..</li>\n</ol>\n<p>1…</p>\n<p><a href=\"https://gitlab.com/gitlab-org/gitlab-ce/compare/v11.5.4...v11.5.5\" title=\"title\">Link</a></p>",
+    "section": "ellipsis",
+    "number": 401,
+    "options": {
+      "ellipsis": false
+    }
+  },
+  {
+    "name": "complex",
+    "markdown": "foo:apple:bar\n\nfoo: apple :bar\n\n:foo :apple: bar:\n",
+    "html": "<p>foo🍎bar</p>\n<p>foo: apple :bar</p>\n<p>:foo 🍎 bar:</p>\n",
+    "section": "emoji",
+    "number": 501,
+    "options": {
+      "emoji": true
+    }
+  },
+  {
+    "name": "links",
+    "markdown": "this link [somelink](http://www.example.com/some:apple:url)\n\nemoji [:apple:](http://www.example.com/some:apple:url)\n\n[:apple:][apple]\n\n[:apple:][]\n\n\n[apple]: http://www.example.com/some:apple:url\n[:apple:]: http://www.example.com/some:apple:url",
+    "html": "<p>this link <a href=\"http://www.example.com/some:apple:url\">somelink</a></p>\n<p>emoji <a href=\"http://www.example.com/some:apple:url\">🍎</a></p>\n<p><a href=\"http://www.example.com/some:apple:url\">🍎</a></p>\n<p><a href=\"http://www.example.com/some:apple:url\">🍎</a></p>\n",
+    "section": "emoji",
+    "number": 502,
+    "options": {
+      "emoji": true
+    }
+  },
+  {
+    "name": "simple",
+    "markdown": ":apple: and :kiss:\n\n:kiss:my:apple:\n\n:couplekiss_man_woman:\n",
+    "html": "<p>🍎 and 💋</p>\n<p>💋my🍎</p>\n<p>👩‍❤️‍💋‍👨</p>\n",
+    "section": "emoji",
+    "number": 503,
+    "options": {
+      "emoji": true
+    }
+  },
+  {
+    "name": "special",
+    "markdown": "this is showdown's emoji :showdown:\n\nand this is github's emoji :octocat:",
+    "html": "<p>this is showdown's emoji <img alt=\"showdown\" width=\"20\" height=\"20\" align=\"absmiddle\" src=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAMAAACdt4HsAAAAS1BMVEX///8jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS0jJS3b1q3b1q3b1q3b1q3b1q3b1q3b1q3b1q0565CIAAAAGXRSTlMAQHCAYCCw/+DQwPCQUBAwoHCAEP+wwFBgS2fvBgAAAUZJREFUeAHs1cGy7BAUheFFsEDw/k97VTq3T6ge2EmdM+pvrP6Iwd74XV9Kb52xuMU4/uc1YNgZLFOeV8FGdhGrNk5SEgUyPxAEdj4LlMRDyhVAMVEa2M7TBSeVZAFPdqHgzSZJwPKgcLFLAooHDJo4EDCw4gAtBoJA5UFj4Ng5LOGLwVXZuoIlji/jeQHFk7+baHxrCjeUwB9+s88KndvlhcyBN5BSkYNQIVVb4pV+Npm7hhuKDs/uMP5KxT3WzSNNLIuuoDpMmuAVMruMSeDyQBi24DTr43LAY7ILA1QYaWkgfHzFthYYzg67SQsCbB8GhJUEGCtO9n0rSaCLxgJQjS/JSgMTg2eBDEHAJ+H350AsjYNYscrErgI2e/l+mdR967TCX/v6N0EhPECYCP0i+IAoYQOE8BogNhQMEMdrgAQWHaMAAGi5I5euoY9NAAAAAElFTkSuQmCC\"></p>\n<p>and this is github's emoji <img alt=\"octocat\" width=\"20\" height=\"20\" align=\"absmiddle\" src=\"https://github.githubassets.com/images/icons/emoji/octocat.png?v8\"></p>\n",
+    "section": "emoji",
+    "number": 504,
+    "options": {
+      "emoji": true
+    }
+  },
+  {
+    "name": "disable-email-encoding",
+    "markdown": "this email <foobar@example.com> should not be encoded\n",
+    "html": "<p>this email <a href=\"mailto:foobar@example.com\">foobar@example.com</a> should not be encoded</p>\n",
+    "section": "encodeEmails",
+    "number": 601,
+    "options": {
+      "encodeEmails": false
+    }
+  },
+  {
+    "name": "disable-gh-codeblocks",
+    "markdown": "this is some text\n\n```php\nfunction thisThing() {\n  echo \"some weird formatted code!\";\n}\n```\n\nsome other text\n",
+    "html": "<p>this is some text</p>\n<p><code>php function thisThing() {   echo &quot;some weird formatted code!&quot;; } </code></p>\n<p>some other text</p>\n",
+    "section": "ghCodeBlocks",
+    "number": 701,
+    "options": {
+      "ghCodeBlocks": false
+    }
+  },
+  {
+    "name": "ghMentions",
+    "markdown": "hello @tivie how are you?\n\nthis email foo@gmail.com is not parsed\n\nthis \\@mentions is not parsed\n\n@john.doe\n\n@john-doe\n\n@john_doe\n\n@.johndoe\n\n@_johndoe\n\n@-johndoe\n\n@johndoe.\n\n@johndoe-\n\n@johndoe_\n",
+    "html": "<p>hello <a href=\"https://github.com/tivie\">@tivie</a> how are you?</p>\n<p>this email foo@gmail.com is not parsed</p>\n<p>this @mentions is not parsed</p>\n<p><a href=\"https://github.com/john.doe\">@john.doe</a></p>\n<p><a href=\"https://github.com/john-doe\">@john-doe</a></p>\n<p><a href=\"https://github.com/john_doe\">@john_doe</a></p>\n<p>@.johndoe</p>\n<p>@_johndoe</p>\n<p>@-johndoe</p>\n<p><a href=\"https://github.com/johndoe\">@johndoe</a>.</p>\n<p><a href=\"https://github.com/johndoe\">@johndoe</a>-</p>\n<p><a href=\"https://github.com/johndoe\">@johndoe</a>_</p>\n",
+    "section": "ghMentions",
+    "number": 801,
+    "options": {
+      "ghMentions": true
+    }
+  },
+  {
+    "name": "#69.header-level-start",
+    "markdown": "#Given\n\n#When\n\n#Then\n\nfoo\n===\n\nbar\n---\n",
+    "html": "<h3 id=\"given\">Given</h3>\n<h3 id=\"when\">When</h3>\n<h3 id=\"then\">Then</h3>\n<h3 id=\"foo\">foo</h3>\n<h4 id=\"bar\">bar</h4>\n",
+    "section": "headerLevelStart",
+    "number": 901,
+    "options": {
+      "headerLevelStart": 3
+    }
+  },
+  {
+    "name": "#164.2.disallow-underscore-emphasis-mid-word",
+    "markdown": "this is a sentence_with_mid underscores\n\nthis is a sentence with just_one underscore\n\nthis _should be parsed_ as emphasis\n\nthis is double__underscore__mid word\n\nthis has just__one double underscore\n\nthis __should be parsed__ as bold\n\nemphasis at _end of sentence_\n\n_emphasis at_ line start\n\nmulti _line emphasis\nyeah it is_ yeah\n",
+    "html": "<p>this is a sentence_with_mid underscores</p>\n<p>this is a sentence with just_one underscore</p>\n<p>this <em>should be parsed</em> as emphasis</p>\n<p>this is double__underscore__mid word</p>\n<p>this has just__one double underscore</p>\n<p>this <strong>should be parsed</strong> as bold</p>\n<p>emphasis at <em>end of sentence</em></p>\n<p><em>emphasis at</em> line start</p>\n<p>multi <em>line emphasis\nyeah it is</em> yeah</p>\n",
+    "section": "literalMidWordUnderscores",
+    "number": 1001,
+    "options": {
+      "literalMidWordUnderscores": true
+    }
+  },
+  {
+    "name": "#198.literalMidWordUnderscores-changes-behavior-of-asterisk",
+    "markdown": "foo *bar *baz\n\nfoo **bar **baz\n\nfoo _bar _baz\n\nfoo __bar __baz\n",
+    "html": "<p>foo *bar *baz</p>\n<p>foo **bar **baz</p>\n<p>foo _bar _baz</p>\n<p>foo __bar __baz</p>\n",
+    "section": "literalMidWordUnderscores",
+    "number": 1002,
+    "options": {
+      "literalMidWordUnderscores": true
+    }
+  },
+  {
+    "name": "basic",
+    "markdown": "some _foo_ yeah\n\nsome __foo__ yeah\n\nsome ___foo___ yeah\n\nsome word_foo_yeah\n\nsome word__foo__yeah\n\nsome word___foo___yeah\n\nstrippers, _hitler_, and stalin\n\nstrippers, __hitler__, and stalin\n\nstrippers, ___hitler___, and stalin\n\n___multiple___ italics and bolds in a ___paragraph___\n\n__multiple__ bolds in a __paragraph__\n\n_multiple_ italics in a _paragraph_",
+    "html": "<p>some <em>foo</em> yeah</p>\n<p>some <strong>foo</strong> yeah</p>\n<p>some <strong><em>foo</em></strong> yeah</p>\n<p>some word_foo_yeah</p>\n<p>some word__foo__yeah</p>\n<p>some word___foo___yeah</p>\n<p>strippers, <em>hitler</em>, and stalin</p>\n<p>strippers, <strong>hitler</strong>, and stalin</p>\n<p>strippers, <strong><em>hitler</em></strong>, and stalin</p>\n<p><strong><em>multiple</em></strong> italics and bolds in a <strong><em>paragraph</em></strong></p>\n<p><strong>multiple</strong> bolds in a <strong>paragraph</strong></p>\n<p><em>multiple</em> italics in a <em>paragraph</em></p>",
+    "section": "literalMidWordUnderscores",
+    "number": 1003,
+    "options": {
+      "literalMidWordUnderscores": true
+    }
+  },
+  {
+    "name": "punctation-test",
+    "markdown": "__Bold:__\n\n__Bold__\n\n__Bold__:\n\n- __Bold__\n    - Tier 2\n",
+    "html": "<p><strong>Bold:</strong></p>\n<p><strong>Bold</strong></p>\n<p><strong>Bold</strong>:</p>\n<ul>\n    <li><strong>Bold</strong><ul>\n        <li>Tier 2</li></ul></li>\n</ul>\n",
+    "section": "literalMidWordUnderscores",
+    "number": 1004,
+    "options": {
+      "literalMidWordUnderscores": true
+    }
+  },
+  {
+    "name": "#709.allow-whitespaces-after-end-in-metadata",
+    "markdown": "---         \n\ntitle: This is the document title\nlanguage: en\nauthor: Tivie\n\n---       \n**some** markdown text\n\n- a list\n- another list ---\n- and stuff\n\na paragraph --- with dashes\n\n---\n",
+    "html": "<p><strong>some</strong> markdown text</p>\n<ul>\n    <li>a list</li>\n    <li>another list ---</li>\n    <li>and stuff</li>\n</ul>\n<p>a paragraph --- with dashes</p>\n<hr />\n",
+    "section": "metadata",
+    "number": 1101,
+    "options": {
+      "metadata": true
+    }
+  },
+  {
+    "name": "dashes-conflict",
+    "markdown": "---\n\ntitle: This is the document title\nlanguage: en\nauthor: Tivie\n\n---\n**some** markdown text\n\n - a list\n - another list ---\n - and stuff\n\na paragraph --- with dashes\n\n---\n",
+    "html": "<p><strong>some</strong> markdown text</p>\n<ul>\n    <li>a list</li>\n    <li>another list ---</li>\n    <li>and stuff</li>\n</ul>\n<p>a paragraph --- with dashes</p>\n<hr />\n",
+    "section": "metadata",
+    "number": 1102,
+    "options": {
+      "metadata": true
+    }
+  },
+  {
+    "name": "ignore-metadata",
+    "markdown": "---\n\ntitle: This is the document title\nlanguage: en\nauthor: Tivie\ncontributors: John, Mary, Steve\ndescription: This is a long text and so it\n    spans on multiple lines.\n    It must be indented,\n    for showdown to parse it correctly.\n    Markdown **such as bold** is not parsed\n    and it will be rendered as plain text.\ndate: 01-01-2010\nkeywords: foo, bar, baz\n\n---\n\n**some** markdown text\n",
+    "html": "<hr />\n<p>title: This is the document title\nlanguage: en\nauthor: Tivie\ncontributors: John, Mary, Steve\ndescription: This is a long text and so it\nspans on multiple lines.\nIt must be indented,\nfor showdown to parse it correctly.\nMarkdown <strong>such as bold</strong> is not parsed\nand it will be rendered as plain text.\ndate: 01-01-2010\nkeywords: foo, bar, baz</p>\n<hr />\n<p><strong>some</strong> markdown text</p>\n",
+    "section": "metadata",
+    "number": 1103,
+    "options": {
+      "metadata": false
+    }
+  },
+  {
+    "name": "simple-angled-for-method",
+    "markdown": "«««\nfoo: bar\nbaz: bazinga\n»»»\n\nsome **text**\n",
+    "html": "<p>some <strong>text</strong></p>\n",
+    "section": "metadata",
+    "number": 1104,
+    "options": {
+      "metadata": true
+    }
+  },
+  {
+    "name": "simple-angled-quotes",
+    "markdown": "«««\ntitle: This is the document title\nlanguage: en\nauthor: Tivie\ncontributors: John, Mary, Steve\ndescription: This is a long text and so it\n    spans on multiple lines.\n    It must be indented,\n    for showdown to parse it correctly.\n    Markdown **such as bold** is not parsed\n    and it will be rendered as plain text.\ndate: 01-01-2010\nkeywords: foo, bar, baz\n»»»\n\n**some** markdown text\n",
+    "html": "<p><strong>some</strong> markdown text</p>\n",
+    "section": "metadata",
+    "number": 1105,
+    "options": {
+      "metadata": true
+    }
+  },
+  {
+    "name": "simple-three-dashes",
+    "markdown": "---\ntitle: This is the document title\nlanguage: en\nauthor: Tivie\ncontributors: John, Mary, Steve\ndescription: This is a long text and so it\n    spans on multiple lines.\n    It must be indented,\n    for showdown to parse it correctly.\n    Markdown **such as bold** is not parsed\n    and it will be rendered as plain text.\ndate: 01-01-2010\nkeywords: foo, bar, baz\n---\n\n**some** markdown text\n",
+    "html": "<p><strong>some</strong> markdown text</p>\n",
+    "section": "metadata",
+    "number": 1106,
+    "options": {
+      "metadata": true
+    }
+  },
+  {
+    "name": "simple-with-format",
+    "markdown": "---YAML\nfoo: bar\nbaz:\n - bazinga\n - bling\n - blang\n---\n\n**some** markdown text\n",
+    "html": "<p><strong>some</strong> markdown text</p>\n",
+    "section": "metadata",
+    "number": 1107,
+    "options": {
+      "metadata": true
+    }
+  },
+  {
+    "name": "#143.support-image-dimensions",
+    "markdown": "![my image](./pic/pic1_50.png =100pxx20px)\n\n![my image2][1]\n\n[1]: ./pic/pic1_50.png =100pxx20px\n",
+    "html": "<p><img src=\"./pic/pic1_50.png\" alt=\"my image\" width=\"100px\" height=\"20px\" /></p>\n<p><img src=\"./pic/pic1_50.png\" alt=\"my image2\" width=\"100px\" height=\"20px\" /></p>\n",
+    "section": "parseImgDimensions",
+    "number": 1201,
+    "options": {
+      "parseImgDimensions": true
+    }
+  },
+  {
+    "name": "prefixHeaderId-simple",
+    "markdown": "# foo header\n",
+    "html": "<h1 id=\"section-foo-header\">foo header</h1>\n",
+    "section": "prefixHeaderId",
+    "number": 1301,
+    "options": {
+      "prefixHeaderId": true
+    }
+  },
+  {
+    "name": "prefixHeaderId-string",
+    "markdown": "# foo header\n",
+    "html": "<h1 id=\"my-prefix-foo-header\">foo header</h1>\n",
+    "section": "prefixHeaderId",
+    "number": 1302,
+    "options": {
+      "prefixHeaderId": "my-prefix-"
+    }
+  },
+  {
+    "name": "prefixHeaderId-string-and-ghCompatibleHeaderId",
+    "markdown": "# foo header\n",
+    "html": "<h1 id=\"my-prefix-foo-header\">foo header</h1>\n",
+    "section": "prefixHeaderId",
+    "number": 1303,
+    "options": {
+      "prefixHeaderId": "my-prefix-"
+    }
+  },
+  {
+    "name": "prefixHeaderId-string-and-ghCompatibleHeaderId2",
+    "markdown": "# foo header\n",
+    "html": "<h1 id=\"my-prefix-foo-header\">foo header</h1>\n",
+    "section": "prefixHeaderId",
+    "number": 1304,
+    "options": {
+      "prefixHeaderId": "my prefix "
+    }
+  },
+  {
+    "name": "simple",
+    "markdown": "# 123 My#very/ strange \\header*`^ªº-_., yeah\n",
+    "html": "<h1 id=\"123-my#very/-strange-\\header*`^ªº-_.,-yeah\">123 My#very/ strange \\header*`^ªº-_., yeah</h1>\n",
+    "section": "rawHeaderId",
+    "number": 1401,
+    "options": {
+      "rawHeaderId": true
+    }
+  },
+  {
+    "name": "relativePathBaseUrl",
+    "markdown": "[inline relative linky](that_dude_mike.js)\n\n[inline absolute linky](ftp://wikis.com/micky.txt)\n\n[global relative linky][relative_linky]\n\n[global absolute linky][absolute_linky]\n\n![inline relative image](mona-lisa.png)\n\n![inline absolute image](http://images.com/mona-lisa.png)\n\n![global relative image][relative_image]\n\n![global absolute image][absolute_image]\n\n[just an anchor](#holdin_it_down)\n\n[relative_linky]: painters/Michelangelo.html\n[relative_image]: ./mona-lisa.png\n[absolute_linky]: https://www.my-wikis-site.com/peeps/Michelangelo.html\n[absolute_image]: https://www.my-photo-site.com/mona-lisa.png\n",
+    "html": "<p><a href=\"http://my.site.com/that_dude_mike.js\">inline relative linky</a></p>\n<p><a href=\"ftp://wikis.com/micky.txt\">inline absolute linky</a></p>\n<p><a href=\"http://my.site.com/painters/Michelangelo.html\">global relative linky</a></p>\n<p><a href=\"https://www.my-wikis-site.com/peeps/Michelangelo.html\">global absolute linky</a></p>\n<p><img src=\"http://my.site.com/mona-lisa.png\" alt=\"inline relative image\" /></p>\n<p><img src=\"http://images.com/mona-lisa.png\" alt=\"inline absolute image\" /></p>\n<p><img src=\"http://my.site.com/mona-lisa.png\" alt=\"global relative image\" /></p>\n<p><img src=\"https://www.my-photo-site.com/mona-lisa.png\" alt=\"global absolute image\" /></p>\n<p><a href=\"#holdin_it_down\">just an anchor</a></p>\n",
+    "section": "relativePathBaseUrl",
+    "number": 1501,
+    "options": {
+      "relativePathBaseUrl": "http://my.site.com/"
+    }
+  },
+  {
+    "name": "requireSpaceBeforeHeadingText",
+    "markdown": "# header\n\n#header\n",
+    "html": "<h1 id=\"header\">header</h1>\n<p>#header</p>\n",
+    "section": "requireSpaceBeforeHeadingText",
+    "number": 1601,
+    "options": {
+      "requireSpaceBeforeHeadingText": true
+    }
+  },
+  {
+    "name": "#206.treat-single-line-breaks-as-br",
+    "markdown": "a simple\nwrapped line\n",
+    "html": "<p>a simple<br />\nwrapped line</p>\n",
+    "section": "simpleLineBreaks",
+    "number": 1701,
+    "options": {
+      "simpleLineBreaks": true
+    }
+  },
+  {
+    "name": "#316.new-simpleLineBreaks-option-breaks-lists",
+    "markdown": "1. One\n2. Two\n    - A\n    - B\n3. Three\n\n> this has\n> simple linebreaks\n\n    testing\n    some\n    code\n\n 1. paragraphed list\n\n    this belongs\n    to the first list item\n    \n 2. This text\n    also\n\nsimple\ntext\n\n - a list\n   item\n - another\n   list item\n\nsimple\ntext\n\n  - some item\n \n    another\n    paragraph\n   \n      - And\n        now\n     \n        paragraph\n        sublist\n     \n          - and\n            even\n       \n            another\n            one\n\n - foo\n\n",
+    "html": "<ol>\n  <li>One</li>\n  <li>Two<ul>\n      <li>A</li>\n      <li>B</li></ul></li>\n  <li>Three</li>\n</ol>\n<blockquote>\n  <p>this has<br />\n    simple linebreaks</p>\n</blockquote>\n<pre><code>testing\nsome\ncode\n</code></pre>\n<ol>\n  <li><p>paragraphed list</p>\n    <p>this belongs<br />\n      to the first list item</p></li>\n  <li><p>This text<br />\n    also</p></li>\n</ol>\n<p>simple<br />\n  text</p>\n<ul>\n  <li>a list<br />\n    item</li>\n  <li>another<br />\n    list item</li>\n</ul>\n<p>simple<br />\n  text</p>\n<ul>\n  <li><p>some item</p>\n    <p>another<br />\n      paragraph</p>\n    <ul>\n      <li><p>And<br />\n          now</p>\n        <p>paragraph<br />\n          sublist</p>\n        <ul>\n          <li><p>and<br />\n              even</p>\n              <p>another<br />\n                one</p></li></ul></li></ul></li>\n  <li><p>foo</p></li>\n</ul>",
+    "section": "simpleLineBreaks",
+    "number": 1702,
+    "options": {
+      "simpleLineBreaks": true
+    }
+  },
+  {
+    "name": "#318.simpleLineBreaks-does-not-work-with-chinese-characters",
+    "markdown": "foo烫\nbar\n\nfoo\nbar\n",
+    "html": "<p>foo烫<br />\nbar</p>\n<p>foo<br />\nbar</p>\n",
+    "section": "simpleLineBreaks",
+    "number": 1703,
+    "options": {
+      "simpleLineBreaks": true
+    }
+  },
+  {
+    "name": "#323.simpleLineBreaks-breaks-with-strong",
+    "markdown": "**Nom :** aaaa\n**Nom :** aaa\n",
+    "html": "<p><strong>Nom :</strong> aaaa<br />\n<strong>Nom :</strong> aaa</p>\n",
+    "section": "simpleLineBreaks",
+    "number": 1704,
+    "options": {
+      "simpleLineBreaks": true
+    }
+  },
+  {
+    "name": "simpleLineBreaks-handle-html-pre",
+    "markdown": "hmm\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>\n",
+    "html": "<p>hmm</p>\n<pre>\nthis is `a\\_test` and this\\_too and finally_this_is\n</pre>\n",
+    "section": "simpleLineBreaks",
+    "number": 1705,
+    "options": {
+      "simpleLineBreaks": true
+    }
+  },
+  {
+    "name": "simpleLineBreaks2",
+    "markdown": " 1. One\n 2. Two\n    foo\n    \n    bar\n    bazinga\n    \n    \n    \n    \n    nhecos\n    \n 3. Three\n    \n    - foo\n    \n    - bar\n   ",
+    "html": "<ol>\n    <li><p>One</p></li>\n    <li><p>Two<br />\n        foo</p>\n        <p>bar<br />\n        bazinga</p>\n        <p>nhecos</p></li>\n    <li><p>Three</p>\n        <ul>\n        <li><p>foo</p></li>\n        <li><p>bar</p></li></ul></li>\n</ol>\n   ",
+    "section": "simpleLineBreaks",
+    "number": 1706,
+    "options": {
+      "simpleLineBreaks": true
+    }
+  },
+  {
+    "name": "#164.1.simple-autolink",
+    "markdown": "foo.bar\n\nwww.foobar\n\nwww.foobar.com\n\nhttp://foobar.com\n\nhttps://www.foobar.com/baz?bazinga=nhecos;\n",
+    "html": "<p>foo.bar</p>\n<p>www.foobar</p>\n<p><a href=\"http://www.foobar.com\">www.foobar.com</a></p>\n<p><a href=\"http://foobar.com\">http://foobar.com</a></p>\n<p><a href=\"https://www.foobar.com/baz?bazinga=nhecos\">https://www.foobar.com/baz?bazinga=nhecos</a>;</p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1801,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "#204.certain-links-with-at-and-dot-break-url",
+    "markdown": "http://website.com/img@x2.jpg\n\nhttp://website.com/img-x2.jpg\n\nhttp://website.com/img@x2\n\nhttp://website.com/img@.jpg\n",
+    "html": "<p><a href=\"http://website.com/img@x2.jpg\">http://website.com/img@x2.jpg</a></p>\n<p><a href=\"http://website.com/img-x2.jpg\">http://website.com/img-x2.jpg</a></p>\n<p><a href=\"http://website.com/img@x2\">http://website.com/img@x2</a></p>\n<p><a href=\"http://website.com/img@.jpg\">http://website.com/img@.jpg</a></p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1802,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "#284.simplifiedAutoLink-does-not-match-GFM-style",
+    "markdown": "this is a link to www.github.com\n\nthis is a link to <www.google.com>\n",
+    "html": "<p>this is a link to <a href=\"http://www.github.com\">www.github.com</a></p>\n<p>this is a link to <a href=\"http://www.google.com\">www.google.com</a></p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1803,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "#355.simplifiedAutoLink-URLs-inside-parenthesis-followed-by-another-character-are-not-parsed-correctly",
+    "markdown": "(https://www.google.com)!\n",
+    "html": "<p>(<a href=\"https://www.google.com\">https://www.google.com</a>)!</p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1804,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "#378.simplifiedAutoLinks-with-excludeTrailingPunctuationFromURLs",
+    "markdown": "Example <http://example.com>\n",
+    "html": "<p>Example <a href=\"http://example.com\">http://example.com</a></p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1805,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "autolinks-with-magic-chars",
+    "markdown": "http://www.foobar.com/blegh#**foobar**bazinga",
+    "html": "<p><a href=\"http://www.foobar.com/blegh#**foobar**bazinga\">http://www.foobar.com/blegh#**foobar**bazinga</a></p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1806,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "blockquote",
+    "markdown": "> http://www.google.com\n",
+    "html": "<blockquote>\n    <p><a href=\"http://www.google.com\">http://www.google.com</a></p>\n</blockquote>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1807,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "codespans",
+    "markdown": "`http://www.gmail.com`\n",
+    "html": "<p><code>http://www.gmail.com</code></p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1808,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "complete-test-case",
+    "markdown": "<!-- SHOULD PASS -->\n\nhttp://foo.com/blah_blah\n\nhttp://foo.com/blah_blah/\n\nhttp://foo.com/blah_blah_(wikipedia)\n\nhttp://foo.com/blah_blah_(wikipedia)_(again)\n\nhttp://www.example.com/wpstyle/?p=364\n\nhttps://www.example.com/foo/?bar=baz&inga=42&quux\n\nhttp://✪df.ws/123\n\nhttp://userid:password@example.com:8080\n\nhttp://userid:password@example.com:8080/\n\nhttp://userid@example.com\n\nhttp://userid@example.com/\n\nhttp://userid@example.com:8080\n\nhttp://userid@example.com:8080/\n\nhttp://userid:password@example.com\n\nhttp://userid:password@example.com/\n\nhttp://142.42.1.1/\n\nhttp://142.42.1.1:8080/\n\nhttp://➡.ws/䨹\n\nhttp://⌘.ws\n\nhttp://⌘.ws/\n\nhttp://foo.com/blah_(wikipedia)#cite-1\n\nhttp://foo.com/blah_(wikipedia)_blah#cite-1\n\nhttp://foo.com/unicode_(✪)_in_parens\n\nhttp://foo.com/(something)?after=parens\n\nhttp://☺.damowmow.com/\n\nhttp://code.google.com/events/#&product=browser\n\nhttp://j.mp\n\nftp://foo.bar/baz\n\nhttp://foo.bar/?q=Test%20URL-encoded%20stuff\n\n<!-- http://مثال.إختبار -->\n\n<!-- http://例子.测试 -->\n\n<!-- http://उदाहरण.परीक्षा -->\n\nhttp://1337.net\n\nhttp://a.b-c.de\n\nhttp://223.255.255.254\n\nhttps://foo_bar.example.com/\n\n<!-- WEIRD BUT SHOULD ALSO PASS -->\n\nhttp://www.foo.bar./\n\nhttp://a.b--c.de/\n\n<!-- SHOULD PARTIALLY PASS -->\n\nhttp://foo.bar/foo(bar)baz quux\n\nhttp://foo.bar?q=Spaces should be encoded\n\nhttp://.www.foo.bar/\n\nhttp://.www.foo.bar./\n\n<!-- THESE ARE INVALID IPS BUT WE WILL LET THEM PASS -->\nhttp://10.1.1.1\n\nhttp://10.1.1.254\n\nhttp://0.0.0.0\n\nhttp://10.1.1.0\n\nhttp://10.1.1.255\n\nhttp://224.1.1.1\n\nhttp://1.1.1.1.1\n\nhttp://123.123.123\n\n\n<!-- SHOULD FAIL -->\n\nhttp://\n\nhttp://.\n\nhttp://..\n\nhttp://../\n\nhttp://?\n\nhttp://??\n\nhttp://??/\n\nhttp://#\n\nhttp://##\n\nhttp://##/\n\n//\n\n//a\n\n///a\n\n///\n\nhttp:///a\n\nfoo.com\n\nrdar://1234\n\nh://test\n\nhttp:// shouldfail.com\n\n:// should fail\n\nhttp://-error-.invalid/\n\nhttp://-a.b.co\n\nhttp://3628126748\n",
+    "html": "<!-- SHOULD PASS -->\n<p><a href=\"http://foo.com/blah_blah\">http://foo.com/blah_blah</a></p>\n<p><a href=\"http://foo.com/blah_blah/\">http://foo.com/blah_blah/</a></p>\n<p><a href=\"http://foo.com/blah_blah_(wikipedia)\">http://foo.com/blah_blah_(wikipedia)</a></p>\n<p><a href=\"http://foo.com/blah_blah_(wikipedia)_(again)\">http://foo.com/blah_blah_(wikipedia)_(again)</a></p>\n<p><a href=\"http://www.example.com/wpstyle/?p=364\">http://www.example.com/wpstyle/?p=364</a></p>\n<p><a href=\"https://www.example.com/foo/?bar=baz&inga=42&quux\">https://www.example.com/foo/?bar=baz&inga=42&quux</a></p>\n<p><a href=\"http://✪df.ws/123\">http://✪df.ws/123</a></p>\n<p><a href=\"http://userid:password@example.com:8080\">http://userid:password@example.com:8080</a></p>\n<p><a href=\"http://userid:password@example.com:8080/\">http://userid:password@example.com:8080/</a></p>\n<p><a href=\"http://userid@example.com\">http://userid@example.com</a></p>\n<p><a href=\"http://userid@example.com/\">http://userid@example.com/</a></p>\n<p><a href=\"http://userid@example.com:8080\">http://userid@example.com:8080</a></p>\n<p><a href=\"http://userid@example.com:8080/\">http://userid@example.com:8080/</a></p>\n<p><a href=\"http://userid:password@example.com\">http://userid:password@example.com</a></p>\n<p><a href=\"http://userid:password@example.com/\">http://userid:password@example.com/</a></p>\n<p><a href=\"http://142.42.1.1/\">http://142.42.1.1/</a></p>\n<p><a href=\"http://142.42.1.1:8080/\">http://142.42.1.1:8080/</a></p>\n<p><a href=\"http://➡.ws/䨹\">http://➡.ws/䨹</a></p>\n<p><a href=\"http://⌘.ws\">http://⌘.ws</a></p>\n<p><a href=\"http://⌘.ws/\">http://⌘.ws/</a></p>\n<p><a href=\"http://foo.com/blah_(wikipedia)#cite-1\">http://foo.com/blah_(wikipedia)#cite-1</a></p>\n<p><a href=\"http://foo.com/blah_(wikipedia)_blah#cite-1\">http://foo.com/blah_(wikipedia)_blah#cite-1</a></p>\n<p><a href=\"http://foo.com/unicode_(✪)_in_parens\">http://foo.com/unicode_(✪)_in_parens</a></p>\n<p><a href=\"http://foo.com/(something)?after=parens\">http://foo.com/(something)?after=parens</a></p>\n<p><a href=\"http://☺.damowmow.com/\">http://☺.damowmow.com/</a></p>\n<p><a href=\"http://code.google.com/events/#&product=browser\">http://code.google.com/events/#&product=browser</a></p>\n<p><a href=\"http://j.mp\">http://j.mp</a></p>\n<p><a href=\"ftp://foo.bar/baz\">ftp://foo.bar/baz</a></p>\n<p><a href=\"http://foo.bar/?q=Test%20URL-encoded%20stuff\">http://foo.bar/?q=Test%20URL-encoded%20stuff</a></p>\n<!-- http://مثال.إختبار -->\n<!-- http://例子.测试 -->\n<!-- http://उदाहरण.परीक्षा -->\n<p><a href=\"http://1337.net\">http://1337.net</a></p>\n<p><a href=\"http://a.b-c.de\">http://a.b-c.de</a></p>\n<p><a href=\"http://223.255.255.254\">http://223.255.255.254</a></p>\n<p><a href=\"https://foo_bar.example.com/\">https://foo_bar.example.com/</a></p>\n<!-- WEIRD BUT SHOULD ALSO PASS -->\n<p><a href=\"http://www.foo.bar./\">http://www.foo.bar./</a></p>\n<p><a href=\"http://a.b--c.de/\">http://a.b--c.de/</a></p>\n<!-- SHOULD PARTIALLY PASS -->\n<p><a href=\"http://foo.bar/foo(bar)baz\">http://foo.bar/foo(bar)baz</a> quux</p>\n<p><a href=\"http://foo.bar?q=Spaces\">http://foo.bar?q=Spaces</a> should be encoded</p>\n<p>http://.<a href=\"http://www.foo.bar/\">www.foo.bar/</a></p>\n<p>http://.<a href=\"http://www.foo.bar./\">www.foo.bar./</a></p>\n<!-- THESE ARE INVALID IPS BUT WE WILL LET THEM PASS -->\n<p><a href=\"http://10.1.1.1\">http://10.1.1.1</a></p>\n<p><a href=\"http://10.1.1.254\">http://10.1.1.254</a></p>\n<p><a href=\"http://0.0.0.0\">http://0.0.0.0</a></p>\n<p><a href=\"http://10.1.1.0\">http://10.1.1.0</a></p>\n<p><a href=\"http://10.1.1.255\">http://10.1.1.255</a></p>\n<p><a href=\"http://224.1.1.1\">http://224.1.1.1</a></p>\n<p><a href=\"http://1.1.1.1.1\">http://1.1.1.1.1</a></p>\n<p><a href=\"http://123.123.123\">http://123.123.123</a></p>\n<!-- SHOULD FAIL -->\n<p>http://</p>\n<p>http://.</p>\n<p>http://..</p>\n<p>http://../</p>\n<p>http://?</p>\n<p>http://??</p>\n<p>http://??/</p>\n<p>http://#</p>\n<p>http://##</p>\n<p>http://##/</p>\n<p>//</p>\n<p>//a</p>\n<p>///a</p>\n<p>///</p>\n<p>http:///a</p>\n<p>foo.com</p>\n<p>rdar://1234</p>\n<p>h://test</p>\n<p>http:// shouldfail.com</p>\n<p>:// should fail</p>\n<p>http://-error-.invalid/</p>\n<p>http://-a.b.co</p>\n<p>http://3628126748</p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1809,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "does-not-parse-inside-a-tags",
+    "markdown": "<a href=\"http://www.google.com\">www.google.com</a>\n",
+    "html": "<p><a href=\"http://www.google.com\">www.google.com</a></p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1810,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "does-not-parse-inside-code",
+    "markdown": "    some code with\n    a link\n    www.google.com\n    \n    and another link http://www.google.com\n",
+    "html": "<pre><code>some code with\na link\nwww.google.com\n\nand another link http://www.google.com\n</code></pre>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1811,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "does-not-parse-reference-links",
+    "markdown": "![Showdown][sd-logo]\n\n[sd-logo]: https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png\n",
+    "html": "<p><img src=\"https://raw.githubusercontent.com/showdownjs/logo/master/dist/logo.readme.png\" alt=\"Showdown\" /></p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1812,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "excludeTrailingPunctuationFromURLs-option",
+    "markdown": "url http://www.google.com.\n\nurl http://www.google.com!\n\nurl http://www.google.com? foo\n\nurl (http://www.google.com) bazinga\n\nurl [http://www.google.com] bazinga\n\nurl http://www.google.com, bar\n",
+    "html": "<p>url <a href=\"http://www.google.com\">http://www.google.com</a>.</p>\n<p>url <a href=\"http://www.google.com\">http://www.google.com</a>!</p>\n<p>url <a href=\"http://www.google.com\">http://www.google.com</a>? foo</p>\n<p>url (<a href=\"http://www.google.com\">http://www.google.com</a>) bazinga</p>\n<p>url [<a href=\"http://www.google.com\">http://www.google.com</a>] bazinga</p>\n<p>url <a href=\"http://www.google.com\">http://www.google.com</a>, bar</p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1813,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "ordered-lists",
+    "markdown": "1. http://www.google.com/listitem1\n2. http://www.google.com/listitem2\n3. http://www.google.com/listitem3\n\nfoo\n\n1. http://www.google.com/listitem1\n\n2. http://www.google.com/listitem2\n\n3. http://www.google.com/listitem3",
+    "html": "<ol>\n    <li><a href=\"http://www.google.com/listitem1\">http://www.google.com/listitem1</a></li>\n    <li><a href=\"http://www.google.com/listitem2\">http://www.google.com/listitem2</a></li>\n    <li><a href=\"http://www.google.com/listitem3\">http://www.google.com/listitem3</a></li>\n</ol>\n<p>foo</p>\n<ol>\n    <li><p><a href=\"http://www.google.com/listitem1\">http://www.google.com/listitem1</a></p></li>\n    <li><p><a href=\"http://www.google.com/listitem2\">http://www.google.com/listitem2</a></p></li>\n    <li><p><a href=\"http://www.google.com/listitem3\">http://www.google.com/listitem3</a></p></li>\n</ol>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1814,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "text",
+    "markdown": "http://www.google.com/foobar\n\nwww.google.com/foobar\n\nftp://user:password@host.com:port/path\n\nthis has some http://www.google.com/foobar in text\n\nthis has some www.google.com/foobar in text\n\nthis has some ftp://user:password@host.com:port/path in text\n\n\n",
+    "html": "<p><a href=\"http://www.google.com/foobar\">http://www.google.com/foobar</a></p>\n<p><a href=\"http://www.google.com/foobar\">www.google.com/foobar</a></p>\n<p><a href=\"ftp://user:password@host.com:port/path\">ftp://user:password@host.com:port/path</a></p>\n<p>this has some <a href=\"http://www.google.com/foobar\">http://www.google.com/foobar</a> in text</p>\n<p>this has some <a href=\"http://www.google.com/foobar\">www.google.com/foobar</a> in text</p>\n<p>this has some <a href=\"ftp://user:password@host.com:port/path\">ftp://user:password@host.com:port/path</a> in text</p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1815,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "trailing-punctuation",
+    "markdown": "http://www.google.com!\n\nhttp://www.google.com!!!!!!!!!!!!!!!!\n\nhttp://www.google.com/!!!!!!!!!!!!!!!!foobar\n\nhttp://www.google.com/!!!!!!!!!!!!!!!! foobar\n\n(http://www.google.com/?!.)\n\nhttp://www.google.com/?!.(\n\nhttp://www.google.com/a()\n\nhttp://www.google.com/a?!.()\n",
+    "html": "<p><a href=\"http://www.google.com\">http://www.google.com</a>!</p>\n<p><a href=\"http://www.google.com\">http://www.google.com</a>!!!!!!!!!!!!!!!!</p>\n<p><a href=\"http://www.google.com/!!!!!!!!!!!!!!!!foobar\">http://www.google.com/!!!!!!!!!!!!!!!!foobar</a></p>\n<p><a href=\"http://www.google.com/\">http://www.google.com/</a>!!!!!!!!!!!!!!!! foobar</p>\n<p>(<a href=\"http://www.google.com/\">http://www.google.com/</a>?!.)</p>\n<p><a href=\"http://www.google.com/?!.(\">http://www.google.com/?!.(</a></p>\n<p><a href=\"http://www.google.com/a()\">http://www.google.com/a()</a></p>\n<p><a href=\"http://www.google.com/a?!.()\">http://www.google.com/a?!.()</a></p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1816,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "unordered-lists",
+    "markdown": " - http://www.google.com/foo\n - http://www.google.com/bar\n - http://www.google.com/baz\n\na\n\n - http://www.google.com/foo\n\n - http://www.google.com/bar\n\n - http://www.google.com/baz\n",
+    "html": "<ul>\n <li><a href=\"http://www.google.com/foo\">http://www.google.com/foo</a></li>\n <li><a href=\"http://www.google.com/bar\">http://www.google.com/bar</a></li>\n <li><a href=\"http://www.google.com/baz\">http://www.google.com/baz</a></li>\n</ul>\n<p>a</p>\n<ul>\n <li><p><a href=\"http://www.google.com/foo\">http://www.google.com/foo</a></p></li>\n <li><p><a href=\"http://www.google.com/bar\">http://www.google.com/bar</a></p></li>\n <li><p><a href=\"http://www.google.com/baz\">http://www.google.com/baz</a></p></li>\n</ul>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1817,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "wrapping-parenthesis",
+    "markdown": "(https://www.google.com)\n\n(https://www.google.com!?;)\n\n\n",
+    "html": "<p>(<a href=\"https://www.google.com\">https://www.google.com</a>)</p>\n<p>(<a href=\"https://www.google.com\">https://www.google.com</a>!?;)</p>\n",
+    "section": "simplifiedAutoLink",
+    "number": 1818,
+    "options": {
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "#259.es6-template-strings-indentation-issues",
+    "markdown": "      ## markdown doc\n      \n      you can use markdown for card documentation\n        - foo\n        - bar\n",
+    "html": "<h2 id=\"markdown-doc\">markdown doc</h2>\n<p>you can use markdown for card documentation</p>\n<ul>\n    <li>foo</li>\n    <li>bar</li>\n</ul>\n",
+    "section": "smartIndentationFix",
+    "number": 1901,
+    "options": {
+      "smartIndentationFix": true
+    }
+  },
+  {
+    "name": "basic",
+    "markdown": "> # Block quote  1\n>\n> This is my first block quote.\n\n> # Block quote 2\n>\n> This is my second block quote.\n",
+    "html": "<blockquote>\n    <h1 id=\"block-quote--1\">Block quote  1</h1>\n    <p>This is my first block quote.</p>\n</blockquote>\n<blockquote>\n    <h1 id=\"block-quote-2\">Block quote 2</h1>\n    <p>This is my second block quote.</p>\n</blockquote>\n",
+    "section": "splitAdjacentBlockquotes",
+    "number": 2001,
+    "options": {
+      "splitAdjacentBlockquotes": true
+    }
+  },
+  {
+    "name": "multiline-paragraph",
+    "markdown": "> This is my second block quote\nyeah\neverythong is ok.\n\nThis is not a blockquote\n",
+    "html": "<blockquote>\n<p>This is my second block quote\nyeah\neverythong is ok.</p>\n</blockquote>\n<p>This is not a blockquote</p>\n",
+    "section": "splitAdjacentBlockquotes",
+    "number": 2002,
+    "options": {
+      "splitAdjacentBlockquotes": true
+    }
+  },
+  {
+    "name": "#164.3.strikethrough",
+    "markdown": "a ~~strikethrough~~ word\n\nthis should~~not be parsed\n\n~~strike-through text~~\n\n`~~strikethough inside code span~~`\n\nescaped \\~~strikethrough~~\n\nescaped \\~~strikethrough\\~~\n",
+    "html": "<p>a <del>strikethrough</del> word</p>\n<p>this should~~not be parsed</p>\n<p><del>strike-through text</del></p>\n<p><code>~~strikethough inside code span~~</code></p>\n<p>escaped ~~strikethrough~~</p>\n<p>escaped ~<del>strikethrough~</del></p>\n",
+    "section": "strikethrough",
+    "number": 2101,
+    "options": {
+      "strikethrough": true
+    }
+  },
+  {
+    "name": "#214.escaped-markdown-chars-break-strikethrough",
+    "markdown": "Your friend ~~[**test\\***](www.google.com)~~ (~~[*@test*](www.google.com)~~) updated his/her description\n",
+    "html": "<p>Your friend <del><a href=\"www.google.com\"><strong>test*</strong></a></del> (<del><a href=\"www.google.com\"><em>@test</em></a></del>) updated his/her description</p>\n",
+    "section": "strikethrough",
+    "number": 2102,
+    "options": {
+      "strikethrough": true
+    }
+  },
+  {
+    "name": "#331.allow-escaping-of-tilde",
+    "markdown": "\\~~test~~\n\n~~test~~\n",
+    "html": "<p>~~test~~</p>\n<p><del>test</del></p>\n",
+    "section": "strikethrough",
+    "number": 2103,
+    "options": {
+      "strikethrough": true
+    }
+  },
+  {
+    "name": "#256.table-header-separators-should-not-require-3-dashes",
+    "markdown": "|key|value|\n|--|--| \n|My Key|My Value|\n",
+    "html": "<table>\n    <thead>\n    <tr>\n        <th>key</th>\n        <th>value</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td>My Key</td>\n        <td>My Value</td>\n    </tr>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2201,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "#345.escape-pipe-character",
+    "markdown": "| Operator | Description |\n|----------|-------------|\n| & | Logical AND |\n| && | Shortcut AND |\n| \\| | Logical OR |\n| \\|\\| | Shortcut OR |\n| ^ | Logical XOR |\n",
+    "html": "<table>\n    <thead>\n    <tr>\n        <th>Operator</th>\n        <th>Description</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td>&amp;</td>\n        <td>Logical AND</td>\n    </tr>\n    <tr>\n        <td>&amp;&amp;</td>\n        <td>Shortcut AND</td>\n    </tr>\n    <tr>\n        <td>|</td>\n        <td>Logical OR</td>\n    </tr>\n    <tr>\n        <td>||</td>\n        <td>Shortcut OR</td>\n    </tr>\n    <tr>\n        <td>^</td>\n        <td>Logical XOR</td>\n    </tr>\n  </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2202,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "#406.does-not-render-one-column-tables",
+    "markdown": "|some header |\n|------------|\n|some content|\n\n|some header |\n|------------|\n\n|some header |\n|------------|\n|some content|\n|some content|\n|some content|\n|some content|\n|some content|\n\n|some header |\n|:-----------|\n|some content|\n\n|some header |\n|-----------:|\n|some content|\n\n|some header |\n|:----------:|\n|some content|",
+    "html": "<table>\n    <thead>\n    <tr>\n        <th>some header</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td>some content</td>\n    </tr>\n    </tbody>\n</table>\n<table>\n    <thead>\n    <tr>\n        <th>some header</th>\n    </tr>\n    </thead>\n    <tbody>\n    </tbody>\n</table>\n<table>\n    <thead>\n    <tr>\n        <th>some header</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td>some content</td>\n    </tr>\n    <tr>\n        <td>some content</td>\n    </tr>\n    <tr>\n        <td>some content</td>\n    </tr>\n    <tr>\n        <td>some content</td>\n    </tr>\n    <tr>\n        <td>some content</td>\n    </tr>\n    </tbody>\n</table>\n<table>\n    <thead>\n    <tr>\n        <th style=\"text-align:left;\">some header</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td style=\"text-align:left;\">some content</td>\n    </tr>\n    </tbody>\n</table>\n<table>\n    <thead>\n    <tr>\n        <th style=\"text-align:right;\">some header</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td style=\"text-align:right;\">some content</td>\n    </tr>\n    </tbody>\n</table>\n<table>\n    <thead>\n    <tr>\n        <th style=\"text-align:center;\">some header</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td style=\"text-align:center;\">some content</td>\n    </tr>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2203,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "#442.trailing-spaces-break-one-column-tables",
+    "markdown": "| Single column |  \n|:--------------|   \n|    Row one    |                                      \n|    Row two    |               \n",
+    "html": "<table>\n    <thead>\n    <tr>\n        <th style=\"text-align:left;\">Single column</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td style=\"text-align:left;\">Row one</td>\n    </tr>\n    <tr>\n        <td style=\"text-align:left;\">Row two</td>\n    </tr>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2204,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "#443.2.table-followed-by-list-does-not-parse-correctly",
+    "markdown": "| Tables        |\n| ------------- |\n| **col 3 is**  |\n| col 2 is      |\n| zebra stripes |\n\n1. test",
+    "html": "<table>\n    <thead>\n    <tr>\n        <th>Tables</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td><strong>col 3 is</strong></td>\n    </tr>\n    <tr>\n        <td>col 2 is</td>\n    </tr>\n    <tr>\n        <td>zebra stripes</td>\n    </tr>\n    </tbody>\n</table>\n<ol>\n    <li>test</li>\n</ol>\n",
+    "section": "tables",
+    "number": 2205,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "#443.table-followed-by-list-does-not-parse-correctly",
+    "markdown": "| Tables        | Are           | Cool  |\n| ------------- |:-------------:| -----:|\n| **col 3 is**  | right-aligned | $1600 |\n| col 2 is      | *centered*    |   $12 |\n| zebra stripes | are neat      |    $1 |\n\n1. test\n",
+    "html": "<table>\n<thead>\n<tr>\n    <th>Tables</th>\n    <th style=\"text-align:center;\">Are</th>\n    <th style=\"text-align:right;\">Cool</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n    <td><strong>col 3 is</strong></td>\n    <td style=\"text-align:center;\">right-aligned</td>\n    <td style=\"text-align:right;\">$1600</td>\n</tr>\n<tr>\n    <td>col 2 is</td>\n    <td style=\"text-align:center;\"><em>centered</em></td>\n    <td style=\"text-align:right;\">$12</td>\n</tr>\n<tr>\n    <td>zebra stripes</td>\n    <td style=\"text-align:center;\">are neat</td>\n    <td style=\"text-align:right;\">$1</td>\n</tr>\n</tbody>\n</table>\n<ol>\n    <li>test</li>\n</ol>\n",
+    "section": "tables",
+    "number": 2206,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "#465.code-spans-with-pipes-break-table",
+    "markdown": "|PowerShell command|Example|\n|--|--|\n|Get-Service|`Get-Service | Stop-Service -WhatIf`|\n",
+    "html": "<table>\n    <thead>\n    <tr>\n        <th>PowerShell command</th>\n        <th>Example</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td>Get-Service</td>\n        <td><code>Get-Service | Stop-Service -WhatIf</code></td>\n    </tr>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2207,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "#471.ol-is-not-rendered-correctly-inside-table",
+    "markdown": "|  h1     |  h2                  |\n|--------:|:---------------------|\n| asdf    | one `two <ol> three` |\n",
+    "html": "<table>\n    <thead>\n    <tr>\n        <th style=\"text-align:right;\">h1</th>\n        <th style=\"text-align:left;\">h2</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td style=\"text-align:right;\">asdf</td>\n        <td style=\"text-align:left;\">one <code>two &lt;ol&gt; three</code></td>\n    </tr>\n    </tbody>\n</table>",
+    "section": "tables",
+    "number": 2208,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "basic",
+    "markdown": "| First Header  | Second Header |\n| ------------- | ------------- |\n| Row 1 Cell 1  | Row 1 Cell 2  |\n| Row 2 Cell 1  | Row 2 Cell 2  |\n",
+    "html": "<table>\n    <thead>\n        <tr>\n            <th>First Header</th>\n            <th>Second Header</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td>Row 1 Cell 1</td>\n            <td>Row 1 Cell 2</td>\n        </tr>\n        <tr>\n            <td>Row 2 Cell 1</td>\n            <td>Row 2 Cell 2</td>\n        </tr>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2209,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "basic-alignment",
+    "markdown": "| First Header  | Second Header |\n| :------------ | :------------ |\n| Row 1 Cell 1  | Row 1 Cell 2  |\n| Row 2 Cell 1  | Row 2 Cell 2  |\n",
+    "html": "<table>\n  <thead>\n    <tr>\n      <th style=\"text-align:left;\">First Header</th>\n      <th style=\"text-align:left;\">Second Header</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td style=\"text-align:left;\">Row 1 Cell 1</td>\n      <td style=\"text-align:left;\">Row 1 Cell 2</td>\n    </tr>\n    <tr>\n      <td style=\"text-align:left;\">Row 2 Cell 1</td>\n      <td style=\"text-align:left;\">Row 2 Cell 2</td>\n    </tr>\n  </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2210,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "gh-style-tables",
+    "markdown": "First Header  | Second Header|Third Header\n------------- | -------------|---\nContent Cell  | Content Cell|C\nContent Cell  | Content Cell|C\n",
+    "html": "<table>\n    <thead>\n        <tr>\n            <th>First Header</th>\n            <th>Second Header</th>\n            <th>Third Header</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td>Content Cell</td>\n            <td>Content Cell</td>\n            <td>C</td>\n        </tr>\n        <tr>\n            <td>Content Cell</td>\n            <td>Content Cell</td>\n            <td>C</td>\n        </tr>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2211,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "large",
+    "markdown": "| First Header  | Second Header | Third Header  | Fourth Header |\n| ------------- | ------------- | ------------  | ------------- |\n| Row 1 Cell 1  | Row 1 Cell 2  | Row 1 Cell 3  | Row 1 Cell 4  |\n| Row 2 Cell 1  | Row 2 Cell 2  | Row 2 Cell 3  | Row 2 Cell 4  |\n| Row 3 Cell 1  | Row 3 Cell 2  | Row 3 Cell 3  | Row 3 Cell 4  |\n| Row 4 Cell 1  | Row 4 Cell 2  | Row 4 Cell 3  | Row 4 Cell 4  |\n| Row 5 Cell 1  | Row 5 Cell 2  | Row 5 Cell 3  | Row 5 Cell 4  |\n",
+    "html": "<table>\n    <thead>\n        <tr>\n            <th>First Header</th>\n            <th>Second Header</th>\n            <th>Third Header</th>\n            <th>Fourth Header</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td>Row 1 Cell 1</td>\n            <td>Row 1 Cell 2</td>\n            <td>Row 1 Cell 3</td>\n            <td>Row 1 Cell 4</td>\n        </tr>\n        <tr>\n            <td>Row 2 Cell 1</td>\n            <td>Row 2 Cell 2</td>\n            <td>Row 2 Cell 3</td>\n            <td>Row 2 Cell 4</td>\n        </tr>\n        <tr>\n            <td>Row 3 Cell 1</td>\n            <td>Row 3 Cell 2</td>\n            <td>Row 3 Cell 3</td>\n            <td>Row 3 Cell 4</td>\n        </tr>\n        <tr>\n            <td>Row 4 Cell 1</td>\n            <td>Row 4 Cell 2</td>\n            <td>Row 4 Cell 3</td>\n            <td>Row 4 Cell 4</td>\n        </tr>\n        <tr>\n            <td>Row 5 Cell 1</td>\n            <td>Row 5 Cell 2</td>\n            <td>Row 5 Cell 3</td>\n            <td>Row 5 Cell 4</td>\n        </tr>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2212,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "large-table-with-allignments",
+    "markdown": "| First Header  | Second Header | Third Header  | Fourth Header |\n| :------------ |: ----------- :| ------------ :| ------------- |\n| Row 1 Cell 1  | Row 1 Cell 2  | Row 1 Cell 3  | Row 1 Cell 4  |\n| Row 2 Cell 1  | Row 2 Cell 2  | Row 2 Cell 3  | Row 2 Cell 4  |\n| Row 3 Cell 1  | Row 3 Cell 2  | Row 3 Cell 3  | Row 3 Cell 4  |\n| Row 4 Cell 1  | Row 4 Cell 2  | Row 4 Cell 3  | Row 4 Cell 4  |\n| Row 5 Cell 1  | Row 5 Cell 2  | Row 5 Cell 3  | Row 5 Cell 4  |\n",
+    "html": "<table>\n    <thead>\n        <tr>\n            <th style=\"text-align:left;\">First Header</th>\n            <th style=\"text-align:center;\">Second Header</th>\n            <th style=\"text-align:right;\">Third Header</th>\n            <th>Fourth Header</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td style=\"text-align:left;\">Row 1 Cell 1</td>\n            <td style=\"text-align:center;\">Row 1 Cell 2</td>\n            <td style=\"text-align:right;\">Row 1 Cell 3</td>\n            <td>Row 1 Cell 4</td>\n        </tr>\n        <tr>\n            <td style=\"text-align:left;\">Row 2 Cell 1</td>\n            <td style=\"text-align:center;\">Row 2 Cell 2</td>\n            <td style=\"text-align:right;\">Row 2 Cell 3</td>\n            <td>Row 2 Cell 4</td>\n        </tr>\n        <tr>\n            <td style=\"text-align:left;\">Row 3 Cell 1</td>\n            <td style=\"text-align:center;\">Row 3 Cell 2</td>\n            <td style=\"text-align:right;\">Row 3 Cell 3</td>\n            <td>Row 3 Cell 4</td>\n        </tr>\n        <tr>\n            <td style=\"text-align:left;\">Row 4 Cell 1</td>\n            <td style=\"text-align:center;\">Row 4 Cell 2</td>\n            <td style=\"text-align:right;\">Row 4 Cell 3</td>\n            <td>Row 4 Cell 4</td>\n        </tr>\n        <tr>\n            <td style=\"text-align:left;\">Row 5 Cell 1</td>\n            <td style=\"text-align:center;\">Row 5 Cell 2</td>\n            <td style=\"text-align:right;\">Row 5 Cell 3</td>\n            <td>Row 5 Cell 4</td>\n        </tr>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2213,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "mixed-alignment",
+    "markdown": "| Left-Aligned  |    Center-Aligned    | Right-Aligned |\n| :------------ |:--------------------:| -------------:|\n| col 3 is      | some wordy paragraph |         $1600 |\n| col 2 is      |       centered       |           $12 |\n| zebra stripes |       are neat       |            $1 |\n",
+    "html": "<table>\n  <thead>\n    <tr>\n      <th style=\"text-align:left;\">Left-Aligned</th>\n      <th style=\"text-align:center;\">Center-Aligned</th>\n      <th style=\"text-align:right;\">Right-Aligned</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td style=\"text-align:left;\">col 3 is</td>\n      <td style=\"text-align:center;\">some wordy paragraph</td>\n      <td style=\"text-align:right;\">$1600</td>\n    </tr>\n    <tr>\n      <td style=\"text-align:left;\">col 2 is</td>\n      <td style=\"text-align:center;\">centered</td>\n      <td style=\"text-align:right;\">$12</td>\n    </tr>\n    <tr>\n      <td style=\"text-align:left;\">zebra stripes</td>\n      <td style=\"text-align:center;\">are neat</td>\n      <td style=\"text-align:right;\">$1</td>\n    </tr>\n  </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2214,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "multiple-tables",
+    "markdown": "Table Test\n============\n\nsection 1\n------------\n\n|header1    |header2    |header3|\n|-----------|-----------|---------|\n|Value1     |Value2     |Value3   |\n\n\nsection 2\n-----------\n\n|headerA    |headerB    |headerC|\n|-----------|-----------|---------|\n|ValueA     |ValueB     |ValueC   |\n",
+    "html": "<h1 id=\"table-test\">Table Test</h1>\n<h2 id=\"section-1\">section 1</h2>\n<table>\n    <thead>\n        <tr>\n            <th>header1</th>\n            <th>header2</th>\n            <th>header3</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td>Value1</td>\n            <td>Value2</td>\n            <td>Value3</td>\n        </tr>\n    </tbody>\n</table>\n<h2 id=\"section-2\">section 2</h2>\n<table>\n    <thead>\n        <tr>\n            <th>headerA</th>\n            <th>headerB</th>\n            <th>headerC</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td>ValueA</td>\n            <td>ValueB</td>\n            <td>ValueC</td>\n        </tr>\n    </tbody>\n</table>",
+    "section": "tables",
+    "number": 2215,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "table-inside-codeblock",
+    "markdown": "some text\n\n\n    | Tables        | Are           | Cool  |\n    | ------------- |:-------------:| -----:|\n    | **col 3 is**  | right-aligned | $1600 |\n    | col 2 is      | *centered*    |   $12 |\n    | zebra stripes | ~~are neat~~  |    $1 |\n",
+    "html": "<p>some text</p>\n<pre><code>| Tables        | Are           | Cool  |\n| ------------- |:-------------:| -----:|\n| **col 3 is**  | right-aligned | $1600 |\n| col 2 is      | *centered*    |   $12 |\n| zebra stripes | ~~are neat~~  |    $1 |\n</code></pre>\n",
+    "section": "tables",
+    "number": 2216,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "table-without-leading-pipe",
+    "markdown": "\n### Stats\n\n\nStatus | AGENT1 | AGENT2 | AGENT3 | AGENT4 | AGENT5 | AGENT6 | AGENT7 | AGENT8 | AGENT9 | TOTAL |\n--- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\nAGENT ERROR | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |\nAPPROVED | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |\n",
+    "html": "\n<h3 id=\"stats\">Stats</h3>\n<table>\n<thead>\n<tr>\n<th>Status</th>\n<th>AGENT1</th>\n<th>AGENT2</th>\n<th>AGENT3</th>\n<th>AGENT4</th>\n<th>AGENT5</th>\n<th>AGENT6</th>\n<th>AGENT7</th>\n<th>AGENT8</th>\n<th>AGENT9</th>\n<th>TOTAL</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td>AGENT ERROR</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td></td>\n</tr>\n<tr>\n<td>APPROVED</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td>0</td>\n<td></td>\n</tr>\n</tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2217,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "with-equals",
+    "markdown": "| First Header  | Second Header |\n| ============= | ============= |\n| Row 1 Cell 1  | Row 1 Cell 2  |\n| Row 2 Cell 1  | Row 2 Cell 2  |\n",
+    "html": "<table>\n    <thead>\n        <tr>\n            <th>First Header</th>\n            <th>Second Header</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td>Row 1 Cell 1</td>\n            <td>Row 1 Cell 2</td>\n        </tr>\n        <tr>\n            <td>Row 2 Cell 1</td>\n            <td>Row 2 Cell 2</td>\n        </tr>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2218,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "with-span-elements",
+    "markdown": "| First Header  | Second Header     |\n| ------------- | ----------------- |\n| **bold**      | ![img](foo.jpg)   |\n| _italic_      | [link](bla.html)  |\n| `some code`   | [google][1]       |\n| <www.foo.com> | normal            |\n\n\n  [1]: www.google.com\n",
+    "html": "<table>\n    <thead>\n    <tr>\n        <th>First Header</th>\n        <th>Second Header</th>\n    </tr>\n    </thead>\n    <tbody>\n    <tr>\n        <td><strong>bold</strong></td>\n        <td><img src=\"foo.jpg\" alt=\"img\" /></td>\n    </tr>\n    <tr>\n        <td><em>italic</em></td>\n        <td><a href=\"bla.html\">link</a></td>\n    </tr>\n    <tr>\n        <td><code>some code</code></td>\n        <td><a href=\"www.google.com\">google</a></td>\n    </tr>\n    <tr>\n        <td><a href=\"http://www.foo.com\">www.foo.com</a></td>\n        <td>normal</td>\n    </tr>\n    </tbody>\n</table>",
+    "section": "tables",
+    "number": 2219,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "with-surroundings",
+    "markdown": "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent nisi est, \nullamcorper euismod iaculis sed, tristique at neque. Nullam metus risus, \nmalesuada vitae imperdiet ac, tincidunt eget lacus. Proin ullamcorper \nvulputate dictum. Vestibulum consequat ultricies nibh, sed tempus nisl mattis a.\n\n| First Header  | Second Header |\n| ------------- | ------------- |\n| Row 1 Cell 1  | Row 1 Cell 2  |\n| Row 2 Cell 1  | Row 2 Cell 2  |\n\nPhasellus ac porttitor quam. Integer cursus accumsan mauris nec interdum. \nEtiam iaculis urna vitae risus facilisis faucibus eu quis risus. Sed aliquet \nrutrum dictum. Vivamus pulvinar malesuada ultricies. Pellentesque in commodo \nnibh. Maecenas justo erat, sodales vel bibendum a, dignissim in orci. Duis \nblandit ornare mi non facilisis. Aliquam rutrum fringilla lacus in semper. \nSed vel pretium lorem.\n",
+    "html": "<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent nisi est, \nullamcorper euismod iaculis sed, tristique at neque. Nullam metus risus, \nmalesuada vitae imperdiet ac, tincidunt eget lacus. Proin ullamcorper \nvulputate dictum. Vestibulum consequat ultricies nibh, sed tempus nisl mattis a.</p>\n<table>\n    <thead>\n        <tr>\n            <th>First Header</th>\n            <th>Second Header</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td>Row 1 Cell 1</td>\n            <td>Row 1 Cell 2</td>\n        </tr>\n        <tr>\n            <td>Row 2 Cell 1</td>\n            <td>Row 2 Cell 2</td>\n        </tr>\n    </tbody>\n</table>\n<p>Phasellus ac porttitor quam. Integer cursus accumsan mauris nec interdum. \nEtiam iaculis urna vitae risus facilisis faucibus eu quis risus. Sed aliquet \nrutrum dictum. Vivamus pulvinar malesuada ultricies. Pellentesque in commodo \nnibh. Maecenas justo erat, sodales vel bibendum a, dignissim in orci. Duis \nblandit ornare mi non facilisis. Aliquam rutrum fringilla lacus in semper. \nSed vel pretium lorem.</p>\n",
+    "section": "tables",
+    "number": 2220,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "without-body",
+    "markdown": "| First Header  | Second Header |\n| ------------- | ------------- |\n",
+    "html": "<table>\n    <thead>\n        <tr>\n            <th>First Header</th>\n            <th>Second Header</th>\n        </tr>\n    </thead>\n    <tbody>\n    </tbody>\n</table>\n",
+    "section": "tables",
+    "number": 2221,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "without-header-delimiter",
+    "markdown": "| First Header  | Second Header |\n",
+    "html": "<p>| First Header  | Second Header |</p>\n",
+    "section": "tables",
+    "number": 2222,
+    "options": {
+      "tables": true
+    }
+  },
+  {
+    "name": "#164.4.tasklists",
+    "markdown": "# my things\n\n -  foo\n - [] bar\n - [ ] baz\n - [x] bazinga\n - [X] bazinga 2\n\notherthings\n",
+    "html": "<h1 id=\"my-things\">my things</h1>\n<ul>\n    <li>foo</li>\n    <li>[] bar</li>\n    <li><input disabled type=\"checkbox\"> baz</li>\n    <li><input checked disabled type=\"checkbox\"> bazinga</li>\n    <li><input checked disabled type=\"checkbox\"> bazinga 2</li>\n</ul>\n<p>otherthings</p>\n",
+    "section": "tasklists",
+    "number": 2301,
+    "options": {
+      "tasklists": true
+    }
+  },
+  {
+    "name": "fulltext",
+    "markdown": "Markdown test adapted from BitBucket\n====================\n\n[Markdown][fireball] for readmes is pretty popular.  So, I've given you a demo\nhere of all the markup we support. In some cases, I copied the doc/examples entirely from the Fireball Markdown site. \n\nI didn't duplicate all the Markdown doc everything tho. For the entire docs and a deeper explanation of Markdown, you still need to go to the [Markdown][fireball] site.\n\nYou can also use [Markdown mark up][BBmarkup] in comments, issues, and commit messages.\n\nOn this page:\n\n\n* [Span Elements](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-span-elements)\n    * [Emphasis](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-emphasis)\n\n    * [Strikethrough](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-strikethrough)\n    \n    * [Preformatted code](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-preformatted-code)\n\n    * [Links](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-links)\n\n    * [Images](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-images)\n\n* [Block Elements](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-block-elements)\n    * [Headings](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-headings)\n\n    * [Paragraphs and blockquotes](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-paragraphs-and-blockquotes)\n\n    * [Lists](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-lists)\n\n    * [Tables](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-tables)\n\n    * [Code and Syntax highlighting](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-code-and-syntax-highlighting)\n\n    * [Horizontal rules](https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-horizontal-rules)\n\n- - -\n\n# Span Elements\n\nThese elements occur within a line of text.  So, for example font changes or links.\n\n \n## Emphasis\n\nMarkdown treats * (asterisk) as emphasis markers. \n\n*single asterisks*\n**double asterisks**\n\nAll are created from this:\n\n    *single asterisks*\n\n    **double asterisks**\n\n\n## Underline [experimental]\n\n\n__double underscores__\n\n___triple underscores___\n\n\nAll are created from this:\n\n\n    __double underscores__\n\n    ___triple underscores___\n\n\nYou must use the same character must be used to open and close an emphasis span. Emphasis can be used in the mi*dd*le of a word.\n\n    Emphasis can be used in the mi*dd*le of a word.\n\nBut if you surround an * or _ with spaces, it will be treated as a literal asterisk or underscore.\n\nTo produce a literal asterisk or underscore at a position where it would otherwise be used as an emphasis delimiter, you can backslash escape it:\n\n    \\*this text is surrounded by literal asterisks\\*\n\n## Strikethrough\n\nMarkdown's Markdown parser supports strikethrough by wrapping text in `~~`:\n\n~~text that has been struckthrough~~\n\nis created from:\n\n    ~~text that has been struckthrough~~\n\n## Preformatted code\n\nTo indicate a span of code, wrap it with `` ` `` (backtick). Unlike a pre-formatted code block, a code span indicates code within a normal paragraph. For example:\n\nUse the `printf()` function.\n\nis produced from:\n\n    Use the `printf()` function.\n    \nTo include a literal backtick character within a code span, you can use multiple backticks as the opening and closing delimiters:\n\n``There is a literal backtick (`) here.``    \n\n\n## Links\n\nMarkdown supports inline and reference links. In both styles, the link text is delimited by [square brackets]. To create an inline link, use this syntax:\n\n    [ Text for the link ](URL)\n\nSo an inline link to [Yahoo](http://www.yahoo.com) looks like this:\n\n    So an inline link to [Yahoo](http://www.yahoo.com) looks like this:\n\nReference-style links use a second set of square brackets, inside which you place a label of your choosing to identify the link:\n\n    This is [an example][id] reference-style link.\n    \nWhich gives you a link like this:\n\nThis is [an example][id] reference-style link.\n    \nElsewhere in the document, usually at the bottom of the file, you define your link label on a line by itself:\n\n    [id]: http://example.com/  \"Optional Title Here\"\n    \nLinks can get pretty fancy, so if you want the long form version, visit the \n official [Markdown][fireball] docs.\n\n\n## Images\n\nMarkdown uses an image syntax that is intended to resemble the syntax for links, allowing for two styles: inline and reference. Images appear like this:\n\n![Alt text](http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png)\n\n\n\n    ![Alt text](http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png)\n\n    ![Alt text](http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png \"Optional title\")\n    \n- - -\n# Block Elements\n\nThese are elements that are a single or multiple lines in length\n\n\n\n## Headings\nYou can create Atx-style headings by prefixing with a # (hash mark)\n\n# Heading 1 markup  `# Heading 1`\n# \n## Heading 2 markup  `## Heading 2`\n## \n### Heading 3 markup   `### Heading 3`\n### \n#### Heading 4 markup  `#### Heading 4`\n#### \n##### Heading 5 markup  `##### Heading 5`\n##### \n###### Heading 6 markup  `###### Heading 6`\n###### \nYou can also create Setext-style headings which have two levels.\n\nLevel 1 markup use an equal sign = (equal sign) \n==============================\n\n\n     Level 1 markup use an equal sign = (equal sign)        \n     ==============================\n     \nLevel 2 markup uses - (dashes) \n-------------\n\n\n    Level 2 markup uses - (dashes) \n    -------------\n\n\n\n\n## PARAGRAPHS and BLOCKQUOTES\n\n\nA paragraph is one or more consecutive lines of text separated by one or more\nblank lines. A blank line contains nothing but spaces or tabs. Do not indent\nnormal paragraphs with spaces or tabs. New lines/carriage returns within paragraphs require two spaces at the end of the preceding line.\n\nThis is one paragraph.\n\nThis is a second.\n\n    This is one paragraph.\n\n    This is a second.\n\nMarkdown uses email-style > (greater than) characters for blockquoting. If youâ€™re familiar with quoting passages of text in an email message, then you know how to create a blockquote in Markdown. It looks best if you hard wrap the text and put a > before every line:\n\n> This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,\n> consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus.\n> \n> Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse\n> id sem consectetuer libero luctus adipiscing.\n\n\n    > This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,\n    > consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus.\n    > \n    > Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse\n    > id sem consectetuer libero luctus adipiscing.\n    \nBlockquotes can be nested (i.e. a blockquote-in-a-blockquote):\n\n> This is the first level of quoting.\n>\n> > This is nested blockquote.\n>\n> Back to the first level.\n\n    > This is the first level of quoting.\n    >\n    > > This is nested blockquote.\n    >\n    > Back to the first level.\n\nBlockquotes can contain other Markdown elements, including headers, lists, and code blocks:\n\n> ## This is a header.\n> \n> 1.   This is the first list item.\n> 2.   This is the second list item.\n> \n> Here's some example code:\n> \n>     return shell_exec(\"echo $input | $markdown_script\");\n\n\n    > ## This is a header.\n    > \n    > 1.   This is the first list item.\n    > 2.   This is the second list item.\n    > \n    > Here's some example code:\n    > \n    >     return shell_exec(\"echo $input | $markdown_script\");\n    \n\n\n\n## Lists\n\nMarkdown supports ordered (numbered) and unordered (bulleted) lists.  List markers typically start at the left margin, but may be indented by up to three spaces. List markers must be followed by one or more spaces or a tab.\n\nForm bulleted lists with any of * (asterisk), + (plus), or - (dash). You can one or any or mix of these to form a list:\n\n* Red \n+ Green \n- Blue\n\n\n        * Red\n        + Green\n        - Blue\n    \nOrdered lists require a numeric character followed by a . (period).\n\n1. Item one\n1. Item two \n1. Item three\n\n        1. Item one\n        1. Item two \n        1. Item three\n    \nNotice the actual value of the number doesn't matter in the list result. However, for readability better to use this markup:\n\n        1. Item one\n        2. Item two \n        3. Item three\n        \nLists can be embedded in lists. List items may consist of multiple paragraphs. Each subsequent paragraph in a list item must be indented by either 4 spaces or one tab:\n\n* Red \n+ Green \n    * dark  green \n    * lime    \n- Blue        \n    1. Item one\n        1. subitem 1 \n        1. subitem 2\n    1. Item two \n    \n        This is is a first paragraph. \n        \n        * Green \n        * Blue\n        \n        This is a second paragraph.\n        \n    1. Item three\n    \nThe code for these embedded lists or paragraphs is:\n\n            * Red \n            + Green \n                * dark  green \n                * lime    \n            - Blue        \n                1. Item one\n                    1. subitem 1\n                    1. subitem 2\n                1. Item two \n    \n                    This is is a first paragraph. \n        \n                    * Green \n                    * Blue\n        \n                    This is a second paragraph.\n        \n                1. Item three\n\nYou can also embed blockquotes in a list.\n\n* Green\n> What is this?  It is embedded blockquote.  Mix 'em and match 'em.\n* Blue\n* Red\n\n        * Green\n        > What is this?  It is embedded blockquote.  Mix 'em and match 'em.\n        * Blue\n        * Red\n\n\n\nYou can also embed code blocks in a list.\n\n* Green\n\n    Try this code:\n\n        This is an embedded code block.\n\n    Then this:\n\n        More code!\n\n* Blue\n* Red\n\n        * Green\n\n            Try this code:\n\n                This is an embedded code block.\n\n            Then this:\n\n                More code!\n\n        * Blue\n        * Red\n\n\n## Tables\n\n\n\nMarkdown does not support `<html>` so you need to use the - (dash) and the | (pipe) symbols to construct a table. The first line contains column headers. Separate columns with the pipe symbol.\n\nThe  second line must be a mandatory separator line between the headers and the content. Subsequent lines are table rows. Columns are always separated by the pipe (|) character.  For example this table:\n\nFirst Header  | Second Header\n------------- | -------------\nContent Cell  | Content Cell\nContent Cell  | Content Cell\n\nComes from this code:\n\n    First Header  | Second Header\n    ------------- | -------------\n    Content Cell  | Content Cell\n    Content Cell  | Content Cell\n    \n    \nYou can only put simple lines in a table.\n\nYou can specify alignment for each column by adding colons to separator lines. A colon at the left of the separator line, left-aligns the column. A colon on the right, right-aligns the column. Add colons to both sides to center the column is center-aligned.\n\nRight     | Left   | Center \n---------:| :----- |:-----:\nComputer  |  $1600 | one\nPhone     |    $12 | three\nPipe      |     $1 | eleven\n\n    Right     | Left   | Center \n    ---------:| :----- |:-----:\n    Computer  |  $1600 | one\n    Phone     |    $12 | three\n    Pipe      |     $1 | eleven\n\n\nYou can apply inline formatting (span-level changes such as fonts or links) to the content of each cell using regular Markdown syntax:\n\n\n| Function name | Description                    |\n| ------------- | ------------------------------ |\n| `help()`      | Display the __help__ window.   |\n| `destroy()`   | **Destroy your computer!**     |\n\n    | Function name | Description                    |\n    | ------------- | ------------------------------ |\n    | `help()`      | Display the __help__ window.   |\n    | `destroy()`   | **Destroy your computer!**     |\n\n\n\n\n- -  -\n\n\n## Code and Syntax highlighting\n\n\nPre-formatted code blocks are used for writing about programming or markup source code. Rather than forming normal paragraphs, the code block linesare interpreted literally.  Markdown wraps a code block in both `<pre>` and `<code>` tags.\n\nTo produce a code block in Markdown, indent every line of the block by at least 4 spaces or 1 tab. For :\n\nThis is a normal paragraph:\n\n    This is a code block.\n\nThe code reveals the indentation.\n\n        This is a normal paragraph:\n\n            This is a code block.\n\nA code block continues until it reaches a line that is not indented (or the end of the page).\n\nWithin a code block, & (ampersands) and < > (angle brackets) are automatically converted into HTML entities. This makes it very easy to include example HTML source code using Markdown â€” just paste it and indent it. Markdown will handle the hassle of encoding the ampersands and angle brackets. For example, this:\n\n<p>Here is an example of AppleScript:</p>\n\n    <p>Here is an example of AppleScript:</p>\n\nTo produce a code block in Markdown, simply indent every line of the block by at least 4 spaces or 1 tab. For example, given this input:\n\n\nYou can also highlight snippets of text (Markdown uses the excellent [Pygments][] library) to allow you to use code highlighting  Here's an example of some Python code:\n\n```\n#!python\n#\ndef wiki_rocks(text): formatter = lambda t: \"funky\"+t return formatter(text)         \n```\n\nTo do this, do not indent the block. Start the block with ` ``` ` three ticks. Then, provide the comment with the type of syntax you are using.  There is a [the vast library of Pygment lexers][lexers]. Markdown accepts the 'short name' or the 'mimetype' of anything in there.\n\nYou can also use a fence style for code.\n\n```\nThis is a code block, fenced-style\n```\n\nWhich you create with this code:\n\n    ```\n    This is a code block, fenced-style\n    ```\n    \nSee [Michel Fortin's blog][extra] to try out more examples of this coding style. Not everything he demos is guaranteed to work though.\n\n\n- - -\n\n# Horizontal Rules\n\nYou can produce a horizontal line with any of the following codes:\n\n    * * *\n\n    ***\n\n    *****\n\n    - - - -\n\n    -----------------------\n    \nThe output looks like this:\n\n* * *\n\n***\n\n*****\n\n- - - \n\n-----------------------\n\n- - -\n\n\n\n[lexers]: http://pygments.org/docs/lexers/\n[fireball]: http://daringfireball.net/projects/markdown/ \n[Pygments]: http://pygments.org/ \n[Extra]: http://michelf.ca/projects/php-markdown/extra/\n[id]: http://example.com/  \"Optional Title Here\"\n[BBmarkup]: https://confluence.atlassian.com/x/xTAvEw",
+    "html": "<h1 id=\"markdown-test-adapted-from-bitbucket\">Markdown test adapted from BitBucket</h1>\n<p><a href=\"http://daringfireball.net/projects/markdown/\">Markdown</a> for readmes is pretty popular.  So, I've given you a demo\n    here of all the markup we support. In some cases, I copied the doc/examples entirely from the Fireball Markdown site. </p>\n<p>I didn't duplicate all the Markdown doc everything tho. For the entire docs and a deeper explanation of Markdown, you still need to go to the <a href=\"http://daringfireball.net/projects/markdown/\">Markdown</a> site.</p>\n<p>You can also use <a href=\"https://confluence.atlassian.com/x/xTAvEw\">Markdown mark up</a> in comments, issues, and commit messages.</p>\n<p>On this page:</p>\n<ul>\n    <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-span-elements\">Span Elements</a></p>\n        <ul>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-emphasis\">Emphasis</a></p></li>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-strikethrough\">Strikethrough</a></p></li>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-preformatted-code\">Preformatted code</a></p></li>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-links\">Links</a></p></li>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-images\">Images</a></p></li></ul></li>\n    <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-block-elements\">Block Elements</a></p>\n        <ul>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-headings\">Headings</a></p></li>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-paragraphs-and-blockquotes\">Paragraphs and blockquotes</a></p></li>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-lists\">Lists</a></p></li>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-tables\">Tables</a></p></li>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-code-and-syntax-highlighting\">Code and Syntax highlighting</a></p></li>\n            <li><p><a href=\"https://Markdown.org/tutorials/markdowndemo/overview#markdown-header-horizontal-rules\">Horizontal rules</a></p></li></ul></li>\n</ul>\n<hr />\n<h1 id=\"span-elements\">Span Elements</h1>\n<p>These elements occur within a line of text.  So, for example font changes or links.</p>\n<h2 id=\"emphasis\">Emphasis</h2>\n<p>Markdown treats * (asterisk) as emphasis markers. </p>\n<p><em>single asterisks</em>\n    <strong>double asterisks</strong></p>\n<p>All are created from this:</p>\n<pre><code>*single asterisks*\n\n**double asterisks**\n</code></pre>\n<h2 id=\"underline-experimental\">Underline [experimental]</h2>\n<p><u>double underscores</u></p>\n<p><u>triple underscores</u></p>\n<p>All are created from this:</p>\n<pre><code>__double underscores__\n\n___triple underscores___\n</code></pre>\n<p>You must use the same character must be used to open and close an emphasis span. Emphasis can be used in the mi<em>dd</em>le of a word.</p>\n<pre><code>Emphasis can be used in the mi*dd*le of a word.\n</code></pre>\n<p>But if you surround an * or _ with spaces, it will be treated as a literal asterisk or underscore.</p>\n<p>To produce a literal asterisk or underscore at a position where it would otherwise be used as an emphasis delimiter, you can backslash escape it:</p>\n<pre><code>\\*this text is surrounded by literal asterisks\\*\n</code></pre>\n<h2 id=\"strikethrough\">Strikethrough</h2>\n<p>Markdown's Markdown parser supports strikethrough by wrapping text in <code>~~</code>:</p>\n<p><del>text that has been struckthrough</del></p>\n<p>is created from:</p>\n<pre><code>~~text that has been struckthrough~~\n</code></pre>\n<h2 id=\"preformatted-code\">Preformatted code</h2>\n<p>To indicate a span of code, wrap it with <code>`</code> (backtick). Unlike a pre-formatted code block, a code span indicates code within a normal paragraph. For example:</p>\n<p>Use the <code>printf()</code> function.</p>\n<p>is produced from:</p>\n<pre><code>Use the `printf()` function.\n</code></pre>\n<p>To include a literal backtick character within a code span, you can use multiple backticks as the opening and closing delimiters:</p>\n<p><code>There is a literal backtick (`) here.</code>    </p>\n<h2 id=\"links\">Links</h2>\n<p>Markdown supports inline and reference links. In both styles, the link text is delimited by [square brackets]. To create an inline link, use this syntax:</p>\n<pre><code>[ Text for the link ](URL)\n</code></pre>\n<p>So an inline link to <a href=\"http://www.yahoo.com\">Yahoo</a> looks like this:</p>\n<pre><code>So an inline link to [Yahoo](http://www.yahoo.com) looks like this:\n</code></pre>\n<p>Reference-style links use a second set of square brackets, inside which you place a label of your choosing to identify the link:</p>\n<pre><code>This is [an example][id] reference-style link.\n</code></pre>\n<p>Which gives you a link like this:</p>\n<p>This is <a href=\"http://example.com/\" title=\"Optional Title Here\">an example</a> reference-style link.</p>\n<p>Elsewhere in the document, usually at the bottom of the file, you define your link label on a line by itself:</p>\n<pre><code>[id]: http://example.com/  &quot;Optional Title Here&quot;\n</code></pre>\n<p>Links can get pretty fancy, so if you want the long form version, visit the\n    official <a href=\"http://daringfireball.net/projects/markdown/\">Markdown</a> docs.</p>\n<h2 id=\"images\">Images</h2>\n<p>Markdown uses an image syntax that is intended to resemble the syntax for links, allowing for two styles: inline and reference. Images appear like this:</p>\n<p><img src=\"http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png\" alt=\"Alt text\" /></p>\n<pre><code>![Alt text](http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png)\n\n![Alt text](http://www.addictedtoibiza.com/wp-content/uploads/2012/12/example.png &quot;Optional title&quot;)\n</code></pre>\n<hr />\n<h1 id=\"block-elements\">Block Elements</h1>\n<p>These are elements that are a single or multiple lines in length</p>\n<h2 id=\"headings\">Headings</h2>\n<p>You can create Atx-style headings by prefixing with a # (hash mark)</p>\n<h1 id=\"heading-1-markup---heading-1\">Heading 1 markup  <code># Heading 1</code></h1>\n<h1 id=\"-\"> </h1>\n<h2 id=\"heading-2-markup---heading-2\">Heading 2 markup  <code>## Heading 2</code></h2>\n<h2 id=\"--1\"> </h2>\n<h3 id=\"heading-3-markup----heading-3\">Heading 3 markup   <code>### Heading 3</code></h3>\n<h3 id=\"--2\"> </h3>\n<h4 id=\"heading-4-markup---heading-4\">Heading 4 markup  <code>#### Heading 4</code></h4>\n<h4 id=\"--3\"> </h4>\n<h5 id=\"heading-5-markup---heading-5\">Heading 5 markup  <code>##### Heading 5</code></h5>\n<h5 id=\"--4\"> </h5>\n<h6 id=\"heading-6-markup---heading-6\">Heading 6 markup  <code>###### Heading 6</code></h6>\n<h6 id=\"--5\"> </h6>\n<p>You can also create Setext-style headings which have two levels.</p>\n<h1 id=\"level-1-markup-use-an-equal-sign--equal-sign\">Level 1 markup use an equal sign = (equal sign)</h1>\n<pre><code> Level 1 markup use an equal sign = (equal sign)        \n ==============================\n</code></pre>\n<h2 id=\"level-2-markup-uses---dashes\">Level 2 markup uses - (dashes)</h2>\n<pre><code>Level 2 markup uses - (dashes) \n-------------\n</code></pre>\n<h2 id=\"paragraphs-and-blockquotes\">PARAGRAPHS and BLOCKQUOTES</h2>\n<p>A paragraph is one or more consecutive lines of text separated by one or more\n    blank lines. A blank line contains nothing but spaces or tabs. Do not indent\n    normal paragraphs with spaces or tabs. New lines/carriage returns within paragraphs require two spaces at the end of the preceding line.</p>\n<p>This is one paragraph.</p>\n<p>This is a second.</p>\n<pre><code>This is one paragraph.\n\nThis is a second.\n</code></pre>\n<p>Markdown uses email-style &gt; (greater than) characters for blockquoting. If youâ€™re familiar with quoting passages of text in an email message, then you know how to create a blockquote in Markdown. It looks best if you hard wrap the text and put a &gt; before every line:</p>\n<blockquote>\n    <p>This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,\n        consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus.</p>\n    <p>Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse\n        id sem consectetuer libero luctus adipiscing.</p>\n</blockquote>\n<pre><code>&gt; This is a blockquote with two paragraphs. Lorem ipsum dolor sit amet,\n&gt; consectetuer adipiscing elit. Aliquam hendrerit mi posuere lectus.\n&gt; \n&gt; Donec sit amet nisl. Aliquam semper ipsum sit amet velit. Suspendisse\n&gt; id sem consectetuer libero luctus adipiscing.\n</code></pre>\n<p>Blockquotes can be nested (i.e. a blockquote-in-a-blockquote):</p>\n<blockquote>\n    <p>This is the first level of quoting.</p>\n    <blockquote>\n        <p>This is nested blockquote.</p>\n    </blockquote>\n    <p>Back to the first level.</p>\n</blockquote>\n<pre><code>&gt; This is the first level of quoting.\n&gt;\n&gt; &gt; This is nested blockquote.\n&gt;\n&gt; Back to the first level.\n</code></pre>\n<p>Blockquotes can contain other Markdown elements, including headers, lists, and code blocks:</p>\n<blockquote>\n    <h2 id=\"this-is-a-header\">This is a header.</h2>\n    <ol>\n        <li>This is the first list item.</li>\n        <li>This is the second list item.</li>\n    </ol>\n    <p>Here's some example code:</p>\n    <pre><code>return shell_exec(&quot;echo $input | $markdown_script&quot;);\n</code></pre>\n</blockquote>\n<pre><code>&gt; ## This is a header.\n&gt; \n&gt; 1.   This is the first list item.\n&gt; 2.   This is the second list item.\n&gt; \n&gt; Here's some example code:\n&gt; \n&gt;     return shell_exec(&quot;echo $input | $markdown_script&quot;);\n</code></pre>\n<h2 id=\"lists\">Lists</h2>\n<p>Markdown supports ordered (numbered) and unordered (bulleted) lists.  List markers typically start at the left margin, but may be indented by up to three spaces. List markers must be followed by one or more spaces or a tab.</p>\n<p>Form bulleted lists with any of * (asterisk), + (plus), or - (dash). You can one or any or mix of these to form a list:</p>\n<ul>\n    <li><p>Red </p></li>\n    <li><p>Green </p></li>\n    <li><p>Blue</p>\n        <pre><code>* Red\n+ Green\n- Blue\n</code></pre></li>\n</ul>\n<p>Ordered lists require a numeric character followed by a . (period).</p>\n<ol>\n    <li><p>Item one</p></li>\n    <li><p>Item two </p></li>\n    <li><p>Item three</p>\n        <pre><code>1. Item one\n1. Item two \n1. Item three\n</code></pre></li>\n</ol>\n<p>Notice the actual value of the number doesn't matter in the list result. However, for readability better to use this markup:</p>\n<pre><code>    1. Item one\n    2. Item two \n    3. Item three\n</code></pre>\n<p>Lists can be embedded in lists. List items may consist of multiple paragraphs. Each subsequent paragraph in a list item must be indented by either 4 spaces or one tab:</p>\n<ul>\n    <li><p>Red </p></li>\n    <li><p>Green </p>\n        <ul>\n            <li>dark  green </li>\n            <li>lime    </li></ul></li>\n    <li><p>Blue        </p>\n        <ol>\n            <li><p>Item one</p>\n                <ol>\n                    <li>subitem 1 </li>\n                    <li>subitem 2</li></ol></li>\n            <li><p>Item two </p>\n                <p>This is is a first paragraph. </p>\n                <ul>\n                    <li>Green </li>\n                    <li>Blue</li></ul>\n                <p>This is a second paragraph.</p></li>\n            <li><p>Item three</p></li></ol></li>\n</ul>\n<p>The code for these embedded lists or paragraphs is:</p>\n<pre><code>        * Red \n        + Green \n            * dark  green \n            * lime    \n        - Blue        \n            1. Item one\n                1. subitem 1\n                1. subitem 2\n            1. Item two \n\n                This is is a first paragraph. \n\n                * Green \n                * Blue\n\n                This is a second paragraph.\n\n            1. Item three\n</code></pre>\n<p>You can also embed blockquotes in a list.</p>\n<ul>\n    <li><p>Green\n&gt; What is this?  It is embedded blockquote.  Mix 'em and match 'em.</p></li>\n    <li><p>Blue</p></li>\n    <li><p>Red</p>\n<pre><code>* Green\n&gt; What is this?  It is embedded blockquote.  Mix 'em and match 'em.\n* Blue\n* Red\n</code></pre></li>\n</ul>\n<p>You can also embed code blocks in a list.</p>\n<ul>\n    <li><p>Green</p>\n        <p>Try this code:</p>\n        <pre><code>This is an embedded code block.\n</code></pre>\n        <p>Then this:</p>\n        <pre><code>More code!\n</code></pre></li>\n    <li><p>Blue</p></li>\n    <li><p>Red</p>\n<pre><code>* Green\n\n    Try this code:\n\n        This is an embedded code block.\n\n    Then this:\n\n        More code!\n\n* Blue\n* Red\n</code></pre></li>\n</ul>\n<h2 id=\"tables\">Tables</h2>\n<p>Markdown does not support <code>&lt;html&gt;</code> so you need to use the - (dash) and the | (pipe) symbols to construct a table. The first line contains column headers. Separate columns with the pipe symbol.</p>\n<p>The  second line must be a mandatory separator line between the headers and the content. Subsequent lines are table rows. Columns are always separated by the pipe (|) character.  For example this table:</p>\n<p>First Header  | Second Header\n    ------------- | -------------\n    Content Cell  | Content Cell\n    Content Cell  | Content Cell</p>\n<p>Comes from this code:</p>\n<pre><code>First Header  | Second Header\n------------- | -------------\nContent Cell  | Content Cell\nContent Cell  | Content Cell\n</code></pre>\n<p>You can only put simple lines in a table.</p>\n<p>You can specify alignment for each column by adding colons to separator lines. A colon at the left of the separator line, left-aligns the column. A colon on the right, right-aligns the column. Add colons to both sides to center the column is center-aligned.</p>\n<p>Right     | Left   | Center\n    ---------:| :----- |:-----:\n    Computer  |  $1600 | one\n    Phone     |    $12 | three\n    Pipe      |     $1 | eleven</p>\n<pre><code>Right     | Left   | Center \n---------:| :----- |:-----:\nComputer  |  $1600 | one\nPhone     |    $12 | three\nPipe      |     $1 | eleven\n</code></pre>\n<p>You can apply inline formatting (span-level changes such as fonts or links) to the content of each cell using regular Markdown syntax:</p>\n<p>| Function name | Description                    |\n    | ------------- | ------------------------------ |\n    | <code>help()</code>      | Display the <u>help</u> window.   |\n    | <code>destroy()</code>   | <strong>Destroy your computer!</strong>     |</p>\n<pre><code>| Function name | Description                    |\n| ------------- | ------------------------------ |\n| `help()`      | Display the __help__ window.   |\n| `destroy()`   | **Destroy your computer!**     |\n</code></pre>\n<hr />\n<h2 id=\"code-and-syntax-highlighting\">Code and Syntax highlighting</h2>\n<p>Pre-formatted code blocks are used for writing about programming or markup source code. Rather than forming normal paragraphs, the code block linesare interpreted literally.  Markdown wraps a code block in both <code>&lt;pre&gt;</code> and <code>&lt;code&gt;</code> tags.</p>\n<p>To produce a code block in Markdown, indent every line of the block by at least 4 spaces or 1 tab. For :</p>\n<p>This is a normal paragraph:</p>\n<pre><code>This is a code block.\n</code></pre>\n<p>The code reveals the indentation.</p>\n<pre><code>    This is a normal paragraph:\n\n        This is a code block.\n</code></pre>\n<p>A code block continues until it reaches a line that is not indented (or the end of the page).</p>\n<p>Within a code block, &amp; (ampersands) and < > (angle brackets) are automatically converted into HTML entities. This makes it very easy to include example HTML source code using Markdown â€” just paste it and indent it. Markdown will handle the hassle of encoding the ampersands and angle brackets. For example, this:</p>\n<p>Here is an example of AppleScript:</p>\n<pre><code>&lt;p&gt;Here is an example of AppleScript:&lt;/p&gt;\n</code></pre>\n<p>To produce a code block in Markdown, simply indent every line of the block by at least 4 spaces or 1 tab. For example, given this input:</p>\n<p>You can also highlight snippets of text (Markdown uses the excellent <a href=\"http://pygments.org/\">Pygments</a> library) to allow you to use code highlighting  Here's an example of some Python code:</p>\n<pre><code>#!python\n#\ndef wiki_rocks(text): formatter = lambda t: &quot;funky&quot;+t return formatter(text)\n</code></pre>\n<p>To do this, do not indent the block. Start the block with <code>```</code> three ticks. Then, provide the comment with the type of syntax you are using.  There is a <a href=\"http://pygments.org/docs/lexers/\">the vast library of Pygment lexers</a>. Markdown accepts the 'short name' or the 'mimetype' of anything in there.</p>\n<p>You can also use a fence style for code.</p>\n<pre><code>This is a code block, fenced-style\n</code></pre>\n<p>Which you create with this code:</p>\n<pre><code>```\nThis is a code block, fenced-style\n```\n</code></pre>\n<p>See <a href=\"http://michelf.ca/projects/php-markdown/extra/\">Michel Fortin's blog</a> to try out more examples of this coding style. Not everything he demos is guaranteed to work though.</p>\n<hr />\n<h1 id=\"horizontal-rules\">Horizontal Rules</h1>\n<p>You can produce a horizontal line with any of the following codes:</p>\n<pre><code>* * *\n\n***\n\n*****\n\n- - - -\n\n-----------------------\n</code></pre>\n<p>The output looks like this:</p>\n<hr />\n<hr />\n<hr />\n<hr />\n<hr />\n<hr />\n",
+    "section": "underline",
+    "number": 2401,
+    "options": {
+      "underline": true
+    }
+  },
+  {
+    "name": "simple",
+    "markdown": "this is __underlined__ word\n\n__an underlined sentence__\n\n___three underscores are fine___\n\n_single_ underscores are left alone\n\n__multiple__ underlines in a __paragraph__",
+    "html": "<p>this is <u>underlined</u> word</p>\n<p><u>an underlined sentence</u></p>\n<p><u>three underscores are fine</u></p>\n<p>_single_ underscores are left alone</p>\n<p><u>multiple</u> underlines in a <u>paragraph</u></p>",
+    "section": "underline",
+    "number": 2402,
+    "options": {
+      "underline": true
+    }
+  },
+  {
+    "name": "basic",
+    "markdown": "Here is a footnote reference.[^1]\n\n[^1]: Here is the footnote.\n",
+    "html": "<p>Here is a footnote reference.<sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-1\">\n<p>Here is the footnote. <a href=\"#fnref-1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2500,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "numbered-by-reference-order",
+    "markdown": "Alpha[^a] and beta[^b].\n\n[^b]: Beta note.\n\n[^a]: Alpha note.\n",
+    "html": "<p>Alpha<sup class=\"footnote-ref\"><a href=\"#fn-a\" id=\"fnref-a\" data-footnote-ref>1</a></sup> and beta<sup class=\"footnote-ref\"><a href=\"#fn-b\" id=\"fnref-b\" data-footnote-ref>2</a></sup>.</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-a\">\n<p>Alpha note. <a href=\"#fnref-a\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n<li id=\"fn-b\">\n<p>Beta note. <a href=\"#fnref-b\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2501,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "reused-footnote-multiple-backrefs",
+    "markdown": "Once[^x] and twice[^x].\n\n[^x]: Shared note.\n",
+    "html": "<p>Once<sup class=\"footnote-ref\"><a href=\"#fn-x\" id=\"fnref-x\" data-footnote-ref>1</a></sup> and twice<sup class=\"footnote-ref\"><a href=\"#fn-x\" id=\"fnref-x-2\" data-footnote-ref>1</a></sup>.</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-x\">\n<p>Shared note. <a href=\"#fnref-x\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a> <a href=\"#fnref-x-2\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1-2\" aria-label=\"Back to reference 1-2\">↩<sup class=\"footnote-ref\">2</sup></a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2502,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "reference-without-definition-stays-literal",
+    "markdown": "A reference with no definition[^missing] stays literal.\n",
+    "html": "<p>A reference with no definition[^missing] stays literal.</p>\n",
+    "section": "footnotes",
+    "number": 2503,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "unused-definition-is-dropped",
+    "markdown": "Plain paragraph with no references.\n\n[^unused]: This definition is never referenced.\n",
+    "html": "<p>Plain paragraph with no references.</p>\n",
+    "section": "footnotes",
+    "number": 2504,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "inline-formatting-in-definition",
+    "markdown": "See the reference.[^fmt]\n\n[^fmt]: Supports *emphasis*, **strong**, `code`, and [a link](https://example.com).\n",
+    "html": "<p>See the reference.<sup class=\"footnote-ref\"><a href=\"#fn-fmt\" id=\"fnref-fmt\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-fmt\">\n<p>Supports <em>emphasis</em>, <strong>strong</strong>, <code>code</code>, and <a href=\"https://example.com\">a link</a>. <a href=\"#fnref-fmt\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2505,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "multi-paragraph-definition",
+    "markdown": "Ref[^mp].\n\n[^mp]: First paragraph.\n\n    Second paragraph of the same footnote.\n",
+    "html": "<p>Ref<sup class=\"footnote-ref\"><a href=\"#fn-mp\" id=\"fnref-mp\" data-footnote-ref>1</a></sup>.</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-mp\">\n<p>First paragraph.</p>\n<p>Second paragraph of the same footnote. <a href=\"#fnref-mp\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2506,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "basic-footnote",
+    "markdown": "Here is a simple footnote.[^1]\n\n[^1]: This is the footnote content.\n",
+    "html": "<p>Here is a simple footnote.<sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-1\">\n<p>This is the footnote content. <a href=\"#fnref-1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2507,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "multiple-footnotes",
+    "markdown": "First claim.[^a] Second claim.[^b]\n\n[^a]: Supporting note for the first.\n[^b]: Supporting note for the second.\n",
+    "html": "<p>First claim.<sup class=\"footnote-ref\"><a href=\"#fn-a\" id=\"fnref-a\" data-footnote-ref>1</a></sup> Second claim.<sup class=\"footnote-ref\"><a href=\"#fn-b\" id=\"fnref-b\" data-footnote-ref>2</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-a\">\n<p>Supporting note for the first. <a href=\"#fnref-a\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n<li id=\"fn-b\">\n<p>Supporting note for the second. <a href=\"#fnref-b\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2508,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "reused-reference",
+    "markdown": "See here[^note] and again here.[^note]\n\n[^note]: A reused footnote.\n",
+    "html": "<p>See here<sup class=\"footnote-ref\"><a href=\"#fn-note\" id=\"fnref-note\" data-footnote-ref>1</a></sup> and again here.<sup class=\"footnote-ref\"><a href=\"#fn-note\" id=\"fnref-note-2\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-note\">\n<p>A reused footnote. <a href=\"#fnref-note\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a> <a href=\"#fnref-note-2\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1-2\" aria-label=\"Back to reference 1-2\">↩<sup class=\"footnote-ref\">2</sup></a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2509,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "multi-paragraph-footnote",
+    "markdown": "A footnote with two paragraphs.[^big]\n\n[^big]: First paragraph of the note.\n\n    Second paragraph, indented to stay in the footnote.\n",
+    "html": "<p>A footnote with two paragraphs.<sup class=\"footnote-ref\"><a href=\"#fn-big\" id=\"fnref-big\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-big\">\n<p>First paragraph of the note.</p>\n<p>Second paragraph, indented to stay in the footnote. <a href=\"#fnref-big\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2510,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "inline-formatting-in-definition",
+    "markdown": "Formatted footnote.[^f]\n\n[^f]: Has **bold**, *italic*, `code`, and a [link](https://example.com).\n",
+    "html": "<p>Formatted footnote.<sup class=\"footnote-ref\"><a href=\"#fn-f\" id=\"fnref-f\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-f\">\n<p>Has <strong>bold</strong>, <em>italic</em>, <code>code</code>, and a <a href=\"https://example.com\">link</a>. <a href=\"#fnref-f\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2511,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "out-of-order-definitions",
+    "markdown": "Alpha[^x] then Beta[^y].\n\n[^y]: Defined first, referenced second.\n[^x]: Defined second, referenced first.\n",
+    "html": "<p>Alpha<sup class=\"footnote-ref\"><a href=\"#fn-x\" id=\"fnref-x\" data-footnote-ref>1</a></sup> then Beta<sup class=\"footnote-ref\"><a href=\"#fn-y\" id=\"fnref-y\" data-footnote-ref>2</a></sup>.</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-x\">\n<p>Defined second, referenced first. <a href=\"#fnref-x\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n<li id=\"fn-y\">\n<p>Defined first, referenced second. <a href=\"#fnref-y\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2512,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "block-content-in-definition",
+    "markdown": "Footnote with block content.[^blk]\n\n[^blk]: Intro line.\n\n    - item one\n    - item two\n\n    ```python\n    print(\"inside a footnote\")\n    ```\n",
+    "html": "<p>Footnote with block content.<sup class=\"footnote-ref\"><a href=\"#fn-blk\" id=\"fnref-blk\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-blk\">\n<p>Intro line.</p>\n<ul>\n<li>item one</li>\n<li>item two</li>\n</ul>\n<pre><code class=\"python language-python\">print(&quot;inside a footnote&quot;)\n</code></pre>\n<a href=\"#fnref-blk\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2513,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "undefined-reference",
+    "markdown": "This reference has no definition.[^missing]\n",
+    "html": "<p>This reference has no definition.[^missing]</p>\n",
+    "section": "footnotes",
+    "number": 2514,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "unused-definition",
+    "markdown": "This paragraph references nothing.\n\n[^unused]: This definition is never referenced.\n",
+    "html": "<p>This paragraph references nothing.</p>\n",
+    "section": "footnotes",
+    "number": 2515,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "nested-footnote",
+    "markdown": "Outer reference.[^outer]\n\n[^outer]: This note itself cites another.[^inner]\n[^inner]: The nested note.\n",
+    "html": "<p>Outer reference.<sup class=\"footnote-ref\"><a href=\"#fn-outer\" id=\"fnref-outer\" data-footnote-ref>1</a></sup></p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-outer\">\n<p>This note itself cites another.<sup class=\"footnote-ref\"><a href=\"#fn-inner\" id=\"fnref-inner\" data-footnote-ref>2</a></sup> <a href=\"#fnref-outer\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n<li id=\"fn-inner\">\n<p>The nested note. <a href=\"#fnref-inner\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"2\" aria-label=\"Back to reference 2\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2516,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "case-insensitive-label",
+    "markdown": "Reference uses[^Foo] one case.\n\n[^foo]: Defined in a different case.\n",
+    "html": "<p>Reference uses<sup class=\"footnote-ref\"><a href=\"#fn-foo\" id=\"fnref-foo\" data-footnote-ref>1</a></sup> one case.</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-foo\">\n<p>Defined in a different case. <a href=\"#fnref-foo\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2517,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "label-characters",
+    "markdown": "Spaced label[^a b] and a dotted one[^v1.2].\n\n[^a b]: never matches because of the space.\n[^v1.2]: punctuation in the label is fine.\n",
+    "html": "<p>Spaced label[^a b] and a dotted one<sup class=\"footnote-ref\"><a href=\"#fn-v1.2\" id=\"fnref-v1.2\" data-footnote-ref>1</a></sup>.</p>\n<p>[^a b]: never matches because of the space.</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-v1.2\">\n<p>punctuation in the label is fine. <a href=\"#fnref-v1.2\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2518,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "reference-reused-three-times",
+    "markdown": "One[^r], two[^r], three[^r].\n\n[^r]: Referenced three times.\n",
+    "html": "<p>One<sup class=\"footnote-ref\"><a href=\"#fn-r\" id=\"fnref-r\" data-footnote-ref>1</a></sup>, two<sup class=\"footnote-ref\"><a href=\"#fn-r\" id=\"fnref-r-2\" data-footnote-ref>1</a></sup>, three<sup class=\"footnote-ref\"><a href=\"#fn-r\" id=\"fnref-r-3\" data-footnote-ref>1</a></sup>.</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-r\">\n<p>Referenced three times. <a href=\"#fnref-r\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a> <a href=\"#fnref-r-2\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1-2\" aria-label=\"Back to reference 1-2\">↩<sup class=\"footnote-ref\">2</sup></a> <a href=\"#fnref-r-3\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1-3\" aria-label=\"Back to reference 1-3\">↩<sup class=\"footnote-ref\">3</sup></a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2519,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "disabled-when-option-off",
+    "markdown": "A reference[^1] with footnotes disabled.\n",
+    "html": "<p>A reference[^1] with footnotes disabled.</p>\n",
+    "section": "footnotes",
+    "number": 2507,
+    "options": {}
+  },
+  {
+    "name": "#179.parse-md-in-table-ths",
+    "markdown": "| *foo* | **bar** | ~~baz~~ |\n|-------|---------|---------|\n| 100   | blabla  |  aaa    |\n",
+    "html": "<table>\n  <thead>\n    <tr>\n      <th><em>foo</em></th>\n      <th><strong>bar</strong></th>\n      <th><del>baz</del></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>100</td>\n      <td>blabla</td>\n      <td>aaa</td>\n    </tr>\n  </tbody>\n</table>\n",
+    "section": "interop",
+    "number": 10001,
+    "options": {
+      "tables": true,
+      "strikethrough": true
+    }
+  },
+  {
+    "name": "#330.simplifiedAutoLink-drops-character-before-and-after-linked-mail",
+    "markdown": "Just an example info@example.com ok?​\n",
+    "html": "<p>Just an example <a href=\"mailto:info@example.com\">info@example.com</a> ok?​</p>\n",
+    "section": "interop",
+    "number": 10002,
+    "options": {
+      "encodeEmails": false,
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "#806.https-auto-link",
+    "markdown": "www.foobar.com\n\nThis is a link <www.foobar.com>",
+    "html": "<p><a href=\"https://www.foobar.com\">www.foobar.com</a></p>\n<p>This is a link <a href=\"https://www.foobar.com\">www.foobar.com</a></p>",
+    "section": "interop",
+    "number": 10003,
+    "options": {
+      "simplifiedAutoLink": true,
+      "httpsAutoLinks": true
+    }
+  },
+  {
+    "name": "basic-with-header-ids",
+    "markdown": "| First Header  | Second Header |\n| ------------- | ------------- |\n| Row 1 Cell 1  | Row 1 Cell 2  |\n| Row 2 Cell 1  | Row 2 Cell 2  |\n",
+    "html": "<table>\n    <thead>\n        <tr>\n            <th id=\"first_header\">First Header</th>\n            <th id=\"second_header\">Second Header</th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td class=\"first_header_col\">Row 1 Cell 1</td>\n            <td class=\"second_header_col\">Row 1 Cell 2</td>\n        </tr>\n        <tr>\n            <td class=\"first_header_col\">Row 2 Cell 1</td>\n            <td class=\"second_header_col\">Row 2 Cell 2</td>\n        </tr>\n    </tbody>\n</table>\n",
+    "section": "interop",
+    "number": 10004,
+    "options": {
+      "tables": true,
+      "tablesHeaderId": true
+    }
+  },
+  {
+    "name": "cmSpec-all-gfm-options",
+    "markdown": "@tivie shared www.foo.com and https://bar.com\n\nMail <a@b.com> or c@d.com\n\n![logo](logo.png =64x64)\n",
+    "html": "<p><a href=\"https://github.com/tivie\">@tivie</a> shared <a href=\"https://www.foo.com\">www.foo.com</a> and <a href=\"https://bar.com\">https://bar.com</a></p>\n<p>Mail <a href=\"&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#97;&#64;&#98;&#46;&#99;&#111;&#109;\">&#97;&#64;&#98;&#46;&#99;&#111;&#109;</a> or <a href=\"&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#99;&#64;&#100;&#46;&#99;&#111;&#109;\">&#99;&#64;&#100;&#46;&#99;&#111;&#109;</a></p>\n<p><img src=\"logo.png\" alt=\"logo\" width=\"64\" height=\"64\" /></p>\n",
+    "section": "interop",
+    "number": 10005,
+    "options": {
+      "cmSpec": true,
+      "ghMentions": true,
+      "simplifiedAutoLink": true,
+      "httpsAutoLinks": true,
+      "encodeEmails": true,
+      "parseImgDimensions": true
+    }
+  },
+  {
+    "name": "cmSpec-emoji-img",
+    "markdown": "A unicode emoji :smile: and an image emoji :bowtie: in text.\n\n- :octocat: in a list item\n",
+    "html": "<p>A unicode emoji 😄 and an image emoji <img alt=\"bowtie\" width=\"20\" height=\"20\" align=\"absmiddle\" src=\"https://github.githubassets.com/images/icons/emoji/bowtie.png?v8\"> in text.</p>\n<ul>\n<li><img alt=\"octocat\" width=\"20\" height=\"20\" align=\"absmiddle\" src=\"https://github.githubassets.com/images/icons/emoji/octocat.png?v8\"> in a list item</li>\n</ul>\n",
+    "section": "interop",
+    "number": 10006,
+    "options": {
+      "cmSpec": true,
+      "emoji": true
+    }
+  },
+  {
+    "name": "cmSpec-encodeEmails",
+    "markdown": "Mail <a@b.com> please.\n",
+    "html": "<p>Mail <a href=\"&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#97;&#64;&#98;&#46;&#99;&#111;&#109;\">&#97;&#64;&#98;&#46;&#99;&#111;&#109;</a> please.</p>\n",
+    "section": "interop",
+    "number": 10007,
+    "options": {
+      "cmSpec": true,
+      "encodeEmails": true
+    }
+  },
+  {
+    "name": "cmSpec-ghMentions",
+    "markdown": "Ping @tivie and @john_doe about it.\n",
+    "html": "<p>Ping <a href=\"https://github.com/tivie\">@tivie</a> and <a href=\"https://github.com/john_doe\">@john_doe</a> about it.</p>\n",
+    "section": "interop",
+    "number": 10008,
+    "options": {
+      "cmSpec": true,
+      "ghMentions": true
+    }
+  },
+  {
+    "name": "cmSpec-ghMentions-escaped",
+    "markdown": "Ping \\@tivie and \\@john_doe about it.\n",
+    "html": "<p>Ping @tivie and @john_doe about it.</p>\n",
+    "section": "interop",
+    "number": 10009,
+    "options": {
+      "cmSpec": true,
+      "ghMentions": true
+    }
+  },
+  {
+    "name": "cmSpec-httpsAutoLinks",
+    "markdown": "Go to www.foo.com now.\n",
+    "html": "<p>Go to <a href=\"https://www.foo.com\">www.foo.com</a> now.</p>\n",
+    "section": "interop",
+    "number": 10010,
+    "options": {
+      "cmSpec": true,
+      "simplifiedAutoLink": true,
+      "httpsAutoLinks": true
+    }
+  },
+  {
+    "name": "cmSpec-parseImgDimensions",
+    "markdown": "![cat](cat.png =200x100)\n\n![dog][d]\n\n[d]: dog.png =50x25 \"doggo\"\n",
+    "html": "<p><img src=\"cat.png\" alt=\"cat\" width=\"200\" height=\"100\" /></p>\n<p><img src=\"dog.png\" alt=\"dog\" title=\"doggo\" width=\"50\" height=\"25\" /></p>\n",
+    "section": "interop",
+    "number": 10011,
+    "options": {
+      "cmSpec": true,
+      "parseImgDimensions": true
+    }
+  },
+  {
+    "name": "cmSpec-simplifiedAutoLink",
+    "markdown": "Visit https://example.com or www.foo.com today.\n",
+    "html": "<p>Visit <a href=\"https://example.com\">https://example.com</a> or <a href=\"http://www.foo.com\">www.foo.com</a> today.</p>\n",
+    "section": "interop",
+    "number": 10012,
+    "options": {
+      "cmSpec": true,
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "cmSpec-strikethrough",
+    "markdown": "This is ~~struck~~ text at top level.\n\n- ~~struck item~~\n- a normal item\n- [x] ~~done task~~\n",
+    "html": "<p>This is <del>struck</del> text at top level.</p>\n<ul>\n<li><del>struck item</del></li>\n<li>a normal item</li>\n<li><input checked disabled type=\"checkbox\"> <del>done task</del></li>\n</ul>\n",
+    "section": "interop",
+    "number": 10013,
+    "options": {
+      "cmSpec": true,
+      "strikethrough": true,
+      "tasklists": true
+    }
+  },
+  {
+    "name": "cmSpec-tasklists",
+    "markdown": "- [ ] todo\n- [x] done\n- a regular item\n",
+    "html": "<ul>\n<li><input disabled type=\"checkbox\"> todo</li>\n<li><input checked disabled type=\"checkbox\"> done</li>\n<li>a regular item</li>\n</ul>\n",
+    "section": "interop",
+    "number": 10014,
+    "options": {
+      "cmSpec": true,
+      "tasklists": true
+    }
+  },
+  {
+    "name": "cmSpec-tasklists-moreStyling",
+    "markdown": "- [ ] pending task\n- [x] completed task\n",
+    "html": "<ul>\n<li class=\"task-list-item\" style=\"list-style-type: none;\"><input type=\"checkbox\" disabled style=\"margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;\"> pending task</li>\n<li class=\"task-list-item task-list-item-complete\" style=\"list-style-type: none;\"><input type=\"checkbox\" disabled style=\"margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;\" checked> completed task</li>\n</ul>\n",
+    "section": "interop",
+    "number": 10015,
+    "options": {
+      "cmSpec": true,
+      "tasklists": true,
+      "moreStyling": true
+    }
+  },
+  {
+    "name": "cmSpec-underline",
+    "markdown": "This is __underlined__ and ___under-em___ text.\n\nMixed: __under with *emphasis* inside__, a _literal_ pair and \\_escaped\\_.\n",
+    "html": "<p>This is <u>underlined</u> and <u>under-em</u> text.</p>\n<p>Mixed: <u>under with <em>emphasis</em> inside</u>, a _literal_ pair and _escaped_.</p>\n",
+    "section": "interop",
+    "number": 10016,
+    "options": {
+      "cmSpec": true,
+      "underline": true
+    }
+  },
+  {
+    "name": "disallow-underscores",
+    "markdown": "http://en.wikipedia.org/wiki/Tourism_in_Germany\n",
+    "html": "<p><a href=\"http://en.wikipedia.org/wiki/Tourism_in_Germany\">http://en.wikipedia.org/wiki/Tourism_in_Germany</a></p>",
+    "section": "interop",
+    "number": 10017,
+    "options": {
+      "literalMidWordUnderscores": true,
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "embeded-in-output",
+    "markdown": "«««\ntitle: This is the document title\nlanguage: en\nauthor: Tivie\ncontributors: John, Mary, Steve\ndescription: This is a long text and so it\n    spans on multiple lines.\n    It must be indented,\n    for showdown to parse it correctly.\n    Markdown **such as bold** is not parsed\n    and it will be rendered as plain text.\ndate: 01-01-2010\nkeywords: foo, bar, baz\n»»»\n\n**some** markdown text\n",
+    "html": "<!DOCTYPE HTML>\n<html lang=\"en\">\n<head>\n    <title>This is the document title</title>\n    <meta charset=\"utf-8\">\n    <meta name=\"language\" content=\"en\">\n    <meta name=\"author\" content=\"Tivie\">\n    <meta name=\"contributors\" content=\"John, Mary, Steve\">\n    <meta name=\"description\" content=\"This is a long text and so it spans on multiple lines. It must be indented, for showdown to parse it correctly. Markdown **such as bold** is not parsed and it will be rendered as plain text.\">\n    <meta name=\"date\" content=\"01-01-2010\">\n    <meta name=\"keywords\" content=\"foo, bar, baz\">\n</head>\n<body>\n<p><strong>some</strong> markdown text</p>\n</body>\n</html>\n",
+    "section": "interop",
+    "number": 10018,
+    "options": {
+      "metadata": true,
+      "completeHTMLDocument": true
+    }
+  },
+  {
+    "name": "embeded-two-consecutive-metadata-blocks",
+    "markdown": "---\ntitle: This is the document title\nlanguage: en\nauthor: Tivie\ncontributors: John, Mary, Steve\nkeywords: foo, bar, baz\n---\n---\ndescription: This is a long text and so it\n    spans on multiple lines.\n    It must be indented,\n    for showdown to parse it correctly.\n    Markdown **such as bold** is not parsed\n    and it will be rendered as plain text.\ndate: 01-01-2010\n---\n\n**some** markdown text\n",
+    "html": "<!DOCTYPE HTML>\n<html lang=\"en\">\n<head>\n    <title>This is the document title</title>\n    <meta charset=\"utf-8\">\n    <meta name=\"language\" content=\"en\">\n    <meta name=\"author\" content=\"Tivie\">\n    <meta name=\"contributors\" content=\"John, Mary, Steve\">\n    <meta name=\"keywords\" content=\"foo, bar, baz\">\n</head>\n<body>\n<hr />\n<p>description: This is a long text and so it\n    spans on multiple lines.\n    It must be indented,\n    for showdown to parse it correctly.\n    Markdown <strong>such as bold</strong> is not parsed\n    and it will be rendered as plain text.</p>\n<h2 id=\"date-01-01-2010\">date: 01-01-2010</h2>\n<p><strong>some</strong> markdown text</p>\n</body>\n</html>\n",
+    "section": "interop",
+    "number": 10019,
+    "options": {
+      "metadata": true,
+      "completeHTMLDocument": true
+    }
+  },
+  {
+    "name": "embeded-two-consecutive-metadata-blocks-different-symbols",
+    "markdown": "«««\ntitle: This is the document title\nlanguage: en\nauthor: Tivie\ncontributors: John, Mary, Steve\nkeywords: foo, bar, baz\n»»»\n---\ndescription: This is a long text and so it\n    spans on multiple lines.\n    It must be indented,\n    for showdown to parse it correctly.\n    Markdown **such as bold** is not parsed\n    and it will be rendered as plain text.\ndate: 01-01-2010\n---\n\n**some** markdown text\n",
+    "html": "<!DOCTYPE HTML>\n<html lang=\"en\">\n<head>\n    <title>This is the document title</title>\n    <meta charset=\"utf-8\">\n    <meta name=\"language\" content=\"en\">\n    <meta name=\"author\" content=\"Tivie\">\n    <meta name=\"contributors\" content=\"John, Mary, Steve\">\n    <meta name=\"keywords\" content=\"foo, bar, baz\">\n</head>\n<body>\n<hr />\n<p>description: This is a long text and so it\n    spans on multiple lines.\n    It must be indented,\n    for showdown to parse it correctly.\n    Markdown <strong>such as bold</strong> is not parsed\n    and it will be rendered as plain text.</p>\n<h2 id=\"date-01-01-2010\">date: 01-01-2010</h2>\n<p><strong>some</strong> markdown text</p>\n</body>\n</html>\n",
+    "section": "interop",
+    "number": 10020,
+    "options": {
+      "metadata": true,
+      "completeHTMLDocument": true
+    }
+  },
+  {
+    "name": "emphasis-and-strikethrough",
+    "markdown": "*http://www.google.com/foobar*\n\n**http://www.google.com/foobar**\n\n***http://www.google.com/foobar***\n\n~~http://www.google.com/foobar~~\n\n_http://www.google.com/foobar_\n\n__http://www.google.com/foobar__\n\n___http://www.google.com/foobar___",
+    "html": "<p><em><a href=\"http://www.google.com/foobar\">http://www.google.com/foobar</a></em></p>\n<p><strong><a href=\"http://www.google.com/foobar\">http://www.google.com/foobar</a></strong></p>\n<p><strong><em><a href=\"http://www.google.com/foobar\">http://www.google.com/foobar</a></em></strong></p>\n<p><del><a href=\"http://www.google.com/foobar\">http://www.google.com/foobar</a></del></p>\n<p><em><a href=\"http://www.google.com/foobar\">http://www.google.com/foobar</a></em></p>\n<p><strong><a href=\"http://www.google.com/foobar\">http://www.google.com/foobar</a></strong></p>\n<p><strong><em><a href=\"http://www.google.com/foobar\">http://www.google.com/foobar</a></em></strong></p>\n",
+    "section": "interop",
+    "number": 10021,
+    "options": {
+      "simplifiedAutoLink": true,
+      "strikethrough": true
+    }
+  },
+  {
+    "name": "simplifiedautolinks",
+    "markdown": "http://www.example.com/some:apple:url\n",
+    "html": "<p><a href=\"http://www.example.com/some:apple:url\">http://www.example.com/some:apple:url</a></p>\n",
+    "section": "interop",
+    "number": 10022,
+    "options": {
+      "emoji": true,
+      "simplifiedAutoLink": true
+    }
+  },
+  {
+    "name": "tasklists-with-styling",
+    "markdown": "- [ ] test\n- [x] testing complete\n",
+    "html": "<ul>\n    <li class=\"task-list-item\" style=\"list-style-type: none;\"><input type=\"checkbox\" disabled style=\"margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;\"> test</li>\n    <li class=\"task-list-item task-list-item-complete\" style=\"list-style-type: none;\"><input type=\"checkbox\" disabled style=\"margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;\" checked> testing complete</li>\n</ul>\n",
+    "section": "interop",
+    "number": 10023,
+    "options": {
+      "moreStyling": true,
+      "tasklists": true
+    }
+  },
+  {
+    "name": "with-prefixHeaderId",
+    "markdown": "# some header\n\n# another !\"#$%&/()=?»@£§{[]}«' header\n",
+    "html": "<h1 id=\"/prefix/some-header\">some header</h1>\n<h1 id=\"/prefix/another-!-#$%&/()=?»@£§{[]}«--header\">another !&quot;#$%&amp;/()=?»@£§{[]}«' header</h1>\n",
+    "section": "interop",
+    "number": 10024,
+    "options": {
+      "rawHeaderId": true,
+      "prefixHeaderId": "/prefix/"
+    }
+  },
+  {
+    "name": "#178.markdown-inside-html-does-not-parse",
+    "markdown": "# some markdown\n\nblabla\n<div>This is **not parsed**</div>\n<div markdown=\"1\">This is **parsed**</div>\n<div>This is **not parsed**</div>\n",
+    "html": "<h1 id=\"some-markdown\">some markdown</h1>\n<p>blabla</p>\n<div>This is **not parsed**</div>\n<div markdown=\"1\"><p>This is <strong>parsed</strong></p></div>\n<div>This is **not parsed**</div>\n",
+    "section": "main",
+    "number": 10101,
+    "options": {}
+  },
+  {
+    "name": "#320.github-compatible-generated-header-id",
+    "markdown": "# some header\n\n# some header with &+$,/:;=?@\\\"#{}|^¨¿？：~[]`゠＝…‥『』〝〟「」\\\\*()｛｝（）［］【】%.。，¡!！' chars\n\n# another header > with < chars\n",
+    "html": "<h1 id=\"some-header\">some header</h1>\n<h1 id=\"some-header-with--chars\">some header with &amp;+$,/:;=?@&quot;#{}|^¨¿？：~[]`゠＝…‥『』〝〟「」\\*()｛｝（）［］【】%.。，¡!！' chars</h1>\n<h1 id=\"another-header--with--chars\">another header &gt; with &lt; chars</h1>\n",
+    "section": "main",
+    "number": 10102,
+    "options": {}
+  },
+  {
+    "name": "#398.literalMidWordAsterisks-treats-non-word-characters-as-characters",
+    "markdown": "strippers, **hitler**, and stalin",
+    "html": "<p>strippers, <strong>hitler</strong>, and stalin</p>",
+    "section": "main",
+    "number": 10103,
+    "options": {}
+  },
+  {
+    "name": "parseImgDimensions-disabled-by-default",
+    "markdown": "![alt](x.png =60x40)\n",
+    "html": "<p><img src=\"x.png\" alt=\"alt\" /></p>\n",
+    "section": "main",
+    "number": 10104,
+    "options": {}
+  }
+]

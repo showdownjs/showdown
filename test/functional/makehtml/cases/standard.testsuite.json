@@ -1,0 +1,650 @@
+[
+  {
+    "name": "anchors-allow-fragments",
+    "markdown": "[Declare options](#Declare)\n\n[Declare options](#Declare%20current%20operation%20options)\n\n[Declare options](<#Declare current operation options>)\n\n[Common Mark Example](https://spec.commonmark.org/0.30/#example-500)\n\n[Common Mark Example](spec.commonmark.org/0.30/#example-500)",
+    "html": "<p><a href=\"#Declare\">Declare options</a></p>\n<p><a href=\"#Declare%20current%20operation%20options\">Declare options</a></p>\n<p><a href=\"#Declare current operation options\">Declare options</a></p>\n<p><a href=\"https://spec.commonmark.org/0.30/#example-500\">Common Mark Example</a></p>\n<p><a href=\"spec.commonmark.org/0.30/#example-500\">Common Mark Example</a></p>",
+    "section": "standard",
+    "number": 1,
+    "options": {}
+  },
+  {
+    "name": "anchors-allow-javacript-identifiers",
+    "markdown": "Reserved Keywords found at: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar\n\n[break]()\n\n[case]()\n\n[catch]()\n\n[class]()\n\n[const]()\n\n[continue]()\n\n[debugger]()\n\n[default]()\n\n[delete]()\n\n[do]()\n\n[else]()\n\n[export]()\n\n[extends]()\n\n[finally]()\n\n[for]()\n\n[function]()\n\n[if]()\n\n[import]()\n\n[in]()\n\n[instanceof]()\n\n[new]()\n\n[return]()\n\n[super]()\n\n[switch]()\n\n[this]()\n\n[throw]()\n\n[try]()\n\n[typeof]()\n\n[var]()\n\n[void]()\n\n[while]()\n\n[with]()\n\n[yield]()\n\n[enum]()\n\n[implements]()\n\n[interface]()\n\n[let]()\n\n[package]()\n\n[private]()\n\n[protected]()\n\n[public]()\n\n[static]()\n\n[yield]()\n\n[await]()\n\n[abstract]()\n\n[boolean]()\n\n[byte]()\n\n[char]()\n\n[double]()\n\n[final]()\n\n[float]()\n\n[goto]()\n\n[int]()\n\n[long]()\n\n[native]()\n\n[short]()\n\n[synchronized]()\n\n[throws]()\n\n[transient]()\n\n[volatile]()\n\n[null]()\n\n[true]()\n\n[false]()\n\n[arguments]()\n\n[get]()\n\n[set]()\n",
+    "html": "<p>Reserved Keywords found at: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Lexical_grammar</p>\n<p><a href=\"\">break</a></p>\n<p><a href=\"\">case</a></p>\n<p><a href=\"\">catch</a></p>\n<p><a href=\"\">class</a></p>\n<p><a href=\"\">const</a></p>\n<p><a href=\"\">continue</a></p>\n<p><a href=\"\">debugger</a></p>\n<p><a href=\"\">default</a></p>\n<p><a href=\"\">delete</a></p>\n<p><a href=\"\">do</a></p>\n<p><a href=\"\">else</a></p>\n<p><a href=\"\">export</a></p>\n<p><a href=\"\">extends</a></p>\n<p><a href=\"\">finally</a></p>\n<p><a href=\"\">for</a></p>\n<p><a href=\"\">function</a></p>\n<p><a href=\"\">if</a></p>\n<p><a href=\"\">import</a></p>\n<p><a href=\"\">in</a></p>\n<p><a href=\"\">instanceof</a></p>\n<p><a href=\"\">new</a></p>\n<p><a href=\"\">return</a></p>\n<p><a href=\"\">super</a></p>\n<p><a href=\"\">switch</a></p>\n<p><a href=\"\">this</a></p>\n<p><a href=\"\">throw</a></p>\n<p><a href=\"\">try</a></p>\n<p><a href=\"\">typeof</a></p>\n<p><a href=\"\">var</a></p>\n<p><a href=\"\">void</a></p>\n<p><a href=\"\">while</a></p>\n<p><a href=\"\">with</a></p>\n<p><a href=\"\">yield</a></p>\n<p><a href=\"\">enum</a></p>\n<p><a href=\"\">implements</a></p>\n<p><a href=\"\">interface</a></p>\n<p><a href=\"\">let</a></p>\n<p><a href=\"\">package</a></p>\n<p><a href=\"\">private</a></p>\n<p><a href=\"\">protected</a></p>\n<p><a href=\"\">public</a></p>\n<p><a href=\"\">static</a></p>\n<p><a href=\"\">yield</a></p>\n<p><a href=\"\">await</a></p>\n<p><a href=\"\">abstract</a></p>\n<p><a href=\"\">boolean</a></p>\n<p><a href=\"\">byte</a></p>\n<p><a href=\"\">char</a></p>\n<p><a href=\"\">double</a></p>\n<p><a href=\"\">final</a></p>\n<p><a href=\"\">float</a></p>\n<p><a href=\"\">goto</a></p>\n<p><a href=\"\">int</a></p>\n<p><a href=\"\">long</a></p>\n<p><a href=\"\">native</a></p>\n<p><a href=\"\">short</a></p>\n<p><a href=\"\">synchronized</a></p>\n<p><a href=\"\">throws</a></p>\n<p><a href=\"\">transient</a></p>\n<p><a href=\"\">volatile</a></p>\n<p><a href=\"\">null</a></p>\n<p><a href=\"\">true</a></p>\n<p><a href=\"\">false</a></p>\n<p><a href=\"\">arguments</a></p>\n<p><a href=\"\">get</a></p>\n<p><a href=\"\">set</a></p>",
+    "section": "standard",
+    "number": 2,
+    "options": {}
+  },
+  {
+    "name": "anchors-allow-no-protocols",
+    "markdown": "[link](/uri)\n\n[link](http://example.com/)\n\n[link](http://example.com)\n\n[link](https://example.com)\n\n[link](https://example.com/)\n\n[link](example.com)\n\n[link](www.example.com)\n\n[link](file://example.com)\n\n[link](file://www.example.com)\n\n[link](example.jpg)\n\n[link](example.io)\n\n[百度](http://baidu.com \"百度\")",
+    "html": "<p><a href=\"/uri\">link</a></p>\n<p><a href=\"http://example.com/\">link</a></p>\n<p><a href=\"http://example.com\">link</a></p>\n<p><a href=\"https://example.com\">link</a></p>\n<p><a href=\"https://example.com/\">link</a></p>\n<p><a href=\"example.com\">link</a></p>\n<p><a href=\"www.example.com\">link</a></p>\n<p><a href=\"file://example.com\">link</a></p>\n<p><a href=\"file://www.example.com\">link</a></p>\n<p><a href=\"example.jpg\">link</a></p>\n<p><a href=\"example.io\">link</a></p>\n<p><a href=\"http://baidu.com\" title=\"百度\">百度</a></p>",
+    "section": "standard",
+    "number": 3,
+    "options": {}
+  },
+  {
+    "name": "anchors-allow-object-property-names",
+    "markdown": "Object property names found at: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object\n\n[assign]()\n\n[create]()\n\n[defineProperty]()\n\n[defineProperties]()\n\n[entries]()\n\n[freeze]()\n\n[fromEntries]()\n\n[getOwnPropertyDescriptor]()\n\n[getOwnPropertyDescriptors]()\n\n[getOwnPropertyNames]()\n\n[getOwnPropertySymbols]()\n\n[getPrototypeOf]()\n\n[is]()\n\n[isExtensible]()\n\n[isFrozen]()\n\n[isSealed]()\n\n[keys]()\n\n[preventExtensions]()\n\n[seal]()\n\n[setPrototypeOf]()\n\n[values]()\n\n[prototype.constructor]()\n\n[prototype.__proto__]()\n\n[prototype.__defineGetter__]()\n\n[prototype.__defineSetter__]()\n\n[prototype.__lookupGetter__]()\n\n[prototype.__lookupSetter__]()\n\n[prototype.hasOwnProperty]()\n\n[prototype.isPrototypeOf]()\n\n[prototype.propertyIsEnumerable]()\n\n[prototype.toLocaleString]()\n\n[prototype.toString]()\n\n[prototype.valueOf]()\n\n[constructor]()\n\n[__proto__]()\n\n[__defineGetter__]()\n\n[__defineSetter__]()\n\n[__lookupGetter__]()\n\n[__lookupSetter__]()\n\n[hasOwnProperty]()\n\n[isPrototypeOf]()\n\n[propertyIsEnumerable]()\n\n[toLocaleString]()\n\n[toString]()\n\n[valueOf]()\n",
+    "html": "<p>Object property names found at: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object</p>\n<p><a href=\"\">assign</a></p>\n<p><a href=\"\">create</a></p>\n<p><a href=\"\">defineProperty</a></p>\n<p><a href=\"\">defineProperties</a></p>\n<p><a href=\"\">entries</a></p>\n<p><a href=\"\">freeze</a></p>\n<p><a href=\"\">fromEntries</a></p>\n<p><a href=\"\">getOwnPropertyDescriptor</a></p>\n<p><a href=\"\">getOwnPropertyDescriptors</a></p>\n<p><a href=\"\">getOwnPropertyNames</a></p>\n<p><a href=\"\">getOwnPropertySymbols</a></p>\n<p><a href=\"\">getPrototypeOf</a></p>\n<p><a href=\"\">is</a></p>\n<p><a href=\"\">isExtensible</a></p>\n<p><a href=\"\">isFrozen</a></p>\n<p><a href=\"\">isSealed</a></p>\n<p><a href=\"\">keys</a></p>\n<p><a href=\"\">preventExtensions</a></p>\n<p><a href=\"\">seal</a></p>\n<p><a href=\"\">setPrototypeOf</a></p>\n<p><a href=\"\">values</a></p>\n<p><a href=\"\">prototype.constructor</a></p>\n<p><a href=\"\">prototype.<strong>proto</strong></a></p>\n<p><a href=\"\">prototype.<strong>defineGetter</strong></a></p>\n<p><a href=\"\">prototype.<strong>defineSetter</strong></a></p>\n<p><a href=\"\">prototype.<strong>lookupGetter</strong></a></p>\n<p><a href=\"\">prototype.<strong>lookupSetter</strong></a></p>\n<p><a href=\"\">prototype.hasOwnProperty</a></p>\n<p><a href=\"\">prototype.isPrototypeOf</a></p>\n<p><a href=\"\">prototype.propertyIsEnumerable</a></p>\n<p><a href=\"\">prototype.toLocaleString</a></p>\n<p><a href=\"\">prototype.toString</a></p>\n<p><a href=\"\">prototype.valueOf</a></p>\n<p><a href=\"\">constructor</a></p>\n<p><a href=\"\"><strong>proto</strong></a></p>\n<p><a href=\"\"><strong>defineGetter</strong></a></p>\n<p><a href=\"\"><strong>defineSetter</strong></a></p>\n<p><a href=\"\"><strong>lookupGetter</strong></a></p>\n<p><a href=\"\"><strong>lookupSetter</strong></a></p>\n<p><a href=\"\">hasOwnProperty</a></p>\n<p><a href=\"\">isPrototypeOf</a></p>\n<p><a href=\"\">propertyIsEnumerable</a></p>\n<p><a href=\"\">toLocaleString</a></p>\n<p><a href=\"\">toString</a></p>\n<p><a href=\"\">valueOf</a></p>\n",
+    "section": "standard",
+    "number": 4,
+    "options": {}
+  },
+  {
+    "name": "anchors-by-reference",
+    "markdown": "\nThis is [an example][id] reference-style link.\nThis is [another] [foo] reference-style link.\nThis is [a third][bar] reference-style link.\nThis is [a fourth][4] reference-style link.\n\n  [id]: http://example.com/  \"Optional Title Here\"\n  [foo]: http://example.com/  (Optional Title Here)\n  [bar]: http://example.com/  (Optional Title Here)\n  [4]: <http://example.com/>\n    \"Optional Title Here\"\n",
+    "html": "<p>This is <a href=\"http://example.com/\" title=\"Optional Title Here\">an example</a> reference-style link.\n  This is <a href=\"http://example.com/\" title=\"Optional Title Here\">another</a> reference-style link.\n  This is <a href=\"http://example.com/\" title=\"Optional Title Here\">a third</a> reference-style link.\n  This is <a href=\"http://example.com/\" title=\"Optional Title Here\">a fourth</a> reference-style link.</p>\n",
+    "section": "standard",
+    "number": 5,
+    "options": {}
+  },
+  {
+    "name": "anchors-followed-by-brakets",
+    "markdown": "This is a [link](https://en.wikipedia.org/wiki/Textile) (some other text)\n\nThis is a [link](https://en.wikipedia.org/wiki/Textile_(markup) (some other text)\n\nThis is a [link](https://en.wikipedia.org/wiki/Textile_(markup_language)) (some other text)\n\nThis is a [link](https://en.wikipedia.org/wiki/Textile_(markup_language)/foo) (some other text)\n",
+    "html": "<p>This is a <a href=\"https://en.wikipedia.org/wiki/Textile\">link</a> (some other text)</p>\n<p>This is a <a href=\"https://en.wikipedia.org/wiki/Textile_(markup\">link</a> (some other text)</p>\n<p>This is a <a href=\"https://en.wikipedia.org/wiki/Textile_(markup_language)\">link</a> (some other text)</p>\n<p>This is a <a href=\"https://en.wikipedia.org/wiki/Textile_(markup_language)/foo\">link</a> (some other text)</p>",
+    "section": "standard",
+    "number": 6,
+    "options": {}
+  },
+  {
+    "name": "automatic-anchors",
+    "markdown": "\n<http://example.com/>\n",
+    "html": "<p><a href=\"http://example.com/\">http://example.com/</a></p>\n",
+    "section": "standard",
+    "number": 7,
+    "options": {}
+  },
+  {
+    "name": "blockquote",
+    "markdown": "  \n  > This is a multi line blockquote test\n  >\n  > With more than one line.\n",
+    "html": "<blockquote>\n  <p>This is a multi line blockquote test</p>\n  <p>With more than one line.</p>\n</blockquote>\n",
+    "section": "standard",
+    "number": 8,
+    "options": {}
+  },
+  {
+    "name": "blockquote-followed-by-code",
+    "markdown": "> a blockquote\n    with a 4 space indented line (not code)\n\nsep\n\n> a blockquote\n\n    with some code after\n",
+    "html": "<blockquote>\n    <p>a blockquote\nwith a 4 space indented line (not code)</p>\n</blockquote>\n<p>sep</p>\n<blockquote>\n    <p>a blockquote</p>\n</blockquote>\n<pre><code>with some code after\n</code></pre>\n",
+    "section": "standard",
+    "number": 9,
+    "options": {}
+  },
+  {
+    "name": "blockquote-inside-code",
+    "markdown": "    > this is a pseudo blockquote\n    > inside a code block\n\nfoo\n\n    > this is another bq\n    inside code\n",
+    "html": "<pre><code>&gt; this is a pseudo blockquote\n    &gt; inside a code block\n</code></pre>\n<p>foo</p>\n<pre><code>&gt; this is another bq\n    inside code\n</code></pre>\n",
+    "section": "standard",
+    "number": 10,
+    "options": {}
+  },
+  {
+    "name": "blockquote-nested-markdown",
+    "markdown": "> ## This is a header.\n>\n> 1.   This is the first list item.\n> 2.   This is the second list item.\n>\n> Here's some example code:\n>\n>     return shell_exec(\"echo $input | $markdown_script\");\n",
+    "html": "<blockquote>\n  <h2 id=\"this-is-a-header\">This is a header.</h2>\n  <ol>\n    <li>This is the first list item.</li>\n    <li>This is the second list item.</li>\n  </ol>\n  <p>Here's some example code:</p>\n    <pre><code>return shell_exec(&quot;echo $input | $markdown_script&quot;);\n    </code></pre>\n</blockquote>\n",
+    "section": "standard",
+    "number": 11,
+    "options": {}
+  },
+  {
+    "name": "code-block",
+    "markdown": "\nThis is a normal paragraph:\n\n    This is a code block.\n",
+    "html": "<p>This is a normal paragraph:</p>\n<pre><code>This is a code block.\n</code></pre>\n",
+    "section": "standard",
+    "number": 12,
+    "options": {}
+  },
+  {
+    "name": "code-block-html-escape",
+    "markdown": "\nThis is some HTML:\n\n    <h1>Heading</h1>\n",
+    "html": "<p>This is some HTML:</p>\n<pre><code>&lt;h1&gt;Heading&lt;/h1&gt;\n</code></pre>\n",
+    "section": "standard",
+    "number": 13,
+    "options": {}
+  },
+  {
+    "name": "code-block-with-special-chars",
+    "markdown": "    //**this** code _has_ special chars\n    var arr = ['foo', 'bar', 'baz'];\n    function () {\n        return 'foo';\n    }\n    \\n\n",
+    "html": "<pre><code>//**this** code _has_ special chars\nvar arr = ['foo', 'bar', 'baz'];\nfunction () {\n    return 'foo';\n}\n\\n\n</code></pre>\n",
+    "section": "standard",
+    "number": 14,
+    "options": {}
+  },
+  {
+    "name": "codeblock-multiline-followed-by-hr",
+    "markdown": "    foo\n    bar\n---\n\n\n\n    foo\n    bar\n    baz\n---",
+    "html": "<pre><code>foo\nbar\n</code></pre>\n<hr />\n<pre><code>foo\nbar\nbaz\n</code></pre>\n<hr />\n",
+    "section": "standard",
+    "number": 15,
+    "options": {}
+  },
+  {
+    "name": "codeblock-oneliner-followed-by-hr",
+    "markdown": "    foo\n---",
+    "html": "<pre><code>foo\n</code></pre>\n<hr />\n",
+    "section": "standard",
+    "number": 16,
+    "options": {}
+  },
+  {
+    "name": "double-emphasis",
+    "markdown": "a ___strong and em___ thingy\n\nbar___bazinga___bar\n\na ***strong and em*** thingy\n\nbar***bazinga***bar\n",
+    "html": "<p>a <strong><em>strong and em</em></strong> thingy</p>\n<p>bar<strong><em>bazinga</em></strong>bar</p>\n<p>a <strong><em>strong and em</em></strong> thingy</p>\n<p>bar<strong><em>bazinga</em></strong>bar</p>\n",
+    "section": "standard",
+    "number": 17,
+    "options": {}
+  },
+  {
+    "name": "doubline-list",
+    "markdown": "\n *  Bird\n\n *  Magic\n",
+    "html": "<ul>\n  <li><p>Bird</p></li>\n  <li><p>Magic</p></li>\n</ul>\n",
+    "section": "standard",
+    "number": 18,
+    "options": {}
+  },
+  {
+    "name": "ellipsis",
+    "markdown": "ellipsis in text...\n\n...\n\n1. foo...\n2. bar\n\n> ellipsis in blockquote...\n\n```\nellipsis in code...\n```\n\n    ellipsis in code...\n\n# ellipsis in header...\n\n1...\n\n1. ..\n\n1...\n\n[Link](https://gitlab.com/gitlab-org/gitlab-ce/compare/v11.5.4...v11.5.5 \"title\")",
+    "html": "<p>ellipsis in text…</p>\n<p>…</p>\n<ol>\n    <li>foo…</li>\n    <li>bar</li>\n</ol>\n<blockquote>\n    <p>ellipsis in blockquote…</p>\n</blockquote>\n<pre><code>ellipsis in code...\n</code></pre>\n<pre><code>ellipsis in code...\n</code></pre>\n<h1 id=\"ellipsis-in-header\">ellipsis in header…</h1>\n<p>1…</p>\n<ol>\n    <li>..</li>\n</ol>\n<p>1…</p>\n<p><a href=\"https://gitlab.com/gitlab-org/gitlab-ce/compare/v11.5.4...v11.5.5\" title=\"title\">Link</a></p>",
+    "section": "standard",
+    "number": 19,
+    "options": {}
+  },
+  {
+    "name": "emphasis",
+    "markdown": "*single asterisks*\n\n_single underscores_\n\n**double asterisks**\n\n__double underscores__\n\ntext *with italic sentence* in middle\n\ntext __with bold sentence__ in middle\n\ntext with __bold text that\nspans across multiple__ lines\n\nunderscored_word\n\ndoubleunderscore__word\n\nasterix*word\n\ndoubleasterix**word\n\nline with_underscored word\n\nline with__doubleunderscored word\n\nline with*asterixed word\n\nline with**doubleasterixed word\n\nsome line_with_inner underscores\n\nsome line__with__inner double underscores\n\nsome line*with*inner asterixs\n\nsome line**with**inner double asterixs\n\nanother line with just _one underscore\n\nanother line with just __one double underscore\n\nanother line with just *one asterix\n\nanother line with just **one double asterix\n\na sentence with_underscore and another_underscore\n\na sentence with__doubleunderscore and another__doubleunderscore\n\na sentence with*asterix and another*asterix\n\na sentence with**doubleasterix and another**doubleasterix\n\nescaped word\\_with\\_underscores\n\nescaped word\\_\\_with\\_\\_double underscores\n\nescaped word_\\_with\\__single italic underscore\n\nescaped word\\*with*asterixs\n\nescaped word\\*\\*with\\*\\*asterixs\n\nescaped word**\\*with\\***bold asterixs\n\nfoo**bar**baz\n\nfoo__bar__baz\n\nthis is **<a href=\"//google.com\">imbued link with strong</a>**\n\nthis is __<a href=\"//google.com\">imbued link with strong</a>__\n\nthis link has underscore [some_link](http://www.google.com/some_link)\n\n___multiple___ italics and bolds with underscores in a ___paragraph___\n\n***multiple*** italics and bolds with asterisks in a ***paragraph***\n\n__multiple__ bolds with underscores in a __paragraph__\n\n**multiple** bolds with asterisks in a **paragraph**\n\n_multiple_ italics with underscores in a _paragraph_\n\n_multiple_ italics with asterisks in a _paragraph_\n",
+    "html": "<p><em>single asterisks</em></p>\n<p><em>single underscores</em></p>\n<p><strong>double asterisks</strong></p>\n<p><strong>double underscores</strong></p>\n<p>text <em>with italic sentence</em> in middle</p>\n<p>text <strong>with bold sentence</strong> in middle</p>\n<p>text with <strong>bold text that\n  spans across multiple</strong> lines</p>\n<p>underscored_word</p>\n<p>doubleunderscore__word</p>\n<p>asterix*word</p>\n<p>doubleasterix**word</p>\n<p>line with_underscored word</p>\n<p>line with__doubleunderscored word</p>\n<p>line with*asterixed word</p>\n<p>line with**doubleasterixed word</p>\n<p>some line<em>with</em>inner underscores</p>\n<p>some line<strong>with</strong>inner double underscores</p>\n<p>some line<em>with</em>inner asterixs</p>\n<p>some line<strong>with</strong>inner double asterixs</p>\n<p>another line with just _one underscore</p>\n<p>another line with just __one double underscore</p>\n<p>another line with just *one asterix</p>\n<p>another line with just **one double asterix</p>\n<p>a sentence with<em>underscore and another</em>underscore</p>\n<p>a sentence with<strong>doubleunderscore and another</strong>doubleunderscore</p>\n<p>a sentence with<em>asterix and another</em>asterix</p>\n<p>a sentence with<strong>doubleasterix and another</strong>doubleasterix</p>\n<p>escaped word_with_underscores</p>\n<p>escaped word__with__double underscores</p>\n<p>escaped word<em>_with_</em>single italic underscore</p>\n<p>escaped word*with*asterixs</p>\n<p>escaped word**with**asterixs</p>\n<p>escaped word<strong>*with*</strong>bold asterixs</p>\n<p>foo<strong>bar</strong>baz</p>\n<p>foo<strong>bar</strong>baz</p>\n<p>this is <strong><a href=\"//google.com\">imbued link with strong</a></strong></p>\n<p>this is <strong><a href=\"//google.com\">imbued link with strong</a></strong></p>\n<p>this link has underscore <a href=\"http://www.google.com/some_link\">some_link</a></p>\n<p><strong><em>multiple</em></strong> italics and bolds with underscores in a <strong><em>paragraph</em></strong></p>\n<p><strong><em>multiple</em></strong> italics and bolds with asterisks in a <strong><em>paragraph</em></strong></p>\n<p><strong>multiple</strong> bolds with underscores in a <strong>paragraph</strong></p>\n<p><strong>multiple</strong> bolds with asterisks in a <strong>paragraph</strong></p>\n<p><em>multiple</em> italics with underscores in a <em>paragraph</em></p>\n<p><em>multiple</em> italics with asterisks in a <em>paragraph</em></p>\n",
+    "section": "standard",
+    "number": 20,
+    "options": {}
+  },
+  {
+    "name": "emphasis-inside-inline-code",
+    "markdown": "some text `**foo**`\n",
+    "html": "<p>some text <code>**foo**</code></p>\n",
+    "section": "standard",
+    "number": 21,
+    "options": {}
+  },
+  {
+    "name": "encodeHTMLCodeTags",
+    "markdown": "this is code <code>some <span>text</span></code> yeah!\n\n<pre><code>\n<div>foo</div>\n</code></pre>\n",
+    "html": "<p>this is code <code>some &lt;span&gt;text&lt;/span&gt;</code> yeah!</p>\n<pre><code>\n&lt;div&gt;foo&lt;/div&gt;\n</code></pre>\n",
+    "section": "standard",
+    "number": 22,
+    "options": {}
+  },
+  {
+    "name": "escaped-number-period",
+    "markdown": "It happened in 1986\\. What a great season.\n",
+    "html": "<p>It happened in 1986. What a great season.</p>\n",
+    "section": "standard",
+    "number": 23,
+    "options": {}
+  },
+  {
+    "name": "escaping",
+    "markdown": "\nThese should all be escaped:\n\n\\\\\n\n\\`\n\n\\*\n\n\\_\n\n\\{\n\n\\}\n\n\\[\n\n\\]\n\n\\(\n\n\\)\n\n\\#\n\n\\+\n\n\\-\n\n\\.\n\n\\!\n",
+    "html": "<p>These should all be escaped:</p>\n<p>\\</p>\n<p>`</p>\n<p>*</p>\n<p>_</p>\n<p>{</p>\n<p>}</p>\n<p>[</p>\n<p>]</p>\n<p>(</p>\n<p>)</p>\n<p>#</p>\n<p>+</p>\n<p>-</p>\n<p>.</p>\n<p>!</p>\n",
+    "section": "standard",
+    "number": 24,
+    "options": {}
+  },
+  {
+    "name": "github-codeblock-followed-by-hr",
+    "markdown": "```\nfoo\n```\n---\n\n\n```\nfoo\nbar\n```\n---",
+    "html": "<pre><code>foo\n</code></pre>\n<hr />\n<pre><code>foo\nbar\n</code></pre>\n<hr />\n",
+    "section": "standard",
+    "number": 25,
+    "options": {}
+  },
+  {
+    "name": "github-style-at-start",
+    "markdown": "```\nfunction MyFunc(a) {\n    // ...\n}\n```\n\nThat is some code!\n",
+    "html": "<pre><code>function MyFunc(a) {\n  // ...\n  }\n</code></pre>\n<p>That is some code!</p>\n",
+    "section": "standard",
+    "number": 26,
+    "options": {}
+  },
+  {
+    "name": "github-style-codeblock",
+    "markdown": "\nDefine a function in javascript:\n\n```\nfunction MyFunc(a) {\n    var s = '`';\n}\n```\n\nAnd some HTML\n\n```html\n<div>HTML!</div>\n```\n\nAnd some CSS with spaces before the language declaration\n\n```    css\nbody {\n    font-size: 1.5em;\n}\n```\n\nUse more than 3 backticks\n\n`````\nsome code\n`````\n\nUse tilde as delimiter\n\n~~~\nanother piece of code\n~~~\n",
+    "html": "<p>Define a function in javascript:</p>\n<pre><code>function MyFunc(a) {\n  var s = '`';\n  }\n</code></pre>\n<p>And some HTML</p>\n<pre><code class=\"html language-html\">&lt;div&gt;HTML!&lt;/div&gt;\n</code></pre>\n<p>And some CSS with spaces before the language declaration</p>\n<pre><code class=\"css language-css\">body {\nfont-size: 1.5em;\n}\n</code></pre>\n<p>Use more than 3 backticks</p>\n<pre><code>some code\n</code></pre>\n<p>Use tilde as delimiter</p>\n<pre><code>another piece of code\n</code></pre>\n",
+    "section": "standard",
+    "number": 27,
+    "options": {}
+  },
+  {
+    "name": "github-style-codeblock-inside-quote",
+    "markdown": "> Define a function in javascript:\n>\n> ```\n> function MyFunc(a) {\n>     var s = '`';\n> }\n> ```\n>\n>> And some nested quote\n>>\n>> ```html\n>> <div>HTML!</div>\n>> ```\n",
+    "html": "<blockquote>\n<p>Define a function in javascript:</p>\n<pre><code>function MyFunc(a) {\n  var s = '`';\n  }\n</code></pre>\n<blockquote>\n<p>And some nested quote</p>\n<pre><code class=\"html language-html\">&lt;div&gt;HTML!&lt;/div&gt;\n</code></pre>\n</blockquote>\n</blockquote>\n",
+    "section": "standard",
+    "number": 28,
+    "options": {}
+  },
+  {
+    "name": "github-style-linebreaks",
+    "markdown": "```\ncode can go here\nthis is rendered on a second line\n```\n",
+    "html": "<pre><code>code can go here\n  this is rendered on a second line\n</code></pre>\n",
+    "section": "standard",
+    "number": 29,
+    "options": {}
+  },
+  {
+    "name": "h1-with-double-hash",
+    "markdown": "# This is an H1 #\n",
+    "html": "<h1 id=\"this-is-an-h1\">This is an H1</h1>\n",
+    "section": "standard",
+    "number": 30,
+    "options": {}
+  },
+  {
+    "name": "h1-with-equals",
+    "markdown": "This is an H1\n=============\n",
+    "html": "<h1 id=\"this-is-an-h1\">This is an H1</h1>\n",
+    "section": "standard",
+    "number": 31,
+    "options": {}
+  },
+  {
+    "name": "h1-with-single-hash",
+    "markdown": "# This is an H1\n",
+    "html": "<h1 id=\"this-is-an-h1\">This is an H1</h1>\n",
+    "section": "standard",
+    "number": 32,
+    "options": {}
+  },
+  {
+    "name": "h2-with-dashes",
+    "markdown": "This is an H2\n-------------\n",
+    "html": "<h2 id=\"this-is-an-h2\">This is an H2</h2>\n",
+    "section": "standard",
+    "number": 33,
+    "options": {}
+  },
+  {
+    "name": "h2-with-double-hash",
+    "markdown": "## This is an H2 ##\n",
+    "html": "<h2 id=\"this-is-an-h2\">This is an H2</h2>\n",
+    "section": "standard",
+    "number": 34,
+    "options": {}
+  },
+  {
+    "name": "h2-with-single-hash",
+    "markdown": "## This is an H2\n",
+    "html": "<h2 id=\"this-is-an-h2\">This is an H2</h2>\n",
+    "section": "standard",
+    "number": 35,
+    "options": {}
+  },
+  {
+    "name": "h3-with-double-hash",
+    "markdown": "### This is an H3 ###\n",
+    "html": "<h3 id=\"this-is-an-h3\">This is an H3</h3>\n",
+    "section": "standard",
+    "number": 36,
+    "options": {}
+  },
+  {
+    "name": "h3-with-single-hash",
+    "markdown": "### This is an H3\n",
+    "html": "<h3 id=\"this-is-an-h3\">This is an H3</h3>\n",
+    "section": "standard",
+    "number": 37,
+    "options": {}
+  },
+  {
+    "name": "h4-with-single-hash",
+    "markdown": "#### This is an H4\n",
+    "html": "<h4 id=\"this-is-an-h4\">This is an H4</h4>\n",
+    "section": "standard",
+    "number": 38,
+    "options": {}
+  },
+  {
+    "name": "h5-with-single-hash",
+    "markdown": "##### This is an H5\n",
+    "html": "<h5 id=\"this-is-an-h5\">This is an H5</h5>\n",
+    "section": "standard",
+    "number": 39,
+    "options": {}
+  },
+  {
+    "name": "h6-with-single-hash",
+    "markdown": "###### This is an H6\n",
+    "html": "<h6 id=\"this-is-an-h6\">This is an H6</h6>\n",
+    "section": "standard",
+    "number": 40,
+    "options": {}
+  },
+  {
+    "name": "horizontal-rules",
+    "markdown": "\n* * *\n\n***\n\n*****\n\n- - -\n\n---------------------------------------\n",
+    "html": "<hr />\n<hr />\n<hr />\n<hr />\n<hr />\n",
+    "section": "standard",
+    "number": 41,
+    "options": {}
+  },
+  {
+    "name": "html-comments",
+    "markdown": "<!-- a comment -->\n\n<!-- a comment with *bogus* __markdown__ inside -->\n\nwords <!-- a comment --> words\n\n<!-- comment --> words\n\n   <!-- comment -->\n\n    <!-- comment -->\n\n<!----------------------------------------------------------------------------------------------------------------------------------------------------\n\n<!-------------------------------------------------------------------->\n",
+    "html": "<!-- a comment -->\n<!-- a comment with *bogus* __markdown__ inside -->\n<p>words <!-- a comment --> words</p>\n<!-- comment -->\n<p>words</p>\n   <!-- comment -->\n<pre><code>&lt;!-- comment --&gt;\n</code></pre>\n<p>&lt;!----------------------------------------------------------------------------------------------------------------------------------------------------</p>\n<!-------------------------------------------------------------------->\n",
+    "section": "standard",
+    "number": 42,
+    "options": {}
+  },
+  {
+    "name": "html-inside-listed-code",
+    "markdown": "  - list item 1\n\n    ```html\n    <a href=\"www.google.com\">google</a>\n    <div>\n      <div>some div</div>\n    </div>\n    ```\n",
+    "html": "<ul>\n    <li><p>list item 1</p>\n<pre><code class=\"html language-html\">&lt;a href=&quot;www.google.com&quot;&gt;google&lt;/a&gt;\n&lt;div&gt;\n&lt;div&gt;some div&lt;/div&gt;\n&lt;/div&gt;\n</code></pre></li>\n</ul>",
+    "section": "standard",
+    "number": 43,
+    "options": {}
+  },
+  {
+    "name": "html5-strutural-tags",
+    "markdown": "These HTML5 tags should pass through just fine.\n\n<section>hello</section>\n<header>head</header>\n<footer>footsies</footer>\n<nav>navigation</nav>\n<article>read me</article>\n<aside>ignore me</aside>\n<article>read\nme</article>\n<aside>\nignore me\n</aside>\n\nthe end\n\n<table class=\"test\">\n    <tr>\n        <td>Foo</td>\n    </tr>\n    <tr>\n        <td>Bar</td>\n    </tr>\n</table>\n\n<table class=\"test\">\n    <thead>\n        <tr>\n            <td>Foo</td>\n        </tr>\n    </thead>\n    <tr>\n        <td>Bar</td>\n    </tr>\n    <tfoot>\n        <tr>\n            <td>Bar</td>\n        </tr>\n    </tfoot>\n</table>\n\n<audio class=\"podcastplayer\" controls>\n    <source src=\"foobar.mp3\" type=\"audio/mp3\" preload=\"none\"></source>\n    <source src=\"foobar.off\" type=\"audio/ogg\" preload=\"none\"></source>\n</audio>\n\n<video src=\"foo.ogg\">\n    <track kind=\"subtitles\" src=\"foo.en.vtt\" srclang=\"en\" label=\"English\">\n    <track kind=\"subtitles\" src=\"foo.sv.vtt\" srclang=\"sv\" label=\"Svenska\">\n</video>\n\n<address>My street</address>\n\n<canvas id=\"canvas\" width=\"300\" height=\"300\">\n    Sorry, your browser doesn't support the &lt;canvas&gt; element.\n</canvas>\n\n<figure>\n    <img src=\"mypic.png\" alt=\"An awesome picture\">\n    <figcaption>Caption for the awesome picture</figcaption>\n</figure>\n\n<hgroup>\n  <h1>Main title</h1>\n  <h2>Secondary title</h2>\n</hgroup>\n\n<output name=\"result\"></output>\n\n<details>\n  <summary>Summarise me</summary>\n  <p>Explain the details</p>\n</details>\n",
+    "html": "<p>These HTML5 tags should pass through just fine.</p>\n<section>hello</section>\n<header>head</header>\n<footer>footsies</footer>\n<nav>navigation</nav>\n<article>read me</article>\n<aside>ignore me</aside>\n<article>read\n  me</article>\n<aside>\n  ignore me\n</aside>\n<p>the end</p>\n<table class=\"test\">\n  <tr>\n    <td>Foo</td>\n  </tr>\n  <tr>\n    <td>Bar</td>\n  </tr>\n</table>\n<table class=\"test\">\n  <thead>\n  <tr>\n    <td>Foo</td>\n  </tr>\n  </thead>\n  <tr>\n    <td>Bar</td>\n  </tr>\n  <tfoot>\n  <tr>\n    <td>Bar</td>\n  </tr>\n  </tfoot>\n</table>\n<audio class=\"podcastplayer\" controls>\n  <source src=\"foobar.mp3\" type=\"audio/mp3\" preload=\"none\"></source>\n  <source src=\"foobar.off\" type=\"audio/ogg\" preload=\"none\"></source>\n</audio>\n<video src=\"foo.ogg\">\n  <track kind=\"subtitles\" src=\"foo.en.vtt\" srclang=\"en\" label=\"English\">\n  <track kind=\"subtitles\" src=\"foo.sv.vtt\" srclang=\"sv\" label=\"Svenska\">\n</video>\n<address>My street</address>\n<canvas id=\"canvas\" width=\"300\" height=\"300\">\n  Sorry, your browser doesn't support the &lt;canvas&gt; element.\n</canvas>\n<figure>\n  <img src=\"mypic.png\" alt=\"An awesome picture\">\n  <figcaption>Caption for the awesome picture</figcaption>\n</figure>\n<hgroup>\n  <h1>Main title</h1>\n  <h2>Secondary title</h2>\n</hgroup>\n<output name=\"result\"></output>\n<details>\n  <summary>Summarise me</summary>\n  <p>Explain the details</p>\n</details>\n",
+    "section": "standard",
+    "number": 44,
+    "options": {}
+  },
+  {
+    "name": "images",
+    "markdown": "![Alt text](/path/to/img.jpg)\n\n![Alt text](/path/to/img.jpg \"Optional title\")\n\n![Alt text][id]\n\n![some alt text][1]\n\n![My Image]\n\n![leave me alone]\n\n![leave me alone][]\n\n  [id]: url/to/image.jpg  \"Optional title attribute\"\n  [1]: url/to/image2.jpg\n  [My Image]: url/to/image3.jpg \"Optional title attribute\"\n",
+    "html": "<p><img src=\"/path/to/img.jpg\" alt=\"Alt text\" /></p>\n<p><img src=\"/path/to/img.jpg\" alt=\"Alt text\" title=\"Optional title\" /></p>\n<p><img src=\"url/to/image.jpg\" alt=\"Alt text\" title=\"Optional title attribute\" /></p>\n<p><img src=\"url/to/image2.jpg\" alt=\"some alt text\" /></p>\n<p><img src=\"url/to/image3.jpg\" alt=\"My Image\" title=\"Optional title attribute\" /></p>\n<p>![leave me alone]</p>\n<p>![leave me alone][]</p>\n",
+    "section": "standard",
+    "number": 45,
+    "options": {}
+  },
+  {
+    "name": "images-followed-by-brackets",
+    "markdown": "![image link](<./image/cat1.png>)(some text between brackets)\n\n![image link](<./image/cat(1).png>)(some text between brackets)\n",
+    "html": "<p><img src=\"./image/cat1.png\" alt=\"image link\" />(some text between brackets)</p>\n<p><img src=\"./image/cat(1).png\" alt=\"image link\" />(some text between brackets)</p>",
+    "section": "standard",
+    "number": 46,
+    "options": {}
+  },
+  {
+    "name": "implicit-anchors",
+    "markdown": "Search the web at [Google][] or [Daring Fireball][].\n\nSearch the web at [Google] or [Daring Fireball].\n\n\n  [Google]: http://google.com/\n  [Daring Fireball]: http://daringfireball.net/\n",
+    "html": "<p>Search the web at <a href=\"http://google.com/\">Google</a> or <a href=\"http://daringfireball.net/\">Daring Fireball</a>.</p>\n<p>Search the web at <a href=\"http://google.com/\">Google</a> or <a href=\"http://daringfireball.net/\">Daring Fireball</a>.</p>\n",
+    "section": "standard",
+    "number": 47,
+    "options": {}
+  },
+  {
+    "name": "inline-anchors",
+    "markdown": "This is [an example](http://example.com/ \"Title\") inline link.\n\n[This link](http://example.net/) has no title attribute.\n",
+    "html": "<p>This is <a href=\"http://example.com/\" title=\"Title\">an example</a> inline link.</p>\n<p><a href=\"http://example.net/\">This link</a> has no title attribute.</p>\n",
+    "section": "standard",
+    "number": 48,
+    "options": {}
+  },
+  {
+    "name": "inline-code",
+    "markdown": "Create a new `function`.\n\nUse the backtick in MySQL syntax ``SELECT `column` FROM whatever``.\n\nA single backtick in a code span: `` ` ``\n\nA backtick-delimited string in a code span: `` `foo` ``\n\nPlease don't use any `<blink>` tags.\n\n`&#8212;` is the decimal-encoded equivalent of `&mdash;`.\n\nthis `inline **code** has ___magic___` chars\n",
+    "html": "<p>Create a new <code>function</code>.</p>\n<p>Use the backtick in MySQL syntax <code>SELECT `column` FROM whatever</code>.</p>\n<p>A single backtick in a code span: <code>`</code></p>\n<p>A backtick-delimited string in a code span: <code>`foo`</code></p>\n<p>Please don't use any <code>&lt;blink&gt;</code> tags.</p>\n<p><code>&amp;#8212;</code> is the decimal-encoded equivalent of <code>&amp;mdash;</code>.</p>\n<p>this <code>inline **code** has ___magic___</code> chars</p>\n",
+    "section": "standard",
+    "number": 49,
+    "options": {}
+  },
+  {
+    "name": "inline-escaped-chars",
+    "markdown": "Hello.this\\_is\\_a\\_variable\nand.this.is.another_one\n",
+    "html": "<p>Hello.this_is_a_variable\n  and.this.is.another_one</p>\n",
+    "section": "standard",
+    "number": 50,
+    "options": {}
+  },
+  {
+    "name": "inline-style-tag",
+    "markdown": "<style>\n    p { line-height: 20px; }\n</style>\n\nAn exciting sentence.\n",
+    "html": "<style>\n  p { line-height: 20px; }\n</style>\n<p>An exciting sentence.</p>\n",
+    "section": "standard",
+    "number": 51,
+    "options": {}
+  },
+  {
+    "name": "lazy-blockquote",
+    "markdown": "  > This is a multi line blockquote test\n\n  > With more than one line.\n",
+    "html": "<blockquote>\n  <p>This is a multi line blockquote test</p>\n  <p>With more than one line.</p>\n</blockquote>\n",
+    "section": "standard",
+    "number": 52,
+    "options": {}
+  },
+  {
+    "name": "line-starts-with-html",
+    "markdown": "<a href=\"foo\">some text</a> words\n\n<br> words\n",
+    "html": "<p><a href=\"foo\">some text</a> words</p>\n<p><br> words</p>\n",
+    "section": "standard",
+    "number": 53,
+    "options": {}
+  },
+  {
+    "name": "list-followed-by-blockquote",
+    "markdown": "# some title\n\n1. list item 1\n2. list item 2\n\n> some text in a blockquote\n\n* another list item 1\n* another list item 2\n",
+    "html": "<h1 id=\"some-title\">some title</h1>\n<ol>\n    <li>list item 1</li>\n    <li>list item 2</li>\n</ol>\n<blockquote>\n    <p>some text in a blockquote</p>\n</blockquote>\n<ul>\n    <li>another list item 1</li>\n    <li>another list item 2</li>\n</ul>\n",
+    "section": "standard",
+    "number": 54,
+    "options": {}
+  },
+  {
+    "name": "list-followed-by-ghcode",
+    "markdown": "# some title\n\n1. list item 1\n2. list item 2\n\n```\nsome code\n\nand some other line of code\n```\n\n* another list item 1\n* another list item 2\n",
+    "html": "<h1 id=\"some-title\">some title</h1>\n<ol>\n    <li>list item 1</li>\n    <li>list item 2</li>\n</ol>\n<pre><code>some code\n\n    and some other line of code\n</code></pre>\n<ul>\n    <li>another list item 1</li>\n    <li>another list item 2</li>\n</ul>\n",
+    "section": "standard",
+    "number": 55,
+    "options": {}
+  },
+  {
+    "name": "list-followed-by-hr",
+    "markdown": "- foo\n---\n\n- foo\n- bar\n- baz\n---",
+    "html": "<ul>\n    <li>foo</li>\n</ul>\n<hr />\n<ul>\n    <li>foo</li>\n    <li>bar</li>\n    <li>baz</li>\n</ul>\n<hr />",
+    "section": "standard",
+    "number": 56,
+    "options": {}
+  },
+  {
+    "name": "list-with-blockquote",
+    "markdown": "*   A list item with a blockquote:\n\n    > This is a blockquote\n    > inside a list item.\n",
+    "html": "<ul>\n  <li><p>A list item with a blockquote:</p>\n    <blockquote>\n      <p>This is a blockquote\n        inside a list item.</p>\n    </blockquote></li>\n</ul>\n",
+    "section": "standard",
+    "number": 57,
+    "options": {}
+  },
+  {
+    "name": "list-with-code",
+    "markdown": "*   A list item with code:\n\n        alert('Hello world!');\n",
+    "html": "<ul>\n  <li><p>A list item with code:</p>\n    <pre><code>alert('Hello world!');\n    </code></pre></li>\n</ul>\n",
+    "section": "standard",
+    "number": 58,
+    "options": {}
+  },
+  {
+    "name": "literal-html-tags",
+    "markdown": "<code>some **code** yeah</code>\n\nsome <code>inline **code** block</code>\n\n<code>some inline **code**</code> block\n\nyo dawg <code start=\"true\">some <code start=\"false\">code</code> inception</code>\n\n<div>some **div** yeah</div>\n",
+    "html": "<p><code>some **code** yeah</code></p>\n<p>some <code>inline **code** block</code></p>\n<p><code>some inline **code**</code> block</p>\n<p>yo dawg <code start=\"true\">some &lt;code start=&quot;false&quot;&gt;code&lt;/code&gt; inception</code></p>\n<div>some **div** yeah</div>",
+    "section": "standard",
+    "number": 59,
+    "options": {}
+  },
+  {
+    "name": "multi-paragraph-list",
+    "markdown": " 1.  This is a major bullet point.\n\n    That contains multiple paragraphs.\n\n 2.  And another line\n",
+    "html": "<ol>\n  <li><p>This is a major bullet point.</p>\n    <p>That contains multiple paragraphs.</p></li>\n  <li><p>And another line</p></li>\n</ol>\n",
+    "section": "standard",
+    "number": 60,
+    "options": {}
+  },
+  {
+    "name": "multiline-unordered-list",
+    "markdown": " - This line spans\n more than one line and is lazy\n - Similar to this line\n",
+    "html": "<ul>\n  <li>This line spans\n    more than one line and is lazy</li>\n  <li>Similar to this line</li>\n</ul>\n",
+    "section": "standard",
+    "number": 61,
+    "options": {}
+  },
+  {
+    "name": "nested-blockquote",
+    "markdown": "  > This is a multi line blockquote test\n  >\n  > > And nesting!\n  >\n  > With more than one line.\n",
+    "html": "<blockquote>\n  <p>This is a multi line blockquote test</p>\n  <blockquote>\n    <p>And nesting!</p>\n  </blockquote>\n  <p>With more than one line.</p>\n</blockquote>\n",
+    "section": "standard",
+    "number": 62,
+    "options": {}
+  },
+  {
+    "name": "nested-gh-codeblocks",
+    "markdown": "```\n1. some code idented 4 spaces\n\n    ```\n    var foobar = 'foo';\n    ```\n\n2. another line\n```\n",
+    "html": "<pre><code>1. some code idented 4 spaces\n\n    ```\n    var foobar = 'foo';\n    ```\n\n2. another line\n</code></pre>\n",
+    "section": "standard",
+    "number": 63,
+    "options": {}
+  },
+  {
+    "name": "obfuscated-emails",
+    "markdown": "",
+    "html": "",
+    "section": "standard",
+    "number": 64,
+    "options": {}
+  },
+  {
+    "name": "ordered-list",
+    "markdown": " 1.  Red\n 2.  Green\n 3.  Blue\n",
+    "html": "<ol>\n  <li>Red</li>\n  <li>Green</li>\n  <li>Blue</li>\n</ol>\n",
+    "section": "standard",
+    "number": 65,
+    "options": {}
+  },
+  {
+    "name": "ordered-list-same-number",
+    "markdown": " 1.  Red\n 1.  Green\n 1.  Blue\n",
+    "html": "<ol>\n  <li>Red</li>\n  <li>Green</li>\n  <li>Blue</li>\n</ol>\n",
+    "section": "standard",
+    "number": 66,
+    "options": {}
+  },
+  {
+    "name": "ordered-list-starting-number",
+    "markdown": "5. foo\n6. bar\n7. baz\n\n---\n\n3.  a\n2.  b\n7.  c\n23. d\n",
+    "html": "<ol start=\"5\">\n    <li>foo</li>\n    <li>bar</li>\n    <li>baz</li>\n</ol>\n<hr />\n<ol start=\"3\">\n    <li>a</li>\n    <li>b</li>\n    <li>c</li>\n    <li>d</li>\n</ol>\n",
+    "section": "standard",
+    "number": 67,
+    "options": {}
+  },
+  {
+    "name": "ordered-list-wrong-numbers",
+    "markdown": " 1.  Red\n 1.  Green\n 1.  Blue\n",
+    "html": "<ol>\n  <li>Red</li>\n  <li>Green</li>\n  <li>Blue</li>\n</ol>\n",
+    "section": "standard",
+    "number": 68,
+    "options": {}
+  },
+  {
+    "name": "paragraphed-list-with-sublists",
+    "markdown": " - foo\n \n    - bazinga\n    \n    - yeah\n \n - bar\n \n    1. damn\n    \n    2. so many paragraphs\n \n - baz\n",
+    "html": "<ul>\n  <li><p>foo</p>\n    <ul>\n      <li><p>bazinga</p></li>\n      <li><p>yeah</p></li></ul></li>\n  <li><p>bar</p>\n    <ol>\n      <li><p>damn</p></li>\n      <li><p>so many paragraphs</p></li></ol></li>\n  <li><p>baz</p></li>\n</ul>\n",
+    "section": "standard",
+    "number": 69,
+    "options": {}
+  },
+  {
+    "name": "pre-code-tags",
+    "markdown": "<pre>\n<code>\nfoobar\n</code>\n</pre>\n\nblabla\n\n<pre nhaca=\"zulu\"><code bla=\"bla\">\nfoobar\n</code>\n</pre>\n\n<pre><code>\n<div>some html code</div>\n</code></pre>\n",
+    "html": "<pre>\n<code>\nfoobar\n</code>\n</pre>\n<p>blabla</p>\n<pre nhaca=\"zulu\"><code bla=\"bla\">\nfoobar\n</code>\n</pre>\n<pre><code>\n&lt;div&gt;some html code&lt;/div&gt;\n</code></pre>\n",
+    "section": "standard",
+    "number": 70,
+    "options": {}
+  },
+  {
+    "name": "pre-code-tags-inside-code-block",
+    "markdown": "code inception\n\n```\n<pre><code>\n<div>some html code inside code html tags inside a fenced code block</div>\n</code></pre>\n```\n",
+    "html": "<p>code inception</p>\n<pre><code>&lt;pre&gt;&lt;code&gt;\n&lt;div&gt;some html code inside code html tags inside a fenced code block&lt;/div&gt;\n&lt;/code&gt;&lt;/pre&gt;\n</code></pre>\n",
+    "section": "standard",
+    "number": 71,
+    "options": {}
+  },
+  {
+    "name": "relative-anchors",
+    "markdown": "See my [About](/about/) page for details.\n",
+    "html": "<p>See my <a href=\"/about/\">About</a> page for details.</p>\n",
+    "section": "standard",
+    "number": 72,
+    "options": {}
+  },
+  {
+    "name": "repeated-headers",
+    "markdown": "# Same Title\n\nsome text\n\n# Same Title\n",
+    "html": "<h1 id=\"same-title\">Same Title</h1>\n<p>some text</p>\n<h1 id=\"same-title-1\">Same Title</h1>\n",
+    "section": "standard",
+    "number": 73,
+    "options": {}
+  },
+  {
+    "name": "setext-hr-edge-cases",
+    "markdown": "---\nfoo\n---\n\n\nfoo\n***\nbar\n---\n\n\nfoo\n***\n---\n",
+    "html": "<hr />\n<h2 id=\"foo\">foo</h2>\n<p>foo</p>\n<hr />\n<h2 id=\"bar\">bar</h2>\n<p>foo</p>\n<hr />\n<hr />\n",
+    "section": "standard",
+    "number": 74,
+    "options": {}
+  },
+  {
+    "name": "simple-paragraph",
+    "markdown": "Hello, world!\n",
+    "html": "<p>Hello, world!</p>\n",
+    "section": "standard",
+    "number": 75,
+    "options": {}
+  },
+  {
+    "name": "strip-references",
+    "markdown": "[1]: http://www.google.co.uk\n\n[http://www.google.co.uk]: http://www.google.co.uk\n\n\n\n\n\n[1]: http://dsurl.stuff/something.jpg\n\n[1]:http://www.google.co.uk\n\n [1]:http://www.google.co.uk\n",
+    "html": "",
+    "section": "standard",
+    "number": 76,
+    "options": {}
+  },
+  {
+    "name": "strong",
+    "markdown": "**important**\n\n__important__\n\nreally **freaking**strong\n",
+    "html": "<p><strong>important</strong></p>\n<p><strong>important</strong></p>\n<p>really <strong>freaking</strong>strong</p>\n",
+    "section": "standard",
+    "number": 77,
+    "options": {}
+  },
+  {
+    "name": "unordered-list-asterisk",
+    "markdown": " * Red\n * Green\n * Blue\n",
+    "html": "<ul>\n  <li>Red</li>\n  <li>Green</li>\n  <li>Blue</li>\n</ul>\n",
+    "section": "standard",
+    "number": 78,
+    "options": {}
+  },
+  {
+    "name": "unordered-list-minus",
+    "markdown": " - Red\n - Green\n - Blue\n",
+    "html": "<ul>\n  <li>Red</li>\n  <li>Green</li>\n  <li>Blue</li>\n</ul>\n",
+    "section": "standard",
+    "number": 79,
+    "options": {}
+  },
+  {
+    "name": "unordered-list-plus",
+    "markdown": " + Red\n + Green\n + Blue\n",
+    "html": "<ul>\n  <li>Red</li>\n  <li>Green</li>\n  <li>Blue</li>\n</ul>\n",
+    "section": "standard",
+    "number": 80,
+    "options": {}
+  },
+  {
+    "name": "url-with-parenthesis",
+    "markdown": "There's an [episode](http://en.memory-alpha.org/wiki/Darmok_(episode)) of Star Trek: The Next Generation\n",
+    "html": "<p>There's an <a href=\"http://en.memory-alpha.org/wiki/Darmok_(episode)\">episode</a> of Star Trek: The Next Generation</p>\n",
+    "section": "standard",
+    "number": 81,
+    "options": {}
+  }
+]

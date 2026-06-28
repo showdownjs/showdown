@@ -19,6 +19,7 @@ describe('makeHtml() commonmark testsuite', function () {
       describe(section, function () {
         for (let i = 0; i < testsuite[section].length; ++i) {
           let name = testsuite[section][i].name;
+          let number = testsuite[section][i].number;
           switch (name) {
             case 'ATX headings_79': // empty headings don't make sense
             case 'Thematic breaks_43': // malformed input of test case
@@ -48,7 +49,7 @@ describe('makeHtml() commonmark testsuite', function () {
 
 
           }
-          it(name, assertion(testsuite[section][i], converter, true));
+          it(number + ': ' + name, assertion(testsuite[section][i], converter, true));
         }
       });
     }

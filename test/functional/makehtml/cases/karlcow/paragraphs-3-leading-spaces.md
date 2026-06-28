@@ -1,1 +1,0 @@
-   This is a paragraph with 3 leading spaces.

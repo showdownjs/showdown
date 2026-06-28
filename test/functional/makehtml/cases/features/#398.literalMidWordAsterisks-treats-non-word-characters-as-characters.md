@@ -1,1 +1,0 @@
-strippers, **hitler**, and stalin

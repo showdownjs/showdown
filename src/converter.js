@@ -389,9 +389,15 @@ showdown.Converter = function (converterOptions) {
       text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals, true);
     }
     text = showdown.subParser('makehtml.hashCodeTags')(text, options, globals);
+    // Footnotes (GFM): collect `[^id]: ...` definitions and replace `[^id]` references
+    // before stripLinkDefinitions (whose scanner would otherwise claim `[^id]:` lines).
+    text = showdown.subParser('makehtml.footnotes')(text, options, globals, 'strip');
     text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);
     text = showdown.subParser('makehtml.blockGamut')(text, options, globals);
     text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
+    // Footnotes (GFM): render the referenced footnotes into a <section> and append it,
+    // before unhashHTMLSpans so hashed spans inside the rendered footnotes are restored.
+    text = showdown.subParser('makehtml.footnotes')(text, options, globals, 'build');
     // decode character references (gated by the decodeEntities option) after inline parsing,
     // while code spans/blocks are still hashed, so decoded chars are not re-parsed
     text = showdown.subParser('makehtml.decodeEntities')(text, options, globals);

@@ -78,6 +78,11 @@ function getDefaultOpts (simple) {
       describe: 'Turn on/off GFM tasklist support',
       type: 'boolean'
     },
+    footnotes: {
+      defaultValue: false,
+      describe: 'Turn on/off GFM footnotes support',
+      type: 'boolean'
+    },
     smartIndentationFix: {
       defaultValue: false,
       describe: 'Tries to smartly fix indentation in es6 strings',
@@ -90,7 +95,7 @@ function getDefaultOpts (simple) {
     },
     simpleLineBreaks: {
       defaultValue: false,
-      describe: 'Parses simple line breaks as <br> (GFM Style)',
+      describe: 'Parses simple line breaks as <br>',
       type: 'boolean'
     },
     requireSpaceBeforeHeadingText: {

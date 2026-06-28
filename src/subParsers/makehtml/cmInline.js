@@ -46,174 +46,176 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
 
   text = parseCmInline(text);
 
-  // ==== copied verbatim from link.js to support GFM link options under cmSpec ====
-  // The cmSpec path bypasses link.js (spanGamut returns early before makehtml.link), so
-  // ghMentions and simplifiedAutoLink are replicated here as post-passes. Real links,
-  // images and code spans are already hashed by parseCmInline above, so they are
-  // protected from these regexes. The writeAnchorTag / parseMail helpers below are also
-  // copied from link.js. TODO: refactor to share this with link.js instead of copying.
+  // ghMentions and simplifiedAutoLink (GFM extensions) are applied to the serialized
+  // inline output and to emphasis inner content (see parseCmInline) so URLs and mentions
+  // inside emphasis are linked too. Real links, images and code spans are hashed by
+  // parseCmInline, so they are protected from these regexes. Copied from link.js;
+  // the writeAnchorTag / parseMail helpers below are too. TODO: share with link.js.
+  text = applyGfmInlineLinks(text);
 
-  // 5. Handle GithubMentions (if option is enabled)
-  if (options.ghMentions) {
-    let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
-    text = text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
-      // bail if the mentions was escaped
-      if (escape === '\\') {
-        return st + mentions;
-      }
-      // check if options.ghMentionsLink is a string
-      // TODO Validation should be done at initialization not at runtime
-      if (!showdown.helper.isString(options.ghMentionsLink)) {
-        throw new Error('ghMentionsLink option must be a string');
-      }
-      let url = options.ghMentionsLink.replace(/\{u}/g, username);
-      return st + writeAnchorTag ('reference', ghMentionsRegex, wholeMatch, mentions, null, url);
-    });
-  }
+  function applyGfmInlineLinks (text) {
+    // 5. Handle GithubMentions (if option is enabled)
+    if (options.ghMentions) {
+      let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
+      text = text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
+        // bail if the mentions was escaped
+        if (escape === '\\') {
+          return st + mentions;
+        }
+        // check if options.ghMentionsLink is a string
+        // TODO Validation should be done at initialization not at runtime
+        if (!showdown.helper.isString(options.ghMentionsLink)) {
+          throw new Error('ghMentionsLink option must be a string');
+        }
+        let url = options.ghMentionsLink.replace(/\{u}/g, username);
+        return st + writeAnchorTag ('reference', ghMentionsRegex, wholeMatch, mentions, null, url);
+      });
+    }
 
-  // 8. Handle naked links (if option is enabled)
-  if (options.simplifiedAutoLink) {
-    // 8.1. Check for naked URLs
-    // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
-    // An explicit scheme (http/https/ftp) does not require the host to contain a dot;
-    // a `www.` shortcut does (and is domain-validated below).
-    let nakedUrlRegex = /([_*~]*?)((?:(?:https?|ftp):\/\/[^\s<>"'`´]+|www\.[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*))\1/gi;
-    text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url) {
-      let isWww = /^www\./i.test(url);
-      // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
-      const len = url.length;
-      let suffix = '';
+    // 8. Handle naked links (if option is enabled)
+    if (options.simplifiedAutoLink) {
+      // 8.1. Check for naked URLs
+      // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
+      // An explicit scheme (http/https/ftp) does not require the host to contain a dot;
+      // a `www.` shortcut does (and is domain-validated below).
+      let nakedUrlRegex = /([_*~]*?)((?:(?:https?|ftp):\/\/[^\s<>"'`´]+|www\.[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*))\1/gi;
+      text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url) {
+        let isWww = /^www\./i.test(url);
+        // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
+        const len = url.length;
+        let suffix = '';
 
-      for (let i = len - 1; i >= 0; --i) {
-        let char = url.charAt(i);
-        if (/[_*~,;:.!?]/.test(char)) {
-          // it's a punctuation char so we remove it from the url
-          url = url.slice(0, -1);
-          // and prepend it to the suffix
-          suffix = char + suffix;
-        } else if (/[)\]]/.test(char)) {
-          // it's a parenthesis so we need to check for "balance" (kinda)
-          let opPar, clPar;
-          if (/\)/.test(char)) {
-            // it's a curved parenthesis
-            opPar = url.match(/\(/g) || [];
-            clPar = url.match(/\)/g);
-          } else {
-            // it's a squared parenthesis
-            opPar = url.match(/\[/g) || [];
-            clPar = url.match(/]/g);
-          }
-          if (opPar.length < clPar.length) {
-            // there are more closing Parenthesis than opening so chop it!!!!!
+        for (let i = len - 1; i >= 0; --i) {
+          let char = url.charAt(i);
+          if (/[_*~,;:.!?]/.test(char)) {
+            // it's a punctuation char so we remove it from the url
             url = url.slice(0, -1);
             // and prepend it to the suffix
             suffix = char + suffix;
+          } else if (/[)\]]/.test(char)) {
+            // it's a parenthesis so we need to check for "balance" (kinda)
+            let opPar, clPar;
+            if (/\)/.test(char)) {
+              // it's a curved parenthesis
+              opPar = url.match(/\(/g) || [];
+              clPar = url.match(/\)/g);
+            } else {
+              // it's a squared parenthesis
+              opPar = url.match(/\[/g) || [];
+              clPar = url.match(/]/g);
+            }
+            if (opPar.length < clPar.length) {
+              // there are more closing Parenthesis than opening so chop it!!!!!
+              url = url.slice(0, -1);
+              // and prepend it to the suffix
+              suffix = char + suffix;
+            } else {
+              // it's (kinda) balanced so our work is done
+              break;
+            }
           } else {
-            // it's (kinda) balanced so our work is done
+            // it's not a punctuation or a parenthesis so our work is done
             break;
           }
-        } else {
-          // it's not a punctuation or a parenthesis so our work is done
-          break;
         }
-      }
 
-      // GFM: a trailing ";" that completes an entity-reference-like "&name" is excluded
-      // from the link, so move the whole "&name;" into the suffix.
-      if (suffix.charAt(0) === ';') {
-        let entity = url.match(/&(?:amp;)?[a-z\d]+$/i);
-        if (entity) {
-          url = url.slice(0, -entity[0].length);
-          suffix = entity[0] + suffix;
+        // GFM: a trailing ";" that completes an entity-reference-like "&name" is excluded
+        // from the link, so move the whole "&name;" into the suffix.
+        if (suffix.charAt(0) === ';') {
+          let entity = url.match(/&(?:amp;)?[a-z\d]+$/i);
+          if (entity) {
+            url = url.slice(0, -entity[0].length);
+            suffix = entity[0] + suffix;
+          }
         }
-      }
 
-      // GFM: "<" terminates the link. By this pass it has already been escaped to "&lt;"
-      // (and ">" to "&gt;"), so split there and keep the remainder as plain text.
-      let ltMatch = url.match(/&(?:lt|gt);/);
-      if (ltMatch) {
-        let at = url.indexOf(ltMatch[0]);
-        suffix = url.slice(at) + suffix;
-        url = url.slice(0, at);
-      }
+        // GFM: "<" terminates the link. By this pass it has already been escaped to "&lt;"
+        // (and ">" to "&gt;"), so split there and keep the remainder as plain text.
+        let ltMatch = url.match(/&(?:lt|gt);/);
+        if (ltMatch) {
+          let at = url.indexOf(ltMatch[0]);
+          suffix = url.slice(at) + suffix;
+          url = url.slice(0, at);
+        }
 
-      // GFM: the last two labels of the host may not contain "_"; otherwise it is not a
-      // valid autolink.
-      if (!validAutolinkHost(url, isWww)) {
-        return wholeMatch;
-      }
+        // GFM: the last two labels of the host may not contain "_"; otherwise it is not a
+        // valid autolink.
+        if (!validAutolinkHost(url, isWww)) {
+          return wholeMatch;
+        }
 
-      // we copy the treated url to the text variable
-      let txt = url;
-      // finally, if it's a www shortcut, we prepend http(s)
-      // noinspection HttpUrlsUsage
-      url = isWww ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
-      // GFM: percent-encode non-ASCII characters in the href (the display text keeps the
-      // literal characters)
-      url = url.replace(/[^\x00-\x7F]+/g, function (s) { return encodeURI(s); });
+        // we copy the treated url to the text variable
+        let txt = url;
+        // finally, if it's a www shortcut, we prepend http(s)
+        // noinspection HttpUrlsUsage
+        url = isWww ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+        // GFM: percent-encode non-ASCII characters in the href (the display text keeps the
+        // literal characters)
+        url = url.replace(/[^\x00-\x7F]+/g, function (s) { return encodeURI(s); });
 
-      // url part is done so let's take care of text now
-      // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
-      txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+        // url part is done so let's take care of text now
+        // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
+        txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
 
-      // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
-      // we consumed those characters in the regexp
-      return leadingMDChars +
-        writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
-        suffix +
-        leadingMDChars;
-    });
+        // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
+        // we consumed those characters in the regexp
+        return leadingMDChars +
+          writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
+          suffix +
+          leadingMDChars;
+      });
 
-    // 8.2. Check for naked mail (GFM extended email autolink).
-    let localPart = '[A-Za-z\\d._+-]+',
-        domainPart = '[A-Za-z\\d_-]+(?:\\.[A-Za-z\\d_-]+)*';
+      // 8.2. Check for naked mail (GFM extended email autolink).
+      let localPart = '[A-Za-z\\d._+-]+',
+          domainPart = '[A-Za-z\\d_-]+(?:\\.[A-Za-z\\d_-]+)*';
 
-    // A scheme is only recognised when it is not part of a preceding word (so `mmmmailto:`
-    // does not count) — any non-alphanumeric character (including `/`) is a valid boundary.
-    let schemeBoundary = '(^|[^A-Za-z\\d])';
+      // A scheme is only recognised when it is not part of a preceding word (so `mmmmailto:`
+      // does not count) — any non-alphanumeric character (including `/`) is a valid boundary.
+      let schemeBoundary = '(^|[^A-Za-z\\d])';
 
-    // 8.2.1. `xmpp:` addresses keep their scheme and an optional `/resource`.
-    let xmppMailRegex = new RegExp(schemeBoundary + '(xmpp:)(' + localPart + '@' + domainPart + ')(\\/[A-Za-z\\d._-]*)?', 'gi');
-    text = text.replace(xmppMailRegex, function (wholeMatch, lead, scheme, addr, resource) {
-      resource = resource || '';
-      let trail = '',
-          body = resource || addr,
-          tm;
-      while ((tm = /[.,;:!?]$/.exec(body))) {
-        trail = body.slice(-1) + trail;
-        body = body.slice(0, -1);
-      }
-      if (resource) { resource = body; } else { addr = body; }
-      if (!validMailAddr(addr)) { return wholeMatch; }
-      let target = 'xmpp:' + addr + resource;
-      return lead + writeAnchorTag ('autoLink', xmppMailRegex, wholeMatch, target, null, target) + trail;
-    });
+      // 8.2.1. `xmpp:` addresses keep their scheme and an optional `/resource`.
+      let xmppMailRegex = new RegExp(schemeBoundary + '(xmpp:)(' + localPart + '@' + domainPart + ')(\\/[A-Za-z\\d._-]*)?', 'gi');
+      text = text.replace(xmppMailRegex, function (wholeMatch, lead, scheme, addr, resource) {
+        resource = resource || '';
+        let trail = '',
+            body = resource || addr,
+            tm;
+        while ((tm = /[.,;:!?]$/.exec(body))) {
+          trail = body.slice(-1) + trail;
+          body = body.slice(0, -1);
+        }
+        if (resource) { resource = body; } else { addr = body; }
+        if (!validMailAddr(addr)) { return wholeMatch; }
+        let target = 'xmpp:' + addr + resource;
+        return lead + writeAnchorTag ('autoLink', xmppMailRegex, wholeMatch, target, null, target) + trail;
+      });
 
-    // 8.2.2. `mailto:` addresses keep their scheme but never carry a path.
-    let mailtoRegex = new RegExp(schemeBoundary + '(mailto:)(' + localPart + '@' + domainPart + ')', 'gi');
-    text = text.replace(mailtoRegex, function (wholeMatch, lead, scheme, addr) {
-      let trail = '',
-          tm;
-      while ((tm = /[.,;:!?]$/.exec(addr))) {
-        trail = addr.slice(-1) + trail;
-        addr = addr.slice(0, -1);
-      }
-      if (!validMailAddr(addr)) { return wholeMatch; }
-      let target = 'mailto:' + addr;
-      return lead + writeAnchorTag ('autoLink', mailtoRegex, wholeMatch, target, null, target) + trail;
-    });
+      // 8.2.2. `mailto:` addresses keep their scheme but never carry a path.
+      let mailtoRegex = new RegExp(schemeBoundary + '(mailto:)(' + localPart + '@' + domainPart + ')', 'gi');
+      text = text.replace(mailtoRegex, function (wholeMatch, lead, scheme, addr) {
+        let trail = '',
+            tm;
+        while ((tm = /[.,;:!?]$/.exec(addr))) {
+          trail = addr.slice(-1) + trail;
+          addr = addr.slice(0, -1);
+        }
+        if (!validMailAddr(addr)) { return wholeMatch; }
+        let target = 'mailto:' + addr;
+        return lead + writeAnchorTag ('autoLink', mailtoRegex, wholeMatch, target, null, target) + trail;
+      });
 
-    // 8.2.3. Bare addresses become mailto: links. The address must be preceded by the
-    // string start or a character that cannot be part of the local-part (this also keeps
-    // us out of hash placeholders like the `¨E43E` produced for an escaped char).
-    let nakedMailRegex = new RegExp('(^|[^A-Za-z\\d._+\\-\\u00a8])(' + localPart + '@' + domainPart + ')', 'g');
-    text = text.replace(nakedMailRegex, function (wholeMatch, lead, addr) {
-      if (!validMailAddr(addr)) { return wholeMatch; }
-      const m = parseMail(addr);
-      return lead + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
-    });
+      // 8.2.3. Bare addresses become mailto: links. The address must be preceded by the
+      // string start or a character that cannot be part of the local-part (this also keeps
+      // us out of hash placeholders like the `¨E43E` produced for an escaped char).
+      let nakedMailRegex = new RegExp('(^|[^A-Za-z\\d._+\\-\\u00a8])(' + localPart + '@' + domainPart + ')', 'g');
+      text = text.replace(nakedMailRegex, function (wholeMatch, lead, addr) {
+        if (!validMailAddr(addr)) { return wholeMatch; }
+        const m = parseMail(addr);
+        return lead + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
+      });
+    }
+    return text;
   }
-  // ==== end copied region ====
 
   let afterEvent = new showdown.Event('makehtml.cmInline.onEnd', text);
   afterEvent
@@ -663,6 +665,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
           closer.numdelims -= use;
 
           let inner = renderNodes(opener.next, closer);
+          inner = applyGfmInlineLinks(inner);
           inner = showdown.subParser('makehtml.hardLineBreaks')(inner, options, globals);
           let wrapped = hashSpan(tagOpen + inner + tagClose);
 

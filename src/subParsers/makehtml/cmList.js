@@ -229,6 +229,29 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     // line) contributes, so an indented-code first block sees a clean block start
     // (codeBlock keys off `^`/a preceding blank line) instead of a lone leading newline
     str = str.replace(/^\n+/, '');
+
+    // GFM task lists: detect + render the checkbox on the RAW item line, before any
+    // block/span parsing, so makehtml.taskListItem sees the same raw input as it does
+    // from makehtml.list (the default parser). The injected <input> then flows through
+    // blockGamut/spanGamut just like any other inline HTML in the item.
+    let liAttrs = '';
+    let taskMatch = options.tasklists ? /^[ \t]*\[([xX ])]/.exec(str) : null;
+    if (taskMatch) {
+      let checked = taskMatch[1].trim() !== '';
+      str = showdown.subParser('makehtml.taskListItem')(str, options, globals);
+      let attributes = {};
+      // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
+      // when `moreStyling` is enabled.
+      if (options.moreStyling) {
+        attributes.classes = ['task-list-item'];
+        attributes.style = 'list-style-type: none;';
+        if (checked) {
+          attributes.classes.push('task-list-item-complete');
+        }
+      }
+      liAttrs = showdown.helper._populateAttributes(attributes);
+    }
+
     str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
     str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
     str = str.replace(/^\n+/, '').replace(/\n+$/, '');
@@ -249,26 +272,6 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     }
     let body = out.join('\n');
 
-    // GFM task lists: when the item starts with `[ ]`/`[x]` and the tasklists option is
-    // on, render a checkbox and tag the <li>. Mirrors list.js (the legacy parser).
-    let liAttrs = '';
-    let taskMatch = options.tasklists ? /^\s*\[([xX ])]/.exec(content.length ? content[0] : '') : null;
-    if (taskMatch) {
-      let checked = taskMatch[1].trim() !== '';
-      body = cmProcessTaskListItem(body, checked);
-      // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
-      // when `moreStyling` is enabled.
-      let attributes = {};
-      if (options.moreStyling) {
-        attributes.classes = ['task-list-item'];
-        attributes.style = 'list-style-type: none;';
-        if (checked) {
-          attributes.classes.push('task-list-item-complete');
-        }
-      }
-      liAttrs = showdown.helper._populateAttributes(attributes);
-    }
-
     // an empty item is always `<li></li>`, regardless of loose/tight
     if (body.trim() === '') {
       return '<li' + liAttrs + '></li>\n';
@@ -280,56 +283,6 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li' + liAttrs + '>\n' : '<li' + liAttrs + '>',
         close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
     return open + body + close;
-  }
-
-  // ==== task-list checkbox rendering copied/adapted from list.js processTaskListItem;
-  // TODO: refactor to share with list.js ====
-  // Adapted to preserve a leading `<p>` (loose items) before the `[ ]`/`[x]` marker.
-  function cmProcessTaskListItem (body, checked) {
-    const checkboxRgx = /^([ \t]*(?:<p>)?[ \t]*)\[([xX ])]/;
-    return body.replace(checkboxRgx, function (wm, prefix, checkedRaw) {
-      // GFM spec output is a bare `<input disabled type="checkbox">` (checked items add a
-      // leading `checked`). Only when `moreStyling` is enabled do we keep the legacy inline
-      // style that visually aligns the checkbox.
-      let attributes = options.moreStyling ?
-        {
-          type: 'checkbox',
-          disabled: true,
-          style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
-          checked: !!checked
-        } :
-        (checked ?
-          { checked: true, disabled: true, type: 'checkbox' } :
-          { disabled: true, type: 'checkbox' });
-      let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', body);
-      captureStartEvent
-        .setOutput(null)
-        ._setGlobals(globals)
-        ._setOptions(options)
-        .setRegexp(checkboxRgx)
-        .setMatches({
-          _wholeMatch: body,
-          _tasklistButton: wm,
-          _taksListButtonChecked: checkedRaw
-        })
-        .setAttributes(attributes);
-      captureStartEvent = globals.converter.dispatch(captureStartEvent);
-      let otp;
-      if (captureStartEvent.output && captureStartEvent.output !== '') {
-        otp = captureStartEvent.output;
-      } else {
-        attributes = captureStartEvent.attributes;
-        otp = '<input' + showdown.helper._populateAttributes(attributes) + '>';
-      }
-
-      let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
-      beforeHashEvent
-        .setOutput(otp)
-        ._setGlobals(globals)
-        ._setOptions(options);
-      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-      return prefix + beforeHashEvent.output;
-    });
   }
 
   // a line that is open paragraph text (so a following list marker would have to

@@ -60,67 +60,6 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
 
-
-  /**
-   *
-   * @param {RegExp} pattern
-   * @param {string} item
-   * @param {boolean} checked
-   * @returns {string}
-   */
-  function processTaskListItem (pattern, item, checked) {
-
-    const checkboxRgx = /^[ \t]*\[([xX ])]/m;
-    item = item.replace(checkboxRgx, function (wm, checkedRaw) {
-
-      // GFM spec output is a bare `<input disabled type="checkbox">` (checked items add a
-      // leading `checked`). Only when `moreStyling` is enabled do we keep the legacy inline
-      // style that visually aligns the checkbox.
-      let attributes = options.moreStyling ?
-        {
-          type: 'checkbox',
-          disabled: true,
-          style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
-          checked: !!checked
-        } :
-        (checked ?
-          { checked: true, disabled: true, type: 'checkbox' } :
-          { disabled: true, type: 'checkbox' });
-      let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', item);
-
-      captureStartEvent
-        .setOutput(null)
-        ._setGlobals(globals)
-        ._setOptions(options)
-        .setRegexp(pattern)
-        .setMatches({
-          _wholeMatch: item,
-          _tasklistButton: wm,
-          _taksListButtonChecked: checkedRaw
-        })
-        .setAttributes(attributes);
-      captureStartEvent = globals.converter.dispatch(captureStartEvent);
-      let otp;
-      if (captureStartEvent.output && captureStartEvent.output !== '') {
-        otp = captureStartEvent.output;
-      } else {
-        attributes = captureStartEvent.attributes;
-        otp = '<input' + showdown.helper._populateAttributes(attributes)  + '>';
-      }
-
-      let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
-      beforeHashEvent
-        .setOutput(otp)
-        ._setGlobals(globals)
-        ._setOptions(options);
-      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-      otp = beforeHashEvent.output;
-      return otp;
-    });
-
-    return item;
-  }
-
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
@@ -220,7 +159,7 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
 
         // even if user there's no tasklist, it's fine because the tasklist handler will bail without raising the event
         if (options.tasklists) {
-          item = processTaskListItem(rgx, item, checked);
+          item = showdown.subParser('makehtml.taskListItem')(item, options, globals);
         }
 
         // ISSUE #312

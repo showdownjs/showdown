@@ -223,7 +223,7 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '1. [X] foo\n2. [x] bar\n', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
-      'list.taskListItem.checkbox': [
+      taskListItem: [
         { event: 'onCapture', text: '1. [X] foo\n2. [x] bar\n', result: true },
         { event: 'onCapture', text: 'foo', result: false },
         { event: 'onHash', text: '1. [X] foo\n2. [x] bar\n', result: true },

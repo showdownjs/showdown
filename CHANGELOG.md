@@ -1,3 +1,220 @@
+# [3.0.0-rc1](https://github.com/showdownjs/showdown/compare/2.1.0...3.0.0-rc1) (2026-06-29)
+
+
+### Bug Fixes
+
+* add polyfill method for array.isArray ([16cac70](https://github.com/showdownjs/showdown/commit/16cac70aeed7c0079db67f7a5dc31a4a8038b1f6)), closes [#497](https://github.com/showdownjs/showdown/issues/497)
+* Add rel="noopener noreferrer" to links when openLinksInNewWindow is on ([caab5bb](https://github.com/showdownjs/showdown/commit/caab5bb7bc617c1721967bd1a12c633927f2aafb)), closes [#670](https://github.com/showdownjs/showdown/issues/670)
+* allow escaping of colons ([a4be301](https://github.com/showdownjs/showdown/commit/a4be301331178b2ad2f14f039e871a033b9a3b75))
+* **autolinks:** align GFM extended autolinks with the spec ([e24ca0d](https://github.com/showdownjs/showdown/commit/e24ca0d9041607478bec47d5d00f870f93c79f79))
+* **autolinks:** link URLs and mentions inside emphasis ([f34b753](https://github.com/showdownjs/showdown/commit/f34b753724d4d1b42dcdf596445eb833f544d87b))
+* **blockquote:** cap nesting depth to avoid stack overflow and quadratic blowup ([e1d508f](https://github.com/showdownjs/showdown/commit/e1d508f1e99bf410190f635042da7d1f7486c24f))
+* **cli:** clearer messages for recursive globs and directory inputs ([6a74eec](https://github.com/showdownjs/showdown/commit/6a74eec87b4917805bd81d24f69eb38819a4fa82))
+* **cli:** cli now works properly ([c3411a5](https://github.com/showdownjs/showdown/commit/c3411a567deb67dea983cb56d3218dc2be74992b)), closes [#893](https://github.com/showdownjs/showdown/issues/893) [#894](https://github.com/showdownjs/showdown/issues/894)
+* **cli:** create batch output directories and honor trailing-slash output ([6fdcca9](https://github.com/showdownjs/showdown/commit/6fdcca9056a1c2fb8b3edcf45081c76134fcfc9b))
+* **cli:** read input data using stream ([#358](https://github.com/showdownjs/showdown/issues/358)) ([1967652](https://github.com/showdownjs/showdown/commit/1967652acfff5c676052826329d82b782bbd35db)), closes [#353](https://github.com/showdownjs/showdown/issues/353)
+* **cli:** remove checking stdin size ([7acd65e](https://github.com/showdownjs/showdown/commit/7acd65e498ce3df92d97e2077029b73242e505f1))
+* **cmSpec:** stop escaping generated HTML from strikethrough and emoji ([0d7294d](https://github.com/showdownjs/showdown/commit/0d7294dc96fe927a8f839503868438e5290fb993))
+* **commonmark:** blank lines inside an item fence keep the list tight ([10d8362](https://github.com/showdownjs/showdown/commit/10d836284c0661d6362686df9c14ae0c877f08c8)), closes [#318](https://github.com/showdownjs/showdown/issues/318)
+* **commonmark:** do not mistake an indent-0 closing fence for an opener ([f16c35b](https://github.com/showdownjs/showdown/commit/f16c35b1828f69042b06ce078a080043a096e8bc)), closes [#131](https://github.com/showdownjs/showdown/issues/131)
+* **commonmark:** indented code as an empty list item's first block ([32c4ac1](https://github.com/showdownjs/showdown/commit/32c4ac1e7b729c6188bdfbe5a67b766ec12b6d8a)), closes [#278](https://github.com/showdownjs/showdown/issues/278)
+* **commonmark:** keep entities in raw HTML blocks verbatim ([245fdb6](https://github.com/showdownjs/showdown/commit/245fdb69d9b20b4b599031e7ad62c97dd9688879)), closes [#31](https://github.com/showdownjs/showdown/issues/31)
+* **commonmark:** lazy continuation through nested block quote + list (gated) ([4891ac3](https://github.com/showdownjs/showdown/commit/4891ac377e707465121a3d3abade4c8c056a9c4c)), closes [#292](https://github.com/showdownjs/showdown/issues/292) [#293](https://github.com/showdownjs/showdown/issues/293)
+* **commonmark:** per-list loose/tight respects container nesting ([d61d16d](https://github.com/showdownjs/showdown/commit/d61d16d2912f160ed0d495b6576d810c8cde73d6)), closes [#307](https://github.com/showdownjs/showdown/issues/307) [#319](https://github.com/showdownjs/showdown/issues/319)
+* **commonmark:** recognize indented code revealed after a block quote ([495037a](https://github.com/showdownjs/showdown/commit/495037afd82d68a0d88fa78c83b7144309c027f4)), closes [#236](https://github.com/showdownjs/showdown/issues/236)
+* **commonmark:** reference labels match on raw source, no backslash resolution ([defbf09](https://github.com/showdownjs/showdown/commit/defbf09f2128b2045dad2cf2c2f2402f49a92a18)), closes [#544](https://github.com/showdownjs/showdown/issues/544) [#194](https://github.com/showdownjs/showdown/issues/194) [#548](https://github.com/showdownjs/showdown/issues/548) [#549](https://github.com/showdownjs/showdown/issues/549)
+* **commonmark:** resolve backslash escapes in normalized URLs ([10d76e8](https://github.com/showdownjs/showdown/commit/10d76e822407770aca41e0f0704370a007ca53d6)), closes [#23](https://github.com/showdownjs/showdown/issues/23) [#202](https://github.com/showdownjs/showdown/issues/202)
+* **commonmark:** setext/thematic-break interference with list items (gated) ([6b46b80](https://github.com/showdownjs/showdown/commit/6b46b8063b94a3f8d23c8bea4987fe5786836319)), closes [#281](https://github.com/showdownjs/showdown/issues/281) [#282](https://github.com/showdownjs/showdown/issues/282) [#300](https://github.com/showdownjs/showdown/issues/300)
+* **commonmark:** Unicode case-fold for reference labels ([a552f96](https://github.com/showdownjs/showdown/commit/a552f96227c450e2b2b549b78759c0037f55fd49)), closes [#539](https://github.com/showdownjs/showdown/issues/539)
+* compress showdown emoji ([55f22de](https://github.com/showdownjs/showdown/commit/55f22de0a038b90abfb05437143ea185774cb9bc))
+* **email:** now email address obfuscation always returns the same output  ([949c2bc](https://github.com/showdownjs/showdown/commit/949c2bcf868b565eb7cd0549f82ee4393b96aa4e)), closes [/stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316](https://github.com//stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316/issues/47593316)
+* **flavors:** drop simpleLineBreaks from the github flavor ([43f1058](https://github.com/showdownjs/showdown/commit/43f10580f2b82d205dbc8fa0be8e734ad7c5b49c))
+* **flavors:** remove the allOn flavor preset ([cdabba2](https://github.com/showdownjs/showdown/commit/cdabba2bfc6c07ae88293c22ee21a1d00d81ee62))
+* **footnotes:** keep references in code spans and escaped refs literal ([718aadb](https://github.com/showdownjs/showdown/commit/718aadbbffe2c53c5b37668ef8f6fdf31e7c423d))
+* **gfm-codeblock:** add support for spaces before language declaration ([1f0242c](https://github.com/showdownjs/showdown/commit/1f0242c6ea9fc6cc066276437a7628f68c4aa98e)), closes [#569](https://github.com/showdownjs/showdown/issues/569)
+* **gfm-codeblocks:** leading space no longer breaks gfm codeblocks ([6259f37](https://github.com/showdownjs/showdown/commit/6259f37bd643af647171a286f2a37931c0c1f107)), closes [#523](https://github.com/showdownjs/showdown/issues/523)
+* **gfmCodeBlocks:** allow the info string in gfmCodeBlocks to contain spaces ([6711425](https://github.com/showdownjs/showdown/commit/67114255ade0de5f6569c71e351c34fedc2c969f)), closes [#856](https://github.com/showdownjs/showdown/issues/856)
+* **githubCodeBlock:** escape info string in generated code class ([668871d](https://github.com/showdownjs/showdown/commit/668871d73c66bc7af237d41d2fb32539ab2760b6))
+* **hashHTMLBlocks:** recognise --!> as an HTML comment terminator ([32aa9e6](https://github.com/showdownjs/showdown/commit/32aa9e6d2d84eb2c9b9d6b1d6718526f225aa82b))
+* **heading:** remove O(n^2) backtracking in setext heading regex ([ce94570](https://github.com/showdownjs/showdown/commit/ce94570af6a6634e45ff48a831b895c1f65f7aef))
+* **headings:** inconsistent behavior in lists ([26abc7a](https://github.com/showdownjs/showdown/commit/26abc7a795d6a0dd9002b6e84de38af3d81ef3d2)), closes [#495](https://github.com/showdownjs/showdown/issues/495)
+* **helpers:** allow usage in ES6 modules fix for [#676](https://github.com/showdownjs/showdown/issues/676) ([ed51972](https://github.com/showdownjs/showdown/commit/ed51972315c47b7e3341af54b51f8fe07ad90a53))
+* **helpers:** update github flavored emoji to the latest ([#837](https://github.com/showdownjs/showdown/issues/837)) ([8e2b339](https://github.com/showdownjs/showdown/commit/8e2b339fe2ee4521d6f99c272464fd2c15364ab3))
+* **helpers:** update octocat emoji image location; add tests ([5544e4d](https://github.com/showdownjs/showdown/commit/5544e4d995e181712221278c658f6cedf98f5338))
+* **image:** honor parseImgDimensions for inline images ([fb28a68](https://github.com/showdownjs/showdown/commit/fb28a68dcae4c8ca5080c9863b822e59321244f1))
+* **images:** fix error when using image references ([63763b1](https://github.com/showdownjs/showdown/commit/63763b136f8fc1a782b3ebc5543e667101ed3124)), closes [#585](https://github.com/showdownjs/showdown/issues/585)
+* **images:** fix js error when using image references ([b0d475f](https://github.com/showdownjs/showdown/commit/b0d475fc087c8340d80f10a9bafb4fe1d05f6515)), closes [#585](https://github.com/showdownjs/showdown/issues/585)
+* **italicsAndBold:** Make italicsAndBold lazy ([#608](https://github.com/showdownjs/showdown/issues/608)) ([4378abb](https://github.com/showdownjs/showdown/commit/4378abb4fa5a8d9913abee60b4459d3350ba8300)), closes [#544](https://github.com/showdownjs/showdown/issues/544)
+* **link,image:** escape quotes in generated href/src ([4fb992c](https://github.com/showdownjs/showdown/commit/4fb992cd26631c108ec0410342630c80207ec7c6))
+* **links:** a number of issues with links subparser ([d3ebff7](https://github.com/showdownjs/showdown/commit/d3ebff7ef0cde5abfc3874463946d5297fc82e78)), closes [#355](https://github.com/showdownjs/showdown/issues/355) [#534](https://github.com/showdownjs/showdown/issues/534)
+* **lists:** codeblocks inside lists are now correctly parsed ([8cecdf0](https://github.com/showdownjs/showdown/commit/8cecdf0382220881e07073dae716e7679f19f4fc)), closes [#494](https://github.com/showdownjs/showdown/issues/494)
+* **lists:** Fix makeMarkdown tasklist ([#846](https://github.com/showdownjs/showdown/issues/846)) ([626f661](https://github.com/showdownjs/showdown/commit/626f661e8eb8373c45d44480c0deb97823711eb8)), closes [#774](https://github.com/showdownjs/showdown/issues/774)
+* **lists:** Fix tasklists to comply with GFM ([ac10478](https://github.com/showdownjs/showdown/commit/ac1047815f227618e9cbab24ce0190d5c5c26527)), closes [#655](https://github.com/showdownjs/showdown/issues/655)
+* **loader:** failover to globalThis when top-level this is undefined ([7f23f79](https://github.com/showdownjs/showdown/commit/7f23f7941516e3e302045e7c878ea2ca21dfeb7f)), closes [#1017](https://github.com/showdownjs/showdown/issues/1017)
+* **makehtml:** comply with CommonMark fenced-code info strings and lazy setext underlines ([17b16b7](https://github.com/showdownjs/showdown/commit/17b16b7cd05f5f569fa283d02b86f3dc064e4fb4))
+* **makemarkdown.image:** fix bug width|height = auto  ([440170a](https://github.com/showdownjs/showdown/commit/440170aadc1da0b83cf45c84486cb1b140fbfb65)), closes [#622](https://github.com/showdownjs/showdown/issues/622)
+* **makemarkdown.table:** col text align right ([5f85c53](https://github.com/showdownjs/showdown/commit/5f85c53910e500af52363719912d20c416bd3d83))
+* **makeMarkdown:** handle <br> tags converting html to markdown ([2019694](https://github.com/showdownjs/showdown/commit/201969473a55664dcaf8f1cd530cff76664b7cbf))
+* **makemarkdown:** keep a text-less checkbox list item as raw HTML ([04babdb](https://github.com/showdownjs/showdown/commit/04babdb212f0367a1d0d6ab83ed5c64cf3996a6a))
+* **makemarkdown:** only reverse a checkbox to a task marker inside a list item ([15de710](https://github.com/showdownjs/showdown/commit/15de710a8ebe61eccf3e5998a08a0c6695e9c0f8))
+* **makemarkdown:** start a nested list on its own line inside a list item ([78b6d49](https://github.com/showdownjs/showdown/commit/78b6d49a1b2a9f2769972180dc89f5d42a999f91))
+* **mentions:** allow for usernames with dot, underscore and dash ([2ba0075](https://github.com/showdownjs/showdown/commit/2ba00751cc8e890b60585444b9dfb0a1825555e6)), closes [#574](https://github.com/showdownjs/showdown/issues/574)
+* **metadata:** allow whitespaces after closing marks ([0d3ca4d](https://github.com/showdownjs/showdown/commit/0d3ca4da5a7451f585e052009c160401c103ed6e))
+* **metadata:** Restore dollar signs and tremas. ([#730](https://github.com/showdownjs/showdown/issues/730)) ([ebc730c](https://github.com/showdownjs/showdown/commit/ebc730c0a05c0e4ad975d828c320ac6ca72c8dfd)), closes [#626](https://github.com/showdownjs/showdown/issues/626)
+* **options:** remove the openLinksInNewWindow option ([8affebd](https://github.com/showdownjs/showdown/commit/8affebd26426b06eb55a82c42726327c53f7bdd9))
+* **package:** update yargs to version 11.0.0 ([#491](https://github.com/showdownjs/showdown/issues/491)) ([6376d40](https://github.com/showdownjs/showdown/commit/6376d405843f03dd99a4d7864289e0f9f8ed7be9))
+* **paragraphs:** replace deprecated RegExp.$n with exec() captures ([28cb15d](https://github.com/showdownjs/showdown/commit/28cb15d567d15d643d368e355df92e334756ea13)), closes [#1042](https://github.com/showdownjs/showdown/issues/1042)
+* reduce npm package size ([6f93b3e](https://github.com/showdownjs/showdown/commit/6f93b3eab1b47ef991adbd8e30a777bde5e09bed))
+* reduce npm package size  ([82f90eb](https://github.com/showdownjs/showdown/commit/82f90ebda276a92bdb4d35baa82448c011460793)), closes [#619](https://github.com/showdownjs/showdown/issues/619)
+* replaces \u00A0 with &nbsp; ([f20dc75](https://github.com/showdownjs/showdown/commit/f20dc750241a77421c0d236aa337b596e85610cc)), closes [#521](https://github.com/showdownjs/showdown/issues/521)
+* resolve broken link to installation guide ([1a24a4c](https://github.com/showdownjs/showdown/commit/1a24a4c24ccfd0bec5c677ed105ec8d9aecf66a7))
+* **subParsers:** namespace heading capture/hash events by style ([9a4e0ba](https://github.com/showdownjs/showdown/commit/9a4e0baaadc0ebddc87a0350af55d3df689c1113))
+* **subParsers:** strip international punctuation from github headers ([#950](https://github.com/showdownjs/showdown/issues/950)) ([4333646](https://github.com/showdownjs/showdown/commit/4333646c8ce3036e907ed36c6ad73cfda03b8b4b))
+* **table:** align table parsing with the GFM spec ([92990a1](https://github.com/showdownjs/showdown/commit/92990a14ff41c6527d4661d4d5fd53c876ab6040))
+* tables parse correctly with new version of jsdom ([db571fb](https://github.com/showdownjs/showdown/commit/db571fbaacce957d65667cf4b676307831563abe))
+* **underline:** Make underline lazy ([81edc70](https://github.com/showdownjs/showdown/commit/81edc70da7372f662954321d4b372e1eae189870))
+* Update yargs to 14.2.0 ([dae65c6](https://github.com/showdownjs/showdown/commit/dae65c6e36b17c9ba8510a6cb0564c52d6b0d464)), closes [#738](https://github.com/showdownjs/showdown/issues/738)
+
+
+### Code Refactoring
+
+* **options:** remove the dead smoothLivePreview option ([8a661d0](https://github.com/showdownjs/showdown/commit/8a661d0d2d342c41e65f246c4abba580b39931a1))
+* **subParsers:** change name and directory of subparsers ([3db9200](https://github.com/showdownjs/showdown/commit/3db9200d2c293d3977948558b2a4aace3e86d6ac))
+
+
+### Features
+
+* **autolinks:** improve CommonMark compliance for angle-bracket links ([28363f6](https://github.com/showdownjs/showdown/commit/28363f6714314d8fcf90c510ab737e692da6cfc5))
+* **cli:** add batch/glob input, verbose mode and colored output ([9be4b3c](https://github.com/showdownjs/showdown/commit/9be4b3c397e84cc18b0c260204975b9d69de260e))
+* **cli:** add flavor listing and validation ([409e2d6](https://github.com/showdownjs/showdown/commit/409e2d664984b26e9da0937b6536349e3afdb68c))
+* **cli:** add makemarkdown command and fix option handling ([26c753c](https://github.com/showdownjs/showdown/commit/26c753c3e5702ea5a1485a6960342e9089f8898b))
+* **cmSpec:** support GFM link/image options under cmSpec ([1200139](https://github.com/showdownjs/showdown/commit/1200139e5aeb4c4f6c1410cec0440d8873baa26e))
+* **cmSpec:** support reference-style image dimensions under cmSpec ([4e7ee79](https://github.com/showdownjs/showdown/commit/4e7ee79f3e25cc4e7789cf44c9e0777d00d26146))
+* **cmSpec:** support underline and GFM task lists under cmSpec ([c7cad47](https://github.com/showdownjs/showdown/commit/c7cad47e7317a89f4c4904515128298f5f8b2235))
+* **commonmark:** CommonMark autolinks (gated) ([d0d5662](https://github.com/showdownjs/showdown/commit/d0d566288aaf95f076035a7c6744efbe612226e4))
+* **commonmark:** CommonMark container block quotes (gated) ([cb631d8](https://github.com/showdownjs/showdown/commit/cb631d803358e0869291a68545a2138aafed04a2))
+* **commonmark:** CommonMark HTML blocks (gated) ([edc76db](https://github.com/showdownjs/showdown/commit/edc76db50e734375e94e67ed63e210b147ac7dad))
+* **commonmark:** CommonMark images - alt flattening + inline parsing (gated) ([8e6d054](https://github.com/showdownjs/showdown/commit/8e6d054911b5df7eebfda0479804188981b6dcc8))
+* **commonmark:** CommonMark link reference definitions (gated) ([7739a69](https://github.com/showdownjs/showdown/commit/7739a695230b81740051cca6b5d6dbede2698042))
+* **commonmark:** container-aware fenced code via commonmarkContainers ([f96914c](https://github.com/showdownjs/showdown/commit/f96914c6d7ad99a096daecab829707ad1a0cdf2b)), closes [#321](https://github.com/showdownjs/showdown/issues/321) [#324](https://github.com/showdownjs/showdown/issues/324)
+* **commonmark:** decode HTML5 character references (gated) ([37de87e](https://github.com/showdownjs/showdown/commit/37de87e1e4f4ca3a4427169bdfdf6b8b3870d807))
+* **commonmark:** delimiter-run emphasis/strong parsing (gated) ([c25d9ed](https://github.com/showdownjs/showdown/commit/c25d9ed77e361bf65168847b366cf3f0ff0e2f78))
+* **commonmark:** empty list item edge cases (gated) ([c45ae5e](https://github.com/showdownjs/showdown/commit/c45ae5eca3d7555f21f3687064016e0f94faf018)), closes [#280](https://github.com/showdownjs/showdown/issues/280) [#315](https://github.com/showdownjs/showdown/issues/315)
+* **commonmark:** enable unified inline parser in the commonmark flavor ([e90d94c](https://github.com/showdownjs/showdown/commit/e90d94cf4733c78b21dcf542a1fbcc8d935ba059))
+* **commonmark:** inline link destination/title parsing (gated) ([4094182](https://github.com/showdownjs/showdown/commit/40941828fcf8138c04b6fe74299d001fdd7c2858))
+* **commonmark:** let an open HTML block absorb a following fenced block ([93a0bad](https://github.com/showdownjs/showdown/commit/93a0bad1576289a3c3440e0135a0a274c094081d)), closes [#161](https://github.com/showdownjs/showdown/issues/161)
+* **commonmark:** list item indented code + same-line nesting (gated) ([7d76739](https://github.com/showdownjs/showdown/commit/7d76739cb57cc367ce241aa0e84e5f4c172f0066)), closes [#264](https://github.com/showdownjs/showdown/issues/264) [#270](https://github.com/showdownjs/showdown/issues/270) [#271](https://github.com/showdownjs/showdown/issues/271) [#273](https://github.com/showdownjs/showdown/issues/273) [#274](https://github.com/showdownjs/showdown/issues/274) [#298](https://github.com/showdownjs/showdown/issues/298) [#299](https://github.com/showdownjs/showdown/issues/299)
+* **commonmark:** new CommonMark list container parser (gated) ([bf1f8ac](https://github.com/showdownjs/showdown/commit/bf1f8ac476be04b593e3caa1e5c2e9187630262b))
+* **commonmark:** normalize link/image URLs and titles (gated) ([0ee5675](https://github.com/showdownjs/showdown/commit/0ee5675a0b80f49005d9306513117b1f72590bae))
+* **commonmark:** recognize HTML blocks and link defs inside block quotes ([dbb3dc4](https://github.com/showdownjs/showdown/commit/dbb3dc4cb471f076c2f8f3e3d28e4aad93927ce8)), closes [#174](https://github.com/showdownjs/showdown/issues/174) [#218](https://github.com/showdownjs/showdown/issues/218)
+* **commonmark:** strict inline raw HTML recognition (gated) ([dd2c524](https://github.com/showdownjs/showdown/commit/dd2c5243c58a557511b974fc1f65fa2b57d838ac))
+* **commonmark:** tab expansion in block-structure indentation (gated) ([973a8d6](https://github.com/showdownjs/showdown/commit/973a8d6af3752e026b7380908683327054019afb))
+* **commonmark:** unified inline parser (gated, not yet in flavor) ([5bfb1bc](https://github.com/showdownjs/showdown/commit/5bfb1bcd17499e463fd5dcfd2d025fdb1c77d1e7))
+* **disallowRawHTML:** add GFM disallowed-raw-html tag filter ([2392f13](https://github.com/showdownjs/showdown/commit/2392f13aa0a3f68a0c41a25f9e701a3fd9cb187d))
+* **events:** cover remaining subparsers with lifecycle events ([436273a](https://github.com/showdownjs/showdown/commit/436273a4b9e7a2d678f89805a374a8a31f31379c))
+* **events:** emit missing makeHtml lifecycle events ([636f8d6](https://github.com/showdownjs/showdown/commit/636f8d6b45f40ec524e088d140c5eece42594cc3))
+* **events:** wire the event system into makeMarkdown (HTML->MD) ([b1e62e1](https://github.com/showdownjs/showdown/commit/b1e62e1ccc3b2cc7140a24946fbd12f66ff108f6))
+* **extensions:** unify lang/output extensions onto the event system ([c7701a3](https://github.com/showdownjs/showdown/commit/c7701a3899ffb8de13a6110e52aa132c33fa312b))
+* **footnotes:** add GFM footnotes support ([9307a6c](https://github.com/showdownjs/showdown/commit/9307a6c4cb694fa28a58cc167e8a9944b80a4609))
+* **links:** add httpsAutoLinks option to default autolinks to https ([695fc42](https://github.com/showdownjs/showdown/commit/695fc4225950707fa473f2781be8b13281a6822a)), closes [#998](https://github.com/showdownjs/showdown/issues/998) [#806](https://github.com/showdownjs/showdown/issues/806) [#998](https://github.com/showdownjs/showdown/issues/998)
+* **makehtml.events:** implements event system refactor for converter.makeHtml ([#919](https://github.com/showdownjs/showdown/issues/919)) ([9f8c719](https://github.com/showdownjs/showdown/commit/9f8c7199eaefff07ab05c259b5cd4869d4d05d65)), closes [#920](https://github.com/showdownjs/showdown/issues/920)
+* **makeMarkdown.ghMentions:** add support for ghMentions in makeMarkdown ([3a616c5](https://github.com/showdownjs/showdown/commit/3a616c5bf6f4be2fef26cbdb3e46e441b74a9dc1)), closes [#910](https://github.com/showdownjs/showdown/issues/910)
+* **makemarkdown.table:** support non-strict tables ([5fc843e](https://github.com/showdownjs/showdown/commit/5fc843e175430951dae97992ba72c6959f7f0e97)), closes [#687](https://github.com/showdownjs/showdown/issues/687)
+* **makemarkdown:** broaden HTML->Markdown conversion coverage ([cd5ef8f](https://github.com/showdownjs/showdown/commit/cd5ef8fe99c45e093b8e5e53fa24414f40fad2c6))
+* **makeMarkdown:** convert HTML to MD ([358947b](https://github.com/showdownjs/showdown/commit/358947bd297c0f5851bc5a09674e837bf66f1b3a))
+* **makemarkdown:** gate non-standard constructs on their options ([e55e811](https://github.com/showdownjs/showdown/commit/e55e811e4f89220e22e3d03d59034f232594eb6f))
+* **makemarkdown:** reverse emoji and ellipsis to markdown ([2917ccf](https://github.com/showdownjs/showdown/commit/2917ccf71b31704cf8fe5f1b9c954013caa1a7d3))
+* **makemarkdown:** reverse GFM footnotes (HTML -> Markdown) ([9ec49d9](https://github.com/showdownjs/showdown/commit/9ec49d95966937b18a4e379dfed432aa1c726734))
+* **moreStyling:** add some useful classes for css styling ([5e0ed80](https://github.com/showdownjs/showdown/commit/5e0ed809dbf474ec76ba0c81a418bca663966d1b)), closes [#540](https://github.com/showdownjs/showdown/issues/540)
+* **options:** enable strikethrough by default ([0e7acea](https://github.com/showdownjs/showdown/commit/0e7acea15e92ab45451f5b61ffe1e949690ba6a7))
+* **relativePathBaseUrl:** Add support for prepending a base URL ([e3a5b59](https://github.com/showdownjs/showdown/commit/e3a5b5928f90f98a143cfbc8db3e60a6913f24ef)), closes [#536](https://github.com/showdownjs/showdown/issues/536)
+* **splitAdjacentBlockquotes:** add option to split adjacent blockquote blocks ([ea3db5f](https://github.com/showdownjs/showdown/commit/ea3db5f180a079fc9562934553e719c92d72ea23)), closes [#477](https://github.com/showdownjs/showdown/issues/477)
+* **strikethrough:** support single-tilde strikethrough ([b340b43](https://github.com/showdownjs/showdown/commit/b340b43e2966c0d01e2158b1d6bb89f96ca1333e))
+* **tasklists:** emit GFM-compliant task list markup ([94e0624](https://github.com/showdownjs/showdown/commit/94e0624ab807427309560af039815d1875be36e6))
+
+
+### remove
+
+* **literalMidWordAsterisks:** remove literalMidWordAsterisks feature ([d9eea64](https://github.com/showdownjs/showdown/commit/d9eea64794a02930b42f151294e3e795434a2ad8)), closes [#499](https://github.com/showdownjs/showdown/issues/499)
+
+
+### BREAKING CHANGES
+
+* **strikethrough:** text wrapped in single tildes (`~foo~`) is now rendered as
+`<del>foo</del>`. Escape the tildes to keep them literal.
+* **tasklists:** by default task list items no longer include the
+`task-list-item` class, the `list-style-type` list style or the inline
+checkbox margin style. Enable `moreStyling` to restore the previous output.
+* **table:** a table whose header and delimiter rows have a different
+number of cells (e.g. `| a | b |` over `| --- |`) is no longer recognised
+as a table and renders as a paragraph, matching GFM.
+* **options:** the smoothLivePreview option is removed. It was a no-op
+(unimplemented), so passing it had no effect; remove it from any config.
+* **options:** strikethrough is now enabled by default (vanilla and github
+flavors). Markdown using ~~...~~ renders as <del>...</del>, and the reverse
+direction converts <del>/<s> back to ~~. Set strikethrough: false to restore
+the previous behavior. The original and commonmark flavors keep it disabled.
+* **options:** the openLinksInNewWindow option is removed. Use a
+listener extension on makehtml.link.*.onCapture to add target/rel
+attributes to anchors instead (see docs/event-system.md).
+* **flavors:** the github flavor no longer enables simpleLineBreaks, so
+single newlines inside a paragraph are no longer rendered as <br>. Set
+simpleLineBreaks: true explicitly to restore the previous behavior.
+* **extensions:** the instance methods `converter.removeExtension()` and
+`converter.getAllExtensions()` have been removed. Use
+`converter.unlisten()` to detach a listener. The static
+`showdown.removeExtension()` / `showdown.getAllExtensions()` registry
+methods are unaffected.
+* **extensions:** `lang` and `output` extensions are deprecated and now log a
+console warning when loaded. They keep working (as listeners on
+`makehtml.onPreParse` / `makehtml.onEnd`) but should be rewritten as
+`listener` extensions.
+* **extensions:** the legacy `showdown.extensions` global object and its
+deprecated extension-loading path have been removed.
+* **links:** `excludeTrailingPunctuationFromURLs` option was removed. This is now the default behavior
+* **literalMidWordAsterisks:** literalMidWordAsterisks option was removed and so asterisks will always retain their markdown magic meaning in a source text.
+If you're using this feature, and you wish to retain this option, you can find a shim here: <https://gist.github.com/tivie/7f8a88c89ffb00d2afe6c59a25528386>
+* **subParsers:** makeHtml subparsers names changed, by prepending 'makehtml.' to them.
+Example: 'anchors', subparser is now named 'makehtml.anchors'.
+
+Event names were also changed to reflect this.
+Example: 'anchors.before' is now named 'makehtml.anchors.before'.
+
+**To migrate:**
+
+If you have a listener extension, replace the old event name with the new one. Example:
+
+Replace this
+
+```js
+showdown.extension('myext', function() {
+  return [{
+    type: 'listener',
+    listeners: {
+      'anchors.before': function (event, text, converter, options, globals) {
+        //... some code
+        return text;
+      }
+  }];
+});
+```
+
+with this
+```js
+showdown.extension('myext', function() {
+  return [{
+    type: 'listener',
+    listeners: {
+      'makehtml.anchors.before': function (event, text, converter, options, globals) {
+        //... some code
+        return text;
+      }
+  }];
+});
+```
+
+
+
 ## [2.1.0](https://github.com/showdownjs/showdown/compare/2.0.0...2.1.0) (2022-04-21)
 
 * refactor(cli)!: Remove support for "extra options" and add -c flag, closes [#916](https://github.com/showdownjs/showdown/issues/916)

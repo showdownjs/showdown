@@ -20,7 +20,15 @@ showdown.subParser('makeMarkdown.listItem', function (node, options, globals) {
           childrenLenght = children.length;
 
       for (let i = 0; i < childrenLenght; ++i) {
-        listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+        let child = children[i];
+        // A nested list must begin on its own line, otherwise the indentation step below
+        // glues it to the preceding inline text (e.g. `a<ul>…` would render as `- a- b`
+        // instead of `- a` followed by an indented `- b`).
+        if (child.nodeType === 1 && /^[ou]l$/i.test(child.tagName) &&
+            listItemTxt !== '' && !/\n$/.test(listItemTxt)) {
+          listItemTxt += '\n';
+        }
+        listItemTxt += showdown.subParser('makeMarkdown.node')(child, options, globals);
       }
       // if it's only one liner, we need to add a newline at the end
       if (!/\n$/.test(listItemTxt)) {

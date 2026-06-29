@@ -638,6 +638,8 @@ A few rules:
   and matching is case-insensitive.
 * **A reference with no matching definition is left literal** (`[^missing]` stays as text), and an
   **unreferenced definition is dropped**.
+* **A reference inside a code span, or escaped, is left literal** — `` `[^1]` `` and `\[^1]` are
+  not turned into footnotes.
 
 [footnotes]: available-options.md#footnotes
 

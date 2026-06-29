@@ -114,11 +114,60 @@ showdown.subParser('makehtml.footnotes', function (text, options, globals, phase
 
   // ---- phase 1b: replace `[^label]` references with hashed <sup> spans -------
 
+  // Replace inline code spans with `¨FN<n>¨` placeholders so a `[^id]` inside them stays
+  // literal. Linear scan (ReDoS-safe): a code span is a back-tick run closed by a run of the
+  // same length. Unbalanced runs are left as text. Worst case is sub-quadratic because runs
+  // that stay unmatched must have distinct lengths (equal-length runs pair up).
+  function hashInlineCodeSpans (str, store) {
+    let pieces = [], textStart = 0, i = 0, n = str.length;
+    while (i < n) {
+      if (str.charAt(i) !== '`') { i++; continue; }
+      let j = i;
+      while (j < n && str.charAt(j) === '`') { j++; }
+      let len = j - i, k = j, close = -1;
+      while (k < n) {
+        if (str.charAt(k) === '`') {
+          let m = k;
+          while (m < n && str.charAt(m) === '`') { m++; }
+          if (m - k === len) { close = m; break; }
+          k = m;
+        } else {
+          k++;
+        }
+      }
+      if (close !== -1) {
+        pieces.push(str.substring(textStart, i));
+        store.push(str.substring(i, close));
+        pieces.push('¨FN' + (store.length - 1) + '¨');
+        textStart = close;
+        i = close;
+      } else {
+        // opening run with no matching closer: leave it as literal text
+        i = j;
+      }
+    }
+    pieces.push(str.substring(textStart));
+    return pieces.join('');
+  }
+
   function replaceReferences (str, raw) {
     globals.gFootnoteOrder = globals.gFootnoteOrder || [];
     globals.gFootnoteRefs = globals.gFootnoteRefs || {};
+
+    // Protect inline code spans so a `[^id]` inside back-ticks stays literal. A linear scan
+    // (not a backtracking regex) keeps this safe on long back-tick runs in attacker input.
+    // Fenced/indented code is already hashed before this pass.
+    let spans = [];
+    str = hashInlineCodeSpans(str, spans);
+
     // a footnote label may not contain whitespace, so `[^a b]` is not a reference
-    return str.replace(/\[\^([^\s\]]+)]/g, function (whole, rawLabel) {
+    str = str.replace(/\[\^([^\s\]]+)]/g, function (whole, rawLabel, offset, full) {
+      // an escaped reference (`\[^id]`, an odd number of leading back-slashes) is literal
+      let bs = 0, p = offset - 1;
+      while (p >= 0 && full.charAt(p) === '\\') { bs++; p--; }
+      if (bs % 2 === 1) {
+        return whole;
+      }
       let norm = showdown.helper.cmNormalizeLabel(rawLabel),
           fn = globals.gFootnotes[norm];
       if (showdown.helper.isUndefined(fn)) {
@@ -141,6 +190,10 @@ showdown.subParser('makehtml.footnotes', function (text, options, globals, phase
       // otherwise (main text) hash it so the inline parser leaves it alone.
       return raw ? sup : showdown.helper._hashHTMLSpan(sup, globals);
     });
+
+    // restore the protected code spans
+    str = str.replace(/¨FN(\d+)¨/g, function (whole, n) { return spans[n]; });
+    return str;
   }
 
   // ---- phase 2: render the referenced footnotes into a <section> ------------

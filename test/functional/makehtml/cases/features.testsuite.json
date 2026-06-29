@@ -1138,6 +1138,26 @@
     "options": {}
   },
   {
+    "name": "reference-in-code-span",
+    "markdown": "A `[^1]` literal then a real one[^1].\n\n[^1]: def.\n",
+    "html": "<p>A <code>[^1]</code> literal then a real one<sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\" data-footnote-ref>1</a></sup>.</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-1\">\n<p>def. <a href=\"#fnref-1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2520,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
+    "name": "escaped-reference",
+    "markdown": "An escaped \\[^1] and a real one[^1].\n\n[^1]: def.\n",
+    "html": "<p>An escaped [^1] and a real one<sup class=\"footnote-ref\"><a href=\"#fn-1\" id=\"fnref-1\" data-footnote-ref>1</a></sup>.</p>\n<section class=\"footnotes\" data-footnotes>\n<ol>\n<li id=\"fn-1\">\n<p>def. <a href=\"#fnref-1\" class=\"footnote-backref\" data-footnote-backref data-footnote-backref-idx=\"1\" aria-label=\"Back to reference 1\">↩</a></p>\n</li>\n</ol>\n</section>\n",
+    "section": "footnotes",
+    "number": 2521,
+    "options": {
+      "footnotes": true
+    }
+  },
+  {
     "name": "#179.parse-md-in-table-ths",
     "markdown": "| *foo* | **bar** | ~~baz~~ |\n|-------|---------|---------|\n| 100   | blabla  |  aaa    |\n",
     "html": "<table>\n  <thead>\n    <tr>\n      <th><em>foo</em></th>\n      <th><strong>bar</strong></th>\n      <th><del>baz</del></th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <td>100</td>\n      <td>blabla</td>\n      <td>aaa</td>\n    </tr>\n  </tbody>\n</table>\n",

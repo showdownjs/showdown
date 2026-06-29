@@ -53,13 +53,22 @@ extension.)
 | `<a href>`                   | `[text](<href> "title")`, or a bare `<href>` autolink when the link text equals the href |
 | `<img>`                      | `![alt](<src> "title")` (also supports the `=WxH` size syntax)                           |
 | `<br>`                       | hard line break                                                                          |
-| `<input type="checkbox">`    | `[ ]` / `[x]` task-list marker (inside a list, with the `tasklists` option)              |
+| `<input type="checkbox">`    | `[ ]` / `[x]` task-list marker (a checkbox inside a list item, with the `tasklists` option), see note below |
 | `<sup class="footnote-ref">` | `[^id]` footnote reference (with the `footnotes` option)                                  |
 
 <sup id="fn-underline">1</sup> `<u>` is emitted as `__…__`, which is showdown's underline syntax.
 This only round-trips back to `<u>` through a converter that has the
 [`underline`](available-options.md) option enabled; otherwise `__…__` is standard-Markdown
 **strong**.
+
+> **Task-list detection requires a list-item context, not a class.** With the `tasklists` option
+> on, reverse conversion turns an `<input type="checkbox">` into a `[ ]`/`[x]` marker **only when it
+> sits inside an `<li>`** (directly, or wrapped in a `<p>` as loose list items are). This matches
+> Markdown semantics — `[ ]`/`[x]` is a task only when it leads a list item — so a naked checkbox
+> (top level, or inside a `<p>`/`<div>`) is left as raw HTML rather than degrading into literal
+> bracket text. Detection does **not** depend on the `task-list-item` class (which `makeHtml` only
+> emits under `moreStyling`), so checkboxes in hand-written or unstyled list HTML are recognised
+> too. A `checked` attribute (with any value) renders `[x]`; its absence renders `[ ]`.
 
 ## Tables
 

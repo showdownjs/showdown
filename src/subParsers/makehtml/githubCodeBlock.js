@@ -122,6 +122,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
       if (options.decodeEntities) {
         lang = lang.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
       }
+      // The language ends up inside the code element's `class` attribute, so escape the
+      // characters that could break out of it. Otherwise an info string such as
+      // `js"onmouseover="alert(1)` would close the attribute and inject an event handler (XSS).
+      // `&` is intentionally left alone: the later decodeEntities pass resolves real entities
+      // (e.g. `&ouml;`) for the class and re-escapes any that decode to `"`/`<`/`>`, so these
+      // replacements survive it while a literal quote is neutralized in both modes.
+      lang = lang
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
       codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
       //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);

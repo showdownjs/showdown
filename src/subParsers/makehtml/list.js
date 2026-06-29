@@ -119,8 +119,9 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
           };
 
 
-      // Support for github tasklists
-      if (taskbtn && options.tasklists) {
+      // Support for github tasklists. GFM requires whitespace after the marker (see
+      // makehtml.list.taskListItem.checkbox), so a bare `[ ]`/`[ ]x` is not a task and is left literal.
+      if (taskbtn && options.tasklists && /^[ \t]*\[[xX ]][ \t]/.test(item)) {
         // it's a github tasklist and tasklists are enabled
 
         // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
@@ -159,7 +160,7 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
 
         // even if user there's no tasklist, it's fine because the tasklist handler will bail without raising the event
         if (options.tasklists) {
-          item = showdown.subParser('makehtml.taskListItem')(item, options, globals);
+          item = showdown.subParser('makehtml.list.taskListItem.checkbox')(item, options, globals);
         }
 
         // ISSUE #312

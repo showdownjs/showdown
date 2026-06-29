@@ -230,16 +230,22 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     // (codeBlock keys off `^`/a preceding blank line) instead of a lone leading newline
     str = str.replace(/^\n+/, '');
 
-    // GFM task lists: detect + render the checkbox on the RAW item line, before any
-    // block/span parsing, so makehtml.taskListItem sees the same raw input as it does
-    // from makehtml.list (the default parser). The injected <input> then flows through
-    // blockGamut/spanGamut just like any other inline HTML in the item.
-    let liAttrs = '';
-    let taskMatch = options.tasklists ? /^[ \t]*\[([xX ])]/.exec(str) : null;
+    // The item's raw source — the payload for the per-item capture event below (matches
+    // makehtml.list, which emits the item's raw markdown).
+    let rawItem = content.join('\n');
+
+    // GFM task detection on the (leading-newline-stripped) raw line: it selects the event
+    // name and the <li> attributes. The marker must be followed by whitespace (see
+    // makehtml.list.taskListItem.checkbox); a bare `[ ]` is not a task.
+    let taskMatch = options.tasklists ? /^[ \t]*\[([xX ])](?=[ \t])/.exec(str) : null,
+        checked = !!taskMatch && taskMatch[1].trim() !== '',
+        eventName = taskMatch ? 'makehtml.list.taskListItem' : 'makehtml.list.listItem',
+        attributes = {},
+        matches = { _wholeMatch: rawItem, listItem: rawItem };
+
     if (taskMatch) {
-      let checked = taskMatch[1].trim() !== '';
-      str = showdown.subParser('makehtml.taskListItem')(str, options, globals);
-      let attributes = {};
+      matches._taskListButton = '[' + taskMatch[1] + ']';
+      matches._taskListButtonChecked = taskMatch[1];
       // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
       // when `moreStyling` is enabled.
       if (options.moreStyling) {
@@ -249,40 +255,77 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
           attributes.classes.push('task-list-item-complete');
         }
       }
-      liAttrs = showdown.helper._populateAttributes(attributes);
     }
 
-    str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
-    str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
-    str = str.replace(/^\n+/, '').replace(/\n+$/, '');
+    let captureStartEvent = new showdown.Event(eventName + '.onCapture', rawItem);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setMatches(matches)
+      .setAttributes(attributes);
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
 
-    let grafs = str.split(/\n{2,}/g),
-        out = [];
-    for (let i = 0; i < grafs.length; ++i) {
-      let g = grafs[i];
-      if (/¨([KG])(\d+)\1/.test(g)) {
-        out.push(g);
-      } else if (/\S/.test(g)) {
-        g = showdown.subParser('makehtml.spanGamut')(g, options, globals);
-        if (loose) {
-          g = g.replace(/^[ \t]*/, '<p>') + '</p>';
+    let rendered;
+    // A listener may pass output, which takes precedence and is used verbatim as the item
+    // markup (mirrors makehtml.list); otherwise we render the (possibly edited) item.
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      rendered = captureStartEvent.output;
+    } else {
+      attributes = captureStartEvent.attributes;
+      let liAttrs = showdown.helper._populateAttributes(attributes);
+
+      // honor a listener that rewrote the item's raw markdown via matches.listItem
+      if (captureStartEvent.matches.listItem !== rawItem) {
+        str = (captureStartEvent.matches.listItem + '\n').replace(/^\n+/, '');
+      }
+
+      // Render the checkbox on the raw line, before any block/span parsing, so the
+      // injected <input> flows through blockGamut/spanGamut just like any other inline HTML.
+      if (taskMatch) {
+        str = showdown.subParser('makehtml.list.taskListItem.checkbox')(str, options, globals);
+      }
+      str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
+      str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
+      str = str.replace(/^\n+/, '').replace(/\n+$/, '');
+
+      let grafs = str.split(/\n{2,}/g),
+          out = [];
+      for (let gi = 0; gi < grafs.length; ++gi) {
+        let g = grafs[gi];
+        if (/¨([KG])(\d+)\1/.test(g)) {
+          out.push(g);
+        } else if (/\S/.test(g)) {
+          g = showdown.subParser('makehtml.spanGamut')(g, options, globals);
+          if (loose) {
+            g = g.replace(/^[ \t]*/, '<p>') + '</p>';
+          }
+          out.push(g);
         }
-        out.push(g);
+      }
+      let body = out.join('\n');
+
+      // an empty item is always `<li></li>`, regardless of loose/tight
+      if (body.trim() === '') {
+        rendered = '<li' + liAttrs + '></li>\n';
+      } else {
+        // CommonMark serialization: a loose item opens/closes on its own lines; a tight
+        // item opens on a new line only when its content begins with a block child, and
+        // closes on a new line only when its content ends with a block child (so trailing
+        // inline text hugs `</li>`).
+        let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li' + liAttrs + '>\n' : '<li' + liAttrs + '>',
+            close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
+        rendered = open + body + close;
       }
     }
-    let body = out.join('\n');
 
-    // an empty item is always `<li></li>`, regardless of loose/tight
-    if (body.trim() === '') {
-      return '<li' + liAttrs + '></li>\n';
-    }
-    // CommonMark serialization: a loose item opens/closes on its own lines; a tight
-    // item opens on a new line only when its content begins with a block child, and
-    // closes on a new line only when its content ends with a block child (so trailing
-    // inline text hugs `</li>`).
-    let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li' + liAttrs + '>\n' : '<li' + liAttrs + '>',
-        close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
-    return open + body + close;
+    let beforeHashEvent = new showdown.Event(eventName + '.onHash', rendered);
+    beforeHashEvent
+      .setOutput(rendered)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
   }
 
   // a line that is open paragraph text (so a following list marker would have to
@@ -328,6 +371,7 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
           bullet = m.bullet,
           delim = m.delim,
           startNum = m.num,
+          listStart = i,
           items = [],
           loose = false;
 
@@ -356,12 +400,41 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
         }
       }
 
-      let start = (type === 'ol' && startNum !== 1) ? startNum : null,
-          body = '';
-      for (let k = 0; k < items.length; ++k) {
-        body += renderItem(items[k], loose);
+      // the raw source of this whole list block — payload for the list-level capture event
+      let rawList = lines.slice(listStart, i).join('\n');
+      let listCapture = new showdown.Event('makehtml.list.onCapture', rawList);
+      listCapture
+        .setOutput(null)
+        ._setGlobals(globals)
+        ._setOptions(options)
+        .setMatches({ _wholeMatch: rawList, list: rawList })
+        .setAttributes({});
+      listCapture = globals.converter.dispatch(listCapture);
+
+      let otp;
+      // a listener may pass output, which takes precedence over rendering the items
+      if (listCapture.output && listCapture.output !== '') {
+        otp = listCapture.output;
+      } else {
+        let attrs = listCapture.attributes || {};
+        if (type === 'ol' && startNum !== 1) {
+          attrs.start = startNum;
+        }
+        let body = '';
+        for (let k = 0; k < items.length; ++k) {
+          body += renderItem(items[k], loose);
+        }
+        otp = '\n\n<' + type + showdown.helper._populateAttributes(attrs) + '>\n' + body + '</' + type + '>\n';
       }
-      let otp = '\n\n<' + type + (start !== null ? ' start="' + start + '"' : '') + '>\n' + body + '</' + type + '>\n';
+
+      let listHash = new showdown.Event('makehtml.list.onHash', otp);
+      listHash
+        .setOutput(otp)
+        ._setGlobals(globals)
+        ._setOptions(options);
+      listHash = globals.converter.dispatch(listHash);
+      otp = listHash.output;
+
       out.push(showdown.subParser('makehtml.hashBlock')(otp, options, globals));
       prevParagraph = false;
     }

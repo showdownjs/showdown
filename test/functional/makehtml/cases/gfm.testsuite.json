@@ -4774,6 +4774,76 @@
     "number": 1104
   },
   {
+    "name": "tasklists-edge-inline-emphasis-code-link",
+    "markdown": "- [ ] **bold** and *italic* and `code` and [link](/url)\n- [x] ~~strike~~ and done\n",
+    "html": "<ul>\n<li><input disabled=\"\" type=\"checkbox\"> <strong>bold</strong> and <em>italic</em> and <code>code</code> and <a href=\"/url\">link</a></li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> <del>strike</del> and done</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1110
+  },
+  {
+    "name": "tasklists-edge-multi-paragraph-loose",
+    "markdown": "- [ ] first paragraph\n\n  second paragraph of the same item\n- [x] single line done\n",
+    "html": "<ul>\n<li><input disabled=\"\" type=\"checkbox\"> \n<p>first paragraph</p>\n<p>second paragraph of the same item</p>\n</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> \n<p>single line done</p>\n</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1111
+  },
+  {
+    "name": "tasklists-edge-fenced-code-block-in-item",
+    "markdown": "- [ ] item with fenced code\n\n  ```js\n  const x = 1;\n  ```\n- [x] done\n",
+    "html": "<ul>\n<li><input disabled=\"\" type=\"checkbox\"> \n<p>item with fenced code</p>\n<pre><code class=\"language-js\">const x = 1;\n</code></pre>\n</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> \n<p>done</p>\n</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1112
+  },
+  {
+    "name": "tasklists-edge-indented-code-block-in-item",
+    "markdown": "- [ ] item then code\n\n      indented code line\n- [x] done\n",
+    "html": "<ul>\n<li><input disabled=\"\" type=\"checkbox\"> \n<p>item then code</p>\n<pre><code>indented code line\n</code></pre>\n</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> \n<p>done</p>\n</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1113
+  },
+  {
+    "name": "tasklists-edge-blockquote-in-item",
+    "markdown": "- [ ] item with quote\n\n  > quoted text\n- [x] done\n",
+    "html": "<ul>\n<li><input disabled=\"\" type=\"checkbox\"> \n<p>item with quote</p>\n<blockquote>\n<p>quoted text</p>\n</blockquote>\n</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> \n<p>done</p>\n</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1114
+  },
+  {
+    "name": "tasklists-edge-heading-marker-stays-literal",
+    "markdown": "- [ ] # not a heading? text\n- [x] done\n",
+    "html": "<ul>\n<li><input disabled=\"\" type=\"checkbox\"> # not a heading? text</li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> done</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1115
+  },
+  {
+    "name": "tasklists-edge-nested-list-and-inline",
+    "markdown": "- [x] parent **bold**\n  - [ ] child *italic*\n  - [x] child `code`\n- [ ] sibling\n",
+    "html": "<ul>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> parent <strong>bold</strong>\n<ul>\n<li><input disabled=\"\" type=\"checkbox\"> child <em>italic</em></li>\n<li><input checked=\"\" disabled=\"\" type=\"checkbox\"> child <code>code</code></li>\n</ul>\n</li>\n<li><input disabled=\"\" type=\"checkbox\"> sibling</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1116
+  },
+  {
+    "name": "tasklists-edge-bare-marker-left-literal",
+    "markdown": "- [ ]\n- [x]\n",
+    "html": "<ul>\n<li>[ ]</li>\n<li>[x]</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1117
+  },
+  {
+    "name": "tasklists-edge-text-with-trailing-inline",
+    "markdown": "- [ ] a `b` c **d** e\n",
+    "html": "<ul>\n<li><input disabled=\"\" type=\"checkbox\"> a <code>b</code> c <strong>d</strong> e</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1118
+  },
+  {
+    "name": "tasklists-edge-non-task-brackets-left-literal",
+    "markdown": "- [ok] not a task\n- [] not a task either\n",
+    "html": "<ul>\n<li>[ok] not a task</li>\n<li>[] not a task either</li>\n</ul>\n",
+    "section": "Task lists (extension)",
+    "number": 1119
+  },
+  {
     "name": "double-tilde-strikethrough",
     "markdown": "~~Hi~~ Hello, world!\n",
     "html": "<p><del>Hi</del> Hello, world!</p>\n",

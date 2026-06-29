@@ -166,6 +166,74 @@ Might not be run if no regex match found.
     //       rel="noopener noreferrer">showdown</a></p>
     ```
 
+!!! example "Customizing GFM task-list checkboxes"
+    GFM task-list items (`- [ ] todo` / `- [x] done`, enabled with the `tasklists` option) have
+    their checkbox rendered by a dedicated sub-parser that both list parsers — the default one
+    and the `commonmark`-flavor one — delegate to. Because of that, a single listener covers
+    task lists in **every flavor**.
+
+    It runs on the item's **raw source line**, before any inline/block parsing, and emits two
+    events under the `makehtml.list.taskListItem` namespace:
+
+    * **`makehtml.list.taskListItem.checkbox.onCapture`** — fired on a matched task line. The
+      `attributes` object holds the `<input>` checkbox attributes, so a listener can re-style or
+      tag the checkbox; the `matches` object exposes the whole line. As with every `onCapture`
+      event, prefer mutating `matches`/`attributes` over writing `output` (see the note above).
+    * **`makehtml.list.taskListItem.checkbox.onHash`** — fired with the rendered line
+      (`<input ...> todo`) just before it is handed back to the list parser.
+
+    **`onCapture` properties**
+
+    | property     | type     | access       | description                                                              |
+    |--------------|----------|--------------|--------------------------------------------------------------------------|
+    | `input`      | `string` | `readonly`   | The full task source line, e.g. `[ ] buy milk`                           |
+    | `output`     | `string` | `write`      | `null`, or well-formed HTML for the whole line (takes precedence)        |
+    | `regexp`     | `RegExp` | `readonly`   | The marker-matching regular expression                                   |
+    | `matches`    | `object` | `read/write` | See below                                                                |
+    | `attributes` | `object` | `read/write` | Attributes of the `<input>` checkbox (`type`, `disabled`, `checked`, …)  |
+
+    The `matches` object:
+
+    ```js
+    {
+      _wholeMatch: "[ ] buy milk",   // the matched source line
+      _taskListButton: "[ ]",         // the literal marker
+      _taskListButtonChecked: " ",    // the marker char: " ", "x" or "X"
+      _taskListItemText: " buy milk"  // everything after the marker (write to relabel)
+    }
+    ```
+
+    ```js
+    const converter = new showdown.Converter({ tasklists: true });
+
+    // Give every checkbox a class and tag completed items.
+    converter.listen('makehtml.list.taskListItem.checkbox.onCapture', function (evt) {
+      evt.attributes.classes = ['task-checkbox'];
+      if (evt.attributes.checked) {
+        evt.attributes.classes.push('is-done');
+      }
+      return evt;
+    });
+
+    converter.makeHtml('- [x] ship it');
+    // <ul>
+    // <li><input checked disabled type="checkbox" class="task-checkbox is-done"> ship it</li>
+    // </ul>
+    ```
+
+    !!! note "The `makehtml.list.taskListItem` namespace"
+        These checkbox events are nested under the broader **`makehtml.list`** event family.
+        Both list parsers — the default one and the `commonmark`-flavor one — emit the same set,
+        so every event below fires in **every flavor**:
+
+        * **`makehtml.list.{onStart,onCapture,onHash,onEnd}`** — the whole list block.
+        * **`makehtml.list.listItem.{onCapture,onHash}`** — each non-task `<li>`.
+        * **`makehtml.list.taskListItem.{onCapture,onHash}`** — each task `<li>` (the surrounding
+          item, carrying the full item — which for a loose item may span several blocks). This is
+          the event to use to read or rewrite a task **item** (checkbox **and** label).
+        * **`makehtml.list.taskListItem.checkbox.{onCapture,onHash}`** — just the checkbox/label
+          line (above), via the shared sub-parser.
+
 ### onHash
 
 **`<converter>.<subparser>.onHash`**: *always runs*.

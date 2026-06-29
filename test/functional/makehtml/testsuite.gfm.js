@@ -41,6 +41,15 @@ describe('makeHtml() gfm testsuite', function () {
             case 1900: // Math (GitHub renderer)
             case 1901: // Math (GitHub renderer)
             case 2000: // Mermaid diagrams (GitHub renderer)
+            // Loose task-list items: showdown nests the checkbox inside the item's first
+            // <p> (<li><p><input> text</p>…</li>), whereas cmark-gfm emits the checkbox as
+            // a direct <li> child before the block children (<li><input> <p>text</p>…</li>).
+            // Pre-existing showdown rendering; tracked as a known divergence, fixtures keep
+            // the spec-correct cmark output for reference.
+            case 1111: // loose: multi-paragraph item
+            case 1112: // loose: fenced code block in item
+            case 1113: // loose: indented code block in item
+            case 1114: // loose: blockquote in item
               continue;
 
             // Fenced code blocks

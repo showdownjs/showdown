@@ -12,11 +12,12 @@
 // commonmark container-block parser), so the events below always expose the
 // task item's raw source line on either path.
 //
-// Events:
-//   makehtml.taskListItem.onCapture - fired on a matched task line. `input` and
-//     `_wholeMatch` are the full source line (`[ ] foo *bar*`); `attributes`
-//     are the checkbox attributes. Returning output overrides the whole line.
-//   makehtml.taskListItem.onHash    - fired with the rendered line
+// Events (nested under the `makehtml.list.taskListItem` namespace that the default
+// list parser already uses for its item-level events):
+//   makehtml.list.taskListItem.checkbox.onCapture - fired on a matched task line.
+//     `input` and `_wholeMatch` are the full source line (`[ ] foo *bar*`);
+//     `attributes` are the checkbox attributes. Returning output overrides the line.
+//   makehtml.list.taskListItem.checkbox.onHash    - fired with the rendered line
 //     (`<input ...> foo *bar*`) before it is handed back to the caller.
 //
 // ***Author:***
@@ -24,7 +25,7 @@
 ////
 
 
-showdown.subParser('makehtml.taskListItem', function (text, options, globals) {
+showdown.subParser('makehtml.list.taskListItem.checkbox', function (text, options, globals) {
   'use strict';
 
   if (!options.tasklists) {
@@ -34,7 +35,10 @@ showdown.subParser('makehtml.taskListItem', function (text, options, globals) {
   // Match the marker and the remainder of its (first) line. The text is captured so
   // the events expose the full line, not just the checkbox; everything after the line
   // is left untouched for the caller's block/span parsing.
-  const taskItemRgx = /^([ \t]*)\[([xX ])]([^\n]*)/;
+  //
+  // Per GFM the marker must be followed by at least one space/tab to be a task: a bare
+  // `[ ]` (nothing after) or `[ ]x` (no whitespace) is left literal, matching cmark-gfm.
+  const taskItemRgx = /^([ \t]*)\[([xX ])](?=[ \t])([^\n]*)/;
   return text.replace(taskItemRgx, function (wm, prefix, checkedRaw, lineText) {
     let checked = checkedRaw.trim() !== '';
 
@@ -52,7 +56,7 @@ showdown.subParser('makehtml.taskListItem', function (text, options, globals) {
         { checked: true, disabled: true, type: 'checkbox' } :
         { disabled: true, type: 'checkbox' });
 
-    let captureStartEvent = new showdown.Event('makehtml.taskListItem.onCapture', wm);
+    let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', wm);
     captureStartEvent
       .setOutput(null)
       ._setGlobals(globals)
@@ -76,7 +80,7 @@ showdown.subParser('makehtml.taskListItem', function (text, options, globals) {
       otp = prefix + '<input' + showdown.helper._populateAttributes(attributes) + '>' + txt;
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.taskListItem.onHash', otp);
+    let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
     beforeHashEvent
       .setOutput(otp)
       ._setGlobals(globals)

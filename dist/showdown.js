@@ -1,4 +1,4 @@
-;/*! showdown v 3.0.0-alpha - 23-06-2026 */
+;/*! showdown v 3.0.0-alpha - 29-06-2026 */
 (function(){
 // noinspection HtmlRequiredLangAttribute
 
@@ -80,6 +80,11 @@ function getDefaultOpts (simple) {
       describe: 'Turn on/off GFM tasklist support',
       type: 'boolean'
     },
+    footnotes: {
+      defaultValue: false,
+      describe: 'Turn on/off GFM footnotes support',
+      type: 'boolean'
+    },
     smartIndentationFix: {
       defaultValue: false,
       describe: 'Tries to smartly fix indentation in es6 strings',
@@ -92,7 +97,7 @@ function getDefaultOpts (simple) {
     },
     simpleLineBreaks: {
       defaultValue: false,
-      describe: 'Parses simple line breaks as <br> (GFM Style)',
+      describe: 'Parses simple line breaks as <br>',
       type: 'boolean'
     },
     requireSpaceBeforeHeadingText: {
@@ -170,6 +175,11 @@ function getDefaultOpts (simple) {
       describe: 'Enable CommonMark spec compliance: parse blocks (lists, block quotes, HTML blocks, containers, tabs) and inlines (emphasis, links, images, autolinks, raw HTML) per the CommonMark spec instead of Showdown\'s legacy matching',
       type: 'boolean'
     },
+    disallowRawHTML: {
+      defaultValue: false,
+      describe: 'Filter the GFM "disallowed raw HTML" tags (title, textarea, style, xmp, iframe, noembed, noframes, script, plaintext) by escaping their leading < to &lt; in the output',
+      type: 'boolean'
+    },
   };
   if (simple === false) {
     return JSON.parse(JSON.stringify(defaultOptions));
@@ -193,26 +203,6 @@ let showdown = {},
     globalOptions = getDefaultOpts(true),
     setFlavor = 'vanilla',
     flavor = {
-      github: {
-        omitExtraWLInCodeBlocks:              true,
-        simplifiedAutoLink:                   true,
-        literalMidWordUnderscores:            true,
-        tables:                               true,
-        tablesHeaderId:                       true,
-        ghCodeBlocks:                         true,
-        tasklists:                            true,
-        disableForced4SpacesIndentedSublists: true,
-        requireSpaceBeforeHeadingText:        true,
-        ghMentions:                           true,
-        backslashEscapesHTMLTags:             true,
-        emoji:                                true,
-        splitAdjacentBlockquotes:             true
-      },
-      original: {
-        noHeaderId:                           true,
-        ghCodeBlocks:                         false,
-        strikethrough:                        false
-      },
       commonmark: {
         noHeaderId:                           true,
         requireSpaceBeforeHeadingText:        true,
@@ -221,8 +211,37 @@ let showdown = {},
         strikethrough:                        false,
         encodeEmails:                         false
       },
+      gfm: {
+        noHeaderId:                           true,
+        requireSpaceBeforeHeadingText:        true,
+        decodeEntities:                       true,
+        cmSpec:                               true,
+        strikethrough:                        true,
+        encodeEmails:                         false,
+        ghCodeBlocks:                         true,
+        tables:                               true,
+        tasklists:                            true,
+        footnotes:                            true,
+        ghMentions:                           true,
+        simplifiedAutoLink:                   true,
+        emoji:                                true,
+        omitExtraWLInCodeBlocks:              true,
+
+        //literalMidWordUnderscores:            true,
+        //disableForced4SpacesIndentedSublists: true,
+        //backslashEscapesHTMLTags:             true,
+        //disallowRawHTML:                       true, // GFM tagfilter (opt-in, see options)
+      },
+      original: {
+        noHeaderId:                           true,
+        ghCodeBlocks:                         false,
+        strikethrough:                        false
+      },
       vanilla: getDefaultOpts(true)
     };
+
+// alias github to gfm for backwards compatibility
+flavor.github = flavor.gfm;
 
 /**
  * helper namespace
@@ -1664,7 +1683,7 @@ let cmAttributeName = '[a-zA-Z_:][a-zA-Z0-9:._-]*',
     cmAttribute = '(?:\\s+' + cmAttributeName + '(?:\\s*=\\s*' + cmAttributeValue + ')?)',
     cmOpenTag = '<[A-Za-z][A-Za-z0-9\\-]*' + cmAttribute + '*\\s*/?>',
     cmCloseTag = '</[A-Za-z][A-Za-z0-9\\-]*\\s*>',
-    cmHTMLComment = '<!---->|<!--(?:-?[^>-])(?:-?[^-])*-->',
+    cmHTMLComment = '<!-->|<!--->|<!--(?:[^-]|-[^-]|--[^>])*-->',
     cmProcessingInstruction = '<[?][\\s\\S]*?[?]>',
     cmDeclaration = '<![A-Za-z]+[^>]*>',
     cmCDATA = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>';
@@ -3493,6 +3512,53 @@ showdown.helper.emojis = {
 };
 
 /**
+ * Reverse lookup tables for emoji, used by the HTML->Markdown converters to turn
+ * showdown-generated emoji back into `:code:` form. Built lazily from showdown.helper.emojis
+ * and cached, since the table is large and never changes at runtime.
+ *
+ * Returns an object with:
+ *  - images:  { <img src> : <code> }  for the "special" image-based emoji
+ *  - unicode: { <unicode value> : <code> } for normal emoji (first code wins on duplicates)
+ *  - regex:   a single global RegExp matching any unicode emoji value, alternatives sorted
+ *             longest-first so multi-codepoint / ZWJ sequences win over their prefixes
+ * @returns {{images: Object, unicode: Object, regex: RegExp}}
+ */
+showdown.helper.emojiReverse = (function () {
+  'use strict';
+  var cache = null;
+  return function () {
+    if (cache) { return cache; }
+    var images = {},
+        unicode = {},
+        values = [];
+    for (var code in showdown.helper.emojis) {
+      if (!showdown.helper.emojis.hasOwnProperty(code)) { continue; }
+      var val = showdown.helper.emojis[code];
+      if (/^\s*<img/.test(val)) {
+        var srcMatch = val.match(/src="([^"]*)"/);
+        if (srcMatch && !images.hasOwnProperty(srcMatch[1])) {
+          images[srcMatch[1]] = code;
+        }
+      } else if (!unicode.hasOwnProperty(val)) {
+        unicode[val] = code;
+        values.push(val);
+      }
+    }
+    // longest first so e.g. `zombie_woman` (🧟‍♀️) matches before `zombie` (🧟)
+    values.sort(function (a, b) { return b.length - a.length; });
+    var escaped = values.map(function (v) {
+      return v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    });
+    cache = {
+      images: images,
+      unicode: unicode,
+      regex: new RegExp('(' + escaped.join('|') + ')', 'g')
+    };
+    return cache;
+  };
+})();
+
+/**
  * Created by Estevao on 31-05-2015.
  */
 
@@ -3808,6 +3874,16 @@ showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip
 showdown.subParser('makehtml.blockquote', function (text, options, globals) {
   'use strict';
 
+  // Pathologically nested block quotes (e.g. `> > > …` thousands deep) recurse once per
+  // level through blockGamut, which exhausts the call stack in the default path and blows
+  // up super-linearly under cmSpec. Refuse to descend past a sane nesting depth; beyond it
+  // the surplus `>` markers simply render as literal text. The deepest nesting in the whole
+  // test corpus is 3, so this bound never affects real documents.
+  const maxNestingDepth = 25;
+  if ((globals.blockquoteDepth || 0) >= maxNestingDepth) {
+    return text;
+  }
+
   let startEvent = new showdown.Event('makehtml.blockquote.onStart', text);
   startEvent
     .setOutput(text)
@@ -3881,8 +3957,10 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
         bq = showdown.subParser('makehtml.hashHTMLBlocks')(bq, options, globals, true);
         bq = showdown.subParser('makehtml.stripLinkDefinitions')(bq, options, globals);
       }
+      globals.blockquoteDepth = (globals.blockquoteDepth || 0) + 1;
       bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
       bq = showdown.subParser('makehtml.paragraphs')(bq, options, globals);
+      globals.blockquoteDepth--;
       bq = bq.replace(/(^|\n)/g, '$1  ');
       // These leading spaces screw with <pre> content, so we need to fix that:
       bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wm, m1) {
@@ -3967,6 +4045,12 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
           prevParagraph = isParagraphLine(stripped);
           i++;
         } else if (prevParagraph && isLazyParagraph(line)) {
+          // CommonMark: a setext underline may not be a lazy continuation line. Escape the
+          // leading marker so the recursive setext parser can't claim it as an underline;
+          // encodeBackslashEscapes restores the literal `=`/`-` downstream.
+          if (/^ {0,3}(?:=+|-+)[ \t]*$/.test(line)) {
+            line = line.replace(/^( {0,3})([=-])/, '$1\\$2');
+          }
           bqLines.push(line);
           prevParagraph = isParagraphLine(line);
           i++;
@@ -4031,101 +4115,176 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
 
   text = parseCmInline(text);
 
-  // ==== copied verbatim from link.js to support GFM link options under cmSpec ====
-  // The cmSpec path bypasses link.js (spanGamut returns early before makehtml.link), so
-  // ghMentions and simplifiedAutoLink are replicated here as post-passes. Real links,
-  // images and code spans are already hashed by parseCmInline above, so they are
-  // protected from these regexes. The writeAnchorTag / parseMail helpers below are also
-  // copied from link.js. TODO: refactor to share this with link.js instead of copying.
+  // ghMentions and simplifiedAutoLink (GFM extensions) are applied to the serialized
+  // inline output and to emphasis inner content (see parseCmInline) so URLs and mentions
+  // inside emphasis are linked too. Real links, images and code spans are hashed by
+  // parseCmInline, so they are protected from these regexes. Copied from link.js;
+  // the writeAnchorTag / parseMail helpers below are too. TODO: share with link.js.
+  text = applyGfmInlineLinks(text);
 
-  // 5. Handle GithubMentions (if option is enabled)
-  if (options.ghMentions) {
-    let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
-    text = text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
-      // bail if the mentions was escaped
-      if (escape === '\\') {
-        return st + mentions;
-      }
-      // check if options.ghMentionsLink is a string
-      // TODO Validation should be done at initialization not at runtime
-      if (!showdown.helper.isString(options.ghMentionsLink)) {
-        throw new Error('ghMentionsLink option must be a string');
-      }
-      let url = options.ghMentionsLink.replace(/\{u}/g, username);
-      return st + writeAnchorTag ('reference', ghMentionsRegex, wholeMatch, mentions, null, url);
-    });
-  }
+  function applyGfmInlineLinks (text) {
+    // 5. Handle GithubMentions (if option is enabled)
+    if (options.ghMentions) {
+      let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
+      text = text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
+        // bail if the mentions was escaped
+        if (escape === '\\') {
+          return st + mentions;
+        }
+        // check if options.ghMentionsLink is a string
+        // TODO Validation should be done at initialization not at runtime
+        if (!showdown.helper.isString(options.ghMentionsLink)) {
+          throw new Error('ghMentionsLink option must be a string');
+        }
+        let url = options.ghMentionsLink.replace(/\{u}/g, username);
+        return st + writeAnchorTag ('reference', ghMentionsRegex, wholeMatch, mentions, null, url);
+      });
+    }
 
-  // 8. Handle naked links (if option is enabled)
-  if (options.simplifiedAutoLink) {
-    // 8.1. Check for naked URLs
-    // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
-    let nakedUrlRegex = /([_*~]*?)(((?:https?|ftp):\/\/|www\.)[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*)\1/gi;
-    text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url, urlPrefix) {
-      // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
-      const len = url.length;
-      let suffix = '';
+    // 8. Handle naked links (if option is enabled)
+    if (options.simplifiedAutoLink) {
+      // 8.1. Check for naked URLs
+      // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
+      // An explicit scheme (http/https/ftp) does not require the host to contain a dot;
+      // a `www.` shortcut does (and is domain-validated below).
+      let nakedUrlRegex = /([_*~]*?)((?:(?:https?|ftp):\/\/[^\s<>"'`´]+|www\.[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*))\1/gi;
+      text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url) {
+        let isWww = /^www\./i.test(url);
+        // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
+        const len = url.length;
+        let suffix = '';
 
-      for (let i = len - 1; i >= 0; --i) {
-        let char = url.charAt(i);
-        if (/[_*~,;:.!?]/.test(char)) {
-          // it's a punctuation char so we remove it from the url
-          url = url.slice(0, -1);
-          // and prepend it to the suffix
-          suffix = char + suffix;
-        } else if (/[)\]]/.test(char)) {
-          // it's a parenthesis so we need to check for "balance" (kinda)
-          let opPar, clPar;
-          if (/\)/.test(char)) {
-            // it's a curved parenthesis
-            opPar = url.match(/\(/g) || [];
-            clPar = url.match(/\)/g);
-          } else {
-            // it's a squared parenthesis
-            opPar = url.match(/\[/g) || [];
-            clPar = url.match(/]/g);
-          }
-          if (opPar.length < clPar.length) {
-            // there are more closing Parenthesis than opening so chop it!!!!!
+        for (let i = len - 1; i >= 0; --i) {
+          let char = url.charAt(i);
+          if (/[_*~,;:.!?]/.test(char)) {
+            // it's a punctuation char so we remove it from the url
             url = url.slice(0, -1);
             // and prepend it to the suffix
             suffix = char + suffix;
+          } else if (/[)\]]/.test(char)) {
+            // it's a parenthesis so we need to check for "balance" (kinda)
+            let opPar, clPar;
+            if (/\)/.test(char)) {
+              // it's a curved parenthesis
+              opPar = url.match(/\(/g) || [];
+              clPar = url.match(/\)/g);
+            } else {
+              // it's a squared parenthesis
+              opPar = url.match(/\[/g) || [];
+              clPar = url.match(/]/g);
+            }
+            if (opPar.length < clPar.length) {
+              // there are more closing Parenthesis than opening so chop it!!!!!
+              url = url.slice(0, -1);
+              // and prepend it to the suffix
+              suffix = char + suffix;
+            } else {
+              // it's (kinda) balanced so our work is done
+              break;
+            }
           } else {
-            // it's (kinda) balanced so our work is done
+            // it's not a punctuation or a parenthesis so our work is done
             break;
           }
-        } else {
-          // it's not a punctuation or a parenthesis so our work is done
-          break;
         }
-      }
 
-      // we copy the treated url to the text variable
-      let txt = url;
-      // finally, if it's a www shortcut, we prepend http(s)
-      // noinspection HttpUrlsUsage
-      url = (urlPrefix === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+        // GFM: a trailing ";" that completes an entity-reference-like "&name" is excluded
+        // from the link, so move the whole "&name;" into the suffix.
+        if (suffix.charAt(0) === ';') {
+          let entity = url.match(/&(?:amp;)?[a-z\d]+$/i);
+          if (entity) {
+            url = url.slice(0, -entity[0].length);
+            suffix = entity[0] + suffix;
+          }
+        }
 
-      // url part is done so let's take care of text now
-      // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
-      txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+        // GFM: "<" terminates the link. By this pass it has already been escaped to "&lt;"
+        // (and ">" to "&gt;"), so split there and keep the remainder as plain text.
+        let ltMatch = url.match(/&(?:lt|gt);/);
+        if (ltMatch) {
+          let at = url.indexOf(ltMatch[0]);
+          suffix = url.slice(at) + suffix;
+          url = url.slice(0, at);
+        }
 
-      // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
-      // we consumed those characters in the regexp
-      return leadingMDChars +
-        writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
-        suffix +
-        leadingMDChars;
-    });
+        // GFM: the last two labels of the host may not contain "_"; otherwise it is not a
+        // valid autolink.
+        if (!validAutolinkHost(url, isWww)) {
+          return wholeMatch;
+        }
 
-    // 8.2. Now check for naked mail
-    let nakedMailRegex = /(^|\s)(?:mailto:)?([A-Za-z\d!#$%&'*+-/=?^_`{|}~.]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)(?=$|\s)/gmi;
-    text = text.replace(nakedMailRegex, function (wholeMatch, leadingChar, mail) {
-      const m = parseMail(mail);
-      return leadingChar + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
-    });
+        // we copy the treated url to the text variable
+        let txt = url;
+        // finally, if it's a www shortcut, we prepend http(s)
+        // noinspection HttpUrlsUsage
+        url = isWww ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+        // GFM: percent-encode non-ASCII characters in the href (the display text keeps the
+        // literal characters)
+        url = url.replace(/[^\x00-\x7F]+/g, function (s) { return encodeURI(s); });
+
+        // url part is done so let's take care of text now
+        // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
+        txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+
+        // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
+        // we consumed those characters in the regexp
+        return leadingMDChars +
+          writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
+          suffix +
+          leadingMDChars;
+      });
+
+      // 8.2. Check for naked mail (GFM extended email autolink).
+      let localPart = '[A-Za-z\\d._+-]+',
+          domainPart = '[A-Za-z\\d_-]+(?:\\.[A-Za-z\\d_-]+)*';
+
+      // A scheme is only recognised when it is not part of a preceding word (so `mmmmailto:`
+      // does not count) — any non-alphanumeric character (including `/`) is a valid boundary.
+      let schemeBoundary = '(^|[^A-Za-z\\d])';
+
+      // 8.2.1. `xmpp:` addresses keep their scheme and an optional `/resource`.
+      let xmppMailRegex = new RegExp(schemeBoundary + '(xmpp:)(' + localPart + '@' + domainPart + ')(\\/[A-Za-z\\d._-]*)?', 'gi');
+      text = text.replace(xmppMailRegex, function (wholeMatch, lead, scheme, addr, resource) {
+        resource = resource || '';
+        let trail = '',
+            body = resource || addr,
+            tm;
+        while ((tm = /[.,;:!?]$/.exec(body))) {
+          trail = body.slice(-1) + trail;
+          body = body.slice(0, -1);
+        }
+        if (resource) { resource = body; } else { addr = body; }
+        if (!validMailAddr(addr)) { return wholeMatch; }
+        let target = 'xmpp:' + addr + resource;
+        return lead + writeAnchorTag ('autoLink', xmppMailRegex, wholeMatch, target, null, target) + trail;
+      });
+
+      // 8.2.2. `mailto:` addresses keep their scheme but never carry a path.
+      let mailtoRegex = new RegExp(schemeBoundary + '(mailto:)(' + localPart + '@' + domainPart + ')', 'gi');
+      text = text.replace(mailtoRegex, function (wholeMatch, lead, scheme, addr) {
+        let trail = '',
+            tm;
+        while ((tm = /[.,;:!?]$/.exec(addr))) {
+          trail = addr.slice(-1) + trail;
+          addr = addr.slice(0, -1);
+        }
+        if (!validMailAddr(addr)) { return wholeMatch; }
+        let target = 'mailto:' + addr;
+        return lead + writeAnchorTag ('autoLink', mailtoRegex, wholeMatch, target, null, target) + trail;
+      });
+
+      // 8.2.3. Bare addresses become mailto: links. The address must be preceded by the
+      // string start or a character that cannot be part of the local-part (this also keeps
+      // us out of hash placeholders like the `¨E43E` produced for an escaped char).
+      let nakedMailRegex = new RegExp('(^|[^A-Za-z\\d._+\\-\\u00a8])(' + localPart + '@' + domainPart + ')', 'g');
+      text = text.replace(nakedMailRegex, function (wholeMatch, lead, addr) {
+        if (!validMailAddr(addr)) { return wholeMatch; }
+        const m = parseMail(addr);
+        return lead + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
+      });
+    }
+    return text;
   }
-  // ==== end copied region ====
 
   let afterEvent = new showdown.Event('makehtml.cmInline.onEnd', text);
   afterEvent
@@ -4138,7 +4297,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   // ---- shared character helpers (flanking rules) -------------------------------
 
   function isPunct (ch) {
-    return ch !== undefined && (asciiPunct.test(ch) || /\p{P}/u.test(ch));
+    return ch !== undefined && (asciiPunct.test(ch) || /[\p{P}\p{S}]/u.test(ch));
   }
   function isWhitespace (ch) {
     return ch === undefined || /\s/.test(ch) || /\p{Z}/u.test(ch);
@@ -4296,8 +4455,18 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         while (i < len && str.charAt(i) === ch) { ++i; }
         let run = str.slice(start, i),
             before = (start === 0) ? undefined : str.charAt(start - 1),
-            after = (i >= len) ? undefined : str.charAt(i),
-            beforeWs = isWhitespace(before),
+            after = (i >= len) ? undefined : str.charAt(i);
+        // `$` and `¨` are swapped for the two-char placeholders `¨D`/`¨T` before inline
+        // parsing (see converter.js) and only restored at the end. Resolve them here so
+        // flanking sees the real adjacent character rather than the placeholder's
+        // trailing/leading letter (e.g. the `D` of `¨D` would otherwise read as a letter).
+        if ((before === 'D' || before === 'T') && str.charAt(start - 2) === '¨') {
+          before = (before === 'D') ? '$' : '¨';
+        }
+        if (after === '¨' && (str.charAt(i + 1) === 'D' || str.charAt(i + 1) === 'T')) {
+          after = (str.charAt(i + 1) === 'D') ? '$' : '¨';
+        }
+        let beforeWs = isWhitespace(before),
             afterWs = isWhitespace(after),
             beforePt = isPunct(before),
             afterPt = isPunct(after),
@@ -4565,6 +4734,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
           closer.numdelims -= use;
 
           let inner = renderNodes(opener.next, closer);
+          inner = applyGfmInlineLinks(inner);
           inner = showdown.subParser('makehtml.hardLineBreaks')(inner, options, globals);
           let wrapped = hashSpan(tagOpen + inner + tagClose);
 
@@ -4780,6 +4950,28 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
     };
   }
   // ==== end copied region ====
+
+  // GFM extended www autolink: the host must have at least two labels and the last two
+  // must not contain "_". Explicit-scheme (http/https/ftp) urls are not domain-validated.
+  function validAutolinkHost (url, isWww) {
+    if (!isWww) { return true; }
+    let host = url.split(/[\/?#]/)[0],
+        labels = host.split('.');
+    if (labels.length < 2) { return false; }
+    return !/_/.test(labels.slice(-2).join('.'));
+  }
+
+  // GFM extended email autolink: the domain must have at least two labels, must not end in
+  // "-" or "_", and its last two labels must not contain "_".
+  function validMailAddr (addr) {
+    let at = addr.lastIndexOf('@');
+    if (at < 1) { return false; }
+    let domain = addr.slice(at + 1),
+        labels = domain.split('.');
+    if (labels.length < 2) { return false; }
+    if (/[-_]$/.test(domain)) { return false; }
+    return !/_/.test(labels.slice(-2).join('.'));
+  }
 
   function parseRawHTML (str, i) {
     if (!options.cmSpec) { return null; }
@@ -5034,94 +5226,103 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
     // line) contributes, so an indented-code first block sees a clean block start
     // (codeBlock keys off `^`/a preceding blank line) instead of a lone leading newline
     str = str.replace(/^\n+/, '');
-    str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
-    str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
-    str = str.replace(/^\n+/, '').replace(/\n+$/, '');
 
-    let grafs = str.split(/\n{2,}/g),
-        out = [];
-    for (let i = 0; i < grafs.length; ++i) {
-      let g = grafs[i];
-      if (/¨([KG])(\d+)\1/.test(g)) {
-        out.push(g);
-      } else if (/\S/.test(g)) {
-        g = showdown.subParser('makehtml.spanGamut')(g, options, globals);
-        if (loose) {
-          g = g.replace(/^[ \t]*/, '<p>') + '</p>';
-        }
-        out.push(g);
-      }
-    }
-    let body = out.join('\n');
+    // The item's raw source — the payload for the per-item capture event below (matches
+    // makehtml.list, which emits the item's raw markdown).
+    let rawItem = content.join('\n');
 
-    // GFM task lists: when the item starts with `[ ]`/`[x]` and the tasklists option is
-    // on, render a checkbox and tag the <li>. Mirrors list.js (the legacy parser).
-    let liAttrs = '';
-    let taskMatch = options.tasklists ? /^\s*\[([xX ])]/.exec(content.length ? content[0] : '') : null;
+    // GFM task detection on the (leading-newline-stripped) raw line: it selects the event
+    // name and the <li> attributes. The marker must be followed by whitespace (see
+    // makehtml.list.taskListItem.checkbox); a bare `[ ]` is not a task.
+    let taskMatch = options.tasklists ? /^[ \t]*\[([xX ])](?=[ \t])/.exec(str) : null,
+        checked = !!taskMatch && taskMatch[1].trim() !== '',
+        eventName = taskMatch ? 'makehtml.list.taskListItem' : 'makehtml.list.listItem',
+        attributes = {},
+        matches = { _wholeMatch: rawItem, listItem: rawItem };
+
     if (taskMatch) {
-      let checked = taskMatch[1].trim() !== '';
-      body = cmProcessTaskListItem(body, checked);
-      let attributes = { classes: ['task-list-item'], style: 'list-style-type: none;' };
-      if (options.moreStyling && checked) {
-        attributes.classes.push('task-list-item-complete');
+      matches._taskListButton = '[' + taskMatch[1] + ']';
+      matches._taskListButtonChecked = taskMatch[1];
+      // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
+      // when `moreStyling` is enabled.
+      if (options.moreStyling) {
+        attributes.classes = ['task-list-item'];
+        attributes.style = 'list-style-type: none;';
+        if (checked) {
+          attributes.classes.push('task-list-item-complete');
+        }
       }
-      liAttrs = showdown.helper._populateAttributes(attributes);
     }
 
-    // an empty item is always `<li></li>`, regardless of loose/tight
-    if (body.trim() === '') {
-      return '<li' + liAttrs + '></li>\n';
-    }
-    // CommonMark serialization: a loose item opens/closes on its own lines; a tight
-    // item opens on a new line only when its content begins with a block child, and
-    // closes on a new line only when its content ends with a block child (so trailing
-    // inline text hugs `</li>`).
-    let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li' + liAttrs + '>\n' : '<li' + liAttrs + '>',
-        close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
-    return open + body + close;
-  }
+    let captureStartEvent = new showdown.Event(eventName + '.onCapture', rawItem);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setMatches(matches)
+      .setAttributes(attributes);
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
 
-  // ==== task-list checkbox rendering copied/adapted from list.js processTaskListItem;
-  // TODO: refactor to share with list.js ====
-  // Adapted to preserve a leading `<p>` (loose items) before the `[ ]`/`[x]` marker.
-  function cmProcessTaskListItem (body, checked) {
-    const checkboxRgx = /^([ \t]*(?:<p>)?[ \t]*)\[([xX ])]/;
-    return body.replace(checkboxRgx, function (wm, prefix, checkedRaw) {
-      let attributes = {
-        type: 'checkbox',
-        disabled: true,
-        style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
-        checked: !!checked
-      };
-      let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', body);
-      captureStartEvent
-        .setOutput(null)
-        ._setGlobals(globals)
-        ._setOptions(options)
-        .setRegexp(checkboxRgx)
-        .setMatches({
-          _wholeMatch: body,
-          _tasklistButton: wm,
-          _taksListButtonChecked: checkedRaw
-        })
-        .setAttributes(attributes);
-      captureStartEvent = globals.converter.dispatch(captureStartEvent);
-      let otp;
-      if (captureStartEvent.output && captureStartEvent.output !== '') {
-        otp = captureStartEvent.output;
+    let rendered;
+    // A listener may pass output, which takes precedence and is used verbatim as the item
+    // markup (mirrors makehtml.list); otherwise we render the (possibly edited) item.
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      rendered = captureStartEvent.output;
+    } else {
+      attributes = captureStartEvent.attributes;
+      let liAttrs = showdown.helper._populateAttributes(attributes);
+
+      // honor a listener that rewrote the item's raw markdown via matches.listItem
+      if (captureStartEvent.matches.listItem !== rawItem) {
+        str = (captureStartEvent.matches.listItem + '\n').replace(/^\n+/, '');
+      }
+
+      // Render the checkbox on the raw line, before any block/span parsing, so the
+      // injected <input> flows through blockGamut/spanGamut just like any other inline HTML.
+      if (taskMatch) {
+        str = showdown.subParser('makehtml.list.taskListItem.checkbox')(str, options, globals);
+      }
+      str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
+      str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
+      str = str.replace(/^\n+/, '').replace(/\n+$/, '');
+
+      let grafs = str.split(/\n{2,}/g),
+          out = [];
+      for (let gi = 0; gi < grafs.length; ++gi) {
+        let g = grafs[gi];
+        if (/¨([KG])(\d+)\1/.test(g)) {
+          out.push(g);
+        } else if (/\S/.test(g)) {
+          g = showdown.subParser('makehtml.spanGamut')(g, options, globals);
+          if (loose) {
+            g = g.replace(/^[ \t]*/, '<p>') + '</p>';
+          }
+          out.push(g);
+        }
+      }
+      let body = out.join('\n');
+
+      // an empty item is always `<li></li>`, regardless of loose/tight
+      if (body.trim() === '') {
+        rendered = '<li' + liAttrs + '></li>\n';
       } else {
-        attributes = captureStartEvent.attributes;
-        otp = '<input' + showdown.helper._populateAttributes(attributes) + '>';
+        // CommonMark serialization: a loose item opens/closes on its own lines; a tight
+        // item opens on a new line only when its content begins with a block child, and
+        // closes on a new line only when its content ends with a block child (so trailing
+        // inline text hugs `</li>`).
+        let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li' + liAttrs + '>\n' : '<li' + liAttrs + '>',
+            close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
+        rendered = open + body + close;
       }
+    }
 
-      let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
-      beforeHashEvent
-        .setOutput(otp)
-        ._setGlobals(globals)
-        ._setOptions(options);
-      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-      return prefix + beforeHashEvent.output;
-    });
+    let beforeHashEvent = new showdown.Event(eventName + '.onHash', rendered);
+    beforeHashEvent
+      .setOutput(rendered)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
   }
 
   // a line that is open paragraph text (so a following list marker would have to
@@ -5167,6 +5368,7 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
           bullet = m.bullet,
           delim = m.delim,
           startNum = m.num,
+          listStart = i,
           items = [],
           loose = false;
 
@@ -5195,12 +5397,41 @@ showdown.subParser('makehtml.cmList', function (text, options, globals) {
         }
       }
 
-      let start = (type === 'ol' && startNum !== 1) ? startNum : null,
-          body = '';
-      for (let k = 0; k < items.length; ++k) {
-        body += renderItem(items[k], loose);
+      // the raw source of this whole list block — payload for the list-level capture event
+      let rawList = lines.slice(listStart, i).join('\n');
+      let listCapture = new showdown.Event('makehtml.list.onCapture', rawList);
+      listCapture
+        .setOutput(null)
+        ._setGlobals(globals)
+        ._setOptions(options)
+        .setMatches({ _wholeMatch: rawList, list: rawList })
+        .setAttributes({});
+      listCapture = globals.converter.dispatch(listCapture);
+
+      let otp;
+      // a listener may pass output, which takes precedence over rendering the items
+      if (listCapture.output && listCapture.output !== '') {
+        otp = listCapture.output;
+      } else {
+        let attrs = listCapture.attributes || {};
+        if (type === 'ol' && startNum !== 1) {
+          attrs.start = startNum;
+        }
+        let body = '';
+        for (let k = 0; k < items.length; ++k) {
+          body += renderItem(items[k], loose);
+        }
+        otp = '\n\n<' + type + showdown.helper._populateAttributes(attrs) + '>\n' + body + '</' + type + '>\n';
       }
-      let otp = '\n\n<' + type + (start !== null ? ' start="' + start + '"' : '') + '>\n' + body + '</' + type + '>\n';
+
+      let listHash = new showdown.Event('makehtml.list.onHash', otp);
+      listHash
+        .setOutput(otp)
+        ._setGlobals(globals)
+        ._setOptions(options);
+      listHash = globals.converter.dispatch(listHash);
+      otp = listHash.output;
+
       out.push(showdown.subParser('makehtml.hashBlock')(otp, options, globals));
       prevParagraph = false;
     }
@@ -5580,6 +5811,51 @@ showdown.subParser('makehtml.decodeEntities', function (text, options, globals) 
 });
 
 ////
+// makehtml/disallowedHtmlTags.js
+// Copyright (c) 2018 ShowdownJS
+//
+// GFM "disallowed raw HTML" extension (tagfilter): a small blacklist of HTML tags
+// is neutralized in the output by escaping their leading `<` to `&lt;`. These tags
+// are singled out because they change how the surrounding markup is interpreted
+// (script/style/iframe/etc.). See https://github.github.com/gfm/#disallowed-raw-html-extension-
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
+showdown.subParser('makehtml.disallowedHtmlTags', function (text, options, globals) {
+  'use strict';
+  if (!options.disallowRawHTML) {
+    return text;
+  }
+
+  let startEvent = new showdown.Event('makehtml.disallowedHtmlTags.onStart', text);
+  startEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  startEvent = globals.converter.dispatch(startEvent);
+  text = startEvent.output;
+
+  // Run over the (near final) output: Showdown never generates these tags from Markdown
+  // and code blocks/spans already entity-escape `<`, so only genuine raw-HTML passthrough
+  // is touched. Both opening and closing forms are filtered, case-insensitively.
+  text = text.replace(
+    /<(\/?(?:title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext))/gi,
+    '&lt;$1'
+  );
+
+  let afterEvent = new showdown.Event('makehtml.disallowedHtmlTags.onEnd', text);
+  afterEvent
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  afterEvent = globals.converter.dispatch(afterEvent);
+  return afterEvent.output;
+});
+
+////
 // makehtml/ellipsis.js
 // Copyright (c) 2018 ShowdownJS
 //
@@ -5873,10 +6149,10 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
    * @returns {string}
    */
   function parseCommonmarkEmphasis (str) {
-    // CommonMark punctuation = ASCII punctuation + Unicode P categories
+    // CommonMark punctuation = ASCII punctuation + Unicode P and S categories
     const asciiPunct = /[!-/:-@[-`{-~]/;
     function isPunct (ch) {
-      return ch !== undefined && (asciiPunct.test(ch) || /\p{P}/u.test(ch));
+      return ch !== undefined && (asciiPunct.test(ch) || /[\p{P}\p{S}]/u.test(ch));
     }
     function isWhitespace (ch) {
       return ch === undefined || /\s/.test(ch) || /\p{Z}/u.test(ch);
@@ -6319,6 +6595,256 @@ showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (t
   return afterEvent.output;
 });
 
+/**
+ * GFM footnotes (cmark-gfm footnotes extension).
+ *
+ * Runs in two phases (selected by the `phase` argument):
+ *   'strip' - before stripLinkDefinitions: collect `[^label]: body` definitions
+ *             into globals and replace `[^label]` references that have a definition
+ *             with a hashed `<sup>` span (numbered by order of first reference).
+ *   'build' - after paragraphs: render the referenced footnotes into a
+ *             `<section class="footnotes">` and append it to the document.
+ */
+showdown.subParser('makehtml.footnotes', function (text, options, globals, phase) {
+  'use strict';
+
+  if (!options.footnotes) {
+    return text;
+  }
+
+  if (phase === 'strip') {
+    text = collectDefinitions(text);
+    text = replaceReferences(text);
+    return text;
+  }
+  if (phase === 'build') {
+    return buildSection(text);
+  }
+  return text;
+
+  // ---- phase 1a: collect (and remove) `[^label]: body` definitions ----------
+
+  function collectDefinitions (str) {
+    globals.gFootnotes = globals.gFootnotes || {};
+    str += '¨0';
+    let n = str.length,
+        out = '',
+        i = 0;
+    while (i < n) {
+      // `i` is always at a line start here; a footnote definition may begin at any line
+      // (it can interrupt a paragraph), so we try one at every line.
+      let def = tryParseDefinition(str, i);
+      if (def) {
+        let norm = showdown.helper.cmNormalizeLabel(def.rawLabel);
+        if (norm !== '' && showdown.helper.isUndefined(globals.gFootnotes[norm])) {
+          globals.gFootnotes[norm] = { bodyRaw: def.body, rawLabel: def.rawLabel };
+        }
+        i = def.end;
+        continue;
+      }
+      let nl = str.indexOf('\n', i);
+      if (nl === -1) {
+        out += str.slice(i);
+        break;
+      }
+      out += str.slice(i, nl + 1);
+      i = nl + 1;
+    }
+    return out.replace(/¨0/, '');
+  }
+
+  /**
+   * Try to parse a single footnote definition starting at `start` (a line start).
+   * The body is the same-line remainder plus continuation lines indented by at
+   * least 4 spaces (with that 4-space base removed), up to a less-indented line.
+   * @returns {{rawLabel: string, body: string, end: number}|null}
+   */
+  function tryParseDefinition (str, start) {
+    let n = str.length,
+        j = start,
+        sp = 0;
+    while (j < n && str.charAt(j) === ' ' && sp < 3) { j++; sp++; }
+    if (str.charAt(j) !== '[' || str.charAt(j + 1) !== '^') { return null; }
+    j += 2;
+
+    let label = '';
+    while (j < n) {
+      let c = str.charAt(j);
+      if (c === '\\' && j + 1 < n) { label += c + str.charAt(j + 1); j += 2; continue; }
+      if (c === ']') { break; }
+      // a footnote label may not contain whitespace or a nested '['
+      if (c === '[' || /\s/.test(c)) { return null; }
+      label += c;
+      j++;
+    }
+    if (str.charAt(j) !== ']' || label === '' || str.charAt(j + 1) !== ':') { return null; }
+    j += 2;
+
+    let nl = str.indexOf('\n', j),
+        firstEnd = (nl === -1) ? n : nl,
+        firstLine = str.slice(j, firstEnd).replace(/^[ \t]+/, '').replace(/¨0$/, ''),
+        bodyLines = [];
+    if (firstLine !== '') { bodyLines.push(firstLine); }
+    let k = (nl === -1) ? n : nl + 1;
+
+    while (k < n) {
+      let lineNl = str.indexOf('\n', k),
+          lineEnd = (lineNl === -1) ? n : lineNl,
+          line = str.slice(k, lineEnd);
+      if (line.slice(0, 2) === '¨0') { break; }
+      if (/^[ \t]*$/.test(line)) {
+        bodyLines.push('');
+        k = (lineNl === -1) ? n : lineNl + 1;
+        continue;
+      }
+      if (/^ {4}/.test(line)) {
+        bodyLines.push(line.slice(4));
+        k = (lineNl === -1) ? n : lineNl + 1;
+      } else {
+        break;
+      }
+    }
+
+    while (bodyLines.length && bodyLines[bodyLines.length - 1] === '') { bodyLines.pop(); }
+    return { rawLabel: label, body: bodyLines.join('\n'), end: k };
+  }
+
+  // ---- phase 1b: replace `[^label]` references with hashed <sup> spans -------
+
+  // Replace inline code spans with `¨FN<n>¨` placeholders so a `[^id]` inside them stays
+  // literal. Linear scan (ReDoS-safe): a code span is a back-tick run closed by a run of the
+  // same length. Unbalanced runs are left as text. Worst case is sub-quadratic because runs
+  // that stay unmatched must have distinct lengths (equal-length runs pair up).
+  function hashInlineCodeSpans (str, store) {
+    let pieces = [], textStart = 0, i = 0, n = str.length;
+    while (i < n) {
+      if (str.charAt(i) !== '`') { i++; continue; }
+      let j = i;
+      while (j < n && str.charAt(j) === '`') { j++; }
+      let len = j - i, k = j, close = -1;
+      while (k < n) {
+        if (str.charAt(k) === '`') {
+          let m = k;
+          while (m < n && str.charAt(m) === '`') { m++; }
+          if (m - k === len) { close = m; break; }
+          k = m;
+        } else {
+          k++;
+        }
+      }
+      if (close !== -1) {
+        pieces.push(str.substring(textStart, i));
+        store.push(str.substring(i, close));
+        pieces.push('¨FN' + (store.length - 1) + '¨');
+        textStart = close;
+        i = close;
+      } else {
+        // opening run with no matching closer: leave it as literal text
+        i = j;
+      }
+    }
+    pieces.push(str.substring(textStart));
+    return pieces.join('');
+  }
+
+  function replaceReferences (str, raw) {
+    globals.gFootnoteOrder = globals.gFootnoteOrder || [];
+    globals.gFootnoteRefs = globals.gFootnoteRefs || {};
+
+    // Protect inline code spans so a `[^id]` inside back-ticks stays literal. A linear scan
+    // (not a backtracking regex) keeps this safe on long back-tick runs in attacker input.
+    // Fenced/indented code is already hashed before this pass.
+    let spans = [];
+    str = hashInlineCodeSpans(str, spans);
+
+    // a footnote label may not contain whitespace, so `[^a b]` is not a reference
+    str = str.replace(/\[\^([^\s\]]+)]/g, function (whole, rawLabel, offset, full) {
+      // an escaped reference (`\[^id]`, an odd number of leading back-slashes) is literal
+      let bs = 0, p = offset - 1;
+      while (p >= 0 && full.charAt(p) === '\\') { bs++; p--; }
+      if (bs % 2 === 1) {
+        return whole;
+      }
+      let norm = showdown.helper.cmNormalizeLabel(rawLabel),
+          fn = globals.gFootnotes[norm];
+      if (showdown.helper.isUndefined(fn)) {
+        return whole;
+      }
+      let ref = globals.gFootnoteRefs[norm];
+      if (showdown.helper.isUndefined(ref)) {
+        globals.gFootnoteOrder.push(norm);
+        ref = globals.gFootnoteRefs[norm] = {
+          number: globals.gFootnoteOrder.length,
+          encId: showdown.helper.cmEncodeURI(fn.rawLabel),
+          occurrences: 0
+        };
+      }
+      ref.occurrences++;
+      let idSuffix = (ref.occurrences === 1) ? '' : '-' + ref.occurrences,
+          sup = '<sup class="footnote-ref"><a href="#fn-' + ref.encId +
+            '" id="fnref-' + ref.encId + idSuffix + '" data-footnote-ref>' + ref.number + '</a></sup>';
+      // `raw` (footnote bodies): emit the markup inline so the nested conversion keeps it;
+      // otherwise (main text) hash it so the inline parser leaves it alone.
+      return raw ? sup : showdown.helper._hashHTMLSpan(sup, globals);
+    });
+
+    // restore the protected code spans
+    str = str.replace(/¨FN(\d+)¨/g, function (whole, n) { return spans[n]; });
+    return str;
+  }
+
+  // ---- phase 2: render the referenced footnotes into a <section> ------------
+
+  function buildSection (str) {
+    let order = globals.gFootnoteOrder;
+    if (!order || order.length === 0) {
+      return str;
+    }
+    let items = '';
+    for (let idx = 0; idx < order.length; idx++) {
+      let norm = order[idx],
+          fn = globals.gFootnotes[norm],
+          ref = globals.gFootnoteRefs[norm],
+          body = renderBody(fn.bodyRaw);
+      body = insertBackrefs(body, buildBackrefs(ref));
+      items += '<li id="fn-' + ref.encId + '">\n' + body + '\n</li>\n';
+    }
+    return str + '\n<section class="footnotes" data-footnotes>\n<ol>\n' + items + '</ol>\n</section>\n';
+  }
+
+  function renderBody (bodyRaw) {
+    // Resolve any footnote references nested inside this body, continuing the document's
+    // numbering (this may append further footnotes to the order, which buildSection's
+    // loop then renders). They are emitted as raw <sup> markup so the nested conversion
+    // preserves them.
+    let body = replaceReferences(bodyRaw, true);
+    // Render the (multi-block) body to complete HTML via a nested conversion. This runs
+    // the full block pipeline (indented-code framing, fenced code, block quotes,
+    // paragraphs) and leaves no hash placeholders behind, which matters because the
+    // section is appended after the main paragraphs pass.
+    return globals.converter.makeHtml(body).replace(/\n+$/, '');
+  }
+
+  function buildBackrefs (ref) {
+    let parts = [];
+    for (let j = 1; j <= ref.occurrences; j++) {
+      let id = 'fnref-' + ref.encId + (j === 1 ? '' : '-' + j),
+          idx = ref.number + (j === 1 ? '' : '-' + j),
+          inner = (j === 1) ? '↩' : '↩<sup class="footnote-ref">' + j + '</sup>';
+      parts.push('<a href="#' + id + '" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="' +
+        idx + '" aria-label="Back to reference ' + idx + '">' + inner + '</a>');
+    }
+    return parts.join(' ');
+  }
+
+  function insertBackrefs (body, backrefs) {
+    if (/<\/p>\s*$/.test(body)) {
+      return body.replace(/<\/p>\s*$/, ' ' + backrefs + '</p>');
+    }
+    return body + '\n' + backrefs;
+  }
+});
+
 ////
 // makehtml/githubCodeBlock.js
 // Copyright (c) 2018 ShowdownJS
@@ -6360,9 +6886,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
   // top-level opening fence. The closing fence keeps its 0-3 indent allowance either way.
   const open = topLevelOnly ? '' : ' {0,3}';
   //const accentRegex = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)(?:(\n {0,3}\1[`~]*)|¨0)/g;
-  const closedBlockRegex   = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)\\n {0,3}\\1[`~]*', 'gm');
-  const unclosedBlockRegex = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n([\\s\\S]*?)¨0', 'gm');
-  const emptyBlockRegex    = new RegExp('^' + open + '(```+|~~~+) *([^\\n\\t`~]*)\\n {0,3}\\1[`~]*', 'gm');
+  // The info string is the rest of the opening line. CommonMark forbids backticks only in a
+  // *backtick* fence's info string (a tilde fence may contain backticks and tildes); that
+  // restriction is enforced in parse() since it needs to know the fence type. The `(?!`)` /
+  // `(?!~)` lookaheads keep the opening fence maximal: without them the now-permissive info
+  // class lets the delimiter backtrack (e.g. `~~~~~~` splitting into a `~~~` fence + `~~~`
+  // info), inventing a spurious shorter fence.
+  const fence = '(```+(?!`)|~~~+(?!~))';
+  const closedBlockRegex   = new RegExp('^' + open + fence + ' *([^\\n]*)\\n([\\s\\S]*?)\\n {0,3}\\1[`~]*', 'gm');
+  const unclosedBlockRegex = new RegExp('^' + open + fence + ' *([^\\n]*)\\n([\\s\\S]*?)¨0', 'gm');
+  const emptyBlockRegex    = new RegExp('^' + open + fence + ' *([^\\n]*)\\n {0,3}\\1[`~]*', 'gm');
 
   text = text.replace(closedBlockRegex, function (wholeMatch, delim, language, codeblock) {
     return parse(closedBlockRegex, wholeMatch, delim, language, codeblock);
@@ -6396,6 +6929,11 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
 
 
   function parse (pattern, wholeMatch, delim, language, codeblock) {
+    // CommonMark: a backtick info string may not contain backticks (tilde fences may). When it
+    // does, this is not a code block, so leave the text for inline/paragraph parsing.
+    if (delim.charAt(0) === '`' && language.indexOf('`') !== -1) {
+      return wholeMatch;
+    }
     let end = (options.omitExtraWLInCodeBlocks) ? '' : '\n',
         otp,
         attributes = {
@@ -6431,6 +6969,16 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
       if (options.decodeEntities) {
         lang = lang.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
       }
+      // The language ends up inside the code element's `class` attribute, so escape the
+      // characters that could break out of it. Otherwise an info string such as
+      // `js"onmouseover="alert(1)` would close the attribute and inject an event handler (XSS).
+      // `&` is intentionally left alone: the later decodeEntities pass resolves real entities
+      // (e.g. `&ouml;`) for the class and re-escapes any that decode to `"`/`<`/`>`, so these
+      // replacements survive it while a literal quote is neutralized in both modes.
+      lang = lang
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
       codeblock = captureStartEvent.matches.codeblock;
       codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
       //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
@@ -9780,6 +10328,13 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       url = showdown.helper.cmNormalizeURL(url);
     }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+    // escape characters that would otherwise break out of the quoted src attribute
+    // (a `"` in the URL is an attribute-injection vector). cmSpec flavors already
+    // percent-encode the URL above, so this is a no-op there.
+    url = url
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
 
     if (title && showdown.helper.isString(title)) {
       if (options.cmSpec) {
@@ -10366,6 +10921,13 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
       url = showdown.helper.cmNormalizeURL(url);
     }
     url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+    // escape characters that would otherwise break out of the quoted href attribute
+    // (a `"` in the destination is an attribute-injection vector). cmSpec flavors already
+    // percent-encode the URL above, so this is a no-op there.
+    url = url
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
     attributes.href = url;
 
     if (title && showdown.helper.isString(title)) {
@@ -10517,60 +11079,6 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
   afterEvent = globals.converter.dispatch(afterEvent);
   return afterEvent.output;
 
-
-  /**
-   *
-   * @param {RegExp} pattern
-   * @param {string} item
-   * @param {boolean} checked
-   * @returns {string}
-   */
-  function processTaskListItem (pattern, item, checked) {
-
-    const checkboxRgx = /^[ \t]*\[([xX ])]/m;
-    item = item.replace(checkboxRgx, function (wm, checkedRaw) {
-
-      let attributes = {
-        type: 'checkbox',
-        disabled: true,
-        style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
-        checked: !!checked
-      };
-      let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', item);
-
-      captureStartEvent
-        .setOutput(null)
-        ._setGlobals(globals)
-        ._setOptions(options)
-        .setRegexp(pattern)
-        .setMatches({
-          _wholeMatch: item,
-          _tasklistButton: wm,
-          _taksListButtonChecked: checkedRaw
-        })
-        .setAttributes(attributes);
-      captureStartEvent = globals.converter.dispatch(captureStartEvent);
-      let otp;
-      if (captureStartEvent.output && captureStartEvent.output !== '') {
-        otp = captureStartEvent.output;
-      } else {
-        attributes = captureStartEvent.attributes;
-        otp = '<input' + showdown.helper._populateAttributes(attributes)  + '>';
-      }
-
-      let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
-      beforeHashEvent
-        .setOutput(otp)
-        ._setGlobals(globals)
-        ._setOptions(options);
-      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-      otp = beforeHashEvent.output;
-      return otp;
-    });
-
-    return item;
-  }
-
   /**
    * Process the contents of a single ordered or unordered list, splitting it
    * into individual list items.
@@ -10630,15 +11138,19 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
           };
 
 
-      // Support for github tasklists
-      if (taskbtn && options.tasklists) {
+      // Support for github tasklists. GFM requires whitespace after the marker (see
+      // makehtml.list.taskListItem.checkbox), so a bare `[ ]`/`[ ]x` is not a task and is left literal.
+      if (taskbtn && options.tasklists && /^[ \t]*\[[xX ]][ \t]/.test(item)) {
         // it's a github tasklist and tasklists are enabled
 
-        // Style used for tasklist bullets
-        attributes.classes = ['task-list-item'];
-        attributes.style = 'list-style-type: none;';
-        if (options.moreStyling && checked) {
-          attributes.classes.push('task-list-item-complete');
+        // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
+        // when `moreStyling` is enabled.
+        if (options.moreStyling) {
+          attributes.classes = ['task-list-item'];
+          attributes.style = 'list-style-type: none;';
+          if (checked) {
+            attributes.classes.push('task-list-item-complete');
+          }
         }
         eventName = 'makehtml.list.taskListItem';
         matches._taskListButton = taskbtn;
@@ -10667,7 +11179,7 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
 
         // even if user there's no tasklist, it's fine because the tasklist handler will bail without raising the event
         if (options.tasklists) {
-          item = processTaskListItem(rgx, item, checked);
+          item = showdown.subParser('makehtml.list.taskListItem.checkbox')(item, options, globals);
         }
 
         // ISSUE #312
@@ -11202,8 +11714,12 @@ showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
-  const strikethroughRegex = /~{2}([\s\S]+?)~{2}/g;
-  text = text.replace(strikethroughRegex, function (wholeMatch, txt) {
+  // GFM strikethrough: a run of one or two tildes, matched in length, with flanking
+  // (the run must hug non-whitespace on the inside) and rejecting runs of three or more.
+  // Group 1 captures the character before the opening run (or the string start) so it can
+  // be restored; group 3 is the struck-through content.
+  const strikethroughRegex = /(^|[^~])(~{1,2})(?=[^\s~])([\s\S]*?[^\s~])\2(?!~)/g;
+  text = text.replace(strikethroughRegex, function (wholeMatch, prefix, run, txt) {
 
     let otp;
     let captureStartEvent = new showdown.Event('makehtml.strikethrough.onCapture', txt);
@@ -11234,7 +11750,8 @@ showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
       ._setGlobals(globals)
       ._setOptions(options);
     beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    return beforeHashEvent.output;
+    // restore the character that preceded the opening run
+    return prefix + beforeHashEvent.output;
   });
 
   let afterEvent = new showdown.Event('makehtml.strikethrough.onEnd', text);
@@ -11565,9 +12082,6 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
     return text;
   }
 
-  // find escaped pipe characters
-  text = text.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
-
   //
   // parser starts here
   //
@@ -11579,15 +12093,29 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
   startEvent = globals.converter.dispatch(startEvent);
   text = startEvent.output;
 
+  // GFM §4.10: a table is broken at the first line that begins another
+  // block-level construct (blockquote, ATX heading, fenced code, thematic
+  // break). Such a line is not a table row, so we split it — and everything
+  // after it — off the match. Because `table` runs immediately before
+  // `blockquote` (and the rest of blockGamut) in the pipeline, the returned
+  // tail is reprocessed and converted normally.
+  const blockStartRgx = /^ {0,3}(?:>|#{1,6}(?:[ \t]|$)|```|~~~|(?:\*[ \t]*){3,}$|(?:-[ \t]*){3,}$|(?:_[ \t]*){3,}$)/;
+
   // parse multi column tables
-  const tableRgx = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*[-=]{2,}[\s\S]+?(?:\n\n|¨0)/gm;
+  const tableRgx = /^ {0,3}\|?.+\|.+\n {0,3}\|?[ \t]*:?[ \t]*[-=]+[ \t]*:?[ \t]*\|[ \t]*:?[ \t]*[-=]+[\s\S]+?(?:\n\n|¨0)/gm;
   text = text.replace(tableRgx, function (wholeMatch) {
-    return parse(tableRgx, wholeMatch);
+    let split = breakOnBlock(wholeMatch);
+    // Neutralize escaped pipes only within the actual table text (not the trailing block
+    // or any non-table content) so `\|` inside code spans elsewhere is left for the normal
+    // backslash-escape / code-span passes to handle.
+    let table = split.table.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+    return parse(tableRgx, table) + split.tail;
   });
 
-  const singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|[ \t]*:?[ \t]*[-=]{2,}[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
+  const singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|?[ \t]*:?[ \t]*[-=]+[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
   text = text.replace(singeColTblRgx, function (wholeMatch) {
-    return parse(singeColTblRgx, wholeMatch);
+    let table = wholeMatch.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+    return parse(singeColTblRgx, table);
   });
 
   let afterEvent = new showdown.Event('makehtml.table.onEnd', text);
@@ -11600,6 +12128,25 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
 
 
 
+  /**
+   * Split a greedily-matched table block at the first body line that begins
+   * another block-level construct. The header (line 0) and delimiter (line 1)
+   * are never terminators; scanning starts at the first body row.
+   * @param {string} wholeMatch
+   * @returns {{table: string, tail: string}}
+   */
+  function breakOnBlock (wholeMatch) {
+    let lines = wholeMatch.split('\n');
+    for (let i = 2; i < lines.length; ++i) {
+      if (blockStartRgx.test(lines[i])) {
+        return {
+          table: lines.slice(0, i).join('\n') + '\n',
+          tail: lines.slice(i).join('\n')
+        };
+      }
+    }
+    return { table: wholeMatch, tail: '' };
+  }
 
   /**
    *
@@ -11731,7 +12278,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
       );
     }
 
-    if (rawHeaders.length < rawStyles.length) {
+    if (rawHeaders.length !== rawStyles.length) {
       return null;
     }
 
@@ -11883,6 +12430,98 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
     cellText = showdown.subParser('makehtml.spanGamut')(cellText, options, globals);
     return '<td' + showdown.helper._populateAttributes(attributes) + '>' + cellText + '</td>\n';
   }
+});
+
+////
+// makehtml/taskListItem.js
+// Copyright (c) 2024 ShowdownJS
+//
+// GFM task-list item renderer, shared by both list parsers.
+//
+// Given the raw text of a single list item, it matches a leading `[ ]`/`[x]`
+// marker plus the rest of that line and renders the marker as a disabled
+// `<input type="checkbox">`, leaving the line's text in place for the caller to
+// parse further. It runs at the same (raw, pre-parse) stage in both
+// `makehtml.list` (the default regex parser) and `makehtml.cmList` (the
+// commonmark container-block parser), so the events below always expose the
+// task item's raw source line on either path.
+//
+// Events (nested under the `makehtml.list.taskListItem` namespace that the default
+// list parser already uses for its item-level events):
+//   makehtml.list.taskListItem.checkbox.onCapture - fired on a matched task line.
+//     `input` and `_wholeMatch` are the full source line (`[ ] foo *bar*`);
+//     `attributes` are the checkbox attributes. Returning output overrides the line.
+//   makehtml.list.taskListItem.checkbox.onHash    - fired with the rendered line
+//     (`<input ...> foo *bar*`) before it is handed back to the caller.
+//
+// ***Author:***
+// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+////
+
+
+showdown.subParser('makehtml.list.taskListItem.checkbox', function (text, options, globals) {
+  'use strict';
+
+  if (!options.tasklists) {
+    return text;
+  }
+
+  // Match the marker and the remainder of its (first) line. The text is captured so
+  // the events expose the full line, not just the checkbox; everything after the line
+  // is left untouched for the caller's block/span parsing.
+  //
+  // Per GFM the marker must be followed by at least one space/tab to be a task: a bare
+  // `[ ]` (nothing after) or `[ ]x` (no whitespace) is left literal, matching cmark-gfm.
+  const taskItemRgx = /^([ \t]*)\[([xX ])](?=[ \t])([^\n]*)/;
+  return text.replace(taskItemRgx, function (wm, prefix, checkedRaw, lineText) {
+    let checked = checkedRaw.trim() !== '';
+
+    // GFM spec output is a bare `<input disabled type="checkbox">` (checked items add a
+    // leading `checked`). Only when `moreStyling` is enabled do we keep the legacy inline
+    // style that visually aligns the checkbox.
+    let attributes = options.moreStyling ?
+      {
+        type: 'checkbox',
+        disabled: true,
+        style: 'margin: 0px 0.35em 0.25em -1.6em; vertical-align: middle;',
+        checked: checked
+      } :
+      (checked ?
+        { checked: true, disabled: true, type: 'checkbox' } :
+        { disabled: true, type: 'checkbox' });
+
+    let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', wm);
+    captureStartEvent
+      .setOutput(null)
+      ._setGlobals(globals)
+      ._setOptions(options)
+      .setRegexp(taskItemRgx)
+      .setMatches({
+        _wholeMatch: wm,
+        _taskListButton: prefix + '[' + checkedRaw + ']',
+        _taskListButtonChecked: checkedRaw,
+        _taskListItemText: lineText
+      })
+      .setAttributes(attributes);
+    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+
+    let otp;
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      attributes = captureStartEvent.attributes;
+      let txt = captureStartEvent.matches._taskListItemText;
+      otp = prefix + '<input' + showdown.helper._populateAttributes(attributes) + '>' + txt;
+    }
+
+    let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
+    beforeHashEvent
+      .setOutput(otp)
+      ._setGlobals(globals)
+      ._setOptions(options);
+    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    return beforeHashEvent.output;
+  });
 });
 
 showdown.subParser('makehtml.underline', function (text, options, globals) {
@@ -12252,6 +12891,100 @@ showdown.subParser('makeMarkdown.emphasis', function (node, options, globals) {
   return endEvent.output;
 });
 
+// Reverse direction (HTML -> Markdown) for GFM footnotes. Handles the two shapes the
+// forward parser (and GitHub) produce:
+//   <sup class="footnote-ref"><a href="#fn-ID" ...>N</a></sup>      -> [^ID]
+//   <section class="footnotes"><ol><li id="fn-ID">...<a class="footnote-backref">...</a></li></ol></section>
+//                                                                   -> [^ID]: ...body...
+// Gated by the `footnotes` option in makeMarkdown.node, mirroring makeHtml.
+showdown.subParser('makeMarkdown.footnotes', function (node, options, globals) {
+  'use strict';
+
+  let startEvent = new showdown.Event('makeMarkdown.footnotes.onStart', node.outerHTML);
+  startEvent
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  startEvent = globals.converter.dispatch(startEvent);
+
+  let result;
+  if (startEvent.output && startEvent.output !== '') {
+    result = startEvent.output;
+  } else {
+    result = (function () {
+      let tagName = node.tagName.toLowerCase();
+
+      if (tagName === 'sup') {
+        return renderReference(node);
+      }
+      if (tagName === 'section') {
+        return renderSection(node);
+      }
+      return '';
+    })();
+  }
+
+  let endEvent = new showdown.Event('makeMarkdown.footnotes.onEnd', result);
+  endEvent
+    .setOutput(result)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setMatches({node: node});
+  endEvent = globals.converter.dispatch(endEvent);
+  return endEvent.output;
+
+  // the label lives in the `#fn-<label>` href (percent-encoded by makeHtml); recover it
+  function decodeLabel (s) {
+    try {
+      return decodeURIComponent(s);
+    } catch (e) {
+      return s;
+    }
+  }
+
+  function renderReference (sup) {
+    let a = sup.querySelector('a');
+    if (!a) { return ''; }
+    let label = decodeLabel((a.getAttribute('href') || '').replace(/^#fn-/, ''));
+    return '[^' + label + ']';
+  }
+
+  function renderSection (section) {
+    let items = section.querySelectorAll('ol > li');
+    if (!items.length) { items = section.querySelectorAll('li'); }
+    let defs = [];
+    for (let i = 0; i < items.length; ++i) {
+      let li = items[i],
+          label = decodeLabel((li.getAttribute('id') || '').replace(/^fn-/, ''));
+
+      // drop the back-reference anchors (and the nested <sup> some carry)
+      let backrefs = li.querySelectorAll('a.footnote-backref');
+      for (let b = 0; b < backrefs.length; ++b) {
+        backrefs[b].parentNode.removeChild(backrefs[b]);
+      }
+
+      // render the cleaned body
+      let body = '';
+      for (let c = 0; c < li.childNodes.length; ++c) {
+        body += showdown.subParser('makeMarkdown.node')(li.childNodes[c], options, globals);
+      }
+      body = body
+        .replace(/[ \t]+$/gm, '') // trailing space left by a removed backref
+        .replace(/\n+$/, '');
+
+      // `[^label]: ` on the first line; continuation lines indented by 4 spaces
+      let lines = body.split('\n'),
+          def = '[^' + label + ']: ' + (lines[0] || '');
+      for (let l = 1; l < lines.length; ++l) {
+        def += '\n' + (lines[l] === '' ? '' : '    ' + lines[l]);
+      }
+      defs.push(def);
+    }
+    return defs.join('\n\n');
+  }
+});
+
 showdown.subParser('makeMarkdown.header', function (node, options, globals, headerLevel) {
   'use strict';
 
@@ -12339,6 +13072,18 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
   } else {
     result = (function () {
       let txt = '';
+
+      // reverse the `emoji` option: "special" emoji render as an <img> whose src is known.
+      // Map that back to its :code:. When emoji is off (or the src isn't an emoji) this falls
+      // through to normal image handling, so a disabled feature degrades to plain image markdown.
+      if (options.emoji && node.hasAttribute('src')) {
+        let emojiImages = showdown.helper.emojiReverse().images,
+            src = node.getAttribute('src');
+        if (emojiImages.hasOwnProperty(src)) {
+          return ':' + emojiImages[src] + ':';
+        }
+      }
+
       if (node.hasAttribute('src') && node.getAttribute('src') !== '') {
         let hasDimensions = node.hasAttribute('width') && node.hasAttribute('height');
 
@@ -12391,9 +13136,20 @@ showdown.subParser('makeMarkdown.input', function (node, options, globals) {
     result = startEvent.output;
   } else {
     result = (function () {
-      // only checkbox inputs map to task-list markdown, and only when tasklists are enabled;
-      // anything else passes through as raw HTML
-      if (node.getAttribute('type') !== 'checkbox' || !options.tasklists) {
+      // A checkbox input maps to a `[ ]`/`[x]` task marker only when the `tasklists` option
+      // is enabled, the checkbox lives inside a list item, AND it is followed by some content.
+      // The list-item context matters: in Markdown a `[ ]`/`[x]` marker is only a task when it
+      // leads a list item, so a naked checkbox (top level, or inside a `<p>`/`<div>`) would
+      // degrade into meaningless literal bracket text that no longer round-trips back to a
+      // checkbox. The following-content check matters for the same reason: a bare
+      // `<li><input type="checkbox"></li>` has no task text, and `- [ ]` on its own does not
+      // round-trip to a checkbox, so it is kept as the raw `<input>` instead. Detection
+      // deliberately keys on the `<li>` ancestry rather than the `task-list-item` class (which
+      // `makeHtml` only emits under `moreStyling`), so checkboxes in hand-written or unstyled
+      // list HTML are still recognised. Anything that fails these checks passes through as raw
+      // HTML. A `checked` attribute (any value, including empty) marks it done; its absence open.
+      if (node.getAttribute('type') !== 'checkbox' || !options.tasklists ||
+          !isInsideListItem(node) || !hasFollowingContent(node)) {
         return node.outerHTML;
       }
       return (node.getAttribute('checked') !== null) ? '[x]' : '[ ]';
@@ -12408,6 +13164,36 @@ showdown.subParser('makeMarkdown.input', function (node, options, globals) {
     .setMatches({node: node});
   endEvent = globals.converter.dispatch(endEvent);
   return endEvent.output;
+
+  // Walks up the ancestor chain looking for an enclosing `<li>` (covers both tight
+  // `<li><input>` items and loose `<li><p><input>` ones).
+  function isInsideListItem (n) {
+    let parent = n.parentNode;
+    while (parent && typeof parent.tagName !== 'undefined') {
+      if (parent.tagName.toLowerCase() === 'li') {
+        return true;
+      }
+      parent = parent.parentNode;
+    }
+    return false;
+  }
+
+  // True when the checkbox is followed by actual task text — an element sibling, or a text
+  // node that is not just whitespace. A checkbox with nothing meaningful after it is not a
+  // task list item (`- [ ]` alone does not round-trip back to a checkbox).
+  function hasFollowingContent (n) {
+    let sibling = n.nextSibling;
+    while (sibling) {
+      if (sibling.nodeType === 1) {
+        return true;
+      }
+      if (sibling.nodeType === 3 && sibling.nodeValue.trim() !== '') {
+        return true;
+      }
+      sibling = sibling.nextSibling;
+    }
+    return false;
+  }
 });
 
 showdown.subParser('makeMarkdown.links', function (node, options, globals) {
@@ -12563,7 +13349,15 @@ showdown.subParser('makeMarkdown.listItem', function (node, options, globals) {
           childrenLenght = children.length;
 
       for (let i = 0; i < childrenLenght; ++i) {
-        listItemTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+        let child = children[i];
+        // A nested list must begin on its own line, otherwise the indentation step below
+        // glues it to the preceding inline text (e.g. `a<ul>…` would render as `- a- b`
+        // instead of `- a` followed by an indented `- b`).
+        if (child.nodeType === 1 && /^[ou]l$/i.test(child.tagName) &&
+            listItemTxt !== '' && !/\n$/.test(listItemTxt)) {
+          listItemTxt += '\n';
+        }
+        listItemTxt += showdown.subParser('makeMarkdown.node')(child, options, globals);
       }
       // if it's only one liner, we need to add a newline at the end
       if (!/\n$/.test(listItemTxt)) {
@@ -12763,6 +13557,26 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
 
         case 'input':
           txt = showdown.subParser('makeMarkdown.input')(node, options, globals);
+          break;
+
+        case 'sup':
+          // GFM footnote reference; otherwise an ordinary inline <sup> kept as raw HTML
+          if (options.footnotes && /(?:^| )footnote-ref(?: |$)/.test(node.getAttribute('class') || '')) {
+            txt = showdown.subParser('makeMarkdown.footnotes')(node, options, globals);
+          } else {
+            txt = renderRawElement(node, tagName);
+            if (!spansOnly) { txt += '\n\n'; }
+          }
+          break;
+
+        case 'section':
+          // GFM footnotes section; otherwise an ordinary <section> kept as raw HTML
+          if (!spansOnly && options.footnotes && /(?:^| )footnotes(?: |$)/.test(node.getAttribute('class') || '')) {
+            txt = showdown.subParser('makeMarkdown.footnotes')(node, options, globals) + '\n\n';
+          } else {
+            txt = renderRawElement(node, tagName);
+            if (!spansOnly) { txt += '\n\n'; }
+          }
           break;
 
         default:
@@ -13205,6 +14019,23 @@ showdown.subParser('makeMarkdown.txt', function (node, options, globals) {
 
       // ", <, > and & should replace escaped html entities
       txt = showdown.helper.unescapeHTMLEntities(txt);
+
+      // reverse the `ellipsis` option: … -> ...  (only when the converter would have produced it)
+      if (options.ellipsis) {
+        txt = txt.replace(/…/g, '...');
+      }
+
+      // reverse the `emoji` option: turn unicode emoji back into their `:code:` form.
+      // Done before the magic-char escaping below so an emoji whose value contains a markdown
+      // metachar (e.g. asterisk -> *️⃣) becomes :asterisk: instead of an escaped \*.
+      // Note: like underline, this is symmetric but opt-in - any literal emoji the source HTML
+      // already contained is also rewritten to a code when this option is on.
+      if (options.emoji) {
+        let emojiReverse = showdown.helper.emojiReverse();
+        txt = txt.replace(emojiReverse.regex, function (wholeMatch) {
+          return ':' + emojiReverse.unicode[wholeMatch] + ':';
+        });
+      }
 
       // escape markdown magic characters
       // emphasis, strong and strikethrough - can appear everywhere
@@ -13681,9 +14512,15 @@ showdown.Converter = function (converterOptions) {
       text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals, true);
     }
     text = showdown.subParser('makehtml.hashCodeTags')(text, options, globals);
+    // Footnotes (GFM): collect `[^id]: ...` definitions and replace `[^id]` references
+    // before stripLinkDefinitions (whose scanner would otherwise claim `[^id]:` lines).
+    text = showdown.subParser('makehtml.footnotes')(text, options, globals, 'strip');
     text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);
     text = showdown.subParser('makehtml.blockGamut')(text, options, globals);
     text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
+    // Footnotes (GFM): render the referenced footnotes into a <section> and append it,
+    // before unhashHTMLSpans so hashed spans inside the rendered footnotes are restored.
+    text = showdown.subParser('makehtml.footnotes')(text, options, globals, 'build');
     // decode character references (gated by the decodeEntities option) after inline parsing,
     // while code spans/blocks are still hashed, so decoded chars are not re-parsed
     text = showdown.subParser('makehtml.decodeEntities')(text, options, globals);
@@ -13696,6 +14533,9 @@ showdown.Converter = function (converterOptions) {
     }
     text = showdown.subParser('makehtml.unhashHTMLSpans')(text, options, globals);
     text = showdown.subParser('makehtml.unescapeSpecialChars')(text, options, globals);
+    // GFM disallowed-raw-html tagfilter (opt-in): neutralize a small HTML tag blacklist in
+    // the now-restored raw HTML. Runs late so it sees the final tags, not placeholders.
+    text = showdown.subParser('makehtml.disallowedHtmlTags')(text, options, globals);
 
     // attacklab: Restore dollar signs
     text = text.replace(/¨D/g, '$$');

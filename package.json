@@ -1,6 +1,6 @@
 {
   "name": "showdown",
-  "version": "3.0.0-alpha",
+  "version": "3.0.0-rc1",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
   "homepage": "https://showdownjs.eu/",

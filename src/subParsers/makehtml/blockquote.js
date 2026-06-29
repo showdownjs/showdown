@@ -16,6 +16,16 @@
 showdown.subParser('makehtml.blockquote', function (text, options, globals) {
   'use strict';
 
+  // Pathologically nested block quotes (e.g. `> > > …` thousands deep) recurse once per
+  // level through blockGamut, which exhausts the call stack in the default path and blows
+  // up super-linearly under cmSpec. Refuse to descend past a sane nesting depth; beyond it
+  // the surplus `>` markers simply render as literal text. The deepest nesting in the whole
+  // test corpus is 3, so this bound never affects real documents.
+  const maxNestingDepth = 25;
+  if ((globals.blockquoteDepth || 0) >= maxNestingDepth) {
+    return text;
+  }
+
   let startEvent = new showdown.Event('makehtml.blockquote.onStart', text);
   startEvent
     .setOutput(text)
@@ -89,8 +99,10 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
         bq = showdown.subParser('makehtml.hashHTMLBlocks')(bq, options, globals, true);
         bq = showdown.subParser('makehtml.stripLinkDefinitions')(bq, options, globals);
       }
+      globals.blockquoteDepth = (globals.blockquoteDepth || 0) + 1;
       bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
       bq = showdown.subParser('makehtml.paragraphs')(bq, options, globals);
+      globals.blockquoteDepth--;
       bq = bq.replace(/(^|\n)/g, '$1  ');
       // These leading spaces screw with <pre> content, so we need to fix that:
       bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wm, m1) {

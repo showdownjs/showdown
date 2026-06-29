@@ -48,4 +48,22 @@ describe('showdown.Converter cmSpec option (Blockquotes)', function () {
         .should.equal(norm('<blockquote>\n<ul>\n<li>foo</li>\n</ul>\n</blockquote>\n<ul>\n<li>bar</li>\n</ul>'));
     });
   });
+
+  // Pathologically deep nesting (`> > > …` thousands deep) must not exhaust the call stack
+  // (default mode) or blow up super-linearly (cmSpec). The nesting depth is capped, so this
+  // resolves near-instantly; a regression would throw a RangeError or exceed the mocha
+  // timeout. The cap leaves surplus markers as literal text, so the count is bounded.
+  describe('deeply nested block quotes (denial-of-service guard)', function () {
+    let deep = '> '.repeat(5000) + 'boom';
+
+    it('should not overflow the stack in default mode', function () {
+      let out = new showdown.Converter().makeHtml(deep);
+      (out.match(/<blockquote>/g) || []).length.should.equal(25);
+    });
+
+    it('should not blow up super-linearly in cmSpec mode', function () {
+      let out = new showdown.Converter({cmSpec: true}).makeHtml(deep);
+      (out.match(/<blockquote>/g) || []).length.should.equal(25);
+    });
+  });
 });

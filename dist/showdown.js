@@ -1,4 +1,4 @@
-;/*! showdown v 3.0.0-alpha - 29-06-2026 */
+;/*! showdown v 3.0.0-rc1 - 30-06-2026 */
 (function(){
 // noinspection HtmlRequiredLangAttribute
 

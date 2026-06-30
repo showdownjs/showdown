@@ -13,14 +13,17 @@ Gruntfile.js export-ignore
 performance.* export-ignore
 
 # Line endings control
-CHANGELOG.md text
-CONTRIBUTING.md text
-CREDITS.md text
-license.txt text
+# Force LF for every text file, both on checkout and in the index, on all platforms and
+# regardless of the user's core.autocrlf / core.eol settings. The eol=lf attribute takes
+# precedence over those git options, so CRLF can never be reintroduced in the working tree.
+* text=auto eol=lf
 
-# Force LF on js files
-*.js text eol=lf
+# Binary assets: never normalize or diff
+*.png binary
 
-# Force binary mode on bin dir and dist fir
+# Generated bundles: keep byte-stable and out of textual diffs (the build always emits LF)
 bin/* binary
 dist/* binary
+
+# Fixture that deliberately contains literal CR characters as test data; git must not touch it
+test/performance.testfile.md -text

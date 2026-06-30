@@ -9,6 +9,12 @@ module.exports = function (grunt) {
     require('quiet-grunt');
   }
 
+  // Force LF line endings in generated output regardless of host OS. grunt.template.process()
+  // (used for concat/uglify banners and footers) and the concat separator default to
+  // grunt.util.linefeed, which is "\r\n" on Windows. Pinning it to "\n" keeps dist/ and bin/
+  // byte-identical across platforms.
+  grunt.util.linefeed = '\n';
+
   /**
    * Load common tasks for legacy and normal tests
    */

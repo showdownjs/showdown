@@ -1,0 +1,29 @@
+name: BrowserStack Smoke
+
+# Gated: real-device smoke run via browserstack-node-sdk. Not on every PR (costs paid
+# minutes) — runs on manual dispatch and nightly. The per-engine coverage on every PR is
+# the Vitest+Playwright job (browser.yml).
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  browserstack:
+    name: 'BrowserStack smoke (@playwright/test)'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+          cache: 'npm'
+      - run: npm ci
+      - name: Build dist (smoke suite injects the UMD bundle)
+        run: npm run build
+      - name: Run smoke suite on BrowserStack
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESSKEY }}
+        run: npm run test:browserstack

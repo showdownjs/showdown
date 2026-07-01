@@ -1,0 +1,30 @@
+# BrowserStack Playwright config (browserstack-node-sdk). Credentials come from the
+# BROWSERSTACK_USERNAME / BROWSERSTACK_ACCESS_KEY environment variables.
+userName: ${BROWSERSTACK_USERNAME}
+accessKey: ${BROWSERSTACK_ACCESS_KEY}
+
+projectName: showdown
+buildName: showdown-browser-smoke
+
+# Real-device / cross-browser matrix for the smoke suite.
+platforms:
+  - os: Windows
+    osVersion: "11"
+    browserName: chrome
+    browserVersion: latest
+  - os: Windows
+    osVersion: "11"
+    browserName: edge
+    browserVersion: latest
+  - os: Windows
+    osVersion: "11"
+    browserName: playwright-firefox
+    browserVersion: latest
+  - os: OS X
+    osVersion: Sonoma
+    browserName: playwright-webkit
+    browserVersion: latest
+
+testObservability: true
+# No localhost server (showdown is injected via addScriptTag) → no Local tunnel needed.
+browserstackLocal: false

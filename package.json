@@ -61,6 +61,7 @@
     "test:watch": "vitest",
     "test:single": "vitest run",
     "test:browser": "vitest run --config vitest.browser.config.mjs",
+    "test:browserstack": "browserstack-node-sdk playwright test --config playwright.bstack.config.js",
     "perf": "node scripts/build-testbundle.mjs && node -e \"const p=require('./test/performance/performance.js');p.runTests();p.generateLogs();\""
   },
   "bin": {
@@ -72,9 +73,11 @@
   ],
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.61.1",
     "@stylistic/eslint-plugin": "^5.10.0",
     "@vitest/browser": "^4.1.9",
     "@vitest/browser-playwright": "^4.1.9",
+    "browserstack-node-sdk": "^1.59.0",
     "commonmark-spec": "^0.31.2",
     "diffable-html": "^5.0.0",
     "esbuild": "^0.28.1",

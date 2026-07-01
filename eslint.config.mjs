@@ -78,9 +78,6 @@ export default [
         ...globals.node,
         ...globals.mocha,
         showdown: 'writable',
-        getDefaultOpts: 'readonly',
-        chai: 'readonly',
-        expect: 'readonly',
         XMLHttpRequest: 'writable'
       }
     },

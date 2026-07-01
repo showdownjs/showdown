@@ -3,6 +3,9 @@
 .DS_Store
 node_modules
 npm-debug.log
+test-results/
+playwright-report/
+playwright-browserstack-sdk.config.js
 /*.test.*
 *.log
 CLAUDE.md

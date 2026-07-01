@@ -143,7 +143,7 @@ describe('showdown.setFlavor()', function () {
     let ghOpts = showdown.getFlavorOptions('gfm'),
         shOpts = showdown.getOptions();
     for (let opt in ghOpts) {
-      if (ghOpts.hasOwnProperty(opt)) {
+      if (Object.prototype.hasOwnProperty.call(ghOpts, opt)) {
         expect(shOpts).toHaveProperty(opt);
         expect(shOpts[opt]).toBe(ghOpts[opt]);
       }
@@ -157,7 +157,7 @@ describe('showdown.setFlavor()', function () {
         shOpts = showdown.getOptions(),
         dfOpts = showdown.getDefaultOptions();
     for (let opt in dfOpts) {
-      if (ghOpts.hasOwnProperty(opt)) {
+      if (Object.prototype.hasOwnProperty.call(ghOpts, opt)) {
         expect(shOpts[opt]).toBe(ghOpts[opt]);
       } else {
         expect(shOpts[opt]).toBe(dfOpts[opt]);
@@ -167,7 +167,7 @@ describe('showdown.setFlavor()', function () {
     let orOpts = showdown.getFlavorOptions('original');
     shOpts = showdown.getOptions();
     for (let opt in dfOpts) {
-      if (orOpts.hasOwnProperty(opt)) {
+      if (Object.prototype.hasOwnProperty.call(orOpts, opt)) {
         expect(shOpts[opt]).toBe(orOpts[opt]);
       } else {
         expect(shOpts[opt]).toBe(dfOpts[opt]);

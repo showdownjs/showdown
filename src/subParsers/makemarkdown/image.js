@@ -22,7 +22,7 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
       if (options.emoji && node.hasAttribute('src')) {
         let emojiImages = showdown.helper.emojiReverse().images,
             src = node.getAttribute('src');
-        if (emojiImages.hasOwnProperty(src)) {
+        if (Object.prototype.hasOwnProperty.call(emojiImages, src)) {
           return ':' + emojiImages[src] + ':';
         }
       }

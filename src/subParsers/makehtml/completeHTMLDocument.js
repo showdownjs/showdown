@@ -41,7 +41,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
   }
 
   for (let meta in globals.metadata.parsed) {
-    if (globals.metadata.parsed.hasOwnProperty(meta)) {
+    if (Object.prototype.hasOwnProperty.call(globals.metadata.parsed, meta)) {
       switch (meta.toLowerCase()) {
         case 'doctype':
           break;

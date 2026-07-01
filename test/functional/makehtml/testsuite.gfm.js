@@ -31,7 +31,7 @@ describe('makeHtml() gfm testsuite', function () {
   'use strict';
 
   for (let section in testsuite) {
-    if (testsuite.hasOwnProperty(section)) {
+    if (Object.prototype.hasOwnProperty.call(testsuite, section)) {
       let cases = testsuite[section].filter(function (tc) { return !SKIP.has(tc.number); });
       if (cases.length === 0) { continue; }
       describe(section, function () {

@@ -98,7 +98,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
           _title: title
         },
         otp,
-        attributes = {};
+        attributes;
 
     if (linkId) {
       linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
@@ -118,8 +118,6 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
         // lower-case and turn embedded newlines into spaces
         linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(altText) : showdown.helper.caseFold(altText).replace(/ ?\n/g, ' ');
       }
-      url = '#' + linkId;
-
       if (!showdown.helper.isUndefined(gUrls[linkId])) {
         url = gUrls[linkId];
         if (!showdown.helper.isUndefined(gTitles[linkId])) {

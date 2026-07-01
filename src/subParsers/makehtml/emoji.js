@@ -28,10 +28,10 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
   let pattern = /:(\S+?):/g;
 
   text = text.replace(pattern, function (wholeMatch, emojiCode) {
-    if (!showdown.helper.emojis.hasOwnProperty(emojiCode)) {
+    if (!Object.prototype.hasOwnProperty.call(showdown.helper.emojis, emojiCode)) {
       return wholeMatch;
     }
-    let otp = '';
+    let otp;
     let captureStartEvent = new showdown.Event('makehtml.emoji.onCapture', emojiCode);
     captureStartEvent
       .setOutput(null)

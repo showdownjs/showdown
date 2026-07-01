@@ -4,7 +4,7 @@
  * showdownjs helper functions
  */
 
-if (!showdown.hasOwnProperty('helper')) {
+if (!Object.prototype.hasOwnProperty.call(showdown, 'helper')) {
   showdown.helper = {};
 }
 
@@ -140,7 +140,7 @@ showdown.helper.forEach = function (obj, callback) {
     }
   } else if (typeof (obj) === 'object') {
     for (let prop in obj) {
-      if (obj.hasOwnProperty(prop)) {
+      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
         callback(obj[prop], prop, obj);
       }
     }
@@ -571,6 +571,7 @@ showdown.helper.isAbsolutePath = function (path) {
  */
 showdown.helper.trimStart = function (text) {
   return (!String.prototype.trimStart) ?
+    // eslint-disable-next-line no-control-regex -- Unicode whitespace class (incl. \x09-\x0D) in trim polyfill
     text.replace(/^[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+/, '') :
     text.trimStart();
 };
@@ -582,6 +583,7 @@ showdown.helper.trimStart = function (text) {
  */
 showdown.helper.trimEnd = function (text) {
   return (!String.prototype.trimEnd) ?
+    // eslint-disable-next-line no-control-regex -- Unicode whitespace class (incl. \x09-\x0D) in trim polyfill
     text.replace(/[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+$/, '') :
     text.trimEnd();
 };
@@ -682,7 +684,7 @@ showdown.helper.cmDecodeEntities = function (str) {
     }
     try {
       return String.fromCodePoint(cp);
-    } catch (e) {
+    } catch {
       return '�';
     }
   }
@@ -694,7 +696,7 @@ showdown.helper.cmDecodeEntities = function (str) {
     if ((m = /^#[xX]([0-9a-fA-F]{1,6})$/.exec(body))) {
       return fromCodePoint(parseInt(m[1], 16));
     }
-    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && entities.hasOwnProperty(body)) {
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && Object.prototype.hasOwnProperty.call(entities, body)) {
       return entities[body];
     }
     return wholeMatch;
@@ -884,7 +886,7 @@ showdown.helper.cloneObject = function (obj, deep) {
   if (!deep) {
     let newObj = {};
     for (let key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         newObj[key] = obj[key];
       }
     }
@@ -912,7 +914,7 @@ showdown.helper._populateAttributes = function (attributes) {
   }
 
   for (let attr in attributes) {
-    if (attributes.hasOwnProperty(attr)) {
+    if (Object.prototype.hasOwnProperty.call(attributes, attr)) {
       let key = attr,
           val;
 
@@ -1033,11 +1035,11 @@ showdown.helper.validateOptions = function (options) {
   let defaultOptions = getDefaultOpts(false);
 
   for (let opt in defaultOptions) {
-    if (!defaultOptions.hasOwnProperty(opt)) {
+    if (!Object.prototype.hasOwnProperty.call(defaultOptions, opt)) {
       continue;
     }
 
-    if (!options.hasOwnProperty(opt)) {
+    if (!Object.prototype.hasOwnProperty.call(options, opt)) {
       options[opt] = defaultOptions[opt].defaultValue;
     }
 
@@ -1064,6 +1066,7 @@ showdown.helper.validateOptions = function (options) {
 // use this instead of builtin is undefined for IE8 compatibility
 if (typeof (console) === 'undefined') {
   // noinspection JSValidateTypes
+  // eslint-disable-next-line no-global-assign -- deliberate polyfill for environments without console
   console = {
     warn: function (msg) {
       'use strict';
@@ -2960,14 +2963,14 @@ showdown.helper.emojiReverse = (function () {
         unicode = {},
         values = [];
     for (var code in showdown.helper.emojis) {
-      if (!showdown.helper.emojis.hasOwnProperty(code)) { continue; }
+      if (!Object.prototype.hasOwnProperty.call(showdown.helper.emojis, code)) { continue; }
       var val = showdown.helper.emojis[code];
       if (/^\s*<img/.test(val)) {
         var srcMatch = val.match(/src="([^"]*)"/);
-        if (srcMatch && !images.hasOwnProperty(srcMatch[1])) {
+        if (srcMatch && !Object.prototype.hasOwnProperty.call(images, srcMatch[1])) {
           images[srcMatch[1]] = code;
         }
-      } else if (!unicode.hasOwnProperty(val)) {
+      } else if (!Object.prototype.hasOwnProperty.call(unicode, val)) {
         unicode[val] = code;
         values.push(val);
       }

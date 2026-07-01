@@ -231,7 +231,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
     }
 
     for (let i = 0; i < colCount; ++i) {
-      let header = rawHeaders[i];
+      let header;
       let captureStartEvent = new showdown.Event('makehtml.table.header.onCapture', rawHeaders[i]);
       captureStartEvent
         .setOutput(null)

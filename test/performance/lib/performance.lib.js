@@ -39,7 +39,7 @@ performance.generateLog = function (filename, MDFilename, asTable) {
 
   try {
     jsonParsed = JSON.parse(json);
-  } catch (err) {
+  } catch {
     jsonParsed = {};
   }
 
@@ -78,7 +78,7 @@ performance.generateLog = function (filename, MDFilename, asTable) {
   //Sort jsonParsed
   var versions = [];
   for (var version in jsonParsed) {
-    if (jsonParsed.hasOwnProperty(version)) {
+    if (Object.prototype.hasOwnProperty.call(jsonParsed, version)) {
       versions.push(version);
     }
   }
@@ -88,7 +88,7 @@ performance.generateLog = function (filename, MDFilename, asTable) {
   var finalJsonObj = {};
 
   for (i = 0; i < versions.length; ++i) {
-    if (jsonParsed.hasOwnProperty(versions[i])) {
+    if (Object.prototype.hasOwnProperty.call(jsonParsed, versions[i])) {
       finalJsonObj[versions[i]] = jsonParsed[versions[i]];
     }
   }
@@ -106,7 +106,7 @@ function generateMD (filename, obj, asTable) {
   var otp = '# Performance Tests for ' + performance.libraryName + '\n\n\n';
 
   for (var version in obj) {
-    if (obj.hasOwnProperty(version)) {
+    if (Object.prototype.hasOwnProperty.call(obj, version)) {
       otp += '## [version ' + version + '](' + performance.githubLink + version + ')\n\n';
       var testSuite = obj[version];
       for (var i = 0; i < testSuite.length; ++i) {
@@ -160,7 +160,7 @@ performance.Suite = function (name) {
       };
     }
 
-    if (!obj.hasOwnProperty('test')) {
+    if (!Object.prototype.hasOwnProperty.call(obj, 'test')) {
       throw 'obj must have a property called test';
     }
 
@@ -168,11 +168,11 @@ performance.Suite = function (name) {
       throw 'obj test property must be a function';
     }
 
-    if (!obj.hasOwnProperty('prepare')) {
+    if (!Object.prototype.hasOwnProperty.call(obj, 'prepare')) {
       obj.prepare = function () {};
     }
 
-    if (!obj.hasOwnProperty('teardown')) {
+    if (!Object.prototype.hasOwnProperty.call(obj, 'teardown')) {
       obj.teardown = function () {};
     }
 

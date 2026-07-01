@@ -13,7 +13,7 @@ describe('makeHtml() karlcow testsuite', function () {
   'use strict';
 
   for (let section in testsuite) {
-    if (testsuite.hasOwnProperty(section)) {
+    if (Object.prototype.hasOwnProperty.call(testsuite, section)) {
       describe(section, function () {
         for (let i = 0; i < testsuite[section].length; ++i) {
           let testCase = testsuite[section][i];

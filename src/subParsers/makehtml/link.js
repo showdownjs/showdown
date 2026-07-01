@@ -83,6 +83,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   if (options.cmSpec) {
     // CommonMark autolinks: any scheme (2-32 chars) URI, and emails, with no entity encoding.
     // 4.1. URI autolinks: <scheme:rest>
+    // eslint-disable-next-line no-control-regex -- CommonMark autolinks exclude control chars (\x00-\x20) per spec
     let cmUriAutolinkRegex = /<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*)>/g;
     text = text.replace(cmUriAutolinkRegex, function (wholeMatch, uri) {
       // backslash escapes do not work inside autolinks, so restore them to literal backslash + char
@@ -293,7 +294,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   function parseCmDestTitle (str, j) {
     let n = str.length,
         isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; },
-        url = '',
+        url,
         emptyCase = false;
 
     // optional leading whitespace
@@ -402,8 +403,6 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
         // lower-case and turn embedded newlines into spaces
         linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
       }
-      url = '#' + linkId;
-
       if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
         url = globals.gUrls[linkId];
         if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {

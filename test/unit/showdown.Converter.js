@@ -50,7 +50,7 @@ describe('showdown.Converter', function () {
       converter.setFlavor('gfm');
 
       for (let opt in ghOpts) {
-        if (ghOpts.hasOwnProperty(opt)) {
+        if (Object.prototype.hasOwnProperty.call(ghOpts, opt)) {
           check(opt, ghOpts[opt]);
         }
       }

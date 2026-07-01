@@ -32,6 +32,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   // Reused across calls; each recognizer sets lastIndex before exec and the parse is
   // not re-entrant within a single string.
   const reEntity = /&(?:#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]*);/y;
+  // eslint-disable-next-line no-control-regex -- CommonMark autolinks exclude control chars (\x00-\x20) per spec
   const reAutoUri = /<[A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*>/y;
   const reAutoEmail = /<[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*>/y;
   const reRawHtml = new RegExp('(?:' + showdown.helper.regexes.cmHTMLTagSource + ')', 'y');
@@ -151,6 +152,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         url = isWww ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
         // GFM: percent-encode non-ASCII characters in the href (the display text keeps the
         // literal characters)
+        // eslint-disable-next-line no-control-regex -- \x00-\x7F is the ASCII range
         url = url.replace(/[^\x00-\x7F]+/g, function (s) { return encodeURI(s); });
 
         // url part is done so let's take care of text now
@@ -178,9 +180,8 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
       text = text.replace(xmppMailRegex, function (wholeMatch, lead, scheme, addr, resource) {
         resource = resource || '';
         let trail = '',
-            body = resource || addr,
-            tm;
-        while ((tm = /[.,;:!?]$/.exec(body))) {
+            body = resource || addr;
+        while (/[.,;:!?]$/.test(body)) {
           trail = body.slice(-1) + trail;
           body = body.slice(0, -1);
         }
@@ -193,9 +194,8 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
       // 8.2.2. `mailto:` addresses keep their scheme but never carry a path.
       let mailtoRegex = new RegExp(schemeBoundary + '(mailto:)(' + localPart + '@' + domainPart + ')', 'gi');
       text = text.replace(mailtoRegex, function (wholeMatch, lead, scheme, addr) {
-        let trail = '',
-            tm;
-        while ((tm = /[.,;:!?]$/.exec(addr))) {
+        let trail = '';
+        while (/[.,;:!?]$/.test(addr)) {
           trail = addr.slice(-1) + trail;
           addr = addr.slice(0, -1);
         }
@@ -644,7 +644,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         if (!closer.canClose) { closer = closer.delimNext; continue; }
         let opener = closer.delimPrev,
             openerFound = false,
-            oddMatch = false;
+            oddMatch;
         while (opener !== null && opener !== stackBottom && opener !== openersBottom[closer.cc][closer.origdelims % 3]) {
           oddMatch = (closer.canOpen || opener.canClose) &&
                      (closer.origdelims % 3 !== 0) &&
@@ -796,8 +796,6 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         // lower-case and turn embedded newlines into spaces
         linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
       }
-      url = '#' + linkId;
-
       if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
         url = globals.gUrls[linkId];
         if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {

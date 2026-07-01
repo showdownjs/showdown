@@ -252,7 +252,7 @@
 
         // no edge case let's proceed as usual
       } else {
-        let multilineText = '';
+        let multilineText;
 
         // multiline is a bit trickier
         // first we must take care of the edge cases of:

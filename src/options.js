@@ -4,6 +4,7 @@
  * Created by Tivie on 13-07-2015.
  */
 
+// eslint-disable-next-line no-unused-vars -- called from sibling src files via the shared concat scope (see scripts/concat.mjs)
 function getDefaultOpts (simple) {
   'use strict';
 
@@ -184,7 +185,7 @@ function getDefaultOpts (simple) {
   }
   let ret = {};
   for (let opt in defaultOptions) {
-    if (defaultOptions.hasOwnProperty(opt)) {
+    if (Object.prototype.hasOwnProperty.call(defaultOptions, opt)) {
       ret[opt] = defaultOptions[opt].defaultValue;
     }
   }

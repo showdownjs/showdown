@@ -52,7 +52,7 @@ showdown.subParser('makehtml.decodeEntities', function (text, options, globals) 
     }
     try {
       return String.fromCodePoint(cp);
-    } catch (e) {
+    } catch {
       return '�';
     }
   }
@@ -70,7 +70,7 @@ showdown.subParser('makehtml.decodeEntities', function (text, options, globals) 
       return escapeOutput(fromCodePoint(parseInt(m[1], 16)));
     }
     // named reference (must be a known HTML5 entity name)
-    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && entities.hasOwnProperty(body)) {
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && Object.prototype.hasOwnProperty.call(entities, body)) {
       return escapeOutput(entities[body]);
     }
     // not a valid reference - escape the ampersand and leave the rest intact

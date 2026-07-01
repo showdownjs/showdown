@@ -1,4 +1,4 @@
-/*! showdown v 3.0.0-rc2 - 01-07-2026 */
+/*! showdown v 3.0.0-rc2 - 02-07-2026 */
 const showdown = (function () {
 // noinspection HtmlRequiredLangAttribute
 
@@ -6,6 +6,7 @@ const showdown = (function () {
  * Created by Tivie on 13-07-2015.
  */
 
+// eslint-disable-next-line no-unused-vars -- called from sibling src files via the shared concat scope (see scripts/concat.mjs)
 function getDefaultOpts (simple) {
   'use strict';
 
@@ -186,7 +187,7 @@ function getDefaultOpts (simple) {
   }
   let ret = {};
   for (let opt in defaultOptions) {
-    if (defaultOptions.hasOwnProperty(opt)) {
+    if (Object.prototype.hasOwnProperty.call(defaultOptions, opt)) {
       ret[opt] = defaultOptions[opt].defaultValue;
     }
   }
@@ -298,14 +299,14 @@ showdown.resetOptions = function () {
  */
 showdown.setFlavor = function (name) {
   'use strict';
-  if (!flavor.hasOwnProperty(name)) {
+  if (!Object.prototype.hasOwnProperty.call(flavor, name)) {
     throw Error(name + ' flavor was not found');
   }
   showdown.resetOptions();
   let preset = flavor[name];
   setFlavor = name;
   for (let option in preset) {
-    if (preset.hasOwnProperty(option)) {
+    if (Object.prototype.hasOwnProperty.call(preset, option)) {
       globalOptions[option] = preset[option];
     }
   }
@@ -327,7 +328,7 @@ showdown.getFlavor = function () {
  */
 showdown.getFlavorOptions = function (name) {
   'use strict';
-  if (flavor.hasOwnProperty(name)) {
+  if (Object.prototype.hasOwnProperty.call(flavor, name)) {
     return flavor[name];
   }
 };
@@ -369,7 +370,7 @@ showdown.subParser = function (name, func) {
     if (typeof func !== 'undefined') {
       parsers[name] = func;
     } else {
-      if (parsers.hasOwnProperty(name)) {
+      if (Object.prototype.hasOwnProperty.call(parsers, name)) {
         return parsers[name];
       } else {
         throw Error('SubParser named ' + name + ' not registered!');
@@ -406,7 +407,7 @@ showdown.extension = function (name, ext) {
 
   // Getter
   if (showdown.helper.isUndefined(ext)) {
-    if (!extensions.hasOwnProperty(name)) {
+    if (!Object.prototype.hasOwnProperty.call(extensions, name)) {
       throw Error('Extension named ' + name + ' is not registered!');
     }
     return extensions[name];
@@ -531,7 +532,7 @@ function validate (extension, name) {
         return ret;
       }
       for (let ln in ext.listeners) {
-        if (ext.listeners.hasOwnProperty(ln)) {
+        if (Object.prototype.hasOwnProperty.call(ext.listeners, ln)) {
           if (typeof ext.listeners[ln] !== 'function') {
             ret.valid = false;
             ret.error = baseMsg + '"listeners" property must be an hash of [event name]: [callback]. listeners.' + ln +
@@ -589,7 +590,7 @@ showdown.validateExtension = function (ext) {
  * showdownjs helper functions
  */
 
-if (!showdown.hasOwnProperty('helper')) {
+if (!Object.prototype.hasOwnProperty.call(showdown, 'helper')) {
   showdown.helper = {};
 }
 
@@ -725,7 +726,7 @@ showdown.helper.forEach = function (obj, callback) {
     }
   } else if (typeof (obj) === 'object') {
     for (let prop in obj) {
-      if (obj.hasOwnProperty(prop)) {
+      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
         callback(obj[prop], prop, obj);
       }
     }
@@ -1156,6 +1157,7 @@ showdown.helper.isAbsolutePath = function (path) {
  */
 showdown.helper.trimStart = function (text) {
   return (!String.prototype.trimStart) ?
+    // eslint-disable-next-line no-control-regex -- Unicode whitespace class (incl. \x09-\x0D) in trim polyfill
     text.replace(/^[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+/, '') :
     text.trimStart();
 };
@@ -1167,6 +1169,7 @@ showdown.helper.trimStart = function (text) {
  */
 showdown.helper.trimEnd = function (text) {
   return (!String.prototype.trimEnd) ?
+    // eslint-disable-next-line no-control-regex -- Unicode whitespace class (incl. \x09-\x0D) in trim polyfill
     text.replace(/[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+$/, '') :
     text.trimEnd();
 };
@@ -1267,7 +1270,7 @@ showdown.helper.cmDecodeEntities = function (str) {
     }
     try {
       return String.fromCodePoint(cp);
-    } catch (e) {
+    } catch {
       return '�';
     }
   }
@@ -1279,7 +1282,7 @@ showdown.helper.cmDecodeEntities = function (str) {
     if ((m = /^#[xX]([0-9a-fA-F]{1,6})$/.exec(body))) {
       return fromCodePoint(parseInt(m[1], 16));
     }
-    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && entities.hasOwnProperty(body)) {
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && Object.prototype.hasOwnProperty.call(entities, body)) {
       return entities[body];
     }
     return wholeMatch;
@@ -1469,7 +1472,7 @@ showdown.helper.cloneObject = function (obj, deep) {
   if (!deep) {
     let newObj = {};
     for (let key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         newObj[key] = obj[key];
       }
     }
@@ -1497,7 +1500,7 @@ showdown.helper._populateAttributes = function (attributes) {
   }
 
   for (let attr in attributes) {
-    if (attributes.hasOwnProperty(attr)) {
+    if (Object.prototype.hasOwnProperty.call(attributes, attr)) {
       let key = attr,
           val;
 
@@ -1618,11 +1621,11 @@ showdown.helper.validateOptions = function (options) {
   let defaultOptions = getDefaultOpts(false);
 
   for (let opt in defaultOptions) {
-    if (!defaultOptions.hasOwnProperty(opt)) {
+    if (!Object.prototype.hasOwnProperty.call(defaultOptions, opt)) {
       continue;
     }
 
-    if (!options.hasOwnProperty(opt)) {
+    if (!Object.prototype.hasOwnProperty.call(options, opt)) {
       options[opt] = defaultOptions[opt].defaultValue;
     }
 
@@ -1649,6 +1652,7 @@ showdown.helper.validateOptions = function (options) {
 // use this instead of builtin is undefined for IE8 compatibility
 if (typeof (console) === 'undefined') {
   // noinspection JSValidateTypes
+  // eslint-disable-next-line no-global-assign -- deliberate polyfill for environments without console
   console = {
     warn: function (msg) {
       'use strict';
@@ -3545,14 +3549,14 @@ showdown.helper.emojiReverse = (function () {
         unicode = {},
         values = [];
     for (var code in showdown.helper.emojis) {
-      if (!showdown.helper.emojis.hasOwnProperty(code)) { continue; }
+      if (!Object.prototype.hasOwnProperty.call(showdown.helper.emojis, code)) { continue; }
       var val = showdown.helper.emojis[code];
       if (/^\s*<img/.test(val)) {
         var srcMatch = val.match(/src="([^"]*)"/);
-        if (srcMatch && !images.hasOwnProperty(srcMatch[1])) {
+        if (srcMatch && !Object.prototype.hasOwnProperty.call(images, srcMatch[1])) {
           images[srcMatch[1]] = code;
         }
-      } else if (!unicode.hasOwnProperty(val)) {
+      } else if (!Object.prototype.hasOwnProperty.call(unicode, val)) {
         unicode[val] = code;
         values.push(val);
       }
@@ -3665,8 +3669,8 @@ showdown.Event = class {
     }
     this._matches = {};
     for (let prop in value) {
-      if (value.hasOwnProperty(prop)) {
-        let descriptor = {};
+      if (Object.prototype.hasOwnProperty.call(value, prop)) {
+        let descriptor;
         if (/^_(.+)/.test(prop)) {
           descriptor = {
             enumerable: true,
@@ -3940,7 +3944,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
    */
   function renderBlockquote (bq, wholeMatch, pattern) {
     let otp,
-        attributes = {};
+        attributes;
 
     let captureStartEvent = new showdown.Event('makehtml.blockquote.onCapture', bq);
     captureStartEvent
@@ -4114,6 +4118,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   // Reused across calls; each recognizer sets lastIndex before exec and the parse is
   // not re-entrant within a single string.
   const reEntity = /&(?:#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]*);/y;
+  // eslint-disable-next-line no-control-regex -- CommonMark autolinks exclude control chars (\x00-\x20) per spec
   const reAutoUri = /<[A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*>/y;
   const reAutoEmail = /<[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*>/y;
   const reRawHtml = new RegExp('(?:' + showdown.helper.regexes.cmHTMLTagSource + ')', 'y');
@@ -4233,6 +4238,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         url = isWww ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
         // GFM: percent-encode non-ASCII characters in the href (the display text keeps the
         // literal characters)
+        // eslint-disable-next-line no-control-regex -- \x00-\x7F is the ASCII range
         url = url.replace(/[^\x00-\x7F]+/g, function (s) { return encodeURI(s); });
 
         // url part is done so let's take care of text now
@@ -4260,9 +4266,8 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
       text = text.replace(xmppMailRegex, function (wholeMatch, lead, scheme, addr, resource) {
         resource = resource || '';
         let trail = '',
-            body = resource || addr,
-            tm;
-        while ((tm = /[.,;:!?]$/.exec(body))) {
+            body = resource || addr;
+        while (/[.,;:!?]$/.test(body)) {
           trail = body.slice(-1) + trail;
           body = body.slice(0, -1);
         }
@@ -4275,9 +4280,8 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
       // 8.2.2. `mailto:` addresses keep their scheme but never carry a path.
       let mailtoRegex = new RegExp(schemeBoundary + '(mailto:)(' + localPart + '@' + domainPart + ')', 'gi');
       text = text.replace(mailtoRegex, function (wholeMatch, lead, scheme, addr) {
-        let trail = '',
-            tm;
-        while ((tm = /[.,;:!?]$/.exec(addr))) {
+        let trail = '';
+        while (/[.,;:!?]$/.test(addr)) {
           trail = addr.slice(-1) + trail;
           addr = addr.slice(0, -1);
         }
@@ -4726,7 +4730,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         if (!closer.canClose) { closer = closer.delimNext; continue; }
         let opener = closer.delimPrev,
             openerFound = false,
-            oddMatch = false;
+            oddMatch;
         while (opener !== null && opener !== stackBottom && opener !== openersBottom[closer.cc][closer.origdelims % 3]) {
           oddMatch = (closer.canOpen || opener.canClose) &&
                      (closer.origdelims % 3 !== 0) &&
@@ -4878,8 +4882,6 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
         // lower-case and turn embedded newlines into spaces
         linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
       }
-      url = '#' + linkId;
-
       if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
         url = globals.gUrls[linkId];
         if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
@@ -5695,7 +5697,7 @@ showdown.subParser('makehtml.completeHTMLDocument', function (text, options, glo
   }
 
   for (let meta in globals.metadata.parsed) {
-    if (globals.metadata.parsed.hasOwnProperty(meta)) {
+    if (Object.prototype.hasOwnProperty.call(globals.metadata.parsed, meta)) {
       switch (meta.toLowerCase()) {
         case 'doctype':
           break;
@@ -5789,7 +5791,7 @@ showdown.subParser('makehtml.decodeEntities', function (text, options, globals) 
     }
     try {
       return String.fromCodePoint(cp);
-    } catch (e) {
+    } catch {
       return '�';
     }
   }
@@ -5807,7 +5809,7 @@ showdown.subParser('makehtml.decodeEntities', function (text, options, globals) 
       return escapeOutput(fromCodePoint(parseInt(m[1], 16)));
     }
     // named reference (must be a known HTML5 entity name)
-    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && entities.hasOwnProperty(body)) {
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && Object.prototype.hasOwnProperty.call(entities, body)) {
       return escapeOutput(entities[body]);
     }
     // not a valid reference - escape the ampersand and leave the rest intact
@@ -5966,10 +5968,10 @@ showdown.subParser('makehtml.emoji', function (text, options, globals) {
   let pattern = /:(\S+?):/g;
 
   text = text.replace(pattern, function (wholeMatch, emojiCode) {
-    if (!showdown.helper.emojis.hasOwnProperty(emojiCode)) {
+    if (!Object.prototype.hasOwnProperty.call(showdown.helper.emojis, emojiCode)) {
       return wholeMatch;
     }
-    let otp = '';
+    let otp;
     let captureStartEvent = new showdown.Event('makehtml.emoji.onCapture', emojiCode);
     captureStartEvent
       .setOutput(null)
@@ -6281,7 +6283,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
         // look back for a matching opener
         let opener = closer.delimPrev,
             openerFound = false,
-            oddMatch = false;
+            oddMatch;
         while (opener !== null && opener !== openersBottom[closer.cc][closer.origdelims % 3]) {
           oddMatch = (closer.canOpen || opener.canClose) &&
                      (closer.origdelims % 3 !== 0) &&
@@ -7782,7 +7784,7 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
 
         // no edge case let's proceed as usual
       } else {
-        let multilineText = '';
+        let multilineText;
 
         // multiline is a bit trickier
         // first we must take care of the edge cases of:
@@ -10291,7 +10293,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
           _title: title
         },
         otp,
-        attributes = {};
+        attributes;
 
     if (linkId) {
       linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
@@ -10311,8 +10313,6 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
         // lower-case and turn embedded newlines into spaces
         linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(altText) : showdown.helper.caseFold(altText).replace(/ ?\n/g, ' ');
       }
-      url = '#' + linkId;
-
       if (!showdown.helper.isUndefined(gUrls[linkId])) {
         url = gUrls[linkId];
         if (!showdown.helper.isUndefined(gTitles[linkId])) {
@@ -10598,6 +10598,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   if (options.cmSpec) {
     // CommonMark autolinks: any scheme (2-32 chars) URI, and emails, with no entity encoding.
     // 4.1. URI autolinks: <scheme:rest>
+    // eslint-disable-next-line no-control-regex -- CommonMark autolinks exclude control chars (\x00-\x20) per spec
     let cmUriAutolinkRegex = /<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*)>/g;
     text = text.replace(cmUriAutolinkRegex, function (wholeMatch, uri) {
       // backslash escapes do not work inside autolinks, so restore them to literal backslash + char
@@ -10808,7 +10809,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   function parseCmDestTitle (str, j) {
     let n = str.length,
         isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; },
-        url = '',
+        url,
         emptyCase = false;
 
     // optional leading whitespace
@@ -10917,8 +10918,6 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
         // lower-case and turn embedded newlines into spaces
         linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
       }
-      url = '#' + linkId;
-
       if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
         url = globals.gUrls[linkId];
         if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
@@ -11548,11 +11547,11 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   /** Unhashify HTML blocks */
   end = grafsOut.length;
   for (let i = 0; i < end; i++) {
-    let blockText = '',
+    let blockText,
         grafsOutIt = grafsOut[i],
         codeFlag = false;
     // if this is a marker for an html block...
-    let blockMatch = null;
+    let blockMatch;
     while ((blockMatch = /¨([KG])(\d+)\1/.exec(grafsOutIt)) !== null) {
       let delim = blockMatch[1],
           num   = blockMatch[2];
@@ -12321,7 +12320,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
     }
 
     for (let i = 0; i < colCount; ++i) {
-      let header = rawHeaders[i];
+      let header;
       let captureStartEvent = new showdown.Event('makehtml.table.header.onCapture', rawHeaders[i]);
       captureStartEvent
         .setOutput(null)
@@ -12951,7 +12950,7 @@ showdown.subParser('makeMarkdown.footnotes', function (node, options, globals) {
   function decodeLabel (s) {
     try {
       return decodeURIComponent(s);
-    } catch (e) {
+    } catch {
       return s;
     }
   }
@@ -13092,7 +13091,7 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
       if (options.emoji && node.hasAttribute('src')) {
         let emojiImages = showdown.helper.emojiReverse().images,
             src = node.getAttribute('src');
-        if (emojiImages.hasOwnProperty(src)) {
+        if (Object.prototype.hasOwnProperty.call(emojiImages, src)) {
           return ':' + emojiImages[src] + ':';
         }
       }
@@ -13314,7 +13313,7 @@ showdown.subParser('makeMarkdown.list', function (node, options, globals, type) 
         }
 
         // define the bullet to use in list
-        let bullet = '';
+        let bullet;
         if (type === 'ol') {
           bullet = listNum.toString() + '. ';
         } else {
@@ -14209,7 +14208,7 @@ showdown.Converter = function (converterOptions) {
     converterOptions = converterOptions || {};
 
     for (let gOpt in globalOptions) {
-      if (globalOptions.hasOwnProperty(gOpt)) {
+      if (Object.prototype.hasOwnProperty.call(globalOptions, gOpt)) {
         options[gOpt] = globalOptions[gOpt];
       }
     }
@@ -14217,7 +14216,7 @@ showdown.Converter = function (converterOptions) {
     // Merge options
     if (typeof converterOptions === 'object') {
       for (let opt in converterOptions) {
-        if (converterOptions.hasOwnProperty(opt)) {
+        if (Object.prototype.hasOwnProperty.call(converterOptions, opt)) {
           options[opt] = converterOptions[opt];
         }
       }
@@ -14285,9 +14284,9 @@ showdown.Converter = function (converterOptions) {
           listen('makehtml.onEnd', _wrapLegacyExtension(ext[i]));
           break;
       }
-      if (ext[i].hasOwnProperty('listeners')) {
+      if (Object.prototype.hasOwnProperty.call(ext[i], 'listeners')) {
         for (let ln in ext[i].listeners) {
-          if (ext[i].listeners.hasOwnProperty(ln)) {
+          if (Object.prototype.hasOwnProperty.call(ext[i].listeners, ln)) {
             listen(ln, ext[i].listeners[ln]);
           }
         }
@@ -14323,7 +14322,7 @@ showdown.Converter = function (converterOptions) {
       throw Error('Invalid argument in converter.listen() method: callback must be a function, but ' + typeof callback + ' given');
     }
     name = name.toLowerCase();
-    if (!listeners.hasOwnProperty(name)) {
+    if (!Object.prototype.hasOwnProperty.call(listeners, name)) {
       listeners[name] = [];
     }
     listeners[name].push(callback);
@@ -14339,7 +14338,7 @@ showdown.Converter = function (converterOptions) {
       throw Error('Invalid argument in converter.unlisten() method: name must be a string, but ' + typeof name + ' given');
     }
     name = name.toLowerCase();
-    if (!listeners.hasOwnProperty(name)) {
+    if (!Object.prototype.hasOwnProperty.call(listeners, name)) {
       return;
     }
     // no callback given: remove every listener registered for this event
@@ -14376,7 +14375,7 @@ showdown.Converter = function (converterOptions) {
       throw new TypeError('dispatch only accepts showdown.Event objects as param, but ' + typeof event + ' given');
     }
     event.converter = this;
-    if (listeners.hasOwnProperty(event.name)) {
+    if (Object.prototype.hasOwnProperty.call(listeners, event.name)) {
       for (let i = 0; i < listeners[event.name].length; ++i) {
         let listRet = listeners[event.name][i](event);
         if (showdown.helper.isString(listRet)) {
@@ -14738,13 +14737,13 @@ showdown.Converter = function (converterOptions) {
    * @param {string} name
    */
   this.setFlavor = function (name) {
-    if (!flavor.hasOwnProperty(name)) {
+    if (!Object.prototype.hasOwnProperty.call(flavor, name)) {
       throw Error(name + ' flavor was not found');
     }
     let preset = flavor[name];
     setConvFlavor = name;
     for (let option in preset) {
-      if (preset.hasOwnProperty(option)) {
+      if (Object.prototype.hasOwnProperty.call(preset, option)) {
         options[option] = preset[option];
       }
     }

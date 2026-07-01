@@ -45,7 +45,7 @@ showdown.subParser('makeMarkdown.footnotes', function (node, options, globals) {
   function decodeLabel (s) {
     try {
       return decodeURIComponent(s);
-    } catch (e) {
+    } catch {
       return s;
     }
   }

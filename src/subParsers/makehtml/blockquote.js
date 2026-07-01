@@ -69,7 +69,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
    */
   function renderBlockquote (bq, wholeMatch, pattern) {
     let otp,
-        attributes = {};
+        attributes;
 
     let captureStartEvent = new showdown.Event('makehtml.blockquote.onCapture', bq);
     captureStartEvent

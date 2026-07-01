@@ -92,8 +92,8 @@ showdown.Event = class {
     }
     this._matches = {};
     for (let prop in value) {
-      if (value.hasOwnProperty(prop)) {
-        let descriptor = {};
+      if (Object.prototype.hasOwnProperty.call(value, prop)) {
+        let descriptor;
         if (/^_(.+)/.test(prop)) {
           descriptor = {
             enumerable: true,

@@ -62,7 +62,7 @@
       // transformations
       html = html.replace(/→/g, '\t'); // replace → with tabs
 
-      if (!tcObj.hasOwnProperty(section)) {
+      if (!Object.prototype.hasOwnProperty.call(tcObj, section)) {
         tcObj[section] = [];
       }
       tcObj[section].push({
@@ -117,7 +117,7 @@
       try {
         testCase.expected = htmlPrettify(testCase.expected);
         testCase.actual = htmlPrettify(testCase.actual);
-      } catch (e) {
+      } catch {
         // some weird html in testcase breaks prettifier so we skip it and do some manual stuff
         testCase.expected = testCase.expected.trim().replace('\n', '');
         testCase.actual = testCase.actual.trim().replace('\n', '');

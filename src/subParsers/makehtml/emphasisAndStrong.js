@@ -261,7 +261,7 @@ showdown.subParser('makehtml.emphasisAndStrong', function (text, options, global
         // look back for a matching opener
         let opener = closer.delimPrev,
             openerFound = false,
-            oddMatch = false;
+            oddMatch;
         while (opener !== null && opener !== openersBottom[closer.cc][closer.origdelims % 3]) {
           oddMatch = (closer.canOpen || opener.canClose) &&
                      (closer.origdelims % 3 !== 0) &&

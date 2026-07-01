@@ -44,6 +44,9 @@ const styleRules = {
 const rules = {
   ...recommendedAsWarn,
   'no-undef': 'off',
+  // files legitimately shadow the config-declared globals (`showdown`, `performance`, mocha's
+  // `test`) in their own scope — only flag true same-scope redeclarations
+  'no-redeclare': ['warn', { builtinGlobals: false }],
   eqeqeq: 'warn',
   ...coreRules,
   ...styleRules

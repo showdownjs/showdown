@@ -226,7 +226,7 @@ function showShowdownOptions () {
   console.log('\nshowdown config options:');
   // show showdown options
   for (let sopt in showdownOptions) {
-    if (showdownOptions.hasOwnProperty(sopt)) {
+    if (Object.prototype.hasOwnProperty.call(showdownOptions, sopt)) {
       console.log('  ' + sopt + ':', '[default=' + showdownOptions[sopt].defaultValue + ']', showdownOptions[sopt].describe);
     }
   }
@@ -319,7 +319,7 @@ function parseShowdownOptions (configOptions, defaultOptions, messenger) {
   // (getFlavorOptions returns the internal preset by reference)
   let shOpt = {};
   for (let d in defaultOptions) {
-    if (defaultOptions.hasOwnProperty(d)) {
+    if (Object.prototype.hasOwnProperty.call(defaultOptions, d)) {
       shOpt[d] = defaultOptions[d];
     }
   }
@@ -340,7 +340,7 @@ function parseShowdownOptions (configOptions, defaultOptions, messenger) {
       rawVal = opt.slice(eqIdx + 1);
     }
 
-    if (!optionMeta.hasOwnProperty(key)) {
+    if (!Object.prototype.hasOwnProperty.call(optionMeta, key)) {
       messenger.printWarning('WARNING: unknown option \'' + key + '\', ignored');
       continue;
     }
@@ -424,7 +424,7 @@ function expandInputs (patterns, messenger) {
             matched.push(path.join(dir, entries[j]));
           }
         }
-      } catch (e) {
+      } catch {
         // directory unreadable — treated as no match below
       }
       if (matched.length === 0) {
@@ -477,7 +477,7 @@ function readFromStdIn (encoding) {
   try {
     return fs.readFileSync(process.stdin.fd, encoding).toString();
   } catch (e) {
-    throw new Error('Could not read from stdin, reason: ' + e.message);
+    throw new Error('Could not read from stdin, reason: ' + e.message, { cause: e });
   }
 }
 
@@ -493,9 +493,9 @@ function readFromFile (file, encoding) {
     return fs.readFileSync(file, encoding);
   } catch (err) {
     if (err.code === 'EISDIR') {
-      throw new Error(file + ' is a directory, not a file (use a glob such as \'' + path.join(file, '*') + '\' to convert its contents)');
+      throw new Error(file + ' is a directory, not a file (use a glob such as \'' + path.join(file, '*') + '\' to convert its contents)', { cause: err });
     }
-    throw new Error('Could not read from file ' + file + ', reason: ' + err.message);
+    throw new Error('Could not read from file ' + file + ', reason: ' + err.message, { cause: err });
   }
 }
 
@@ -533,7 +533,7 @@ function writeToFile (output, file, append, encoding) {
   try {
     write(file, Buffer.from(output, encoding || 'utf8'));
   } catch (err) {
-    throw new Error('Could not write to file ' + file + ', reason: ' + err.message);
+    throw new Error('Could not write to file ' + file + ', reason: ' + err.message, { cause: err });
   }
 }
 
@@ -546,7 +546,7 @@ function isDirectory (p) {
   'use strict';
   try {
     return fs.statSync(p).isDirectory();
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -578,7 +578,7 @@ function buildConverter (options, messenger) {
 
   // print enabled options
   for (let o in options.config) {
-    if (options.config.hasOwnProperty(o) && options.config[o] === true) {
+    if (Object.prototype.hasOwnProperty.call(options.config, o) && options.config[o] === true) {
       messenger.printMsg('Enabling option ' + o);
     }
   }

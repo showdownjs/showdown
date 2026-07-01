@@ -73,7 +73,7 @@ showdown.Converter = function (converterOptions) {
     converterOptions = converterOptions || {};
 
     for (let gOpt in globalOptions) {
-      if (globalOptions.hasOwnProperty(gOpt)) {
+      if (Object.prototype.hasOwnProperty.call(globalOptions, gOpt)) {
         options[gOpt] = globalOptions[gOpt];
       }
     }
@@ -81,7 +81,7 @@ showdown.Converter = function (converterOptions) {
     // Merge options
     if (typeof converterOptions === 'object') {
       for (let opt in converterOptions) {
-        if (converterOptions.hasOwnProperty(opt)) {
+        if (Object.prototype.hasOwnProperty.call(converterOptions, opt)) {
           options[opt] = converterOptions[opt];
         }
       }
@@ -149,9 +149,9 @@ showdown.Converter = function (converterOptions) {
           listen('makehtml.onEnd', _wrapLegacyExtension(ext[i]));
           break;
       }
-      if (ext[i].hasOwnProperty('listeners')) {
+      if (Object.prototype.hasOwnProperty.call(ext[i], 'listeners')) {
         for (let ln in ext[i].listeners) {
-          if (ext[i].listeners.hasOwnProperty(ln)) {
+          if (Object.prototype.hasOwnProperty.call(ext[i].listeners, ln)) {
             listen(ln, ext[i].listeners[ln]);
           }
         }
@@ -187,7 +187,7 @@ showdown.Converter = function (converterOptions) {
       throw Error('Invalid argument in converter.listen() method: callback must be a function, but ' + typeof callback + ' given');
     }
     name = name.toLowerCase();
-    if (!listeners.hasOwnProperty(name)) {
+    if (!Object.prototype.hasOwnProperty.call(listeners, name)) {
       listeners[name] = [];
     }
     listeners[name].push(callback);
@@ -203,7 +203,7 @@ showdown.Converter = function (converterOptions) {
       throw Error('Invalid argument in converter.unlisten() method: name must be a string, but ' + typeof name + ' given');
     }
     name = name.toLowerCase();
-    if (!listeners.hasOwnProperty(name)) {
+    if (!Object.prototype.hasOwnProperty.call(listeners, name)) {
       return;
     }
     // no callback given: remove every listener registered for this event
@@ -240,7 +240,7 @@ showdown.Converter = function (converterOptions) {
       throw new TypeError('dispatch only accepts showdown.Event objects as param, but ' + typeof event + ' given');
     }
     event.converter = this;
-    if (listeners.hasOwnProperty(event.name)) {
+    if (Object.prototype.hasOwnProperty.call(listeners, event.name)) {
       for (let i = 0; i < listeners[event.name].length; ++i) {
         let listRet = listeners[event.name][i](event);
         if (showdown.helper.isString(listRet)) {
@@ -602,13 +602,13 @@ showdown.Converter = function (converterOptions) {
    * @param {string} name
    */
   this.setFlavor = function (name) {
-    if (!flavor.hasOwnProperty(name)) {
+    if (!Object.prototype.hasOwnProperty.call(flavor, name)) {
       throw Error(name + ' flavor was not found');
     }
     let preset = flavor[name];
     setConvFlavor = name;
     for (let option in preset) {
-      if (preset.hasOwnProperty(option)) {
+      if (Object.prototype.hasOwnProperty.call(preset, option)) {
         options[option] = preset[option];
       }
     }

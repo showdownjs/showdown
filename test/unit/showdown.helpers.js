@@ -134,6 +134,7 @@ describe('isUndefined()', function () {
   });
 
   it('should return true if a letiable is initialized but not defined', function () {
+    // eslint-disable-next-line no-unassigned-vars -- deliberately unassigned to test isUndefined()
     let myVar;
     expect(isUndefined(myVar)).toBe(true);
   });

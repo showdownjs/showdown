@@ -40,11 +40,11 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   /** Unhashify HTML blocks */
   end = grafsOut.length;
   for (let i = 0; i < end; i++) {
-    let blockText = '',
+    let blockText,
         grafsOutIt = grafsOut[i],
         codeFlag = false;
     // if this is a marker for an html block...
-    let blockMatch = null;
+    let blockMatch;
     while ((blockMatch = /¨([KG])(\d+)\1/.exec(grafsOutIt)) !== null) {
       let delim = blockMatch[1],
           num   = blockMatch[2];

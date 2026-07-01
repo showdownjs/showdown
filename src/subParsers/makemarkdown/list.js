@@ -28,7 +28,7 @@ showdown.subParser('makeMarkdown.list', function (node, options, globals, type) 
         }
 
         // define the bullet to use in list
-        let bullet = '';
+        let bullet;
         if (type === 'ol') {
           bullet = listNum.toString() + '. ';
         } else {

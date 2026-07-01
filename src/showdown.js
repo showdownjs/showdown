@@ -103,14 +103,14 @@ showdown.resetOptions = function () {
  */
 showdown.setFlavor = function (name) {
   'use strict';
-  if (!flavor.hasOwnProperty(name)) {
+  if (!Object.prototype.hasOwnProperty.call(flavor, name)) {
     throw Error(name + ' flavor was not found');
   }
   showdown.resetOptions();
   let preset = flavor[name];
   setFlavor = name;
   for (let option in preset) {
-    if (preset.hasOwnProperty(option)) {
+    if (Object.prototype.hasOwnProperty.call(preset, option)) {
       globalOptions[option] = preset[option];
     }
   }
@@ -132,7 +132,7 @@ showdown.getFlavor = function () {
  */
 showdown.getFlavorOptions = function (name) {
   'use strict';
-  if (flavor.hasOwnProperty(name)) {
+  if (Object.prototype.hasOwnProperty.call(flavor, name)) {
     return flavor[name];
   }
 };
@@ -174,7 +174,7 @@ showdown.subParser = function (name, func) {
     if (typeof func !== 'undefined') {
       parsers[name] = func;
     } else {
-      if (parsers.hasOwnProperty(name)) {
+      if (Object.prototype.hasOwnProperty.call(parsers, name)) {
         return parsers[name];
       } else {
         throw Error('SubParser named ' + name + ' not registered!');
@@ -211,7 +211,7 @@ showdown.extension = function (name, ext) {
 
   // Getter
   if (showdown.helper.isUndefined(ext)) {
-    if (!extensions.hasOwnProperty(name)) {
+    if (!Object.prototype.hasOwnProperty.call(extensions, name)) {
       throw Error('Extension named ' + name + ' is not registered!');
     }
     return extensions[name];
@@ -336,7 +336,7 @@ function validate (extension, name) {
         return ret;
       }
       for (let ln in ext.listeners) {
-        if (ext.listeners.hasOwnProperty(ln)) {
+        if (Object.prototype.hasOwnProperty.call(ext.listeners, ln)) {
           if (typeof ext.listeners[ln] !== 'function') {
             ret.valid = false;
             ret.error = baseMsg + '"listeners" property must be an hash of [event name]: [callback]. listeners.' + ln +

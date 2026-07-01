@@ -36,8 +36,30 @@
   },
   "license": "MIT",
   "main": "./dist/showdown.js",
+  "module": "./dist/showdown.esm.js",
+  "exports": {
+    ".": {
+      "browser": "./dist/showdown.esm.js",
+      "import": "./dist/showdown.js",
+      "require": "./dist/showdown.js",
+      "default": "./dist/showdown.js"
+    },
+    "./dist/*": "./dist/*",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "commonjs",
   "scripts": {
-    "test": "grunt test"
+    "build": "node scripts/build.mjs",
+    "build:test": "node scripts/build-testbundle.mjs",
+    "extract:commonmark": "node scripts/extract-commonmark.mjs",
+    "clean": "node -e \"require('fs').rmSync('.build',{recursive:true,force:true})\"",
+    "pretest": "npm run build:test",
+    "test": "mocha --require test/bootstrap.js \"test/unit/**/*.js\" \"test/functional/**/testsuite.*.js\"",
+    "test:single": "mocha --require test/bootstrap.js",
+    "perf": "node scripts/build-testbundle.mjs && node -e \"const p=require('./test/performance/performance.js');p.runTests();p.generateLogs();\""
   },
   "bin": {
     "showdown": "bin/showdown.js"
@@ -47,19 +69,11 @@
     "dist"
   ],
   "devDependencies": {
-    "chai": "*",
+    "chai": "^4.3.6",
     "chai-match": "*",
     "commonmark-spec": "^0.31.2",
     "diffable-html": "^5.0.0",
-    "grunt": "^1.4.1",
-    "grunt-contrib-clean": "^2.0.0",
-    "grunt-contrib-concat": "^2.0.0",
-    "grunt-contrib-jshint": "^3.1.0",
-    "grunt-contrib-uglify": "^5.0.1",
-    "grunt-conventional-changelog": "^6.1.0",
-    "grunt-endline": "^0.7.0",
-    "grunt-eslint": "^24.0.0",
-    "grunt-mocha-test": "^0.13.3",
+    "esbuild": "^0.28.1",
     "karma": "^6.3.17",
     "karma-browserstack-launcher": "^1.6.0",
     "karma-chai": "^0.1.0",
@@ -67,11 +81,8 @@
     "karma-firefox-launcher": "^2.1.2",
     "karma-jsdom-launcher": "^12.0.0",
     "karma-mocha": "^2.0.1",
-    "load-grunt-tasks": "^5.1.0",
     "mocha": "^11.7.6",
     "performance-now": "^2.1.0",
-    "quiet-grunt": "^0.2.0",
-    "semver-sort": "^1.0.0",
     "sinon": "*",
     "source-map-support": "^0.5.21"
   },
@@ -80,11 +91,6 @@
     "jsdom": "^19.0.0"
   },
   "overrides": {
-    "minimist": "^1.2.6",
-    "serialize-javascript": "^7.0.5",
-    "lodash": "^4.18.1",
-    "grunt-conventional-changelog": {
-      "conventional-changelog": "^3.1.25"
-    }
+    "minimist": "^1.2.6"
   }
 }

@@ -49,7 +49,7 @@ jobs:
         run: npm ci
 
       - name: '🏗 Building src files for testing'
-        run: npx grunt concat:test
+        run: npm run build:test
 
       - name: '✅ Running test on BrowserStack with Karma'
         run: npx karma start karma.browserstack.js

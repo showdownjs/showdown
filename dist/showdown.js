@@ -593,15 +593,30 @@ if (!showdown.hasOwnProperty('helper')) {
   showdown.helper = {};
 }
 
-if (typeof this === 'undefined' && typeof window !== 'undefined') {
-  showdown.helper.document = window.document;
-} else {
-  if (typeof this.document === 'undefined' && typeof this.window === 'undefined') {
-    let jsdom = require('jsdom');
-    this.window = new jsdom.JSDOM('', {}).window; // jshint ignore:line
+// makeMarkdown needs a DOM to parse the input HTML. Resolution is lazy (first access of
+// `showdown.helper.document`) so Node users that only call makeHtml never pay the cost of
+// loading happy-dom; in environments with an ambient window/document (browsers, DOM test
+// environments) the require branch is never reached, so happy-dom never ends up in bundles.
+let lazyDocument = null;
+Object.defineProperty(showdown.helper, 'document', {
+  get: function () {
+    'use strict';
+    if (lazyDocument === null) {
+      if (typeof window !== 'undefined' && window.document) {
+        lazyDocument = window.document;
+      } else if (typeof document !== 'undefined') {
+        lazyDocument = document;
+      } else if (typeof require === 'function') {
+        let happyDom = require('happy-dom');
+        lazyDocument = new happyDom.Window().document;
+      } else {
+        throw new Error('makeMarkdown requires a DOM: provide a global window/document, ' +
+          'or run in Node (CommonJS) with happy-dom installed.');
+      }
+    }
+    return lazyDocument;
   }
-  showdown.helper.document = this.window.document;
-}
+});
 
 /**
  * Check if var is string

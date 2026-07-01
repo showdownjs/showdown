@@ -56,8 +56,8 @@ describe('showdown cli', function () {
     let bundlePath = path.join(tmpDir, 'showdown.js');
     execFileSync(process.execPath, [path.resolve('scripts/build-testbundle.mjs'), bundlePath]);
     process.env.SHOWDOWN_CLI_BUNDLE = bundlePath;
-    // The bundle lives outside the project tree, so its `require('jsdom')` needs NODE_PATH
-    // to resolve the project's node_modules.
+    // The bundle lives outside the project tree, so its lazy `require('happy-dom')` (hit by
+    // the makemarkdown tests) needs NODE_PATH to resolve the project's node_modules.
     process.env.NODE_PATH = path.resolve('node_modules');
   });
   after(function () {

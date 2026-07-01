@@ -86,6 +86,7 @@
     "esbuild": "^0.28.1",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
+    "jsdom": "^27.0.0",
     "performance-now": "^2.1.0",
     "playwright": "^1.61.1",
     "semver-sort": "^1.0.0",
@@ -93,7 +94,7 @@
   },
   "dependencies": {
     "commander": "^14.0.0",
-    "jsdom": "^27.0.0"
+    "happy-dom": "^20.10.6"
   },
   "overrides": {
     "minimist": "^1.2.6"

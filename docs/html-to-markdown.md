@@ -13,7 +13,8 @@ var converter = new showdown.Converter(),
 ```
 
 Unlike `makeHtml()`, the reverse converter parses the input into a **DOM** (using the browser's
-DOM in the browser, and `jsdom` in Node) and walks the node tree one construct at a time. Each
+DOM in the browser, and [`happy-dom`](https://github.com/capricorn86/happy-dom) in Node — loaded
+lazily on the first `makeMarkdown()` call) and walks the node tree one construct at a time. Each
 node is dispatched to a dedicated sub-parser. (These sub-parsers also emit
 [events](event-system.md#makemarkdown-html-to-markdown-events) you can hook from a listener
 extension.)

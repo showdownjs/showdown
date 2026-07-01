@@ -2,10 +2,11 @@
 // with NO build artifact. It concatenates the src files (same fixed, sorted order as the real
 // build) in-memory and wraps them in the build's IIFE, invoked with `.call(globalThis)`.
 //
-// Why `.call(globalThis)`: helpers.js picks the DOM via `this` (this.document / this.window).
-// Under the jsdom test environment, globalThis already has window+document, so this branch
-// uses them directly and never hits the Node-only `require('jsdom')` fallback (which would
-// fail in the ESM/browser test context).
+// helpers.js resolves the DOM lazily: an ambient window/document when one exists (the jsdom
+// test environment, real browsers), otherwise `require('happy-dom')`. ESM modules have no
+// `require`, so for Node-environment tests (no window) the generated module shims one via
+// createRequire, anchored to the project root so happy-dom resolves from our node_modules.
+// The shim is conditional at runtime — browser-mode runs never evaluate the node:module import.
 //
 // loader.js (the UMD export shim) is omitted — its `module.exports = showdown` branch trips
 // over the read-only ES module namespace Vitest exposes. We expose the `showdown` binding
@@ -26,7 +27,13 @@ export default function showdownSrcPlugin () {
     load (id) {
       if (id !== RESOLVED_ID) { return null; }
       const body = concatSources({ omitLoader: true });
-      return `(function () {\n${body}\nglobalThis.__showdownSrc = showdown;\n}).call(globalThis);\nexport default globalThis.__showdownSrc;\n`;
+      const requireBase = JSON.stringify(new URL('../package.json', import.meta.url).href);
+      return 'let require;\n' +
+        'if (typeof window === \'undefined\') {\n' +
+        '  const { createRequire } = await import(\'node:module\');\n' +
+        `  require = createRequire(${requireBase});\n` +
+        '}\n' +
+        `(function () {\n${body}\nglobalThis.__showdownSrc = showdown;\n}).call(globalThis);\nexport default globalThis.__showdownSrc;\n`;
     },
     // Re-run tests when any src file changes (watch mode).
     configureServer (server) {

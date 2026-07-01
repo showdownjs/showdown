@@ -62,8 +62,9 @@ await esbuild.build({
   banner: { js: minBanner },
   legalComments: 'none',
   write: true,
-  // helpers.js has a Node-only `require('jsdom')` branch, unreachable in the browser/bundler
-  // context this ESM build targets (Node consumers resolve to the UMD via the exports map).
+  // helpers.js has a Node-only lazy `require('happy-dom')` branch, unreachable in the
+  // browser/bundler context this ESM build targets (Node consumers resolve to the UMD via
+  // the exports map).
   logOverride: { 'unsupported-require-call': 'silent' },
 });
 console.log('wrote dist/showdown.esm.min.js (+ .map)');

@@ -1,0 +1,4 @@
+# Toolchain for building the Showdown documentation site (mkdocs build / serve).
+# mkdocs-material >= 9.4 is required: the emoji config in mkdocs.yml uses the
+# material.extensions.emoji.* API, which replaced the old materialx.emoji.* one in 9.4.
+mkdocs-material>=9.4

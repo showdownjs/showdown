@@ -1,101 +1,189 @@
-## Introduction
+# Showdown
 
-Showdown was created by John Fraser as a direct port of the original parser written by Markdown's creator, John Gruber.
+**`vanilla`** is Showdown's default flavor — the syntax you get out of the box when you don't set a
+flavor or any options. It is what the docs mean by "Showdown's own syntax".
 
-Although Showdown has evolved since its inception, in "vanilla mode", it tries to follow the [original markdown spec][md-spec] (henceforth referred as vanilla) as much as possible. There are, however, a few important differences, mainly due to inconsistencies in the original spec, which Showdown addressed following the author's advice as stated in the [markdown's "official" newsletter][md-newsletter].
+Showdown began as John Fraser's direct port of John Gruber's original Markdown parser, and in
+vanilla mode it still follows the [original spec][md-spec] closely, resolving the spec's ambiguities
+per the [author's guidance][md-newsletter]. On top of the [common syntax](syntax-overview.md#the-common-syntax)
+that every flavor shares, `vanilla` enables a couple of extras **by default** and lets you opt into
+many more via [options](options.md).
 
-Showdown also supports opt-in features, that is, an "extra" syntax that is not defined in the original spec. Users can enable these features via options (All the new syntax elements are disabled by default).
+## Enable this flavor
 
-This document provides a quick reference of the supported syntax and the differences in output from the original markdown.pl implementation.
+Vanilla is already the default, so you rarely need to set it. Use `setFlavor` to reset a converter
+back to it:
 
-## Paragraphs
+=== "Globally"
 
-Paragraphs in Showdown are **one or more lines of consecutive text** followed by one or more blank lines.
+    ```js
+    showdown.setFlavor('vanilla');
+    ```
+
+=== "On a converter"
+
+    ```js
+    converter.setFlavor('vanilla');
+    ```
+
+=== "Constructor"
+
+    ```js
+    // vanilla is the default, so no options are needed
+    const converter = new showdown.Converter();
+    ```
+
+## What Showdown adds
+
+On top of the [common syntax](syntax-overview.md#the-common-syntax), the vanilla flavor supports the
+constructs below. A few are **on by default** (fenced code blocks, strikethrough, email obfuscation,
+generated header ids); the rest are **opt-in** — enable them with the linked [option](options.md).
+
+### Fenced code blocks
+
+With [**`ghCodeBlocks`**][ghCodeBlocks] (on by default) you can fence a block with triple backticks
+instead of indenting it:
+
+    ```
+    x = 0
+    x = 2 + 2
+    what is x
+    ```
+
+### Strikethrough
+
+With [**`strikethrough`**][strikethrough] (on by default) two tildes around text produce a
+strikethrough, same as GFM:
 
 ```md
-On July 2, an alien mothership entered Earth's orbit and deployed several dozen 
-saucer-shaped "destroyer" spacecraft, each 15 miles (24 km) wide.
-    
-On July 3, the Black Knights, a squadron of Marine Corps F/A-18 Hornets, 
-participated in an assault on a destroyer near the city of Los Angeles.
+a ~~strikethrough~~ element
 ```
 
-The implication of the "one or more consecutive lines of text" is that Showdown supports 
-"hard-wrapped" text paragraphs. It means the following examples produce the same output:
+a <s>strikethrough</s> element
+
+### Emoji
+
+With [**`emoji`**][emoji] enabled, Showdown supports GitHub's emoji (a complete list is
+[here][emoji list]):
 
 ```md
-A very long line of text
+this is a :smile: smile emoji
+```
+
+### Task lists
+
+With [**`tasklists`**][tasklists] enabled, GFM-style task list items are supported:
+
+```md
+ - [x] checked list item
+ - [ ] unchecked list item
+```
+
+ - [x] checked list item
+ - [ ] unchecked list item
+
+### Tables
+
+Tables aren't part of core Markdown but are enabled via [**`tables`**][tables]. Colons set column
+alignment, outer pipes are optional, and you can use Markdown inside cells:
+
+```md
+| Tables        | Are           | Cool  |
+| ------------- |:-------------:| -----:|
+| **col 3 is**  | right-aligned | $1600 |
+| col 2 is      | *centered*    |   $12 |
+| zebra stripes | ~~are neat~~  |    $1 |
+```
+
+### Mentions
+
+With [**`ghMentions`**][mentions] every `@username` becomes a link to that GitHub profile:
+
+```md
+hey @tivie, check this out
+```
+
+Customize the generated link with [**`ghMentionsLink`**][ghMentionsLink]. For example, setting it to
+`http://mysite.com/{u}/profile`:
+
+```html
+<p>hey <a href="http://mysite.com/tivie/profile">@tivie</a>, check this out</p>
+```
+
+### Footnotes
+
+With [**`footnotes`**][footnotes] enabled (it is on in the [`gfm`](gfm.md) flavor), Showdown supports
+[GFM footnotes](https://github.github.com/gfm/). A footnote has a **reference** `[^id]` in the text
+and a **definition** `[^id]: …` (usually at the bottom of the document):
+
+```md
+Here is a footnote reference.[^1] And another.[^note]
+
+[^1]: The first footnote.
+[^note]: The second footnote, with *inline* markdown.
+```
+
+References are numbered automatically in **order of first reference** (not definition order), and the
+definitions are collected into a footnotes section at the end of the document. A few rules:
+
+* **Multi-paragraph / block definitions** — continuation content indented four spaces can hold
+  several paragraphs, block quotes or code blocks.
+* **A footnote can be referenced multiple times** — each reference gets its own back-reference link.
+* **Labels can be words or numbers** but **may not contain whitespace** (`[^a b]` is left literal);
+  matching is case-insensitive.
+* **A reference with no matching definition is left literal** (`[^missing]` stays as text), and an
+  **unreferenced definition is dropped**.
+* **A reference inside a code span, or escaped, is left literal** — `` `[^1]` `` and `\[^1]` are not
+  turned into footnotes.
+
+### Image dimensions
+
+With [**`parseImgDimensions`**][parseImgDimensions] you can set image dimensions inline or in
+reference style:
+
+```md
+![Alt text](url/to/image =250x250 "Optional title")
 ```
 
 ```md
-A very
-long line
-of text
+![Alt text][id]
+
+[id]: url/to/image =250x250
 ```
 
-If you **do** want to add soft line breaks (which translate to `<br>` in HTML) to a paragraph, 
-you can do so by adding 3 space characters to the end of the line.
+### Base64 encoded images
 
-You can also force every line break in paragraphs to translate to `<br>` (as Github does) by
-enabling the option [**`simpleLineBreaks`**][simpleLineBreaks].
-
-[simpleLineBreaks]: available-options.md#simplelinebreaks
-
-## Headings
-
-### Atx Style
-
-You can create a heading by adding one or more `#` symbols before your heading text. The number of `#` determines the level of the heading. This is similar to [**atx style**][atx].
+Showdown supports Base64 encoded images in both inline and reference style. Since v1.7.4, long
+base64 strings may be wrapped with newlines added after the `,`:
 
 ```md
-# The 1st level heading (an <h1> tag)
-## The 2nd level heading (an <h2> tag)
-…
-###### The 6th level heading (an <h6> tag)
-```
-
-The space between `#` and the heading text is not required but you can make it mandatory by enabling the option [**`requireSpaceBeforeHeadingText`**][requireSpaceBeforeHeadingText].
-
-[requireSpaceBeforeHeadingText]: available-options.md#requirespacebeforeheadingtext
-
-You can wrap the headings in `#`. Both leading and trailing `#` will be removed.
-
-```md
-## My Heading ##
-```
-
-If, for some reason, you need to keep a leading or trailing `#`, you can either add a space or escape it:
-
-```md
-# # My header # #
-
-#\# My Header \# #
-```
-
-### Setext style
-
-You can also use [**setext style**][setext] headings, although only two levels are available.
-
-```md
-This is an H1
-=============
-    
-This is an H2
--------------
+![Alt text](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAIAAAA7l
+jmRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAY
+SURBVBhXYwCC/2AAZYEoOAMs8Z+BgQEAXdcR7/Q1gssAAAAASUVORK5CYII=)
 ```
 
 !!! warning ""
-    There is an awkward effect when a paragraph is followed by a list. This effect appears on some circumstances, in live preview editors.
+    With reference-style base64 sources, a **double newline is required** after the base64 string to
+    separate it from the following text block (adjacent references are fine):
 
-    ![awkward effect][]
+    ```md
+    ![Alt text][id]
+    ![Alt text][id2]
 
-    You can prevent this by enabling the option [**`smoothPreview`**][smoothlivepreview].
+    [id]:
+    data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAIAAAA7l
+    jmRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7D
+    [id2]:
+    data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAIAAAA7l
+    jmRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7D
 
-[smoothlivepreview]: available-options.md#smoothlivepreview
 
-### Header IDs
+    this text needs to be separated from the references by 2 newlines
+    ```
 
-Showdown automatically generates bookmark anchors in titles by adding an id property to a heading.
+### Header ids
+
+Showdown generates a bookmark id on every heading by default:
 
 ```md
 # My cool header with ID
@@ -105,194 +193,64 @@ Showdown automatically generates bookmark anchors in titles by adding an id prop
 <h1 id="my-cool-header-with-id">My cool header with ID</h1>
 ```
 
-The generated ids are **github-compatible** by default (spaces become dashes and most non-alphanumeric chars are stripped). This behavior can be modified with options:
+The generated ids are **github-compatible** by default. This can be modified with options:
 
- - [**`noHeaderId`**][noHeaderId] disables automatic id generation;
- - [**`rawHeaderId`**][rawHeaderId] uses minimal sanitization instead (only spaces, `'`, `"`, `>` and `<` become dashes);
- - [**`prefixHeaderId`**][prefixHeaderId] adds a prefix to the generated header ids (either automatic or custom).
- - [**`headerLevelStart`**][headerLevelStart] sets the header starting level. For instance, setting this to 3 means that `# header` will be converted to `<h3>`.
+* [**`noHeaderId`**][noHeaderId] disables automatic id generation;
+* [**`rawHeaderId`**][rawHeaderId] uses minimal sanitization (only spaces, `'`, `"`, `>` and `<`
+  become dashes);
+* [**`prefixHeaderId`**][prefixHeaderId] adds a prefix to the generated ids;
+* [**`headerLevelStart`**][headerLevelStart] sets the starting level (e.g. `3` makes `# header` an
+  `<h3>`).
 
-Read the [README.md][readme] for more info
+You can also require a space after the `#` with [**`requireSpaceBeforeHeadingText`**][requireSpaceBeforeHeadingText].
 
-[noHeaderId]: available-options.md#noheaderid
-[rawHeaderId]: available-options.md#rawheaderid
-[prefixHeaderId]: available-options.md#prefixheaderid
-[headerLevelStart]: available-options.md#headerlevelstart
+### Line breaks
 
-## Blockquotes
+Force **every** newline in a paragraph to become a `<br>` (as GitHub does) with
+[**`simpleLineBreaks`**][simpleLineBreaks].
 
-You can indicate blockquotes with a `>`.
+### Automatic links and email obfuscation
+
+Email addresses in `<>` are lightly entity-encoded to obscure them from harvesters; disable this
+with [**`encodeEmails`**][encodeEmails]`: false`. With [**`simplifiedAutoLink`**][simplifiedAutoLink]
+Showdown turns bare URLs (and emails) into links without needing `<>`:
 
 ```md
-In the words of Abraham Lincoln:
-    
-> Pardon my french
+link to http://www.google.com/
+
+this is my email somedude@mail.com
 ```
 
-Blockquotes can have multiple paragraphs and can have other block elements inside.
+### Markdown inside HTML
+
+By default Markdown is **not** parsed inside HTML blocks. Enable it for a specific tag with the
+`markdown`, `markdown="1"`, or `data-markdown="1"` attribute:
 
 ```md
-> A paragraph of text
->
-> Another paragraph
->
-> - A list
-> - with items
-```
-
-## Bold and Italic
-
-You can make text bold or italic.
-
-```md
-*This text will be italic*
-**This text will be bold**
-```
-
-Both bold and italic can use either a `*` or an `_` around the text for styling. This allows you to combine both bold and italic if needed.
-
-```md
-**Everyone _must_ attend the meeting at 5 o'clock today.**
-```
-
-## Strikethrough
-
-With the option [**`strikethrough`**][] enabled, Showdown supports strikethrough elements.
-The syntax is the same as GFM, that is, by adding two tilde (`~~`) characters around
-a word or groups of words.
-
-```md
-a ~~strikethrough~~ element
-```
-
-a <s>strikethrough</s> element
-
-[strikethrough]: available-options.md#strikethrough
-
-## Emojis
-
-Since version 1.8.0, Showdown supports Github's emojis. A complete list of available emojis can be found [here][emoji list].
-
-```md
-this is a :smile: smile emoji
-```
-
-this is a :smile: smile emoji
-
-## Code formatting
-
-### Inline formats
-
-Use single backticks (`) to format text in a special monospace format. Everything within the backticks appear as-is, with no other special formatting.
-
-```md
-Here's an idea: why don't we take `SuperiorProject` and turn it into `**Reasonable**Project`.
+some markdown **here**
+<div markdown="1">this is *not* **parsed**</div>
 ```
 
 ```html
-<p>Here's an idea: why don't we take <code>SuperiorProject</code> and turn it into <code>**Reasonable**Project</code>.</p>
+<p>some markdown <strong>here</strong></p>
+<div markdown="1"><p>this is <em>not</em> <strong>parsed</strong></p></div>
 ```
 
-### Multiple lines
+### Escaping HTML tags
 
-To create blocks of code you should indent it by four spaces.
+With [**`backslashEscapesHTMLTags`**][backslashEscapesHTMLTags] you can backslash-escape HTML tags to
+render them literally:
 
 ```md
-    this is a piece
-    of
-    code
+\<div>a literal div\</div>
 ```
 
-If the option [**`ghCodeBlocks`**][ghCodeBlocks] is activated (which is by default), you can use triple backticks <code>```</code> to format text as its own distinct block.
+### List behavior
 
-    Check out this neat program I wrote:
+Showdown's list rules differ from CommonMark/GFM in two notable ways.
 
-    ```
-    x = 0
-    x = 2 + 2
-    what is x
-    ```
-
-[ghCodeBlocks]: available-options.md#ghcodeblocks
-
-## Lists
-
-Showdown supports unordered (bulleted) and ordered (numbered) lists.
-
-### Unordered lists
-
-You can make an unordered list by preceding list items with either `*`, `-`, or `+`. Markers are interchangeable too.
-
-```md
-* Item
-+ Item
-- Item
-```
-
-### Ordered lists
-
-You can make an ordered list by preceding list items with a number.
-
-```md
-1. Item 1
-2. Item 2
-3. Item 3
-```
-
-!!! earning ""
-    The actual numbers you use to mark the list have no effect on the HTML output that Showdown produces. So you can use the same number in all items if you wish to. For example:
-
-    ```md
-    1. Item 1
-    1. Item 2
-    1. Item 3
-
-    2. Item 1
-    2. Item 2
-    2. Item 3
-    ```
-
-### TaskLists (GFM Style)
-
-Showdown supports GFM-styled takslists if the [**`tasklists`**][tasklists] option is enabled.
-
-```md
- - [x] checked list item
- - [ ] unchecked list item
-``` 
-
- - [x] checked list item
- - [ ] unchecked list item
-
-
-[tasklists]: available-options.md#tasklists
-
-### List syntax
-
-List markers typically start at the left margin, but may be indented by up to three spaces. 
-
-```md
-* valid list item
-   * this is valid too
-   * this is too  
-```
-
-List markers must be followed by one or more spaces or a tab.
-
-To make lists look nicer, you can wrap items with hanging indents:
-
-```md
-*   Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
-    Aliquam hendrerit mi posuere lectus. Vestibulum enim wisi,
-    viverra nec, fringilla in, laoreet vitae, risus.
-*   Donec sit amet nisl. Aliquam semper ipsum sit amet velit.
-    Suspendisse id sem consectetuer libero luctus adipiscing.
-```
-
-But if you want to be lazy, you don't have to :grin:
-
-If one list item is separated by a blank line, Showdown will wrap all the list items in `<p>` tags in the HTML output.
-So this input:
+**Loose vs tight** — if any item is separated from another by a blank line, Showdown wraps **all**
+items in `<p>` tags. So this input:
 
 ```md
 * Bird
@@ -311,38 +269,8 @@ results in:
 </ul>
 ```
 
-This differs from other Markdown implementations such as GFM (GitHub) or CommonMark.  
-
-### Nested blocks
-
-List items may consist of multiple paragraphs. Each subsequent paragraph in a list item must be indented by either 4 spaces or one tab:
-
-```md
-1.  This is a list item with two paragraphs. Lorem ipsum dolor
-    sit amet, consectetuer adipiscing elit. Aliquam hendrerit
-    mi posuere lectus.
-
-    Vestibulum enim wisi, viverra nec, fringilla in, laoreet
-    vitae, risus. Donec sit amet nisl. Aliquam semper ipsum
-    sit amet velit.
-
-2.  Suspendisse id sem consectetuer libero luctus adipiscing.
-```
-
-This is valid for other block elements such as blockquotes:
-
-```md
-*   A list item with a blockquote:
-
-    > This is a blockquote
-    > inside a list item.
-```
-
-or even other lists.
-
-### Nested lists
-
-You can create nested lists by indenting list items by **four** spaces.
+**Four-space sublists** — nested lists must be indented **four** spaces (consistent with the original
+spec, unlike GFM/CommonMark). Each extra level needs four more spaces (or one more tab):
 
 ```md
 1.  Item 1
@@ -350,416 +278,50 @@ You can create nested lists by indenting list items by **four** spaces.
     2. Yet another point to consider.
 2.  Item 2
     * A corollary that does not need to be ordered.
-    * This is indented four spaces
-    * You might want to consider making a new list.
-3.  Item 3
 ```
 
-This behavior is consistent with the original spec but differs from other implementations such as GFM or CommonMark. Prior to version 1.5, you just needed to indent two spaces for it to be considered a sublist.
+Relax the four-space requirement with
+[**`disableForced4SpacesIndentedSublists`**][disableForced4SpacesIndentedSublists].
 
-You can disable the **four spaces requirement** with option [**`disableForced4SpacesIndentedSublists`**][disableForced4SpacesIndentedSublists]
+## Known differences
 
-To nest a third (or more) sublist level, you need to indent 4 extra spaces (or 1 extra tab) for each level:
+In most cases Showdown's output is identical to Perl Markdown v1.0.2b7. The known deviations:
 
-```md
-1.  level 1
-    1.  Level 2
-        *   Level 3
-    2.  level 2
-        1.  Level 3
-1.  Level 1
-```
-[disableForced4SpacesIndentedSublists]: available-options.md#disableforced4spacesindentedsublists
+* **The `markdown="1"` attribute is supported since v1.4.0**; older versions ignore it (Markdown does
+  not work inside such a `<div>`).
+* **Square brackets in link text nest only two levels deep** — `[[fine]](...)` works,
+  `[[[broken]]](...)` does not. Escape them with backslashes if you need more.
+* **A list is single-paragraph** with only one line break between items, and becomes
+  **multi-paragraph if any two items are separated by a blank line** (see
+  [List behavior](#list-behavior) above). This ruleset follows John Gruber's comments in the
+  [Markdown discussion list][md-newsletter].
 
-### Nested code blocks
+## Learn more
 
-You can nest fenced codeblocks the same way you nest other block elements, by indenting by four spaces or a tab:
+* **[Markdown Syntax overview](syntax-overview.md)** — the common syntax shared by every flavor.
+* **[Original](original.md)** — the stricter spec `vanilla` is based on.
+* **[CommonMark](commonmark.md)** and **[GFM](gfm.md)** — the spec-based flavors.
+* **[Options](options.md)** — every option referenced above, in full.
 
-```md
-1.  Some code:
-
-    ```js
-    var foo = 'bar';
-    console.log(foo);
-    ```
-```
-
-To put an *indented style* code block within a list item, the code block needs to be indented twice — 8 spaces or two tabs:
-
-```md
-1.  Some code:
-
-        var foo = 'bar';
-        console.log(foo);
-```
-
-## Links
-
-### Simple
-
-If you wrap a valid URL or email in `<>` it will be turned into a link whose text is the link itself.
-
-```md
-link to <http://www.google.com/>
-
-this is my email <somedude@mail.com>
-```
-
-In the case of email addresses, Showdown also performs a bit of randomized decimal and hex entity-encoding to help obscure your address from address-harvesting spambots.
-You can disable this obfuscation by setting [**`encodeEmails`**][encodeEmails] option to `false`.
-
-With the option [**`simplifiedAutoLink`**][simplifiedAutoLink] enabled, Showdown will automagically turn every valid URL it finds in the text body into links without the need to wrap them in `<>`.
-
-```md
-link to http://www.google.com/
-
-this is my email somedude@mail.com
-```
-
-[encodeEmails]: available-options.md#encodeemails
-[simplifiedAutoLink]: available-options.md#simplifiedautolink
-
-### Inline
-
-You can create an inline link by wrapping link text in brackets `[ ]`, and then wrapping the link in parentheses `( )`.
-
-For example, a hyperlink to `github.com/showdownjs/showdown`, with a link text that says, `Get Showdown!` will look as follows:
-
-```
-[Get Showdown!](https://github.com/showdownjs/showdown)
-```
-
-### Reference Style
-
-You can also use the reference style, like this:
-
-```md
-this is a [link to google][1]
-
-[1]: www.google.com
-```
-
-Showdown also supports implicit link references:
-
-```md
-this is a link to [google][]
-
-[google]: www.google.com
-```
-
-## Images
-
-In Markdown, the syntax for images is similar to that of links, supporting both inline and reference styles as well. The only difference in syntax for images is the leading exclamation mark before brackets: `![]`.
-
-### Inline
-
-Inline image syntax looks like this:
-
-```md
-![Alt text](url/to/image)
-
-![Alt text](url/to/image "Optional title")
-```
-
-That is:
-
-* An exclamation mark: `!`
-* followed by a set of square brackets `[ ]` containing the alt attribute text for the image
-* followed by a set of parentheses `( )` containing the URL or path to the image and an optional title attribute enclosed in double or single quotes.
-
-
-### Reference Style
-
-Reference-style image syntax looks like this:
-
-```md
-![Alt text][id]
-```
-
-Where `id` is the name of a defined image reference. Image references are defined using syntax identical to link references:
-
-```md
-[id]: url/to/image  "Optional title attribute"
-```
-
-Implicit references are also supported:
-
-```md
-![showdown logo][]
-
-[showdown logo]: http://showdownjs.github.io/demo/img/editor.logo.white.png
-```
-
-### Image dimensions
-
-When the option [**`parseImgDimensions`**][parseImgDimensions] is activated, you can define the image dimensions, like this:
-
-```md
-![Alt text](url/to/image =250x250 "Optional title")
-```
-
-or in reference style:
-
-```md
-![Alt text][id]
-
-[id]: url/to/image =250x250
-```
-
-[parseImgDimensions]: available-options.md#parseimgdimensions
-
-### Base64 encoded images
-
-Showdown supports Base64 encoded images, both reference and inline style.
-
-**Since version 1.7.4**, Showdown supports wrapping of base64 strings, which are usually extremely long lines of text.
-You can add newlines arbitrarily, as long as they are added after the `,` character.
-
-inline style
-
-```md
-![Alt text](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAIAAAA7l
-jmRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAY
-SURBVBhXYwCC/2AAZYEoOAMs8Z+BgQEAXdcR7/Q1gssAAAAASUVORK5CYII=)
-```
-
-reference style
-
-```md
-![Alt text][id]
-
-[id]:
-data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAIAAAA7l
-jmRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7D
-AcdvqGQAAAAYSURBVBhXYwCC/2AAZYEoOAMs8Z+BgQEAXdcR7/Q1gssAAAAASUVORK5CYII=
-```
-
-!!! warning ""
-    With reference-style base64 image sources, regardless of "wrapping", a double newline is **required** after the base64 string to separate them from a paragraph or other text block (but references can be adjacent):
-
-    !!! example "Wrapped reference style"
-
-        ```md
-        ![Alt text][id]
-        ![Alt text][id2]
-
-        [id]:
-        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAIAAAA7l
-        jmRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7D
-        AcdvqGQAAAAYSURBVBhXYwCC/2AAZYEoOAMs8Z+BgQEAXdcR7/Q1gssAAAAASUVORK5CYII=
-        [id2]:
-        data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAADCAIAAAA7l
-        jmRAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7D
-        AcdvqGQAAAAYSURBVBhXYwCC/2AAZYEoOAMs8Z+BgQEAXdcR7/Q1gssAAAAASUVORK5CYII=
-
-
-        this text needs to be separated from the references by 2 newlines
-        ```
-
-## Tables
-
-Tables aren't part of the core Markdown spec, but they are part of GFM. You can enable them in Showdown via the option [**`tables`**][tables].
-
-* Colons can be used to align columns.
-* The outer pipes (`|`) are optional, matching GFM spec. 
-* You don't need to make the raw Markdown line up prettily.
-* You can use other Markdown syntax inside them.
-
-```md
-| Tables        | Are           | Cool  |
-| ------------- |:-------------:| -----:|
-| **col 3 is**  | right-aligned | $1600 |
-| col 2 is      | *centered*    |   $12 |
-| zebra stripes | ~~are neat~~  |    $1 |
-```
-
-[tables]: available-options.md#tables
-
-## Mentions
-
-Showdown supports GitHub mentions by enabling the option [**`ghMentions`**][mentions]. This will turn every `@username` into a link to their github profile.
-
-```md
-hey @tivie, check this out
-```
-
-Since version 1.6.2, you can customize the generated link in mentions with the option [**`ghMentionsLink`**][ghMentionsLink].
-
-For example, setting this option to `http://mysite.com/{u}/profile`:
-
-```html
-<p>hey <a href="http://mysite.com/tivie/profile">@tivie</a>, check this out</p>
-```
-
-[mentions]: available-options.md#ghmentions
-[ghMentionsLink]: available-options.md#ghmentionslink
-
-## Footnotes
-
-Showdown supports [GFM footnotes](https://github.github.com/gfm/) when the option
-[**`footnotes`**][footnotes] is enabled (it is on in the [`gfm`](flavors.md) flavor). A footnote
-has two parts: a **reference** `[^id]` somewhere in the text, and a **definition** `[^id]: …`
-(usually at the bottom of the document).
-
-```md
-Here is a footnote reference.[^1] And another.[^note]
-
-[^1]: The first footnote.
-[^note]: The second footnote, with *inline* markdown.
-```
-
-References are numbered automatically, in **order of first reference** (not definition order), and
-the definitions are collected into a footnotes section at the end of the document:
-
-```html
-<p>Here is a footnote reference.<sup class="footnote-ref"><a href="#fn-1" id="fnref-1" data-footnote-ref>1</a></sup> And another.<sup class="footnote-ref"><a href="#fn-note" id="fnref-note" data-footnote-ref>2</a></sup></p>
-<section class="footnotes" data-footnotes>
-<ol>
-<li id="fn-1"><p>The first footnote. <a href="#fnref-1" class="footnote-backref" ...>↩</a></p></li>
-<li id="fn-note"><p>The second footnote, with <em>inline</em> markdown. <a href="#fnref-note" class="footnote-backref" ...>↩</a></p></li>
-</ol>
-</section>
-```
-
-A few rules:
-
-* **Multi-paragraph / block definitions** — continuation content is indented by four spaces, so a
-  definition can hold several paragraphs, block quotes or code blocks:
-
-  ```md
-  [^long]: First paragraph.
-
-      Second paragraph, still part of the footnote.
-  ```
-
-* **A footnote can be referenced multiple times** — each reference gets its own back-reference link
-  in the definition.
-* **Labels can be words or numbers** but **may not contain whitespace** (`[^a b]` is left literal),
-  and matching is case-insensitive.
-* **A reference with no matching definition is left literal** (`[^missing]` stays as text), and an
-  **unreferenced definition is dropped**.
-* **A reference inside a code span, or escaped, is left literal** — `` `[^1]` `` and `\[^1]` are
-  not turned into footnotes.
-
-[footnotes]: available-options.md#footnotes
-
-## Handle HTML in markdown documents
-
-Showdown, in most cases, leaves HTML tags untouched in the output document:
-
-```md
-some markdown **here**
-<div>this is *not* **parsed**</div>
-```
-
-```html
-<p>some markdown <strong>here</strong></p>
-<div>this is *not* **parsed**</div>
-```
-
-However, the content of `<code>` and `<pre><code>` tags is always escaped.
-
-```md
-some markdown **here** with <code>foo & bar <baz></baz></code>
-```
-
-```html
-<p>some markdown <strong>here</strong> with <code>foo &amp; bar &lt;baz&gt;&lt;/baz&gt;</code></p>
-``` 
-
-If you want to enable markdown parsing inside a specific HTML tag, you can use the html attribute **`markdown`**, **`markdown="1"`**, or **`data-markdown="1"`**.
-
-```md
-some markdown **here**
-<div markdown="1">this is *not* **parsed**</div>
-```
-
-```html
-<p>some markdown <strong>here</strong></p>
-<div markdown="1"><p>this is <em>not</em> <strong>parsed</strong></p></div>
-```
-
-## Escape entities
-
-### Escape markdown entities
-
-Showdown allows you to use backslash (`\`) to escape characters that have special meaning in markdown's syntax and generate literal characters instead. For example, if you want to surround a word with literal underscores (instead of an HTML `<em>` tag), you can use backslashes before the underscores, like this:
-
-```md
-\_literal underscores\_
-```
-
-Showdown provides backslash escapes for the following characters:
-
-```
-\   backslash
-`   backtick
-*   asterisk
-_   underscore
-{}  curly braces
-[]  square brackets
-()  parentheses
-#   hash mark
-+   plus sign
--   minus sign (hyphen)
-.   dot
-!   exclamation mark
-```
-
-### Escape HTML tags
-
-Since [version 1.7.2](https://github.com/showdownjs/showdown/tree/1.7.2), backslash escaping of HTML tags is supported when [**`backslashEscapesHTMLTags`**][backslashEscapesHTMLTags] option is enabled.
-
-```md
-\<div>a literal div\</div>
-``` 
-
-[backslashEscapesHTMLTags]: available-options.md#backslashescapeshtmltags
-
-## Known differences and gotchas
-
-In most cases, Showdown's output is identical to that of Perl Markdown v1.0.2b7. What follows is a list of all known deviations. Please file an issue if you find more.
-
-* **Since version 1.4.0, Showdown supports the markdown="1" attribute**, but for older versions, this attribute is ignored. This means:
-
-    ```md
-    <div markdown="1">
-          Markdown does *not* work in here.
-    </div>
-    ```
-
-* You can only nest square brackets in link titles to a depth of two levels:
-
-        [[fine]](http://www.github.com/)
-        [[[broken]]](http://www.github.com/)
-
-    If you need more, you can escape them with backslashes.
-
-* A list is **single paragraph** if it has only **1 line break separating items** and it becomes **multi-paragraph if ANY of its items is separated by 2 line breaks**:
-
-    ```md
-    - foo
-
-    - bar
-    - baz
-    ```
-
-    becomes
-
-    ```html
-    <ul>
-      <li><p>foo</p></li>
-      <li><p>bar</p></li>
-      <li><p>baz</p></li>
-    </ul>
-    ```
-
-This new ruleset is based on the comments of Markdown's author John Gruber in the [Markdown discussion list][md-newsletter].
-
-[md-spec]: http://daringfireball.net/projects/markdown/
+[md-spec]: https://daringfireball.net/projects/markdown/
 [md-newsletter]: https://pairlist6.pair.net/mailman/listinfo/markdown-discuss
-[atx]: http://www.aaronsw.com/2002/atx/intro
-[setext]: https://en.wikipedia.org/wiki/Setext
-[readme]: https://github.com/showdownjs/showdown/blob/master/README.md
-[awkward effect]: http://i.imgur.com/YQ9iHTL.gif
 [emoji list]: https://github.com/showdownjs/showdown/wiki/emojis
+[ghCodeBlocks]: options.md#ghcodeblocks
+[strikethrough]: options.md#strikethrough
+[emoji]: options.md#emoji
+[tasklists]: options.md#tasklists
+[tables]: options.md#tables
+[mentions]: options.md#ghmentions
+[ghMentionsLink]: options.md#ghmentionslink
+[footnotes]: options.md#footnotes
+[parseImgDimensions]: options.md#parseimgdimensions
+[noHeaderId]: options.md#noheaderid
+[rawHeaderId]: options.md#rawheaderid
+[prefixHeaderId]: options.md#prefixheaderid
+[headerLevelStart]: options.md#headerlevelstart
+[requireSpaceBeforeHeadingText]: options.md#requirespacebeforeheadingtext
+[simpleLineBreaks]: options.md#simplelinebreaks
+[encodeEmails]: options.md#encodeemails
+[simplifiedAutoLink]: options.md#simplifiedautolink
+[backslashEscapesHTMLTags]: options.md#backslashescapeshtmltags
+[disableForced4SpacesIndentedSublists]: options.md#disableforced4spacesindentedsublists

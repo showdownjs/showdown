@@ -58,7 +58,7 @@ extension.)
 
 <sup id="fn-underline">1</sup> `<u>` is emitted as `__…__`, which is showdown's underline syntax.
 This only round-trips back to `<u>` through a converter that has the
-[`underline`](available-options.md) option enabled; otherwise `__…__` is standard-Markdown
+[`underline`](options.md#available-options) option enabled; otherwise `__…__` is standard-Markdown
 **strong**.
 
 > **Task-list detection requires a list-item context, not a class.** With the `tasklists` option

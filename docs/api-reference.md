@@ -7,7 +7,7 @@ This page lists the public API of Showdown. It is split into:
 
 !!! hint ""
     Several methods are covered in depth on dedicated pages. Where that is the case, this page gives the signature and a one-line summary and links out:
-    [Options](configuration.md) · [Available options](available-options.md) · [Flavors](flavors.md) · [Extensions](extensions.md) · [Event system](event-system.md).
+    [Options](options.md) · [Flavors](flavors.md) · [Extensions](extensions.md) · [Event system](event-system.md).
 
 ## Converter instance
 
@@ -35,7 +35,7 @@ converter.makeMarkdown('<h1>hello</h1>'); // '# hello'
 
 ### `converter.setOption(key, value)`
 
-Set a single option on **this** converter. See [Configuration](configuration.md) and the [list of options](available-options.md).
+Set a single option on **this** converter. See [Options](options.md) and the [list of available options](options.md#available-options).
 
 ### `converter.getOption(key)`
 
@@ -83,7 +83,7 @@ Fire a [`showdown.Event`](event-system.md#event-object) through this converter's
 
 ### `converter.getMetadata([raw])`
 
-Return the [metadata](available-options.md#metadata) of the last parsed document. With no argument (or a falsy one), returns the parsed metadata object; pass `true` to get the raw, unparsed string. Requires the [`metadata`](available-options.md#metadata) option.
+Return the [metadata](options.md#metadata) of the last parsed document. With no argument (or a falsy one), returns the parsed metadata object; pass `true` to get the raw, unparsed string. Requires the [`metadata`](options.md#metadata) option.
 
 ### `converter.getMetadataFormat()`
 

@@ -94,10 +94,35 @@ Once installed, you can use Showndown according to the chosen method:
         <h1 id="hellomarkdown">hello, markdown!</h1>
         ```
 
-!!! warning "Potential XSS vulnerabilities"
-    Showdown doesn't sanitize the input since Markdown relies on it to parse certain features correctly into HTML. As a result, this may lead to potential XSS injection vulnerabilities.
+### Setting options and a flavor
 
-    Please refer to the [Markdown's XSS vulnerability](xss.md) page for more information.
+Enable extra syntax with [options](options.md), or match a whole dialect at once with a
+[flavor](flavors.md):
+
+```js
+var converter = new showdown.Converter({ tables: true });
+converter.setOption('strikethrough', true); // enable one more option
+converter.setFlavor('github');              // or switch to a whole flavor
+
+converter.makeHtml('~~done~~');
+```
+
+## Command-line
+
+Showdown also ships a [CLI](cli.md). After a global install (`npm install showdown -g`), convert a
+file with:
+
+```sh
+showdown makehtml -i foo.md -o bar.html
+```
+
+Pass parser options with `-c` (or a `--<option>` flag) and a flavor with `-p`:
+
+```sh
+showdown makehtml -i foo.md -o bar.html -p gfm -c tables=false
+```
+
+See the [CLI docs](cli.md) for the full list of commands and flags.
 
 ## Other installation methods
 

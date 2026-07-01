@@ -92,8 +92,8 @@
     "vitest": "^4.1.9"
   },
   "dependencies": {
-    "commander": "^9.0.0",
-    "jsdom": "^19.0.0"
+    "commander": "^14.0.0",
+    "jsdom": "^27.0.0"
   },
   "overrides": {
     "minimist": "^1.2.6"

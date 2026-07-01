@@ -57,7 +57,7 @@
     "extract:commonmark": "node scripts/extract-commonmark.mjs",
     "clean": "node -e \"require('fs').rmSync('.build',{recursive:true,force:true})\"",
     "lint": "eslint .",
-    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
+    "changelog": "node scripts/changelog.mjs",
     "test": "npm run lint && vitest run",
     "test:watch": "vitest",
     "test:single": "vitest run",

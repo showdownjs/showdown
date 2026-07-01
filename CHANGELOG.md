@@ -1,12 +1,12 @@
 # [3.0.0-rc2](https://github.com/showdownjs/showdown/compare/3.0.0-rc1...3.0.0-rc2) (2026-07-01)
 
-
 ### Bug Fixes
 
 * **build:** force LF line endings in build output and enforce via gitattributes ([73e9e53](https://github.com/showdownjs/showdown/commit/73e9e53902eae4d6a324c8ef4134ce978196a1ac))
 * **deps:** restore chai 4.3.6 lockfile to fix karma-chai in CI ([184a0f2](https://github.com/showdownjs/showdown/commit/184a0f28384ff9bbe84eff88100a3d8d5f7e3d1f))
-# [3.0.0-rc1](https://github.com/showdownjs/showdown/compare/2.1.0...3.0.0-rc1) (2026-06-29)
 
+
+# [3.0.0-rc1](https://github.com/showdownjs/showdown/compare/2.1.0...3.0.0-rc1) (2026-06-29)
 
 ### Bug Fixes
 

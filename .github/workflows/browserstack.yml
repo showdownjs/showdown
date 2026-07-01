@@ -1,17 +1,22 @@
 name: BrowserStack Smoke
 
-# Gated: real-device smoke run via browserstack-node-sdk. Not on every PR (costs paid
-# minutes) — runs on manual dispatch and nightly. The per-engine coverage on every PR is
-# the Vitest+Playwright job (browser.yml).
+# Real-device smoke run via browserstack-node-sdk. Runs on PRs and on merges/commits to
+# master; the fuller per-engine coverage on every push is the Vitest+Playwright job
+# (browser.yml). Also available on manual dispatch.
 on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master, develop ]
   workflow_dispatch:
-  schedule:
-    - cron: '0 6 * * *'
 
 jobs:
   browserstack:
     name: 'BrowserStack smoke (@playwright/test)'
     runs-on: ubuntu-latest
+    # Skip on fork PRs: GitHub withholds secrets from forks, so the BrowserStack creds
+    # would be missing. Same-repo PRs, pushes, and manual dispatch still run.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js 20.x

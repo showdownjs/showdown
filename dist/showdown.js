@@ -1,4 +1,4 @@
-;/*! showdown v 3.0.0-rc1 - 30-06-2026 */
+;/*! showdown v 3.0.0-rc1 - 01-07-2026 */
 (function(){
 // noinspection HtmlRequiredLangAttribute
 
@@ -14811,6 +14811,5 @@ if (typeof define === 'function' && define.amd) {
 } else {
   root.showdown = showdown;
 }
-}).call(this);
 
-//# sourceMappingURL=showdown.js.map
+}).call(this);

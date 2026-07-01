@@ -1,6 +1,6 @@
 {
   "name": "showdown",
-  "version": "3.0.0-rc1",
+  "version": "3.0.0-rc2",
   "description": "A Markdown to HTML converter written in Javascript",
   "author": "Estevão Santos",
   "homepage": "https://showdownjs.eu/",
@@ -57,6 +57,7 @@
     "extract:commonmark": "node scripts/extract-commonmark.mjs",
     "clean": "node -e \"require('fs').rmSync('.build',{recursive:true,force:true})\"",
     "lint": "eslint .",
+    "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s",
     "test": "npm run lint && vitest run",
     "test:watch": "vitest",
     "test:single": "vitest run",
@@ -79,12 +80,14 @@
     "@vitest/browser-playwright": "^4.1.9",
     "browserstack-node-sdk": "^1.59.0",
     "commonmark-spec": "^0.31.2",
+    "conventional-changelog-cli": "^5.0.0",
     "diffable-html": "^5.0.0",
     "esbuild": "^0.28.1",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
     "performance-now": "^2.1.0",
     "playwright": "^1.61.1",
+    "semver-sort": "^1.0.0",
     "vitest": "^4.1.9"
   },
   "dependencies": {

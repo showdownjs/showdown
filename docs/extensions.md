@@ -2,6 +2,14 @@ Showdown allows you to load additional functionality via extensions. You can fin
 
 You can also check the [boilerplate repo][boilerplate-repo], to create your own extension(s).
 
+## Extension modes
+
+An extension is made up of one or more sub-extensions, each of a given `type`. There are two ways an extension can hook into Showdown:
+
+* **Listener extensions (recommended)** — a `listener` sub-extension hooks the [event system](event-system.md), the main extension mode. It subscribes to the events emitted by Showdown's sub-parsers and can inspect or modify their captures, matches, attributes and output mid-conversion — with far more precision than the legacy modes. See [Create an extension → Listener extensions](create-extension.md#listener-extensions).
+
+* **Legacy `lang`/`output` extensions** _(deprecated)_ — the original extension modes, based on `regex`/`replace` or a `filter` callback that rewrites the text before parsing (`lang`) or the HTML after parsing (`output`). They still work but are now thin wrappers over document-level events, and loading one logs a deprecation warning. Prefer a `listener` extension in new code. See [Create an extension → Type](create-extension.md#type).
+
 ## Usage
 
 An extension can be loaded in two ways:

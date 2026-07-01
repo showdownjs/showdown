@@ -1,5 +1,92 @@
-!!! warning ""
-    In the CLI tool, **all** options are `disabled` by default — including those (like `ghCodeBlocks`) that are enabled by default in the Node and browser builds. See the [CLI docs](cli.md#extra-options).
+# Options
+
+You can change Showdown's default behavior via options. 
+
+## Set option
+
+### Globally
+
+Setting an option globally affects all Showdown instances.
+
+```js
+showdown.setOption('optionKey', 'value');
+```
+
+### Locally
+
+Setting an option locally affects the specified Converter object only. You can set local options via:
+
+=== "Constructor"
+
+    ```js
+    var converter = new showdown.Converter({optionKey: 'value'});
+    ```
+
+=== "setOption() method"
+
+    ```js
+    var converter = new showdown.Converter();
+    converter.setOption('optionKey', 'value');
+    ```
+
+### In the CLI
+
+The [CLI tool](cli.md) sets options on the `makehtml` command with the `-c`/`--config` flag (or a
+`--<option>` long flag):
+
+```sh
+# enable a boolean option
+showdown makehtml -i foo.md -o bar.html -c strikethrough
+
+# the same, using the long-flag form
+showdown makehtml -i foo.md -o bar.html --strikethrough
+
+# give a value, or disable an option that a flavor turns on
+showdown makehtml -i foo.md -o bar.html -c headerLevelStart=2
+showdown makehtml -i foo.md -o bar.html -p gfm -c tables=false
+```
+
+!!! note ""
+    The CLI runs with the `vanilla` flavor by default — the **same defaults** as the Node and
+    browser builds — so options like `ghCodeBlocks` are enabled out of the box. Pick a different
+    flavor with `-p`, or turn a single option off with `-c <option>=false`. See the
+    [CLI docs](cli.md) and [Extra options](cli.md#extra-options).
+
+## Get option
+
+Showdown provides both local and global methods to retrieve previously set options:
+
+=== "getOption()"
+    
+    ```js
+    // Global
+    var myOption = showdown.getOption('optionKey');
+
+    //Local
+    var myOption = converter.getOption('optionKey');
+    ```
+
+=== "getOptions()"
+
+    ```js
+    // Global
+    var showdownGlobalOptions = showdown.getOptions();
+
+    //Local
+    var thisConverterSpecificOptions = converter.getOptions();
+    ```
+
+### Get default options
+
+You can get Showdown's default options with:
+
+```js
+var defaultOptions = showdown.getDefaultOptions();
+```
+## Available options
+
+!!! note ""
+    These default values apply to the CLI too: it runs with the `vanilla` flavor by default, i.e. the same defaults as the Node and browser builds. Override any of them with `-c <option>=true|false`, or pick a flavor with `-p`. See the [CLI docs](cli.md).
 
 ### backslashEscapesHTMLTags
 
@@ -28,9 +115,9 @@ Enable [CommonMark](https://spec.commonmark.org/) spec compliance. With this sin
 !!! hint ""
     This option (together with [`decodeEntities`](#decodeentities)) is what the `commonmark`
     flavor turns on. Rather than setting it directly, you will usually want
-    `showdown.setFlavor('commonmark')`. See [Spec compliance](spec-compliance.md) for the full picture,
-    including [which other options still apply under `cmSpec`](spec-compliance.md#options-that-still-apply-under-cmspec)
-    (most GFM extras do) and [which are ignored](spec-compliance.md#options-that-have-no-effect-under-cmspec).
+    `showdown.setFlavor('commonmark')`. See the [CommonMark page](commonmark.md) for the full picture,
+    including [which other options still apply under `cmSpec`](commonmark.md#options-that-still-apply-under-cmspec)
+    (most GFM extras do) and [which are ignored](commonmark.md#options-that-have-no-effect-under-cmspec).
 
 * type: `boolean`
 * default value: `false`
@@ -49,7 +136,7 @@ Output a complete HTML document, including `<html>`, `<head>`, and `<body>` tags
 Resolve HTML5 named (`&copy;`), decimal (`&#35;`) and hexadecimal (`&#xcab;`) character references to their corresponding characters (CommonMark behavior). By default, Showdown preserves entities verbatim.
 
 !!! hint ""
-    This is one of the CommonMark compliance options. See [Spec compliance](spec-compliance.md).
+    This is one of the CommonMark compliance options. See the [CommonMark page](commonmark.md).
 
 * type: `boolean`
 * default value: `false`

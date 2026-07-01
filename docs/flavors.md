@@ -7,11 +7,11 @@ Currently, the following flavors are available:
  * `original`: Original Markdown flavor as in [John Gruber's spec](https://daringfireball.net/projects/markdown/)
  * `vanilla`:  Showdown base flavor (v1.3.1 onwards)
  * `gfm`: [GitHub Flavored Markdown, or GFM](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax). Also available under its former name `github`, kept as a backwards-compatible alias (both resolve to the exact same options).
- * `commonmark`: [CommonMark](https://spec.commonmark.org/) (v3.0.0 onwards). Enables the `cmSpec` option — see [Spec compliance](spec-compliance.md).
+ * `commonmark`: [CommonMark](https://spec.commonmark.org/) (v3.0.0 onwards). Enables the `cmSpec` option — see the [CommonMark page](commonmark.md).
 
 ## Options activated by each flavor
 
-A flavor is simply a bundle of [option](available-options.md) overrides applied on top of Showdown's defaults. The table below lists every option that at least one flavor sets:
+A flavor is simply a bundle of [option](options.md#available-options) overrides applied on top of Showdown's defaults. The table below lists every option that at least one flavor sets:
 
  * `vanilla` applies no overrides of its own — its column shows the plain Showdown defaults.
 

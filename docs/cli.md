@@ -21,7 +21,7 @@ Showdown comes bundled with a Command-line interface (CLI) tool that allows you 
             ```
             Usage: showdown <command> [options]
 
-            CLI to Showdownjs markdown parser v3.0.0-alpha
+            CLI to Showdownjs markdown parser v3.0.0
 
             Options:
               -V, --version       output the version number
@@ -51,7 +51,7 @@ Showdown comes bundled with a Command-line interface (CLI) tool that allows you 
             ```
             Usage: showdown <command> [options]
 
-            CLI to Showdownjs markdown parser v3.0.0-alpha
+            CLI to Showdownjs markdown parser v3.0.0
 
             Options:
               -V, --version       output the version number
@@ -184,21 +184,24 @@ showdown makehtml [options]
 ###### `-e/--extensions`
 
 * Short format: `-e`
-* Alias: `--extension`
-* Description: Load the specified extension(s). Should be valid path(s) to Node-compatible extensions.
+* Alias: `--extensions`
+* Description: Load the specified extension(s). Each value is a path to a Node-compatible
+  extension (relative, absolute, or `~/`-prefixed), **or** the name of an installed npm package
+  (a bare specifier is passed straight to `require()`).
 * Example:
 
     !!! example ""
 
         ```sh
         showdown makehtml -e ~/twitter.js -e ~/youtube.js
+        showdown makehtml -e showdown-katex        # an installed npm package
         ```
 
 ###### `-p/--flavor`
 
 * Short format: `-p`
 * Alias: `--flavor`
-* Description: Run with a predetermined [flavor](available-options.md) of options. Defaults to `vanilla`.
+* Description: Run with a predetermined [flavor](options.md#available-options) of options. Defaults to `vanilla`.
 * Available flavors: `gfm`, `original`, `commonmark`, `vanilla` (`github` is a backwards-compatible
   alias for `gfm`). Use `--list-flavors` to print the list at any time. An unrecognised flavor is
   reported as an error listing the valid flavors.
@@ -236,6 +239,30 @@ showdown makehtml [options]
         showdown makehtml -i foo.md -o bar.html -p gfm -c tables=false
         ```
 
+###### `--config-help`
+
+* Description: Print every Showdown parser option — with its default value and description — then
+  exit without converting. Use it to discover what you can pass to [`-c`](#-c-config).
+* Example:
+
+    !!! example ""
+
+        ```sh
+        showdown makehtml --config-help
+        ```
+
+###### `--list-flavors`
+
+* Description: List the available [flavors](flavors.md) (the default, `vanilla`, is marked) and exit
+  without converting.
+* Example:
+
+    !!! example ""
+
+        ```sh
+        showdown makehtml --list-flavors
+        ```
+
 ### `makemarkdown`
 
 Convert an HTML input into Markdown (the reverse of `makehtml`).
@@ -249,8 +276,8 @@ showdown makemarkdown [options]
 #### Options
 
 `makemarkdown` accepts the same options as [`makehtml`](#makehtml): `-i/--input`, `-o/--output`,
-`-a/--append`, `-u/--encoding`, `-y/--output-encoding`, `-e/--extensions`, `-p/--flavor` and
-`-c/--config`. Here the input is HTML and the output is Markdown.
+`-a/--append`, `-u/--encoding`, `-y/--output-encoding`, `-e/--extensions`, `-p/--flavor`,
+`-c/--config`, `--config-help` and `--list-flavors`. Here the input is HTML and the output is Markdown.
 
 * Examples:
 
@@ -314,7 +341,7 @@ Starting from the version `2.0.1`, CLI the format of passing extra options has c
     ```
 
 
-You can specify any of the [supported options](available-options.md), and they will be passed to the converter.
+You can specify any of the [supported options](options.md#available-options), and they will be passed to the converter.
 
 The above commands are equivalent of doing:
 

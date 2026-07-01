@@ -1,8 +1,8 @@
 ## Introduction
 
-The Event System is the basis of the new Listener extensions, replacing the ["old" extension system](extensions.md) altogether.
+The **event system** is the foundation of Showdown's main extension mode: [`listener` extensions](create-extension.md#listener-extensions). As Showdown parses a document, its sub-parsers emit events, and a listener can subscribe to any of them to inspect or modify the conversion in flight. It supersedes the legacy [`lang`/`output` extensions](extensions.md#extension-modes), which are now deprecated and reimplemented as listeners on top of it.
 
-In short, the Event System lifecycle looks as follows:
+In short, the event system lifecycle looks as follows:
 
 1. A sub-parser emits an event.
 
@@ -41,8 +41,6 @@ Some properties can be read-only: their names start with `_` (underscore).
       blockquote: "some awesome quote"
     }
     ```
-
-<!-- ## Basic Event -->
 
 ## Event types
 
@@ -352,11 +350,3 @@ Unlike the makehtml events, the `input` of a makeMarkdown event is a single node
 
 !!! warning "Removed"
     The `.before.{subparserName}` and `.after.{subparserName}` special events were **deprecated in 2.0** and have been **removed in 3.0**. Use the per-sub-parser [`onStart`](#onstart) and [`onEnd`](#onend) events instead.
-
-<!--
-## Events List
-
-### blockquote
-
-### metadata
--->

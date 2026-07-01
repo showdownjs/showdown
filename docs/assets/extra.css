@@ -6,3 +6,39 @@
 table {
   box-sizing: initial;
 }
+
+/* "Who uses Showdown" logo grid (see index.md) */
+.used-by {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.used-by a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  padding: 1.2rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: .3rem;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.used-by a:hover {
+  border-color: var(--md-accent-fg-color);
+  box-shadow: 0 0 .5rem var(--md-default-fg-color--lightest);
+}
+
+.used-by img {
+  max-width: 100%;
+  max-height: 5rem;
+  object-fit: contain;
+}
+
+@media screen and (max-width: 44em) {
+  .used-by {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

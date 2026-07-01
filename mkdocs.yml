@@ -1,14 +1,13 @@
-site_name: Showdown documentation
+site_name: Showdown Documentation
 site_description: Showdown is a JavaScript Markdown to HTML converter
 
 theme:
   name: material
-  logo: http://showdownjs.eu/apple-touch-icon.png
-  favicon: http://showdownjs.eu/apple-touch-icon.png
+  custom_dir: overrides
+  logo: https://showdownjs.github.io/apple-touch-icon.png
+  favicon: https://showdownjs.github.io/apple-touch-icon.png
   icon:
     repo: fontawesome/brands/github
-  features:
-    - navigation.tabs
 
 markdown_extensions:
   - admonition
@@ -17,40 +16,49 @@ markdown_extensions:
       alternate_style: true 
   - pymdownx.tasklist
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+exclude_docs: |
+  requirements.txt
+
+extra:
+  drawer_title: Documentation
 
 extra_css:
-  - assets/extra.css 
+  - assets/extra.css
   
 repo_url: https://github.com/showdownjs/showdown
 repo_name: showdownjs/showdown
 site_dir: public
 
 nav:
-  - Home:
-    - Introduction: index.md
-    - Contribution guide: contribution-guide.md
-    - Donations: donations.md
-    - Credits: credits.md
+  - Introduction: index.md
   - Quickstart:
     - Quickstart: quickstart.md
-    - Showdown's Markdown syntax: markdown-syntax.md
+    - Markdown to HTML: markdown-to-html.md
     - HTML to Markdown: html-to-markdown.md
-    - XSS vulnerability: xss.md
-    - Compatibility: compatibility.md
+    - Integrations: integrations.md
+  - Markdown Syntax:
+    - Overview: syntax-overview.md
+    - Original: original.md
+    - Showdown: markdown-syntax.md
+    - CommonMark: commonmark.md
+    - GFM: gfm.md
   - Configuration:
-    - Showdown options: configuration.md
-    - Available options: available-options.md
-    - Flavors: flavors.md
-    - Spec compliance: spec-compliance.md
     - API reference: api-reference.md
+    - Flavors: flavors.md
+    - Options: options.md
   - CLI: cli.md
-  - Integrations: integrations.md
-  - Event system: event-system.md
   - Extensions:
     - Overview: extensions.md
+    - Event system: event-system.md
     - Create an extension: create-extension.md
-    - List of known extensions: extensions-list.md 
+    - List of known extensions: extensions-list.md
   - Tutorials: tutorials/index.md
-  - Local development: local-development.md
+  - Security Concerns:
+    - XSS vulnerability: xss.md
+  - Contributing:
+    - Contribution guide: contribution-guide.md
+    - Local development: local-development.md
+    - Credits: credits.md

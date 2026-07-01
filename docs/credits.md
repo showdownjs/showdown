@@ -1,16 +1,9 @@
-=== "v.2"
+=== "ShowdownJS"
 
-    * [Estevão Santos](https://github.com/tivie)
-    * [SyntaxRules](https://github.com/SyntaxRules)
-    * [Anton Zolotukhin](https://github.com/bandantonio)
-
-=== "v.1"
-
-    * [Estevão Santos](https://github.com/tivie)
-    * [Pascal Deschênes](https://github.com/pdeschen)
-
-=== "v.0"
-
+    * [Estevão Santos](https://github.com/tivie) - Maintainer
+    * [SyntaxRules](https://github.com/SyntaxRules) - Co-maintainer
+    * [Anton Zolotukhin](https://github.com/bandantonio) - Documentation site and CI pipeline
+    * [Pascal Deschênes](https://github.com/pdeschen) - Grunt support, extension fixes + additions, packaging improvements, documentation
     * [Corey Innis](http://github.com/coreyti) - Original GitHub project maintainer
     * [Remy Sharp](https://github.com/remy/) - CommonJS-compatibility and more
     * [Konstantin Käfer](https://github.com/kkaefer/) - CommonJS packaging
@@ -22,13 +15,10 @@
     * [Pavel Lang](https://github.com/langpavel) - Code cleanup
     * [Ben Combee](https://github.com/unwiredben) - Regex optimization
     * [Adam Backstrom](https://github.com/abackstrom) - WebKit bug fixes
-    * [Pascal Deschênes](https://github.com/pdeschen) - Grunt support, extension fixes + additions, packaging improvements, documentation
-    * [Estevão Santos](https://github.com/tivie) - Bug fixes and late maintainer
     * [Hannah Wolfe](https://github.com/ErisDS) - Bug fixes
     * [Alexandre Courtiol](https://github.com/acourtiol) - Bug fixes and build optimization
     * [Karthik Balakrishnan](https://github.com/torcellite) - Support for table alignment
     * [rheber](https://github.com/rheber) - CLI
-    
 
 === "Original Project"
 

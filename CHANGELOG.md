@@ -1,6 +1,3 @@
-# [3.0.0-rc3](https://github.com/showdownjs/showdown/compare/3.0.0-rc2...3.0.0-rc3) (2026-07-01)
-
-
 # [3.0.0-rc2](https://github.com/showdownjs/showdown/compare/3.0.0-rc1...3.0.0-rc2) (2026-07-01)
 
 ### Bug Fixes

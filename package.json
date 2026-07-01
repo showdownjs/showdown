@@ -70,13 +70,14 @@
     "dist"
   ],
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
     "chai": "^4.3.6",
     "chai-match": "*",
     "commonmark-spec": "^0.31.2",
     "diffable-html": "^5.0.0",
     "esbuild": "^0.28.1",
-    "eslint": "^9.39.4",
+    "eslint": "^10.6.0",
     "globals": "^17.7.0",
     "karma": "^6.3.17",
     "karma-browserstack-launcher": "^1.6.0",

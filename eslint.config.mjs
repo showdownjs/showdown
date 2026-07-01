@@ -1,10 +1,23 @@
 // Flat ESLint config — replaces the legacy .eslintrc.json + .jshintrc (JSHint dropped).
-// Rules are ported verbatim from .eslintrc.json; the formatting rules live under @stylistic
-// (they are deprecated in ESLint core as of v9). No `eslint:recommended` — we keep exactly
-// the rule set the codebase already satisfies, so this is a linter swap, not a style change.
+//
+// Two tiers of severity:
+//   - Formatting/style (ported verbatim from .eslintrc.json, now under @stylistic) → ERROR.
+//     The codebase already satisfies these, so they gate CI as before.
+//   - eslint:recommended (+ eqeqeq) → WARN. These surface real correctness issues we intend
+//     to fix after the toolchain modernization; kept non-blocking for now so they don't gate
+//     CI. `no-undef` stays off: src/ is shared-scope concatenation, so identifiers legitimately
+//     cross file boundaries (this is why the old JSHint used `undef:false`).
 
+import js from '@eslint/js';
 import globals from 'globals';
 import stylistic from '@stylistic/eslint-plugin';
+
+// eslint:recommended, every rule downgraded to a warning.
+const recommendedAsWarn = Object.fromEntries(
+  Object.entries(js.configs.recommended.rules).map(([name, setting]) => (
+    Array.isArray(setting) ? [name, ['warn', ...setting.slice(1)]] : [name, 'warn']
+  ))
+);
 
 const coreRules = {
   curly: ['error', 'all'],
@@ -28,7 +41,14 @@ const styleRules = {
   '@stylistic/space-in-parens': ['error', 'never']
 };
 
-const rules = { ...coreRules, ...styleRules };
+const rules = {
+  ...recommendedAsWarn,
+  'no-undef': 'off',
+  eqeqeq: 'warn',
+  ...coreRules,
+  ...styleRules
+};
+
 const plugins = { '@stylistic': stylistic };
 
 export default [

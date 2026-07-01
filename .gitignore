@@ -6,6 +6,7 @@ npm-debug.log
 test-results/
 playwright-report/
 playwright-browserstack-sdk.config.js
+log/
 /*.test.*
 *.log
 CLAUDE.md

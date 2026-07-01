@@ -56,8 +56,9 @@
     "build:test": "node scripts/build-testbundle.mjs",
     "extract:commonmark": "node scripts/extract-commonmark.mjs",
     "clean": "node -e \"require('fs').rmSync('.build',{recursive:true,force:true})\"",
+    "lint": "eslint .",
     "pretest": "npm run build:test",
-    "test": "mocha --require test/bootstrap.js \"test/unit/**/*.js\" \"test/functional/**/testsuite.*.js\"",
+    "test": "npm run lint && mocha --require test/bootstrap.js \"test/unit/**/*.js\" \"test/functional/**/testsuite.*.js\"",
     "test:single": "mocha --require test/bootstrap.js",
     "perf": "node scripts/build-testbundle.mjs && node -e \"const p=require('./test/performance/performance.js');p.runTests();p.generateLogs();\""
   },
@@ -69,11 +70,14 @@
     "dist"
   ],
   "devDependencies": {
+    "@stylistic/eslint-plugin": "^5.10.0",
     "chai": "^4.3.6",
     "chai-match": "*",
     "commonmark-spec": "^0.31.2",
     "diffable-html": "^5.0.0",
     "esbuild": "^0.28.1",
+    "eslint": "^9.39.4",
+    "globals": "^17.7.0",
     "karma": "^6.3.17",
     "karma-browserstack-launcher": "^1.6.0",
     "karma-chai": "^0.1.0",

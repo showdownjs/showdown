@@ -1072,10 +1072,8 @@ showdown.helper.repeat = function (str, count) {
  */
 showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
   'use strict';
-  /*jshint bitwise: false*/
-  // eslint-disable-next-line space-infix-ops
+  // eslint-disable-next-line @stylistic/space-infix-ops
   targetLength = targetLength>>0; //floor if number or convert non-number to 0;
-  /*jshint bitwise: true*/
   padString = String(padString || ' ');
   if (str.length > targetLength) {
     return String(str);

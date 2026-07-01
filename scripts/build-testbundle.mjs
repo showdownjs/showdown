@@ -15,5 +15,4 @@ const outFile = path.join(outDir, 'showdown.js');
 fs.mkdirSync(outDir, { recursive: true });
 fs.writeFileSync(outFile, concatSources(), 'utf8');
 
-// eslint-disable-next-line no-console
 console.log(`wrote ${path.relative(root, outFile)}`);

@@ -25,7 +25,6 @@ const write = (rel, content) => {
   const abs = path.join(root, rel);
   fs.mkdirSync(path.dirname(abs), { recursive: true });
   fs.writeFileSync(abs, LF(content), 'utf8');
-  // eslint-disable-next-line no-console
   console.log(`wrote ${rel}`);
 };
 

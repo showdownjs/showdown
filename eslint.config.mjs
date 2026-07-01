@@ -87,8 +87,8 @@ export default [
     rules
   },
   {
-    // Build scripts: real ES modules.
-    files: ['scripts/**/*.mjs', 'eslint.config.mjs'],
+    // Build scripts, config, and ESM test setup: real ES modules.
+    files: ['**/*.mjs'],
     plugins,
     languageOptions: {
       ecmaVersion: 'latest',

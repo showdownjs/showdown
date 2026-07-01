@@ -2,7 +2,6 @@
  * Unit tests for the `decodeEntities` option (CommonMark character reference decoding).
  * The behavior is gated: it is off by default and enabled by the `commonmark` flavor.
  */
-chai.should();
 
 describe('showdown.Converter decodeEntities option', function () {
   'use strict';
@@ -11,11 +10,11 @@ describe('showdown.Converter decodeEntities option', function () {
     let converter = new showdown.Converter();
 
     it('should preserve named entities verbatim', function () {
-      converter.makeHtml('&copy;').should.equal('<p>&copy;</p>');
+      expect(converter.makeHtml('&copy;')).toBe('<p>&copy;</p>');
     });
 
     it('should preserve numeric entities verbatim', function () {
-      converter.makeHtml('&#35;').should.equal('<p>&#35;</p>');
+      expect(converter.makeHtml('&#35;')).toBe('<p>&#35;</p>');
     });
   });
 
@@ -23,28 +22,28 @@ describe('showdown.Converter decodeEntities option', function () {
     let converter = new showdown.Converter({decodeEntities: true});
 
     it('should decode named references', function () {
-      converter.makeHtml('&copy;').should.equal('<p>©</p>');
+      expect(converter.makeHtml('&copy;')).toBe('<p>©</p>');
     });
 
     it('should decode decimal numeric references', function () {
-      converter.makeHtml('&#35;').should.equal('<p>#</p>');
+      expect(converter.makeHtml('&#35;')).toBe('<p>#</p>');
     });
 
     it('should decode hexadecimal numeric references', function () {
-      converter.makeHtml('&#xcab;').should.equal('<p>ಫ</p>');
+      expect(converter.makeHtml('&#xcab;')).toBe('<p>ಫ</p>');
     });
 
     it('should escape invalid (unknown) entity references', function () {
-      converter.makeHtml('&MadeUpEntity;').should.equal('<p>&amp;MadeUpEntity;</p>');
+      expect(converter.makeHtml('&MadeUpEntity;')).toBe('<p>&amp;MadeUpEntity;</p>');
     });
 
     it('should replace disallowed code points with U+FFFD', function () {
-      converter.makeHtml('&#0;').should.equal('<p>�</p>');
+      expect(converter.makeHtml('&#0;')).toBe('<p>�</p>');
     });
 
     it('should treat a decoded markdown character as literal (not re-parsed)', function () {
-      // &#42; is `*`; it must not become emphasis even next to real emphasis
-      converter.makeHtml('&#42;foo&#42;').should.equal('<p>*foo*</p>');
+      expect(// &#42; is `*`; it must not become emphasis even next to real emphasis
+        converter.makeHtml('&#42;foo&#42;')).toBe('<p>*foo*</p>');
     });
   });
 
@@ -52,7 +51,7 @@ describe('showdown.Converter decodeEntities option', function () {
     let converter = new showdown.Converter(showdown.getFlavorOptions('commonmark'));
 
     it('should decode entities while keeping escaped ampersands escaped', function () {
-      converter.makeHtml('&amp; &copy;').should.equal('<p>&amp; ©</p>');
+      expect(converter.makeHtml('&amp; &copy;')).toBe('<p>&amp; ©</p>');
     });
   });
 });

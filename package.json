@@ -57,9 +57,10 @@
     "extract:commonmark": "node scripts/extract-commonmark.mjs",
     "clean": "node -e \"require('fs').rmSync('.build',{recursive:true,force:true})\"",
     "lint": "eslint .",
-    "pretest": "npm run build:test",
-    "test": "npm run lint && mocha --require test/bootstrap.js \"test/unit/**/*.js\" \"test/functional/**/testsuite.*.js\"",
-    "test:single": "mocha --require test/bootstrap.js",
+    "test": "npm run lint && vitest run",
+    "test:watch": "vitest",
+    "test:single": "vitest run",
+    "test:browser": "vitest run --config vitest.browser.config.mjs",
     "perf": "node scripts/build-testbundle.mjs && node -e \"const p=require('./test/performance/performance.js');p.runTests();p.generateLogs();\""
   },
   "bin": {
@@ -72,24 +73,16 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@stylistic/eslint-plugin": "^5.10.0",
-    "chai": "^4.3.6",
-    "chai-match": "*",
+    "@vitest/browser": "^4.1.9",
+    "@vitest/browser-playwright": "^4.1.9",
     "commonmark-spec": "^0.31.2",
     "diffable-html": "^5.0.0",
     "esbuild": "^0.28.1",
     "eslint": "^10.6.0",
     "globals": "^17.7.0",
-    "karma": "^6.3.17",
-    "karma-browserstack-launcher": "^1.6.0",
-    "karma-chai": "^0.1.0",
-    "karma-chrome-launcher": "^3.1.1",
-    "karma-firefox-launcher": "^2.1.2",
-    "karma-jsdom-launcher": "^12.0.0",
-    "karma-mocha": "^2.0.1",
-    "mocha": "^11.7.6",
     "performance-now": "^2.1.0",
-    "sinon": "*",
-    "source-map-support": "^0.5.21"
+    "playwright": "^1.61.1",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "commander": "^9.0.0",

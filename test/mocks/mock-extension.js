@@ -1,4 +1,6 @@
-var showdown = require('../../.build/showdown.js');
+// Loaded by the spawned CLI (makehtml -e). Require the SAME bundle the CLI loaded so the
+// extension registers on that showdown instance, not a separate copy.
+var showdown = require(process.env.SHOWDOWN_CLI_BUNDLE || '../../dist/showdown.js');
 
 var ext = {
   type: 'lang',

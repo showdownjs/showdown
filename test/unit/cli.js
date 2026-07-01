@@ -1,15 +1,9 @@
 let fs = require('fs'),
     os = require('os'),
     path = require('path'),
-    chai = require('chai'),
-    expect = chai.expect,
-    chaiMatch = require('chai-match'),
+    execFileSync = require('child_process').execFileSync,
     spawnSync = require('child_process').spawnSync,
     packageJson = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-
-require('sinon');
-chai.should();
-chai.use(chaiMatch);
 
 /**
  * Spawns a CLI process synchrously
@@ -51,19 +45,24 @@ function spawnCLI (command, args, options) {
 describe('showdown cli', function () {
   'use strict';
 
-  // every assertion here spawns a `node` subprocess; under full-suite CPU load
-  // a spawn can exceed mocha's 3s default, so give this spawn-based suite more room
-  this.timeout(15000);
+  // (spawn timeout is set globally via testTimeout in vitest.config.mjs)
 
-  // File-output tests get their own throwaway directory rather than sharing the .build/
-  // scratch dir, which collides with the build artifact and grunt's clean step. Combined
-  // with asserting the spawn succeeded before reading the file back (see each test), this
-  // removes the read-before-write races that surfaced as flaky ENOENT failures.
+  // File-output tests get their own throwaway directory. We also build a fresh showdown
+  // bundle into it and point the spawned CLI at it via SHOWDOWN_CLI_BUNDLE, so the tests
+  // exercise the current src/ rather than a possibly-stale committed dist.
   let tmpDir;
   before(function () {
     tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'showdown-cli-'));
+    let bundlePath = path.join(tmpDir, 'showdown.js');
+    execFileSync(process.execPath, [path.resolve('scripts/build-testbundle.mjs'), bundlePath]);
+    process.env.SHOWDOWN_CLI_BUNDLE = bundlePath;
+    // The bundle lives outside the project tree, so its `require('jsdom')` needs NODE_PATH
+    // to resolve the project's node_modules.
+    process.env.NODE_PATH = path.resolve('node_modules');
   });
   after(function () {
+    delete process.env.SHOWDOWN_CLI_BUNDLE;
+    delete process.env.NODE_PATH;
     if (tmpDir) { fs.rmSync(tmpDir, {recursive: true, force: true}); }
   });
   function tmp (name) {
@@ -74,23 +73,23 @@ describe('showdown cli', function () {
 
     it('should display help if no commands are specified', function () {
       let proc = spawnCLI(null, [], {});
-      proc.status.should.equal(1);
-      proc.stderr.should.contain('CLI to Showdownjs markdown parser');
-      proc.stderr.should.contain('Usage:');
-      proc.stderr.should.contain('Options:');
-      proc.stderr.should.contain('Commands:');
-      proc.stdout.should.equal('');
+      expect(proc.status).toBe(1);
+      expect(proc.stderr).toContain('CLI to Showdownjs markdown parser');
+      expect(proc.stderr).toContain('Usage:');
+      expect(proc.stderr).toContain('Options:');
+      expect(proc.stderr).toContain('Commands:');
+      expect(proc.stdout).toBe('');
     });
 
     describe('-h', function () {
       it('should display help', function () {
         let proc = spawnCLI(null, ['-h'], {});
-        proc.status.should.equal(0);
-        proc.stdout.should.contain('CLI to Showdownjs markdown parser');
-        proc.stdout.should.contain('Usage:');
-        proc.stdout.should.contain('Options:');
-        proc.stdout.should.contain('Commands:');
-        proc.stderr.should.equal('');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout).toContain('CLI to Showdownjs markdown parser');
+        expect(proc.stdout).toContain('Usage:');
+        expect(proc.stdout).toContain('Options:');
+        expect(proc.stdout).toContain('Commands:');
+        expect(proc.stderr).toBe('');
       });
     });
 
@@ -98,10 +97,10 @@ describe('showdown cli', function () {
       it('should display version', function () {
         let proc = spawnCLI(null, ['-V'], {}),
             verRegex = /^(\d{1,2}\.\d{1,3}\.\d{1,3}(?:-(?:alpha|beta|rc)\d{0,2})?)/;
-        proc.status.should.equal(0);
-        proc.stdout.should.match(verRegex);
-        proc.stdout.should.match(verRegex).and.capture(0).equals(packageJson.version);
-        proc.stderr.should.equal('');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout).toMatch(verRegex);
+        expect(verRegex.exec(proc.stdout)[0]).toBe(packageJson.version);
+        expect(proc.stderr).toBe('');
       });
     });
   });
@@ -114,9 +113,9 @@ describe('showdown cli', function () {
           input: '**foo**',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
-        proc.stderr.should.not.equal('');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout.trim()).toBe('<p><strong>foo</strong></p>');
+        expect(proc.stderr).not.toBe('');
       });
     });
 
@@ -127,9 +126,9 @@ describe('showdown cli', function () {
           input: 'this is a :smile:', // test the emoji option as a proxy
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stderr.should.contain('Enabling flavor gfm...');
-        proc.stdout.trim().should.equal('<p>this is a 😄</p>');
+        expect(proc.status).toBe(0);
+        expect(proc.stderr).toContain('Enabling flavor gfm...');
+        expect(proc.stdout.trim()).toBe('<p>this is a 😄</p>');
         //'Here in London'.should.match(/(here|there) in (\w+)/i).and.capture(1).equals('London');
       });
 
@@ -138,7 +137,7 @@ describe('showdown cli', function () {
           input: '**foo**',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(1);
+        expect(proc.status).toBe(1);
       });
 
       it('should list the available flavors in the error of an unrecognised flavor', function () {
@@ -146,20 +145,20 @@ describe('showdown cli', function () {
           input: '**foo**',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(1);
-        proc.stderr.should.contain('Available flavors:');
-        proc.stderr.should.contain('vanilla');
+        expect(proc.status).toBe(1);
+        expect(proc.stderr).toContain('Available flavors:');
+        expect(proc.stderr).toContain('vanilla');
       });
     });
 
     describe('makehtml --list-flavors', function () {
       it('should list the available flavors and exit cleanly', function () {
         let proc = spawnCLI('makehtml', ['--list-flavors'], {encoding: 'utf-8'});
-        proc.status.should.equal(0);
-        proc.stdout.should.contain('Available flavors:');
-        proc.stdout.should.contain('gfm');
-        proc.stdout.should.contain('commonmark');
-        proc.stdout.should.contain('vanilla');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout).toContain('Available flavors:');
+        expect(proc.stdout).toContain('gfm');
+        expect(proc.stdout).toContain('commonmark');
+        expect(proc.stdout).toContain('vanilla');
       });
     });
 
@@ -169,9 +168,9 @@ describe('showdown cli', function () {
           input: 'this is a :smile:',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stderr.should.not.contain('Enabling option emoji');
-        proc.stdout.trim().should.equal('<p>this is a :smile:</p>');
+        expect(proc.status).toBe(0);
+        expect(proc.stderr).not.toContain('Enabling option emoji');
+        expect(proc.stdout.trim()).toBe('<p>this is a :smile:</p>');
       });
 
       it('should enable a showdown option', function () {
@@ -179,9 +178,9 @@ describe('showdown cli', function () {
           input: 'this is a :smile:',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stderr.should.contain('Enabling option emoji');
-        proc.stdout.trim().should.equal('<p>this is a 😄</p>');
+        expect(proc.status).toBe(0);
+        expect(proc.stderr).toContain('Enabling option emoji');
+        expect(proc.stdout.trim()).toBe('<p>this is a 😄</p>');
       });
 
       it('should warn and skip unrecognized options', function () {
@@ -189,10 +188,10 @@ describe('showdown cli', function () {
           input: 'foo',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stderr.should.contain('unknown option \'foobar\'');
-        proc.stderr.should.not.contain('Enabling option foobar');
-        proc.stdout.trim().should.equal('<p>foo</p>');
+        expect(proc.status).toBe(0);
+        expect(proc.stderr).toContain('unknown option \'foobar\'');
+        expect(proc.stderr).not.toContain('Enabling option foobar');
+        expect(proc.stdout.trim()).toBe('<p>foo</p>');
       });
 
       it('should coerce a numeric option', function () {
@@ -200,8 +199,8 @@ describe('showdown cli', function () {
           input: '# hi',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.should.match(/^<h3\b/);
+        expect(proc.status).toBe(0);
+        expect(proc.stdout).toMatch(/^<h3\b/);
       });
 
       it('should enable a boolean option passed as =true', function () {
@@ -209,8 +208,8 @@ describe('showdown cli', function () {
           input: 'this is a :smile:',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.trim().should.equal('<p>this is a 😄</p>');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout.trim()).toBe('<p>this is a 😄</p>');
       });
 
       it('should disable a boolean option passed as =false', function () {
@@ -218,8 +217,8 @@ describe('showdown cli', function () {
           input: 'this is a :smile:',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.trim().should.equal('<p>this is a :smile:</p>');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout.trim()).toBe('<p>this is a :smile:</p>');
       });
 
       it('should let -c disable an option enabled by a flavor', function () {
@@ -227,8 +226,8 @@ describe('showdown cli', function () {
           input: 'a | b\n- | -\n1 | 2',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.should.not.contain('<table');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout).not.toContain('<table');
       });
 
       it('should warn on an invalid boolean value', function () {
@@ -236,9 +235,9 @@ describe('showdown cli', function () {
           input: 'this is a :smile:',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stderr.should.contain('invalid boolean value');
-        proc.stdout.trim().should.equal('<p>this is a :smile:</p>');
+        expect(proc.status).toBe(0);
+        expect(proc.stderr).toContain('invalid boolean value');
+        expect(proc.stdout.trim()).toBe('<p>this is a :smile:</p>');
       });
 
     });
@@ -247,18 +246,18 @@ describe('showdown cli', function () {
 
       it('should mute information', function () {
         let proc = spawnCLI('makehtml', ['-m', '-i'], {input: '**foo**'});
-        proc.status.should.equal(0);
-        expect(proc.output).to.be.null; // jshint ignore:line
-        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
-        proc.stderr.should.equal('');
+        expect(proc.status).toBe(0);
+        expect(proc.output).toBeNull(); expect(// jshint ignore:line
+          proc.stdout.trim()).toBe('<p><strong>foo</strong></p>');
+        expect(proc.stderr).toBe('');
       });
 
       it('should mute everything, even errors', function () {
         let proc = spawnCLI('makehtml', ['-m', '-i']);
         //proc.status.should.equal(0);
-        expect(proc.output).to.be.null; // jshint ignore:line
-        proc.stdout.should.equal('');
-        proc.stderr.should.equal('');
+        expect(proc.output).toBeNull(); expect(// jshint ignore:line
+          proc.stdout).toBe('');
+        expect(proc.stderr).toBe('');
       });
 
       it('should not mute parsed html', function () {
@@ -266,9 +265,9 @@ describe('showdown cli', function () {
           input: '**foo**',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
-        proc.stderr.should.equal('');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout.trim()).toBe('<p><strong>foo</strong></p>');
+        expect(proc.stderr).toBe('');
       });
     });
 
@@ -276,18 +275,18 @@ describe('showdown cli', function () {
 
       it('should not display information', function () {
         let proc = spawnCLI('makehtml', ['-q', '-i'], {input: '**foo**'});
-        proc.status.should.equal(0);
-        expect(proc.output).to.be.null; // jshint ignore:line
-        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
-        proc.stderr.should.match(/^\s*DONE!\s*$/);
+        expect(proc.status).toBe(0);
+        expect(proc.output).toBeNull(); expect(// jshint ignore:line
+          proc.stdout.trim()).toBe('<p><strong>foo</strong></p>');
+        expect(proc.stderr).toMatch(/^\s*DONE!\s*$/);
       });
 
       it('should display errors', function () {
         let proc = spawnCLI('makehtml', ['-q', '-i', '-e', 'foo'], {input: 'f'});
-        proc.status.should.equal(1);
-        expect(proc.output).to.be.null; // jshint ignore:line
-        proc.stdout.should.equal('');
-        proc.stderr.should.match(/^ERROR:/);
+        expect(proc.status).toBe(1);
+        expect(proc.output).toBeNull(); expect(// jshint ignore:line
+          proc.stdout).toBe('');
+        expect(proc.stderr).toMatch(/^ERROR:/);
       });
 
       it('should not mute parsed html', function () {
@@ -295,9 +294,9 @@ describe('showdown cli', function () {
           input: '**foo**',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
-        proc.stderr.should.match(/^\s*DONE!\s*$/);
+        expect(proc.status).toBe(0);
+        expect(proc.stdout.trim()).toBe('<p><strong>foo</strong></p>');
+        expect(proc.stderr).toMatch(/^\s*DONE!\s*$/);
       });
     });
 
@@ -307,9 +306,9 @@ describe('showdown cli', function () {
           input: '**foo**',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
-        proc.stderr.should.not.equal('');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout.trim()).toBe('<p><strong>foo</strong></p>');
+        expect(proc.stderr).not.toBe('');
       });
     });
 
@@ -318,9 +317,9 @@ describe('showdown cli', function () {
         let expectedOtp = fs.readFileSync('test/cli/basic.html', 'utf8').toString().trim(),
             proc = spawnCLI('makehtml', ['-i', 'test/cli/basic.md'], {encoding: 'utf-8'});
 
-        proc.status.should.equal(0);
-        proc.stdout.trim().should.equal(expectedOtp);
-        proc.stderr.should.not.equal('');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout.trim()).toBe(expectedOtp);
+        expect(proc.stderr).not.toBe('');
       });
     });
 
@@ -331,8 +330,8 @@ describe('showdown cli', function () {
               encoding: 'utf8',
               input: '**foo**'
             });
-        proc.status.should.equal(0, proc.stderr);
-        fs.readFileSync(out, 'utf8').trim().should.equal('<p><strong>foo</strong></p>');
+        expect(proc.status).toBe(0, proc.stderr);
+        expect(fs.readFileSync(out, 'utf8').trim()).toBe('<p><strong>foo</strong></p>');
       });
     });
 
@@ -342,10 +341,10 @@ describe('showdown cli', function () {
             expectedOtp = fs.readFileSync('test/cli/basic.html', 'utf8').toString().trim(),
             proc = spawnCLI('makehtml', ['-i', 'test/cli/basic.md', '-o', out], {encoding: 'utf-8'});
 
-        proc.status.should.equal(0, proc.stderr);
-        proc.stderr.should.equal('');
-        fs.readFileSync(out, 'utf8').trim().should.equal(expectedOtp);
-        proc.stdout.should.not.equal(expectedOtp);
+        expect(proc.status).toBe(0, proc.stderr);
+        expect(proc.stderr).toBe('');
+        expect(fs.readFileSync(out, 'utf8').trim()).toBe(expectedOtp);
+        expect(proc.stdout).not.toBe(expectedOtp);
       });
     });
 
@@ -360,21 +359,21 @@ describe('showdown cli', function () {
               input: '**foo**'
             });
 
-        proc.status.should.equal(0, proc.stderr);
-        // stderr should be empty
-        proc.stderr.should.equal('');
-        fs.readFileSync(out, 'utf8').trim().should.equal(expectedOtp);
-        // since the output is to a file, messages are logged to stdout
-        proc.stdout.should.not.equal(expectedOtp);
+        expect(proc.status).toBe(0, proc.stderr);
+        expect(// stderr should be empty
+          proc.stderr).toBe('');
+        expect(fs.readFileSync(out, 'utf8').trim()).toBe(expectedOtp);
+        expect(// since the output is to a file, messages are logged to stdout
+          proc.stdout).not.toBe(expectedOtp);
       });
 
       it('should ignore -a flag if -o <file> is missing', function () {
 
         let expectedOtp = '<p><strong>foo</strong></p>',
             proc = spawnCLI('makehtml', ['-a'], {encoding: 'utf8', input: '**foo**'});
-        proc.status.should.equal(0);
-        proc.stderr.should.not.equal('');
-        proc.stdout.trim().should.equal(expectedOtp);
+        expect(proc.status).toBe(0);
+        expect(proc.stderr).not.toBe('');
+        expect(proc.stdout.trim()).toBe(expectedOtp);
       });
     });
 
@@ -386,8 +385,8 @@ describe('showdown cli', function () {
               encoding: 'utf8',
               input: '**foo**'
             });
-        proc.status.should.equal(0, 'Process exited with error state');
-        proc.stdout.trim().should.equal(expectedOtp);
+        expect(proc.status).toBe(0, 'Process exited with error state');
+        expect(proc.stdout.trim()).toBe(expectedOtp);
       });
 
       it('should resolve a relative extension path against the cwd', function () {
@@ -397,8 +396,8 @@ describe('showdown cli', function () {
               encoding: 'utf8',
               input: '**foo**'
             });
-        proc.status.should.equal(0, 'Process exited with error state');
-        proc.stdout.trim().should.equal(expectedOtp);
+        expect(proc.status).toBe(0, 'Process exited with error state');
+        expect(proc.stdout.trim()).toBe(expectedOtp);
       });
     });
 
@@ -409,19 +408,19 @@ describe('showdown cli', function () {
               encoding: 'utf8',
               input: '# café'
             });
-        proc.status.should.equal(0, proc.stderr);
+        expect(proc.status).toBe(0, proc.stderr);
         let buf = fs.readFileSync(out);
-        // latin1 encodes é as a single 0xE9 byte; utf8 would be 0xC3 0xA9
-        buf.includes(0xe9).should.equal(true);
-        buf.includes(0xc3).should.equal(false);
+        expect(// latin1 encodes é as a single 0xE9 byte; utf8 would be 0xC3 0xA9
+          buf.includes(0xe9)).toBe(true);
+        expect(buf.includes(0xc3)).toBe(false);
       });
     });
 
     describe('makehtml newline handling', function () {
       it('should append a trailing newline when writing to stdout', function () {
         let proc = spawnCLI('makehtml', [], {input: '**foo**', encoding: 'utf-8'});
-        proc.status.should.equal(0);
-        proc.stdout.should.equal('<p><strong>foo</strong></p>\n');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout).toBe('<p><strong>foo</strong></p>\n');
       });
 
       it('should not append a trailing newline when writing to a file', function () {
@@ -430,8 +429,8 @@ describe('showdown cli', function () {
               encoding: 'utf8',
               input: '**foo**'
             });
-        proc.status.should.equal(0, proc.stderr);
-        fs.readFileSync(out, 'utf8').should.equal('<p><strong>foo</strong></p>');
+        expect(proc.status).toBe(0, proc.stderr);
+        expect(fs.readFileSync(out, 'utf8')).toBe('<p><strong>foo</strong></p>');
       });
     });
 
@@ -447,76 +446,76 @@ describe('showdown cli', function () {
 
       it('should convert multiple inputs into an output directory', function () {
         let proc = spawnCLI('makehtml', ['-m', '-i', dir + '/a.md', dir + '/b.md', '-o', dir + '/out'], {encoding: 'utf8'});
-        proc.status.should.equal(0);
-        fs.readFileSync(dir + '/out/a.html', 'utf8').should.contain('>A<');
-        fs.readFileSync(dir + '/out/b.html', 'utf8').should.contain('>B<');
+        expect(proc.status).toBe(0);
+        expect(fs.readFileSync(dir + '/out/a.html', 'utf8')).toContain('>A<');
+        expect(fs.readFileSync(dir + '/out/b.html', 'utf8')).toContain('>B<');
       });
 
       it('should write outputs beside each source when no output is given', function () {
         let proc = spawnCLI('makehtml', ['-m', '-i', dir + '/a.md', dir + '/b.md'], {encoding: 'utf8'});
-        proc.status.should.equal(0);
-        fs.existsSync(dir + '/a.html').should.equal(true);
-        fs.existsSync(dir + '/b.html').should.equal(true);
+        expect(proc.status).toBe(0);
+        expect(fs.existsSync(dir + '/a.html')).toBe(true);
+        expect(fs.existsSync(dir + '/b.html')).toBe(true);
       });
 
       it('should expand a glob pattern with the built-in matcher', function () {
         // quote-free single arg so the shell does not pre-expand it on POSIX
         let proc = spawnCLI('makehtml', ['-m', '-i', dir + '/*.md', '-o', dir + '/out'], {encoding: 'utf8'});
-        proc.status.should.equal(0);
-        fs.existsSync(dir + '/out/a.html').should.equal(true);
-        fs.existsSync(dir + '/out/b.html').should.equal(true);
+        expect(proc.status).toBe(0);
+        expect(fs.existsSync(dir + '/out/a.html')).toBe(true);
+        expect(fs.existsSync(dir + '/out/b.html')).toBe(true);
       });
 
       it('should reject a single output file for multiple inputs', function () {
         let proc = spawnCLI('makehtml', ['-i', dir + '/a.md', dir + '/b.md', '-o', dir + '/one.html'], {encoding: 'utf8'});
-        proc.status.should.equal(1);
-        proc.stderr.should.contain('directory');
+        expect(proc.status).toBe(1);
+        expect(proc.stderr).toContain('directory');
       });
 
       it('should error when a glob matches nothing', function () {
         let proc = spawnCLI('makehtml', ['-i', dir + '/*.nomatch'], {encoding: 'utf8'});
-        proc.status.should.equal(1);
-        proc.stderr.should.contain('no files matched');
+        expect(proc.status).toBe(1);
+        expect(proc.stderr).toContain('no files matched');
       });
 
       it('should create the output directory when it does not exist', function () {
         let proc = spawnCLI('makehtml', ['-m', '-i', dir + '/a.md', dir + '/b.md', '-o', dir + '/new/'], {encoding: 'utf8'});
-        proc.status.should.equal(0);
-        fs.existsSync(dir + '/new/a.html').should.equal(true);
-        fs.existsSync(dir + '/new/b.html').should.equal(true);
+        expect(proc.status).toBe(0);
+        expect(fs.existsSync(dir + '/new/a.html')).toBe(true);
+        expect(fs.existsSync(dir + '/new/b.html')).toBe(true);
       });
 
       it('should treat a single -o with a trailing slash as a directory', function () {
         let proc = spawnCLI('makehtml', ['-m', '-i', dir + '/a.md', '-o', dir + '/single/'], {encoding: 'utf8'});
-        proc.status.should.equal(0);
-        fs.existsSync(dir + '/single/a.html').should.equal(true);
+        expect(proc.status).toBe(0);
+        expect(fs.existsSync(dir + '/single/a.html')).toBe(true);
       });
 
       it('should explain that recursive globs are unsupported', function () {
         let proc = spawnCLI('makehtml', ['-i', dir + '/**/*.md'], {encoding: 'utf8'});
-        proc.status.should.equal(1);
-        proc.stderr.should.contain('recursive');
+        expect(proc.status).toBe(1);
+        expect(proc.stderr).toContain('recursive');
       });
 
       it('should give a clear error when the input is a directory', function () {
         let proc = spawnCLI('makehtml', ['-i', dir], {encoding: 'utf8'});
-        proc.status.should.equal(1);
-        proc.stderr.should.contain('is a directory');
+        expect(proc.status).toBe(1);
+        expect(proc.stderr).toContain('is a directory');
       });
     });
 
     describe('makehtml -v', function () {
       it('should print extra information in verbose mode', function () {
         let proc = spawnCLI('makehtml', ['-v', '-i'], {input: '**foo**', encoding: 'utf-8'});
-        proc.status.should.equal(0);
-        proc.stderr.should.contain('bytes from stdin');
-        proc.stdout.trim().should.equal('<p><strong>foo</strong></p>');
+        expect(proc.status).toBe(0);
+        expect(proc.stderr).toContain('bytes from stdin');
+        expect(proc.stdout.trim()).toBe('<p><strong>foo</strong></p>');
       });
 
       it('should not print the extra information without -v', function () {
         let proc = spawnCLI('makehtml', ['-i'], {input: '**foo**', encoding: 'utf-8'});
-        proc.status.should.equal(0);
-        proc.stderr.should.not.contain('bytes from stdin');
+        expect(proc.status).toBe(0);
+        expect(proc.stderr).not.toContain('bytes from stdin');
       });
     });
 
@@ -525,29 +524,29 @@ describe('showdown cli', function () {
 
       it('should not emit ANSI codes by default when piped', function () {
         let proc = spawnCLI('makehtml', ['-c', 'bogus'], {input: 'foo', encoding: 'utf-8'});
-        proc.stderr.should.not.contain(ESC);
+        expect(proc.stderr).not.toContain(ESC);
       });
 
       it('should emit ANSI codes with --color', function () {
         let proc = spawnCLI('makehtml', ['--color', '-c', 'bogus'], {input: 'foo', encoding: 'utf-8'});
-        proc.stderr.should.contain(ESC);
+        expect(proc.stderr).toContain(ESC);
       });
 
       it('should not emit ANSI codes with --no-color', function () {
         let proc = spawnCLI('makehtml', ['--no-color', '-c', 'bogus'], {input: 'foo', encoding: 'utf-8'});
-        proc.stderr.should.not.contain(ESC);
+        expect(proc.stderr).not.toContain(ESC);
       });
 
       it('should honor the NO_COLOR environment letiable', function () {
         // spawnCLI supplies a clean base env; layering NO_COLOR on top exercises the
         // env-let path without ambient FORCE_COLOR (e.g. from an IDE) overriding it.
         let proc = spawnCLI('makehtml', ['-c', 'bogus'], {input: 'foo', encoding: 'utf-8', env: {NO_COLOR: '1'}});
-        proc.stderr.should.not.contain(ESC);
+        expect(proc.stderr).not.toContain(ESC);
       });
 
       it('should never colorize the converted output', function () {
         let proc = spawnCLI('makehtml', ['--color', '-m'], {input: '**foo**', encoding: 'utf-8'});
-        proc.stdout.should.not.contain(ESC);
+        expect(proc.stdout).not.toContain(ESC);
       });
     });
 
@@ -561,9 +560,9 @@ describe('showdown cli', function () {
           input: '<strong>foo</strong>',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.trim().should.equal('**foo**');
-        proc.stderr.should.not.equal('');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout.trim()).toBe('**foo**');
+        expect(proc.stderr).not.toBe('');
       });
     });
 
@@ -573,9 +572,9 @@ describe('showdown cli', function () {
           input: '<em>foo</em>',
           encoding: 'utf-8'
         });
-        proc.status.should.equal(0);
-        proc.stdout.trim().should.equal('*foo*');
-        proc.stderr.should.equal('');
+        expect(proc.status).toBe(0);
+        expect(proc.stdout.trim()).toBe('*foo*');
+        expect(proc.stderr).toBe('');
       });
     });
 
@@ -585,8 +584,8 @@ describe('showdown cli', function () {
             expectedOtp = fs.readFileSync('test/cli/basic-md.md', 'utf8').toString().trim(),
             proc = spawnCLI('makemarkdown', ['-i', 'test/cli/basic-md.html', '-o', out], {encoding: 'utf-8'});
 
-        proc.status.should.equal(0, proc.stderr);
-        fs.readFileSync(out, 'utf8').trim().should.equal(expectedOtp);
+        expect(proc.status).toBe(0, proc.stderr);
+        expect(fs.readFileSync(out, 'utf8').trim()).toBe(expectedOtp);
       });
     });
 

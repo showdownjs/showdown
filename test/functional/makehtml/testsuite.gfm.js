@@ -16,62 +16,50 @@ let bootstrap = require('./makehtml.bootstrap.js'),
     assertion = bootstrap.assertion,
     testsuite = bootstrap.getJsonTestSuite('test/functional/makehtml/cases/gfm.testsuite.json');
 
+// Cases skipped entirely (renderer-only features, malformed inputs, known divergences).
+// Pre-filtered so a section whose cases are all skipped doesn't create an empty suite
+// (Vitest errors on describe blocks with no tests, unlike Mocha).
+//   79  ATX headings_79 empty headings don't make sense
+//   43  Thematic breaks_43 malformed input of test case
+//   61/1312  cmark-gfm "<IGNORE>" sentinel — undefined behavior, not assertable
+//   1313  @a.b.c is linked by ghMentions (separate subparser); tracked as a ghMentions fix
+//   1800-1804 Alerts, 1900/1901 Math, 2000 Mermaid — GitHub.com renderer-only, not GFM spec
+//   1111-1114  loose task-list items: known showdown checkbox-nesting divergence
+const SKIP = new Set([79, 43, 61, 1312, 1313, 1800, 1801, 1802, 1803, 1804, 1900, 1901, 2000, 1111, 1112, 1113, 1114]);
+
 describe('makeHtml() gfm testsuite', function () {
   'use strict';
 
   for (let section in testsuite) {
     if (testsuite.hasOwnProperty(section)) {
+      let cases = testsuite[section].filter(function (tc) { return !SKIP.has(tc.number); });
+      if (cases.length === 0) { continue; }
       describe(section, function () {
-        for (let i = 0; i < testsuite[section].length; ++i) {
-          let name = testsuite[section][i].name;
-          let number = testsuite[section][i].number;
+        for (let i = 0; i < cases.length; ++i) {
+          let name = cases[i].name;
+          let number = cases[i].number;
           let useConverter = converter;
           switch (number) {
-            case 79:   // ATX headings_79 empty headings don't make sense
-            case 43:   // Thematic breaks_43 malformed input of test case
-            case 61:   // Autolinks (extension)_1312
-            case 1312: // cmark-gfm "<IGNORE>" sentinel — undefined behavior, not assertable
-            case 1313: // Autolinks (extension)_1313': // @a.b.c is linked by ghMentions (separate subparser); tracked as a ghMentions fix
-            // GitHub.com renderer-only features, not part of the GFM spec — showdown does not produce them
-            case 1800: // Alerts (GitHub renderer)
-            case 1801: // Alerts (GitHub renderer)
-            case 1802: // Alerts (GitHub renderer)
-            case 1803: // Alerts (GitHub renderer)
-            case 1804: // Alerts (GitHub renderer)
-            case 1900: // Math (GitHub renderer)
-            case 1901: // Math (GitHub renderer)
-            case 2000: // Mermaid diagrams (GitHub renderer)
-            // Loose task-list items: showdown nests the checkbox inside the item's first
-            // <p> (<li><p><input> text</p>…</li>), whereas cmark-gfm emits the checkbox as
-            // a direct <li> child before the block children (<li><input> <p>text</p>…</li>).
-            // Pre-existing showdown rendering; tracked as a known divergence, fixtures keep
-            // the spec-correct cmark output for reference.
-            case 1111: // loose: multi-paragraph item
-            case 1112: // loose: fenced code block in item
-            case 1113: // loose: indented code block in item
-            case 1114: // loose: blockquote in item
-              continue;
-
             // Fenced code blocks
             case 142: // we use different classes to mark languages in fenced code blocks
             case 143: // we use different classes to mark languages in fenced code blocks
-              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-ruby', 'ruby language-ruby');
+              cases[i].expected = cases[i].expected.replace('language-ruby', 'ruby language-ruby');
               break;
             // Fenced code blocks
             case 144: // we use different classes to mark languages in fenced code blocks
-              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-;', '; language-;');
+              cases[i].expected = cases[i].expected.replace('language-;', '; language-;');
               break;
             // Fenced code blocks
             case 146: // we use different classes to mark languages in fenced code blocks
-              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-aa', 'aa language-aa');
+              cases[i].expected = cases[i].expected.replace('language-aa', 'aa language-aa');
               break;
             // Entity and numeric character references
             case 34: // we use different classes to mark languages in fenced code blocks
-              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-föö', 'föö language-föö');
+              cases[i].expected = cases[i].expected.replace('language-föö', 'föö language-föö');
               break;
             //Backslash escapes
             case 24: // we use different classes to mark languages in fenced code blocks
-              testsuite[section][i].expected = testsuite[section][i].expected.replace('language-foo+bar', 'foo+bar language-foo+bar');
+              cases[i].expected = cases[i].expected.replace('language-foo+bar', 'foo+bar language-foo+bar');
               break;
             // Disallowed Raw HTML (extension)
             case 1400: // GFM tagfilter extension, off by default
@@ -80,7 +68,7 @@ describe('makeHtml() gfm testsuite', function () {
               break;
           }
 
-          it(number + ': ' + name, assertion(testsuite[section][i], useConverter, true));
+          it(number + ': ' + name, assertion(cases[i], useConverter, true));
         }
       });
     }

@@ -6,8 +6,6 @@
 (function () {
   'use strict';
 
-  require('source-map-support').install();
-  require('chai').should();
   var fs = require('fs');
 
   function getTestSuite (dir) {
@@ -45,7 +43,7 @@
       testCase = normalize(testCase);
 
       // Compare
-      testCase.actual.should.equal(testCase.expected);
+      expect(testCase.actual).toBe(testCase.expected);
     };
   }
 
@@ -67,7 +65,7 @@
     getTestSuite: getTestSuite,
     assertion: assertion,
     normalize: normalize,
-    showdown: require('../../../.build/showdown.js')
+    showdown: globalThis.showdown
   };
 })();
 

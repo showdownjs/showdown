@@ -2,7 +2,6 @@
  * Created by Tivie on 15-01-2015.
  */
 //let showdown = require('../../.build/showdown.js') || require('showdown');
-chai.should();
 
 
 describe('showdown.Converter', function () {
@@ -25,7 +24,7 @@ describe('showdown.Converter', function () {
     it('output extensions should run once', function () {
       runCount = 0;
       converter.makeHtml('# testext');
-      runCount.should.equal(1);
+      expect(runCount).toBe(1);
     });
   });
 
@@ -35,7 +34,7 @@ describe('showdown.Converter', function () {
         html = converter.makeHtml('    ' + text);
     it('should omit extra line after code tag', function () {
       let expectedHtml = '<pre><code>' + text + '</code></pre>';
-      html.should.equal(expectedHtml);
+      expect(html).toBe(expectedHtml);
     });
   });
 
@@ -47,14 +46,14 @@ describe('showdown.Converter', function () {
       converter.setOption('prefixHeaderId', true);
       let html = converter.makeHtml('# ' + text),
           expectedHtml = '<h1 id="section-foo-header">' + text + '</h1>';
-      html.should.equal(expectedHtml);
+      expect(html).toBe(expectedHtml);
     });
 
     it('should prefix header id with custom string', function () {
       converter.setOption('prefixHeaderId', 'blabla');
       let html = converter.makeHtml('# ' + text),
           expectedHtml = '<h1 id="blablafoo-header">' + text + '</h1>';
-      html.should.equal(expectedHtml);
+      expect(html).toBe(expectedHtml);
     });
   });
 
@@ -78,10 +77,10 @@ describe('showdown.Converter', function () {
           expectedObj = {foo: 'bar', baz: 'bazinga'},
           expectedRaw = 'foo: bar\nbaz: bazinga',
           expectedFormat = 'SIMPLE';
-      converter.makeHtml(text1).should.equal(expectedHtml);
-      converter.getMetadata().should.eql(expectedObj);
-      converter.getMetadata(true).should.equal(expectedRaw);
-      converter.getMetadataFormat().should.equal(expectedFormat);
+      expect(converter.makeHtml(text1)).toBe(expectedHtml);
+      expect(converter.getMetadata()).toEqual(expectedObj);
+      expect(converter.getMetadata(true)).toBe(expectedRaw);
+      expect(converter.getMetadataFormat()).toBe(expectedFormat);
     });
 
     it('consecutive calls should reset metadata', function () {
@@ -89,9 +88,9 @@ describe('showdown.Converter', function () {
       let expectedObj = {a: 'b', c: '123'},
           expectedRaw = 'a: b\nc: 123',
           expectedFormat = 'TIVIE';
-      converter.getMetadata().should.eql(expectedObj);
-      converter.getMetadata(true).should.equal(expectedRaw);
-      converter.getMetadataFormat().should.equal(expectedFormat);
+      expect(converter.getMetadata()).toEqual(expectedObj);
+      expect(converter.getMetadata(true)).toBe(expectedRaw);
+      expect(converter.getMetadataFormat()).toBe(expectedFormat);
     });
   });
 });

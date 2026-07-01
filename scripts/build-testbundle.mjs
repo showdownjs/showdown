@@ -9,10 +9,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { concatSources, root } from './concat.mjs';
 
-const outDir = path.join(root, '.build');
-const outFile = path.join(outDir, 'showdown.js');
+// Default output is .build/showdown.js; an explicit path arg lets callers (e.g. the CLI test)
+// concat into a throwaway location instead.
+const outFile = process.argv[2] ? path.resolve(process.argv[2]) : path.join(root, '.build', 'showdown.js');
 
-fs.mkdirSync(outDir, { recursive: true });
+fs.mkdirSync(path.dirname(outFile), { recursive: true });
 fs.writeFileSync(outFile, concatSources(), 'utf8');
 
 console.log(`wrote ${path.relative(root, outFile)}`);

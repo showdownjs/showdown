@@ -8,16 +8,16 @@ describe('showdown.options', function () {
   describe('setOption() and getOption()', function () {
     it('should set option foo=bar', function () {
       showdown.setOption('foo', 'bar');
-      showdown.getOption('foo').should.equal('bar');
+      expect(showdown.getOption('foo')).toBe('bar');
       showdown.resetOptions();
-      (typeof showdown.getOption('foo')).should.equal('undefined');
+      expect((typeof showdown.getOption('foo'))).toBe('undefined');
     });
   });
 
   describe('getDefaultOptions()', function () {
     it('should get default options', function () {
-      let opts = getDefaultOpts(true);
-      expect(showdown.getDefaultOptions()).to.be.eql(opts);
+      let opts = showdown.getDefaultOptions(true);
+      expect(showdown.getDefaultOptions()).toEqual(opts);
     });
   });
 });
@@ -56,12 +56,12 @@ describe('showdown.extension()', function () {
   describe('objects', function () {
     it('should register an extension object', function () {
       showdown.extension('foo', extObjMock);
-      showdown.extension('foo').should.eql([extObjMock]);
+      expect(showdown.extension('foo')).toEqual([extObjMock]);
     });
 
     it('should register an extension function', function () {
       showdown.extension('bar', extObjFunc);
-      showdown.extension('bar').should.eql([extObjMock]);
+      expect(showdown.extension('bar')).toEqual([extObjMock]);
     });
 
     it('should register a listener extension', function () {
@@ -79,7 +79,7 @@ describe('showdown.extension()', function () {
       let fn = function () {
         showdown.extension('foo', {});
       };
-      expect(fn).to.throw();
+      expect(fn).toThrow();
     });
 
     it('should refuse to register an extension with invalid type', function () {
@@ -88,7 +88,7 @@ describe('showdown.extension()', function () {
           type: 'foo'
         });
       };
-      expect(fn).to.throw(/type .+? is not recognized\. Valid values: "lang\/language", "output\/html" or "listener"/);
+      expect(fn).toThrow(/type .+? is not recognized\. Valid values: "lang\/language", "output\/html" or "listener"/);
     });
 
     it('should refuse to register an extension without regex or filter', function () {
@@ -97,7 +97,7 @@ describe('showdown.extension()', function () {
           type: 'lang'
         });
       };
-      expect(fn).to.throw(/extensions must define either a "regex" property or a "filter" method/);
+      expect(fn).toThrow(/extensions must define either a "regex" property or a "filter" method/);
     });
 
     it('should refuse to register a listener extension without a listeners property', function () {
@@ -106,7 +106,7 @@ describe('showdown.extension()', function () {
           type: 'listener'
         });
       };
-      expect(fn).to.throw(/Extensions of type "listener" must have a property called "listeners"/);
+      expect(fn).toThrow(/Extensions of type "listener" must have a property called "listeners"/);
     });
 
     afterEach(function () {
@@ -126,7 +126,7 @@ describe('showdown.getAllExtensions()', function () {
 
   it('should return all extensions', function () {
     showdown.extension('bar', extObjMock);
-    showdown.getAllExtensions().should.eql({bar: [extObjMock]});
+    expect(showdown.getAllExtensions()).toEqual({bar: [extObjMock]});
   });
 });
 
@@ -134,7 +134,7 @@ describe('showdown.setFlavor()', function () {
   'use strict';
   it('should set flavor to gfm', function () {
     showdown.setFlavor('gfm');
-    showdown.getFlavor().should.equal('gfm');
+    expect(showdown.getFlavor()).toBe('gfm');
     showdown.setFlavor('vanilla');
   });
 
@@ -144,8 +144,8 @@ describe('showdown.setFlavor()', function () {
         shOpts = showdown.getOptions();
     for (let opt in ghOpts) {
       if (ghOpts.hasOwnProperty(opt)) {
-        shOpts.should.have.property(opt);
-        shOpts[opt].should.equal(ghOpts[opt]);
+        expect(shOpts).toHaveProperty(opt);
+        expect(shOpts[opt]).toBe(ghOpts[opt]);
       }
     }
     showdown.setFlavor('vanilla');
@@ -158,9 +158,9 @@ describe('showdown.setFlavor()', function () {
         dfOpts = showdown.getDefaultOptions();
     for (let opt in dfOpts) {
       if (ghOpts.hasOwnProperty(opt)) {
-        shOpts[opt].should.equal(ghOpts[opt]);
+        expect(shOpts[opt]).toBe(ghOpts[opt]);
       } else {
-        shOpts[opt].should.equal(dfOpts[opt]);
+        expect(shOpts[opt]).toBe(dfOpts[opt]);
       }
     }
     showdown.setFlavor('original');
@@ -168,9 +168,9 @@ describe('showdown.setFlavor()', function () {
     shOpts = showdown.getOptions();
     for (let opt in dfOpts) {
       if (orOpts.hasOwnProperty(opt)) {
-        shOpts[opt].should.equal(orOpts[opt]);
+        expect(shOpts[opt]).toBe(orOpts[opt]);
       } else {
-        shOpts[opt].should.equal(dfOpts[opt]);
+        expect(shOpts[opt]).toBe(dfOpts[opt]);
       }
     }
     showdown.setFlavor('vanilla');

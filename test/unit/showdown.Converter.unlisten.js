@@ -1,4 +1,3 @@
-chai.should();
 
 describe('showdown.Converter.unlisten()', function () {
   'use strict';
@@ -16,8 +15,8 @@ describe('showdown.Converter.unlisten()', function () {
       .unlisten('makehtml.onStart', cbA);
 
     converter.makeHtml('foo');
-    a.should.equal(0);
-    b.should.equal(1);
+    expect(a).toBe(0);
+    expect(b).toBe(1);
   });
 
   it('should remove every listener for an event when no callback is given', function () {
@@ -31,7 +30,7 @@ describe('showdown.Converter.unlisten()', function () {
       .unlisten('makehtml.onEnd');
 
     converter.makeHtml('foo');
-    count.should.equal(0);
+    expect(count).toBe(0);
   });
 
   it('should remove all occurrences of the same callback', function () {
@@ -45,14 +44,14 @@ describe('showdown.Converter.unlisten()', function () {
       .unlisten('makehtml.onStart', cb);
 
     converter.makeHtml('foo');
-    count.should.equal(0);
+    expect(count).toBe(0);
   });
 
   it('should be a no-op for an event with no listeners', function () {
     let converter = new showdown.Converter();
     expect(function () {
       converter.unlisten('makehtml.onStart', function () {});
-    }).to.not.throw();
+    }).not.toThrow();
   });
 
   it('should be case-insensitive about the event name', function () {
@@ -64,14 +63,14 @@ describe('showdown.Converter.unlisten()', function () {
     converter.unlisten('MAKEHTML.ONSTART', cb);
 
     converter.makeHtml('foo');
-    count.should.equal(0);
+    expect(count).toBe(0);
   });
 
   it('should throw when name is not a string', function () {
     let converter = new showdown.Converter();
     expect(function () {
       converter.unlisten(123, function () {});
-    }).to.throw(/name must be a string/);
+    }).toThrow(/name must be a string/);
   });
 
   it('should throw when callback is given but is not a function', function () {
@@ -79,13 +78,13 @@ describe('showdown.Converter.unlisten()', function () {
     converter.listen('makehtml.onStart', function (event) { return event; });
     expect(function () {
       converter.unlisten('makehtml.onStart', 'notAFunction');
-    }).to.throw(/callback must be a function/);
+    }).toThrow(/callback must be a function/);
   });
 
   it('should return the converter (fluent interface)', function () {
     let converter = new showdown.Converter(),
         cb = function (event) { return event; };
-    converter.listen('makehtml.onStart', cb).unlisten('makehtml.onStart', cb)
-      .should.be.an.instanceOf(showdown.Converter);
+    expect(converter.listen('makehtml.onStart', cb).unlisten('makehtml.onStart', cb)
+    ).toBeInstanceOf(showdown.Converter);
   });
 });

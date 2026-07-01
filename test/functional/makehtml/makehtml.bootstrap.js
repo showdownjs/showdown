@@ -6,8 +6,6 @@
 (function () {
   'use strict';
 
-  require('source-map-support').install();
-  require('chai').should();
   //const htmlPrettify = require('html-prettify');
   const htmlPrettify = require('diffable-html');
 
@@ -91,7 +89,7 @@
       testCase = normalize(testCase, prettify);
 
       // Compare
-      testCase.actual.should.equal(testCase.expected, testCase.file);
+      expect(testCase.actual, testCase.file).toBe(testCase.expected);
     };
   }
 
@@ -138,7 +136,7 @@
     getTestSuite: getTestSuite,
     getJsonTestSuite: getJsonTestSuite,
     assertion: assertion,
-    showdown: require('../../../.build/showdown.js')
+    showdown: globalThis.showdown
   };
 })();
 

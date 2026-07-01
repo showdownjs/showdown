@@ -387,7 +387,7 @@ describe('showdown.Event', function () {
                 actual = true;
               });
               converter.makeHtml(md);
-              expected.should.equal(actual);
+              expect(expected).toBe(actual);
             });
           }
         });
@@ -415,7 +415,7 @@ describe('showdown.Event', function () {
                 actual = true;
               });
               converter.makeMarkdown(html);
-              expected.should.equal(actual);
+              expect(expected).toBe(actual);
             });
           }
         });
@@ -429,7 +429,7 @@ describe('showdown.Event', function () {
         new showdown.Converter()
           .listen('makehtml.onStart', function () { actual = true; })
           .makeHtml('foo');
-        actual.should.equal(true);
+        expect(actual).toBe(true);
       });
 
       it('should trigger "makehtml.onPreParse" event', function () {
@@ -437,7 +437,7 @@ describe('showdown.Event', function () {
         new showdown.Converter()
           .listen('makehtml.onPreParse', function () { actual = true; })
           .makeHtml('foo');
-        actual.should.equal(true);
+        expect(actual).toBe(true);
       });
 
       it('should trigger "makehtml.onEnd" event', function () {
@@ -445,7 +445,7 @@ describe('showdown.Event', function () {
         new showdown.Converter()
           .listen('makehtml.onEnd', function () { actual = true; })
           .makeHtml('foo');
-        actual.should.equal(true);
+        expect(actual).toBe(true);
       });
 
       it('onStart should see the raw (unescaped) source but onPreParse the escaped source', function () {
@@ -454,25 +454,25 @@ describe('showdown.Event', function () {
           .listen('makehtml.onStart', function (event) { onStartInput = event.input; return event; })
           .listen('makehtml.onPreParse', function (event) { onPreParseInput = event.input; return event; })
           .makeHtml('price is $5');
-        // before escaping, the dollar sign is literal
-        onStartInput.should.contain('$');
-        // after escaping, `$` becomes the `¨D` placeholder
-        onPreParseInput.should.contain('¨D');
-        onPreParseInput.should.not.contain('$');
+        expect(// before escaping, the dollar sign is literal
+          onStartInput).toContain('$');
+        expect(// after escaping, `$` becomes the `¨D` placeholder
+          onPreParseInput).toContain('¨D');
+        expect(onPreParseInput).not.toContain('$');
       });
 
       it('onStart listener can rewrite the raw markdown source', function () {
         let result = new showdown.Converter()
           .listen('makehtml.onStart', function () { return '# replaced'; })
           .makeHtml('original');
-        result.should.match(/<h1[^>]*>replaced<\/h1>/);
+        expect(result).toMatch(/<h1[^>]*>replaced<\/h1>/);
       });
 
       it('onEnd listener can post-process the final HTML', function () {
         let result = new showdown.Converter()
           .listen('makehtml.onEnd', function (event) { return event.input.replace('<p>', '<p class="x">'); })
           .makeHtml('foo');
-        result.should.contain('<p class="x">');
+        expect(result).toContain('<p class="x">');
       });
 
       it('a lang extension and an onPreParse listener chain in registration order', function () {
@@ -481,7 +481,7 @@ describe('showdown.Event', function () {
         converter.addExtension({type: 'lang', regex: /a/g, replace: 'b'});
         // ... then a hand-written listener turns `b` into `c`
         converter.listen('makehtml.onPreParse', function (event) { return event.input.replace(/b/g, 'c'); });
-        converter.makeHtml('a').should.match(/c/);
+        expect(converter.makeHtml('a')).toMatch(/c/);
       });
     });
 
@@ -494,7 +494,7 @@ describe('showdown.Event', function () {
           new showdown.Converter({simplifiedAutoLink: true})
             .listen('makehtml.link.autoLink.' + evt, function (e) { fired = true; return e; })
             .makeHtml('http://foo.com');
-          fired.should.equal(true);
+          expect(fired).toBe(true);
         });
       });
     });
@@ -506,7 +506,7 @@ describe('showdown.Event', function () {
           actual = true;
         });
         converter.makeMarkdown('<p>foo</p>');
-        actual.should.equal(true);
+        expect(actual).toBe(true);
       });
 
       it('should trigger "makeMarkdown.onEnd" event', function () {
@@ -515,7 +515,7 @@ describe('showdown.Event', function () {
           actual = true;
         });
         converter.makeMarkdown('<p>foo</p>');
-        actual.should.equal(true);
+        expect(actual).toBe(true);
       });
     });
   });
@@ -588,7 +588,7 @@ describe('showdown.Event', function () {
           missing = makehtmlSubparsers.filter(function (name) {
             return !firedDefault[name] && !firedCm[name];
           });
-      missing.should.eql([]);
+      expect(missing).toEqual([]);
     });
 
     it('every makeMarkdown subparser should emit its onStart event', function () {
@@ -599,7 +599,7 @@ describe('showdown.Event', function () {
       });
       conv.makeMarkdown(richHtml);
       let missing = makeMarkdownSubparsers.filter(function (name) { return !fired[name]; });
-      missing.should.eql([]);
+      expect(missing).toEqual([]);
     });
   });
 });

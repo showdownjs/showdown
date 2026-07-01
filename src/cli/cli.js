@@ -11,7 +11,12 @@ let showdown,
     version;
 
 // require shodown. We use conditional loading for each use case
-if (fs.existsSync(path1)) {
+if (process.env.SHOWDOWN_CLI_BUNDLE) {
+  // test: load a freshly-built bundle from an explicit path (avoids testing a stale
+  // committed dist — see test/unit/cli.js)
+  showdown = require(path.resolve(process.env.SHOWDOWN_CLI_BUNDLE));
+  version = require(path.resolve(__dirname + '/../../package.json')).version;
+} else if (fs.existsSync(path1)) {
   // production. File lives in bin directory
   showdown = require(path1);
   version = require(path.resolve(__dirname + '/../package.json')).version;

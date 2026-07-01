@@ -1,7 +1,6 @@
 /**
  * Created by Tivie on 27/01/2017.
  */
-chai.should();
 /*jshint expr: true*/
 /*jshint -W053 */
 /*jshint -W010 */
@@ -15,11 +14,11 @@ describe('encodeEmailAddress()', function () {
       encodedEmail2 = encoder(email);
 
   it('should encode email', function () {
-    encodedEmail.should.not.equal(email);
+    expect(encodedEmail).not.toBe(email);
   });
 
   it('should encode email determinated', function () {
-    encodedEmail.should.equal(encodedEmail2);
+    expect(encodedEmail).toBe(encodedEmail2);
   });
 
   it('should decode to original email', function () {
@@ -32,7 +31,7 @@ describe('encodeEmailAddress()', function () {
         return String.fromCharCode(cc);
       }
     });
-    decodedEmail.should.equal(email);
+    expect(decodedEmail).toBe(email);
   });
 });
 
@@ -41,27 +40,27 @@ describe('isString()', function () {
   let isString = showdown.helper.isString;
 
   it('should return true for new String Object', function () {
-    isString(new String('some string')).should.be.true;
+    expect(isString(new String('some string'))).toBe(true);
   });
 
   it('should return true for String Object', function () {
-    isString(String('some string')).should.be.true;
+    expect(isString(String('some string'))).toBe(true);
   });
 
   it('should return true for string literal', function () {
-    isString('some string').should.be.true;
+    expect(isString('some string')).toBe(true);
   });
 
   it('should return false for integers', function () {
-    isString(5).should.be.false;
+    expect(isString(5)).toBe(false);
   });
 
   it('should return false for random objects', function () {
-    isString({foo: 'bar'}).should.be.false;
+    expect(isString({foo: 'bar'})).toBe(false);
   });
 
   it('should return false for arrays', function () {
-    isString(['bar']).should.be.false;
+    expect(isString(['bar'])).toBe(false);
   });
 });
 
@@ -70,29 +69,29 @@ describe('isFunction()', function () {
   let isFunction = showdown.helper.isFunction;
 
   it('should return true for closures', function () {
-    isFunction(function () {}).should.be.true;
+    expect(isFunction(function () {})).toBe(true);
   });
 
   it('should return true for defined functions', function () {
     function foo () {}
-    isFunction(foo).should.be.true;
+    expect(isFunction(foo)).toBe(true);
   });
 
   it('should return true for function letiables', function () {
     let bar = function () {};
-    isFunction(bar).should.be.true;
+    expect(isFunction(bar)).toBe(true);
   });
 
   it('should return false for hash objects', function () {
-    isFunction({}).should.be.false;
+    expect(isFunction({})).toBe(false);
   });
 
   it('should return false for objects', function () {
-    isFunction(new Object ()).should.be.false;
+    expect(isFunction(new Object ())).toBe(false);
   });
 
   it('should return false for string primitives', function () {
-    isFunction('foo').should.be.false;
+    expect(isFunction('foo')).toBe(false);
   });
 });
 
@@ -101,28 +100,28 @@ describe('isArray()', function () {
   let isArray = showdown.helper.isArray;
 
   it('should return true for short syntax arrays', function () {
-    isArray([]).should.be.true;
+    expect(isArray([])).toBe(true);
   });
 
   it('should return true for array objects', function () {
     let myArr = new Array();
-    isArray(myArr).should.be.true;
+    expect(isArray(myArr)).toBe(true);
   });
 
   it('should return false for functions', function () {
-    isArray(function () {}).should.be.false;
+    expect(isArray(function () {})).toBe(false);
     function baz () {}
-    isArray(baz).should.be.false;
+    expect(isArray(baz)).toBe(false);
   });
 
   it('should return false for objects', function () {
-    isArray({}).should.be.false;
-    isArray(new Object ()).should.be.false;
+    expect(isArray({})).toBe(false);
+    expect(isArray(new Object ())).toBe(false);
   });
 
   it('should return false for strings', function () {
-    isArray('foo').should.be.false;
-    isArray(new String('foo')).should.be.false;
+    expect(isArray('foo')).toBe(false);
+    expect(isArray(new String('foo'))).toBe(false);
   });
 });
 
@@ -131,35 +130,35 @@ describe('isUndefined()', function () {
   let isUndefined = showdown.helper.isUndefined;
 
   it('should return true if nothing is passed', function () {
-    isUndefined().should.be.true;
+    expect(isUndefined()).toBe(true);
   });
 
   it('should return true if a letiable is initialized but not defined', function () {
     let myVar;
-    isUndefined(myVar).should.be.true;
+    expect(isUndefined(myVar)).toBe(true);
   });
 
   it('should return false for null', function () {
-    isUndefined(null).should.be.false;
+    expect(isUndefined(null)).toBe(false);
   });
 
   it('should return false for 0', function () {
-    isUndefined(0).should.be.false;
+    expect(isUndefined(0)).toBe(false);
   });
 
   it('should return false for empty string', function () {
-    isUndefined('').should.be.false;
+    expect(isUndefined('')).toBe(false);
   });
 
   it('should return false for empty booleans false or true', function () {
-    isUndefined(false).should.be.false;
-    isUndefined(true).should.be.false;
+    expect(isUndefined(false)).toBe(false);
+    expect(isUndefined(true)).toBe(false);
   });
 
   it('should return false for anything not undefined', function () {
-    isUndefined('foo').should.be.false;
-    isUndefined(2).should.be.false;
-    isUndefined({}).should.be.false;
+    expect(isUndefined('foo')).toBe(false);
+    expect(isUndefined(2)).toBe(false);
+    expect(isUndefined({})).toBe(false);
   });
 });
 
@@ -169,13 +168,13 @@ describe('stdExtName()', function () {
 
   it('should remove certain chars', function () {
     let str = 'bla_-  \nbla';
-    //[_?*+\/\\.^-]
-    stdExtName(str).should.not.match(/[_?*+\/\\.^-]/g);
+    expect(//[_?*+\/\\.^-]
+      stdExtName(str)).not.toMatch(/[_?*+\/\\.^-]/g);
   });
   it('should make everything lowercase', function () {
     let str = 'BLABLA';
-    //[_?*+\/\\.^-]
-    stdExtName(str).should.equal('blabla');
+    expect(//[_?*+\/\\.^-]
+      stdExtName(str)).toBe('blabla');
   });
 });
 
@@ -184,41 +183,41 @@ describe('forEach()', function () {
   let forEach = showdown.helper.forEach;
 
   it('should throw an error if first parameter is undefined', function () {
-    (function () {forEach();}).should.throw('obj param is required');
+    expect((function () {forEach();})).toThrow('obj param is required');
   });
 
   it('should throw an error if second parameter is undefined', function () {
-    (function () {forEach([]);}).should.throw('callback param is required');
+    expect((function () {forEach([]);})).toThrow('callback param is required');
   });
 
   it('should throw an error if second parameter is not a function', function () {
-    (function () {forEach([], 'foo');}).should.throw('callback param must be a function/closure');
+    expect((function () {forEach([], 'foo');})).toThrow('callback param must be a function/closure');
   });
 
   it('should throw an error if first parameter is not an object or an array', function () {
-    (function () {forEach('foo', function () {});}).should.throw('obj does not seem to be an array or an iterable object');
+    expect((function () {forEach('foo', function () {});})).toThrow('obj does not seem to be an array or an iterable object');
   });
 
   it('should not throw even if object is empty', function () {
-    (function () {forEach({}, function () {});}).should.not.throw();
+    expect((function () {forEach({}, function () {});})).not.toThrow();
   });
 
   it('should iterate array items', function () {
     let myArray = ['banana', 'orange', 'grape'];
     forEach(myArray, function (val, key, obj) {
-      key.should.be.a('number');
-      (key % 1).should.equal(0);
-      val.should.equal(myArray[key]);
-      obj.should.equal(myArray);
+      expect(key).toBeTypeOf('number');
+      expect((key % 1)).toBe(0);
+      expect(val).toBe(myArray[key]);
+      expect(obj).toBe(myArray);
     });
   });
 
   it('should iterate over object properties', function () {
     let myObj = {foo: 'banana', bar: 'orange', baz: 'grape'};
     forEach(myObj, function (val, key, obj) {
-      myObj.should.have.ownProperty(key);
-      val.should.equal(myObj[key]);
-      obj.should.equal(myObj);
+      expect(Object.prototype.hasOwnProperty.call(myObj, key)).toBe(true);
+      expect(val).toBe(myObj[key]);
+      expect(obj).toBe(myObj);
     });
   });
 
@@ -228,12 +227,12 @@ describe('forEach()', function () {
     myObj.bar = 'orange';
     myObj.baz = 'grape';
 
-    myObj.should.have.ownProperty('bar');
-    myObj.should.have.ownProperty('baz');
-    myObj.should.not.have.ownProperty('foo');
+    expect(Object.prototype.hasOwnProperty.call(myObj, 'bar')).toBe(true);
+    expect(Object.prototype.hasOwnProperty.call(myObj, 'baz')).toBe(true);
+    expect(Object.prototype.hasOwnProperty.call(myObj, 'foo')).toBe(false);
 
     forEach(myObj, function (val, key) {
-      key.should.not.equal('foo');
+      expect(key).not.toBe('foo');
     });
   });
 });
@@ -245,7 +244,7 @@ describe('matchRecursiveRegExp()', function () {
 
   it('should match nested elements', function () {
     let result = rRegExp('<div><div>a</div></div>', '<div\\b[^>]*>', '</div>', 'gim');
-    result.should.deep.equal([['<div><div>a</div></div>', '<div>a</div>', '<div>', '</div>']]);
+    expect(result).toEqual([['<div><div>a</div></div>', '<div>a</div>', '<div>', '</div>']]);
   });
 
 });
@@ -257,7 +256,7 @@ describe('repeat()', function () {
       let str = 'foo',
           expected = str.repeat(100),
           actual = showdown.helper.repeat(str, 100);
-      expected.should.equal(actual);
+      expect(expected).toBe(actual);
     }
   });
 });

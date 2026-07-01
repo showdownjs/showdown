@@ -1,7 +1,6 @@
 /**
  * Created by Estevao on 31-05-2015.
  */
-chai.should();
 
 
 describe('showdown.Converter', function () {
@@ -15,13 +14,13 @@ describe('showdown.Converter', function () {
     });
 
     it('getOption() should get option foo to equal baz', function () {
-      converter.getOption('foo').should.equal('baz');
+      expect(converter.getOption('foo')).toBe('baz');
     });
 
     it('getOptions() should contain foo=baz', function () {
       let options = converter.getOptions();
-      options.should.have.ownProperty('foo');
-      options.foo.should.equal('baz');
+      expect(Object.prototype.hasOwnProperty.call(options, 'foo')).toBe(true);
+      expect(options.foo).toBe('baz');
     });
   });
 
@@ -30,12 +29,12 @@ describe('showdown.Converter', function () {
 
     it('_setMetadataPair() should set foo to bar', function () {
       converter._setMetadataPair('foo', 'bar');
-      converter.getMetadata().should.eql({foo: 'bar'});
+      expect(converter.getMetadata()).toEqual({foo: 'bar'});
     });
 
     it('_setMetadata should set metadata to {baz: bazinga}', function () {
       converter._setMetadataRaw('{baz: bazinga}');
-      converter.getMetadata(true).should.eql('{baz: bazinga}');
+      expect(converter.getMetadata(true)).toEqual('{baz: bazinga}');
     });
   });
 
@@ -57,7 +56,7 @@ describe('showdown.Converter', function () {
       }
       function check (key, val) {
         it('should set ' + key + ' to ' + val, function () {
-          converter.getOption(key).should.equal(val);
+          expect(converter.getOption(key)).toBe(val);
         });
       }
     });
@@ -71,20 +70,20 @@ describe('showdown.Converter', function () {
     describe('flavor', function () {
       it('should be vanilla by default', function () {
         let converter = new showdown.Converter();
-        converter.getFlavor().should.equal('vanilla');
+        expect(converter.getFlavor()).toBe('vanilla');
       });
 
       it('should be changed if global option is changed', function () {
         showdown.setFlavor('gfm');
         let converter = new showdown.Converter();
-        converter.getFlavor().should.equal('gfm');
+        expect(converter.getFlavor()).toBe('gfm');
         showdown.setFlavor('vanilla');
       });
 
       it('should not be changed if converter is initialized before global change', function () {
         let converter = new showdown.Converter();
         showdown.setFlavor('gfm');
-        converter.getFlavor().should.equal('vanilla');
+        expect(converter.getFlavor()).toBe('vanilla');
         showdown.setFlavor('vanilla');
       });
     });
@@ -105,14 +104,14 @@ describe('showdown.Converter', function () {
     it('addExtension() should add an extension Object', function () {
       let converter = new showdown.Converter();
       converter.addExtension(extObjMock);
-      converter.makeHtml('markdown').should.match(/showdown/);
+      expect(converter.makeHtml('markdown')).toMatch(/showdown/);
     });
 
     it('addExtension() should unwrap an extension wrapped in a function', function () {
       let converter = new showdown.Converter();
 
       converter.addExtension(extObjFunc);
-      converter.makeHtml('markdown').should.match(/showdown/);
+      expect(converter.makeHtml('markdown')).toMatch(/showdown/);
     });
 
     it('useExtension() should use a previous registered extension in showdown', function () {
@@ -120,7 +119,7 @@ describe('showdown.Converter', function () {
       let converter = new showdown.Converter();
 
       converter.useExtension('foo');
-      converter.makeHtml('markdown').should.match(/showdown/);
+      expect(converter.makeHtml('markdown')).toMatch(/showdown/);
       showdown.resetExtensions();
     });
 
@@ -136,7 +135,7 @@ describe('showdown.Converter', function () {
       } finally {
         console.warn = orig;
       }
-      count.should.be.at.most(1);
+      expect(count).toBeLessThanOrEqual(1);
     });
   });
 
@@ -150,8 +149,8 @@ describe('showdown.Converter', function () {
         return event;
       });
       let html = converter.makeHtml('# foo');
-      fired.should.equal(true);
-      html.should.match(/class="x"/);
+      expect(fired).toBe(true);
+      expect(html).toMatch(/class="x"/);
     });
 
     it('should NOT fire the removed .before/.after special events', function () {
@@ -159,7 +158,7 @@ describe('showdown.Converter', function () {
       new showdown.Converter()
         .listen('makehtml.heading.before', function (e) { fired = true; return e; })
         .makeHtml('# foo');
-      fired.should.equal(false);
+      expect(fired).toBe(false);
     });
   });
 });

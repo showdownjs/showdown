@@ -2,7 +2,6 @@
  * Created by Estevao on 15-01-2015.
  */
 //let showdown = require('../../.build/showdown.js') || require('showdown');
-chai.should();
 
 describe('showdown.Converter', function () {
   'use strict';
@@ -15,7 +14,7 @@ describe('showdown.Converter', function () {
       let html = '<a href="/somefoo.html">a link</a>\n';
       let md   = '[a link](</somefoo.html>)';
 
-      converter.makeMarkdown(html).should.equal(md);
+      expect(converter.makeMarkdown(html)).toBe(md);
     });
 
   });

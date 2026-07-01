@@ -58,6 +58,7 @@
     "clean": "node -e \"require('fs').rmSync('.build',{recursive:true,force:true})\"",
     "lint": "eslint .",
     "changelog": "node scripts/changelog.mjs",
+    "release": "node scripts/release.mjs",
     "test": "npm run lint && vitest run",
     "test:watch": "vitest",
     "test:single": "vitest run",

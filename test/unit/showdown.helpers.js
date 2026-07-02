@@ -170,7 +170,7 @@ describe('stdExtName()', function () {
   it('should remove certain chars', function () {
     let str = 'bla_-  \nbla';
     expect(//[_?*+\/\\.^-]
-      stdExtName(str)).not.toMatch(/[_?*+\/\\.^-]/g);
+      stdExtName(str)).not.toMatch(/[_?*+/\\.^-]/g);
   });
   it('should make everything lowercase', function () {
     let str = 'BLABLA';

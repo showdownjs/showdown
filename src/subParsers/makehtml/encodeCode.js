@@ -32,7 +32,7 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   // encode "
     .replace(/"/g, '&quot;')
   // Now, escape characters that are magic in Markdown:
-    .replace(/([*_{}\[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
+    .replace(/([*_{}[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
 
   let afterEvent = new showdown.Event('makehtml.encodeCode.onEnd', text);
   afterEvent

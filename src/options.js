@@ -121,7 +121,7 @@ function getDefaultOpts (simple) {
     },
     backslashEscapesHTMLTags: {
       defaultValue: false,
-      describe: 'Support for HTML Tag escaping. ex: \<div>foo\</div>',
+      describe: 'Support for HTML Tag escaping. ex: \\<div>foo\\</div>',
       type: 'boolean'
     },
     emoji: {

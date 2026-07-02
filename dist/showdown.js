@@ -123,7 +123,7 @@ function getDefaultOpts (simple) {
     },
     backslashEscapesHTMLTags: {
       defaultValue: false,
-      describe: 'Support for HTML Tag escaping. ex: \<div>foo\</div>',
+      describe: 'Support for HTML Tag escaping. ex: \\<div>foo\\</div>',
       type: 'boolean'
     },
     emoji: {
@@ -743,7 +743,7 @@ showdown.helper.forEach = function (obj, callback) {
  */
 showdown.helper.stdExtName = function (s) {
   'use strict';
-  return s.replace(/[_?*+\/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
+  return s.replace(/[_?*+/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
 };
 
 function escapeCharactersCallback (wholeMatch, m1) {
@@ -773,7 +773,7 @@ showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash
   'use strict';
   // First we have to escape the escape characters so that
   // we can build a character class out of them
-  let regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
+  let regexString = '([' + charsToEscape.replace(/([[\]\\])/g, '\\$1') + '])';
 
   if (afterBackslash) {
     regexString = '\\\\' + regexString;
@@ -1177,7 +1177,7 @@ showdown.helper.trimEnd = function (text) {
 
 
 showdown.helper.URLUtils = function (url, baseURL) {
-  const pattern2 = /^([^:\/?#]+:)?(?:\/\/(?:([^:@\/?#]*)(?::([^:@\/?#]*))?@)?(([^:\/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
+  const pattern2 = /^([^:/?#]+:)?(?:\/\/(?:([^:@/?#]*)(?::([^:@/?#]*))?@)?(([^:/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
 
   let m = String(url)
     .trim()
@@ -1208,7 +1208,7 @@ showdown.helper.URLUtils = function (url, baseURL) {
     pathname.replace(/^(\.\.?(\/|$))+/, '')
       .replace(/\/(\.(\/|$))+/g, '/')
       .replace(/\/\.\.$/, '/../')
-      .replace(/\/?[^\/]*/g, function (p) {
+      .replace(/\/?[^/]*/g, function (p) {
         if (p === '/..') {
           output.pop();
         } else {
@@ -1331,7 +1331,7 @@ showdown.helper.cmNormalizeURL = function (url) {
   url = url.replace(/¨E(\d+)E/g, function (wholeMatch, code) {
     return String.fromCharCode(parseInt(code, 10));
   });
-  url = url.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
+  url = url.replace(/\\([!-/:-@[-`{-~])/g, '$1');
   url = showdown.helper.cmDecodeEntities(url);
   url = showdown.helper.cmEncodeURI(url);
   return url.replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;');
@@ -4970,7 +4970,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   // must not contain "_". Explicit-scheme (http/https/ftp) urls are not domain-validated.
   function validAutolinkHost (url, isWww) {
     if (!isWww) { return true; }
-    let host = url.split(/[\/?#]/)[0],
+    let host = url.split(/[/?#]/)[0],
         labels = host.split('.');
     if (labels.length < 2) { return false; }
     return !/_/.test(labels.slice(-2).join('.'));
@@ -6443,7 +6443,7 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
   text = text.replace(/&(?!#?[xX]?(?:[\da-fA-F]+|\w+);)/g, '&amp;');
 
   // Encode naked <'s
-  text = text.replace(/<(?![a-z\/?$!])/gi, '&lt;');
+  text = text.replace(/<(?![a-z/?$!])/gi, '&lt;');
 
   // Encode <
   text = text.replace(/</g, '&lt;');
@@ -6496,7 +6496,7 @@ showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, g
 
   text = text
     .replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback)
-    .replace(/\\([!#%'()*+,\-.\/:;=?@\[\]\\^_`{|}~])/g, showdown.helper.escapeCharactersCallback)
+    .replace(/\\([!#%'()*+,\-./:;=?@[\]\\^_`{|}~])/g, showdown.helper.escapeCharactersCallback)
     .replace(/\\¨D/g, '¨D') // escape $ (which was already escaped as ¨D) (charcode is 36)
     .replace(/\\&/g, '&amp;') // escape &
     .replace(/\\"/g, '&quot;') // escaping "
@@ -6546,7 +6546,7 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   // encode "
     .replace(/"/g, '&quot;')
   // Now, escape characters that are magic in Markdown:
-    .replace(/([*_{}\[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
+    .replace(/([*_{}[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
 
   let afterEvent = new showdown.Event('makehtml.encodeCode.onEnd', text);
   afterEvent
@@ -6982,7 +6982,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
       let lang = infostring.trim().split(' ')[0];
       // CommonMark resolves backslash escapes of ASCII punctuation in the info string
       if (options.decodeEntities) {
-        lang = lang.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
+        lang = lang.replace(/\\([!-/:-@[-`{-~])/g, '$1');
       }
       // The language ends up inside the code element's `class` attribute, so escape the
       // characters that could break out of it. Otherwise an info string such as
@@ -7670,7 +7670,7 @@ showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals)
         .replace(/¨T/g, '')
         .replace(/¨D/g, '')
         // replace rest of the chars (&~$ are repeated as they might have been escaped)
-        .replace(/[&+$,\/:;=?@"#{}|^¨¿？：~\[\]`、゠＝…‥『』〝〟「」\\*()｛｝（）［］【】%.。，¡!！'<>]/g, '')
+        .replace(/[&+$,/:;=?@"#{}|^¨¿？：~[\]`、゠＝…‥『』〝〟「」\\*()｛｝（）［］【】%.。，¡!！'<>]/g, '')
         .toLowerCase();
     }
 
@@ -10219,7 +10219,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       crazyRegExp       = /!\[([^\]]*?)][ \t]*\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
       base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
       referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]/g,
-      refShortcutRegExp = /!\[([^\[\]]+)]/g;
+      refShortcutRegExp = /!\[([^[\]]+)]/g;
 
   // First, handle reference-style labeled images: ![alt text][id]
   text = text.replace(referenceRegExp, function (wholeMatch, altText, linkId) {
@@ -10542,7 +10542,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   text = startEvent.output;
 
   // 1. Handle reference-style links: [link text] [id]
-  let referenceRegex = /\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]/g;
+  let referenceRegex = /\[((?:\[[^\]]*]|[^[\]])*)] ?(?:\n *)?\[(.*?)]/g;
   text = text.replace(referenceRegex, function (wholeMatch, text, linkId) {
     // bail if we find 2 newlines somewhere
     if (/\n\n/.test(wholeMatch)) {
@@ -10565,7 +10565,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
     // 2.2. Look for cases with crazy urls like ./image/cat1).png
     // the url mus be enclosed in <>
-    let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
+    let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
     text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
       return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
     });
@@ -10587,7 +10587,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
   // 3. Handle reference-style shortcuts: [link text]
   // These must come last in case there's a [link text][1] or [link text](/foo)
-  let referenceShortcutRegex = /\[([^\[\]]+)]/g;
+  let referenceShortcutRegex = /\[([^[\]]+)]/g;
   text = text.replace(referenceShortcutRegex, function (wholeMatch, text) {
     return writeAnchorTag ('reference', referenceShortcutRegex, wholeMatch, text);
   });

@@ -884,7 +884,7 @@ showdown.subParser('makehtml.cmInline', function (text, options, globals) {
   // must not contain "_". Explicit-scheme (http/https/ftp) urls are not domain-validated.
   function validAutolinkHost (url, isWww) {
     if (!isWww) { return true; }
-    let host = url.split(/[\/?#]/)[0],
+    let host = url.split(/[/?#]/)[0],
         labels = host.split('.');
     if (labels.length < 2) { return false; }
     return !/_/.test(labels.slice(-2).join('.'));

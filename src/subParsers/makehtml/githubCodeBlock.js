@@ -120,7 +120,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
       let lang = infostring.trim().split(' ')[0];
       // CommonMark resolves backslash escapes of ASCII punctuation in the info string
       if (options.decodeEntities) {
-        lang = lang.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
+        lang = lang.replace(/\\([!-/:-@[-`{-~])/g, '$1');
       }
       // The language ends up inside the code element's `class` attribute, so escape the
       // characters that could break out of it. Otherwise an info string such as

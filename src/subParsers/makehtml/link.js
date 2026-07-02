@@ -27,7 +27,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
   text = startEvent.output;
 
   // 1. Handle reference-style links: [link text] [id]
-  let referenceRegex = /\[((?:\[[^\]]*]|[^\[\]])*)] ?(?:\n *)?\[(.*?)]/g;
+  let referenceRegex = /\[((?:\[[^\]]*]|[^[\]])*)] ?(?:\n *)?\[(.*?)]/g;
   text = text.replace(referenceRegex, function (wholeMatch, text, linkId) {
     // bail if we find 2 newlines somewhere
     if (/\n\n/.test(wholeMatch)) {
@@ -50,7 +50,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
     // 2.2. Look for cases with crazy urls like ./image/cat1).png
     // the url mus be enclosed in <>
-    let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^\[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
+    let inlineCrazyRegex = /\[((?:\[[^\]]*]|[^[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
     text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
       return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
     });
@@ -72,7 +72,7 @@ showdown.subParser('makehtml.link', function (text, options, globals) {
 
   // 3. Handle reference-style shortcuts: [link text]
   // These must come last in case there's a [link text][1] or [link text](/foo)
-  let referenceShortcutRegex = /\[([^\[\]]+)]/g;
+  let referenceShortcutRegex = /\[([^[\]]+)]/g;
   text = text.replace(referenceShortcutRegex, function (wholeMatch, text) {
     return writeAnchorTag ('reference', referenceShortcutRegex, wholeMatch, text);
   });

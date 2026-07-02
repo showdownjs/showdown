@@ -157,7 +157,7 @@ showdown.helper.forEach = function (obj, callback) {
  */
 showdown.helper.stdExtName = function (s) {
   'use strict';
-  return s.replace(/[_?*+\/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
+  return s.replace(/[_?*+/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
 };
 
 function escapeCharactersCallback (wholeMatch, m1) {
@@ -187,7 +187,7 @@ showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash
   'use strict';
   // First we have to escape the escape characters so that
   // we can build a character class out of them
-  let regexString = '([' + charsToEscape.replace(/([\[\]\\])/g, '\\$1') + '])';
+  let regexString = '([' + charsToEscape.replace(/([[\]\\])/g, '\\$1') + '])';
 
   if (afterBackslash) {
     regexString = '\\\\' + regexString;
@@ -591,7 +591,7 @@ showdown.helper.trimEnd = function (text) {
 
 
 showdown.helper.URLUtils = function (url, baseURL) {
-  const pattern2 = /^([^:\/?#]+:)?(?:\/\/(?:([^:@\/?#]*)(?::([^:@\/?#]*))?@)?(([^:\/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
+  const pattern2 = /^([^:/?#]+:)?(?:\/\/(?:([^:@/?#]*)(?::([^:@/?#]*))?@)?(([^:/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
 
   let m = String(url)
     .trim()
@@ -622,7 +622,7 @@ showdown.helper.URLUtils = function (url, baseURL) {
     pathname.replace(/^(\.\.?(\/|$))+/, '')
       .replace(/\/(\.(\/|$))+/g, '/')
       .replace(/\/\.\.$/, '/../')
-      .replace(/\/?[^\/]*/g, function (p) {
+      .replace(/\/?[^/]*/g, function (p) {
         if (p === '/..') {
           output.pop();
         } else {
@@ -745,7 +745,7 @@ showdown.helper.cmNormalizeURL = function (url) {
   url = url.replace(/¨E(\d+)E/g, function (wholeMatch, code) {
     return String.fromCharCode(parseInt(code, 10));
   });
-  url = url.replace(/\\([!-\/:-@\[-`{-~])/g, '$1');
+  url = url.replace(/\\([!-/:-@[-`{-~])/g, '$1');
   url = showdown.helper.cmDecodeEntities(url);
   url = showdown.helper.cmEncodeURI(url);
   return url.replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;');

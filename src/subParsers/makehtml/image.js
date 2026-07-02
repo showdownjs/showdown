@@ -24,7 +24,7 @@ showdown.subParser('makehtml.image', function (text, options, globals) {
       crazyRegExp       = /!\[([^\]]*?)][ \t]*\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
       base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
       referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]/g,
-      refShortcutRegExp = /!\[([^\[\]]+)]/g;
+      refShortcutRegExp = /!\[([^[\]]+)]/g;
 
   // First, handle reference-style labeled images: ![alt text][id]
   text = text.replace(referenceRegExp, function (wholeMatch, altText, linkId) {

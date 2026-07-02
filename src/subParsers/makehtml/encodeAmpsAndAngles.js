@@ -25,7 +25,7 @@ showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, glob
   text = text.replace(/&(?!#?[xX]?(?:[\da-fA-F]+|\w+);)/g, '&amp;');
 
   // Encode naked <'s
-  text = text.replace(/<(?![a-z\/?$!])/gi, '&lt;');
+  text = text.replace(/<(?![a-z/?$!])/gi, '&lt;');
 
   // Encode <
   text = text.replace(/</g, '&lt;');

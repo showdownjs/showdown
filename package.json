@@ -94,7 +94,7 @@
     "vitest": "^4.1.9"
   },
   "dependencies": {
-    "commander": "^14.0.0",
+    "commander": "^15.0.0",
     "happy-dom": "^20.10.6"
   },
   "overrides": {

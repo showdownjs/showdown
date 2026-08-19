@@ -494,7 +494,7 @@ showdown.Converter = function (converterOptions) {
     // before stripLinkDefinitions (whose scanner would otherwise claim `[^id]:` lines).
     text = showdown.subParser('makehtml.footnotes')(text, options, globals, 'strip');
     text = showdown.subParser('makehtml.stripLinkDefinitions')(text, options, globals);
-    text = showdown.subParser('makehtml.blockGamut')(text, options, globals);
+    text = showdown.subParser('makehtml.blockEngine')(text, options, globals);
     text = showdown.subParser('makehtml.paragraphs')(text, options, globals);
     // Footnotes (GFM): render the referenced footnotes into a <section> and append it,
     // before unhashHTMLSpans so hashed spans inside the rendered footnotes are restored.

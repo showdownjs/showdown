@@ -166,7 +166,7 @@ showdown.getDefaultOptions = function (simple) {
 /**
  * Get or set a subParser
  *
- * subParser(name)       - Get a registered subParser
+ * subParser(name) - Get a registered subParser
  * subParser(name, func) - Register a subParser
  * @static
  * @param {string} name

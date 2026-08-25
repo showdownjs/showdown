@@ -29,10 +29,13 @@ let cmAttributeName = '[a-zA-Z_:][a-zA-Z0-9:._-]*',
     cmCDATA = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>';
 
 showdown.helper.regexes = {
+  // The set of characters that would re-trigger emphasis/emoji/strikethrough recognition if left
+  // bare inside generated anchor/image text (a URL, a title, an image alt) — escaped via
+  // showdown.helper.escapePlaceholder so later passes leave them alone. Scheduled for a later
+  // refactor (naming/location under review) — kept as-is here for now.
   asteriskDashTildeAndColon: /([*_:~])/g,
-  asteriskDashAndTilde:      /([*_~])/g,
   // Source string (not a RegExp) for the CommonMark inline raw-HTML grammar. Its consumer is
-  // the inline raw-HTML construct (makehtml/rawHtml.js), which builds one sticky RegExp from it
+  // the inline raw-HTML construct (makehtml/inline/rawHtml.js), which builds one sticky RegExp from it
   // and anchors it at the scan cursor. Note that file recognizes the `cmHTMLComment` alternative
   // with a cursor scan of its own instead of this regex — see the rationale there before
   // changing this production.

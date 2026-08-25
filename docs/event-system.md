@@ -36,12 +36,13 @@ kinds of pass:
   extensions hook.
 * **Mechanisms** — internal plumbing that has no syntax of its own: the character-level
   encoders (`encodeCode`, `encodeAmpsAndAngles`, `encodeBackslashEscapes`), the hash/unhash
-  helpers (`hashBlock`, `hashHTMLBlocks`, `hashHTMLSpans`, `hashCodeTags`, `hashPreCodeTags`,
+  helpers (`hashBlock`, `hashHTMLBlocks`, `_hashHTMLSpan`, `hashCodeTags`, `hashPreCodeTags`,
   `unhashHTMLSpans`, `unescapePlaceholders`) and the heading-id generator. These are plain
   functions and emit **no events** — some live on the `showdown.helper.*` surface (`encodeCode`,
-  `hashBlock`, `hashHTMLBlocks`, `hashHTMLSpans`, `unhashHTMLSpans`, …), while others are
-  file-local to the pass that owns them (`encodeAmpsAndAngles` in `spanGamut.js`,
-  `encodeBackslashEscapes` in `image.js`, `hashCodeTags`/`hashPreCodeTags` in `converter.js`).
+  `hashBlock`, `hashHTMLBlocks`, `_hashHTMLSpan`, `unhashHTMLSpans`, …), while others are
+  file-local to the pass that owns them (`encodeAmpsAndAngles` and the span hasher in
+  `inlineEngine.js`, `encodeBackslashEscapes` in `inline/image.js`,
+  `hashCodeTags`/`hashPreCodeTags` in `converter.js`).
   (`showdown.helper.hashHTMLBlocks` only protects the markup the block parsers *generate* from a
   spurious `<p>` wrap — recognizing raw HTML blocks in the Markdown *source* is the job of the
   `makehtml.htmlBlock` construct, which does emit events.)
@@ -50,8 +51,8 @@ Two further passes emit no events even though they are registered sub-parsers:
 
 * the block **dispatcher** `blockGamut` — it only routes text through the constructs above and
   matches nothing itself (the document-level events below cover whole-text hooks). Its inline
-  counterpart `spanGamut` used to be event-less too, but it is now the unified inline engine and
-  owns the inline-pass lifecycle (`makehtml.spanGamut` onStart/onEnd) — see the family list below;
+  counterpart is `inlineEngine`, which is NOT event-less: it owns the inline-pass lifecycle
+  (`makehtml.inlineEngine` onStart/onEnd) — see the family list below;
 * **`decodeEntities`** — its output is bare characters, so per-entity events would be noise.
 
 The one deliberate exception to "mechanisms have no events": **`heading.id`** is a helper, but
@@ -63,11 +64,12 @@ custom slug generation (see below).
 The inline constructs — links, images, emphasis/strong, code spans, autolinks, raw HTML, character
 references, backslash escapes, hard breaks, and the Showdown extras (emoji, ellipsis, underline,
 strikethrough, `@mentions`, naked URLs) — are recognized together in a single positional pass, the
-`spanGamut` inline scan. Each construct lives in its own file and is
+`makehtml.inlineEngine` scan. Each construct lives in its own file under
+`src/subParsers/makehtml/inline/` and is
 registered under the `makehtml.inline.*` namespace (`makehtml.inline.link`, `makehtml.inline.image`,
 `makehtml.inline.emphasis`, `makehtml.inline.codeSpan`, `makehtml.inline.autolink`,
 `makehtml.inline.rawHtml`, `makehtml.inline.entity`, `makehtml.inline.backslash`,
-`makehtml.inline.hardBreak`, `makehtml.inline.emoji`, `makehtml.inline.ellipsis`,
+`makehtml.inline.hardLineBreak`, `makehtml.inline.emoji`, `makehtml.inline.ellipsis`,
 `makehtml.inline.underline`, `makehtml.inline.strikethrough`, `makehtml.inline.ghMentions`,
 `makehtml.inline.nakedUrl`, …). These are
 **construct** sub-parsers, but their **calling convention differs from every other sub-parser**:
@@ -99,11 +101,12 @@ tokens. The scan's `makehtml.inline.nakedUrl` recognizer still consumes the URL 
 `_`/`*` inside it never become emphasis delimiters), and this `.linkify` aux-entry builds the anchor
 from that intact run. These aux entries are documented in their owning files.
 
-Despite the file-layout change, the **event contract is unchanged**: these constructs emit exactly
-the same capture/hash families as before the decomposition — `makehtml.link.*`, `makehtml.image.*`,
-`makehtml.emphasis.*`, `makehtml.strong.*`, `makehtml.codeSpan.*`, `makehtml.link.angleBrackets.*` —
-so listener extensions behave identically across every flavor. The decomposition changed where the
-code lives, not what events fire.
+These constructs emit the capture/hash families listed in the table below — `makehtml.link.*`,
+`makehtml.image.*`, `makehtml.emphasis.*`, `makehtml.strong.*`, `makehtml.codeSpan.*`,
+`makehtml.rawHtml.*`, `makehtml.entity.*`, `makehtml.backslash.*`, `makehtml.hardLineBreak.*`,
+`makehtml.emoji.*`, `makehtml.ellipsis.*`, `makehtml.underline.*`, `makehtml.strikethrough.*` —
+identically for every flavor: there is one inline code path, so listener extensions behave the same
+whichever flavor is configured.
 
 ## Event Object
 
@@ -227,15 +230,15 @@ Might not be run if no regex match found.
     `openLinksInNewWindow` option — and, unlike the old option, you control exactly which links
     are affected.
 
-    The link sub-parsers emit one event per link type (`inline`, `reference`, `angleBrackets`,
-    `autoLink`), so register a listener for each type you want to cover. These events fire in
-    **every flavor** — the `commonmark`/`github` inline engine emits the same families for the
-    links and images it builds:
+    The link constructs emit one event per link variant (`inline`, `reference`, `autolink`,
+    `ghMention`), so register a listener for each variant you want to cover. These events fire in
+    **every flavor** — there is one inline engine, and it emits the same families for every link
+    and image it builds:
 
     ```js
     const converter = new showdown.Converter();
 
-    ['inline', 'reference', 'angleBrackets', 'autoLink'].forEach(function (type) {
+    ['inline', 'reference', 'autolink', 'ghMention'].forEach(function (type) {
       converter.listen('makehtml.link.' + type + '.onCapture', function (evt) {
         // leave in-page hash links (#section) opening in the same tab
         if (!/^#/.test(evt.attributes.href)) {
@@ -369,11 +372,13 @@ Emitted when the sub-parser has finished its work and is about to exit.
 
 ## Construct capture events reference
 
-Every construct emits `onStart`/`onEnd`; the ones that match discrete pieces additionally emit
-`onCapture`/`onHash`. The `matches.text` key carries the main captured content for constructs
-that have inner content; a handful with no inner content (`horizontalRule`, `hardLineBreaks`,
-`stripLinkDefinitions`, `footnotes.reference`) omit `text` and expose only read-only `_`-context
-plus `attributes`/output-override.
+There are two phase-set classes. A **pass construct** (a whole-text sub-parser pass) emits
+`onStart`/`onEnd` around the pass plus `onCapture`/`onHash` per match. A **scan construct** (one the
+inline engine resolves) emits `onCapture`/`onHash` per occurrence ONLY — the surrounding lifecycle is
+the single `makehtml.inlineEngine` onStart/onEnd. The `matches.text` key carries the main captured
+content for constructs that have inner content; a handful with no inner content
+(`horizontalRule`, `hardLineBreak`, `stripLinkDefinitions`, `footnotes.reference`) omit `text` and
+expose only read-only `_`-context plus `attributes`/output-override.
 
 ### Complete event-family list (makehtml)
 
@@ -381,66 +386,77 @@ plus `attributes`/output-override.
 |---|---|---|
 | `makehtml.blockquote` | ✓ | ✓ |
 | `makehtml.codeBlock` | ✓ | ✓ |
-| `makehtml.codeSpan` | ✓ | ✓ |
+| `makehtml.codeSpan` | ✓ (the whole-text PASS form, invoked directly by `table`) | ✓ (also per scan-resolved code span) |
 | `makehtml.disallowedHtmlTags` | ✓ | ✓ (per neutralized tag) |
-| `makehtml.ellipsis` | — | ✓ (scan-native — emitted by `spanGamut` per `...`→`…` substitution; per-construct lifecycle retired) |
-| `makehtml.emoji` | — | ✓ (scan-native — emitted by `spanGamut` per substituted `:shortcode:`; per-construct lifecycle retired) |
-| `makehtml.emphasis` | — | ✓ (emitted by `spanGamut` for each `<em>` span — the inline emphasis family for **every** flavor) |
-| `makehtml.strong` | — | ✓ (emitted by `spanGamut` for each `<strong>` span — the inline strong family for **every** flavor) |
+| `makehtml.backslash` | — | ✓ (scan construct — one capture per consumed ``-escape) |
+| `makehtml.ellipsis` | — | ✓ (scan construct — one capture per `...`→`…` substitution) |
+| `makehtml.emoji` | — | ✓ (scan construct — one capture per substituted `:shortcode:`) |
+| `makehtml.entity` | — | ✓ (scan construct — one capture per character reference) |
+| `makehtml.emphasis` | — | ✓ (scan construct — one capture per `<em>` span, for **every** flavor) |
+| `makehtml.strong` | — | ✓ (scan construct — one capture per `<strong>` span, for **every** flavor) |
 | `makehtml.footnotes` | ✓ | at `.definition` / `.reference` |
 | `makehtml.githubCodeBlock` | ✓ | ✓ |
-| `makehtml.hardLineBreaks` | ✓ | ✓ (per break, no `text`) |
+| `makehtml.hardLineBreak` | — | ✓ (scan construct — one capture per break, no `text`) |
 | `makehtml.heading.atx` / `makehtml.heading.setext` | ✓ (each its own lifecycle) | ✓ per variant; plus the capture-only `makehtml.heading.id` hook |
 | `makehtml.horizontalRule` | ✓ | ✓ (no `text`) |
 | `makehtml.htmlBlock` | ✓ | ✓ (per raw HTML block) |
-| `makehtml.image` | ✓ | at `.inline` / `.reference` |
-| `makehtml.link` | ✓ | at `.inline` / `.reference` / `.angleBrackets` / `.autoLink` (since U-6 the inline path routes through `spanGamut`, which emits `.inline` / `.reference` for `[..](..)`/reference links, `.autoLink` for `simplifiedAutoLink` naked URLs, and `.angleBrackets` for `<url>` angle autolinks — the `.angleBrackets` family was ported onto `spanGamut`, not retired) |
+| `makehtml.image` | — | at `.inline` / `.reference` |
+| `makehtml.link` | — | at `.inline` / `.reference` / `.autolink` / `.ghMention` — the inline engine emits `.inline` / `.reference` for `[..](..)` and reference links, `.autolink` for BOTH autolink spellings (`<uri>`/`<email>`/`<www…>` and the `simplifiedAutoLink` naked URLs/mails), and `.ghMention` for `@username` mentions |
 | `makehtml.list` | ✓ | ✓; plus `.listItem`, `.taskListItem`, `.taskListItem.checkbox` (checkbox also has its own lifecycle) |
 | `makehtml.metadata` | ✓ | ✓ |
 | `makehtml.paragraphs` | ✓ | ✓ (per paragraph, `regexp` is `null`) |
-| `makehtml.strikethrough` | — | ✓ (scan-native — emitted by `spanGamut` per `<del>` span; per-construct lifecycle retired) |
+| `makehtml.rawHtml` | — | ✓ (scan construct — one capture per recognized piece of raw HTML) |
+| `makehtml.strikethrough` | — | ✓ (scan construct — one capture per `<del>` span) |
 | `makehtml.stripLinkDefinitions` | ✓ | ✓ (per definition, no `text`) |
 | `makehtml.table` | ✓ | ✓; plus `.header` / `.cell` capture |
-| `makehtml.underline` | — | ✓ (scan-native — emitted by `spanGamut` per `<u>` span; per-construct lifecycle retired) |
+| `makehtml.underline` | — | ✓ (scan construct — one capture per `<u>` span) |
 | `makehtml.completeHTMLDocument` | ✓ | — (document wrapper, lifecycle only) |
-| `makehtml.spanGamut` | ✓ | — (the **unified inline engine for every flavor** since U-6; lifecycle only as a family — the links and images it builds emit the regular `makehtml.link.{inline,reference,angleBrackets,autoLink}.*` / `makehtml.image.{inline,reference}.*` capture events, so link/image listeners behave identically across flavors. It also emits `makehtml.codeSpan.*` for the code spans it builds and the separate `makehtml.emphasis.*` / `makehtml.strong.*` capture families for the `<em>` / `<strong>` spans it builds. Since U-6f it likewise owns the capture/hash families of the scan-native Showdown extras — `makehtml.emoji.*`, `makehtml.ellipsis.*`, `makehtml.underline.*`, `makehtml.strikethrough.*` (one capture per occurrence, no per-construct lifecycle) — and emits `makehtml.link.reference.*` for the `@mentions` its `ghMentions` handler links) |
+| `makehtml.inlineEngine` | ✓ | — (the **inline engine**: the sole inline path for every flavor, lifecycle only. Every scan construct listed above fires its own capture/hash family from inside this pass, so `onStart` / `onEnd` bracket the whole inline pass — including the post-scan `serialized` passes, which run BEFORE `onEnd`) |
 | *(document level)* `makehtml.onStart` / `.onPreParse` / `.onEnd` | — | — (see [below](#makehtml-document-level-events)) |
 
 `decodeEntities`, the block dispatcher `blockGamut` and every `showdown.helper.*` mechanism emit
-**no events** — see the [taxonomy](#sub-parser-taxonomy-constructs-vs-mechanisms). (`spanGamut` is the
-exception among the old dispatchers: it is the inline engine now and owns the inline-pass lifecycle.)
+**no events** — see the [taxonomy](#sub-parser-taxonomy-constructs-vs-mechanisms). (`inlineEngine` is
+the exception among the dispatchers: it owns the inline-pass lifecycle.)
 
 > **Retired (U-6):** the combined `makehtml.emphasisAndStrong` family — including its `.emphasis`,
 > `.strong` and combined `.emphasisAndStrong` captures — no longer fires. Since the inline layer was
-> unified onto `spanGamut` for every flavor, emphasis is resolved on one delimiter-stack pass that
+> unified onto one inline engine for every flavor, emphasis is resolved on one delimiter-stack pass that
 > emits the **separate** `makehtml.emphasis.*` and `makehtml.strong.*` families. `***foo***` is
 > `<em><strong>foo</strong></em>`, so it fires a `strong` capture (inner) then an `emphasis` capture
 > (outer) — there is no combined single event. Listeners on `makehtml.emphasisAndStrong.*` must move
 > to `makehtml.emphasis.*` / `makehtml.strong.*`.
 >
-> **Renamed (U-6e):** the inline engine's lifecycle family `makehtml.cmInline.*` is now
-> `makehtml.spanGamut.*` (the `cmInline` sub-parser was absorbed into `spanGamut`). Listeners on
-> `makehtml.cmInline.onStart` / `.onEnd` must move to `makehtml.spanGamut.onStart` / `.onEnd`.
+> **Renamed:** the inline-pass lifecycle family is `makehtml.inlineEngine.*`. Listeners on the
+> former `makehtml.cmInline.*` or `makehtml.spanGamut.*` names must move to
+> `makehtml.inlineEngine.onStart` / `.onEnd`.
+>
+> **Retired (the flip):** the whole-text `makehtml.hardLineBreaks` PASS family (plural — lifecycle
+> and capture alike) and the `makehtml.link.angleBrackets` variant. Hard breaks are now the scan
+> construct `makehtml.hardLineBreak` (SINGULAR, capture/hash only), and the angle-bracket autolink
+> spelling fires the shared `makehtml.link.autolink` variant alongside the naked one. `@mentions`
+> moved off the `makehtml.link.reference` routing onto their own `makehtml.link.ghMention` variant.
+> New families in the same increment: `makehtml.rawHtml.*`, `makehtml.entity.*` and
+> `makehtml.backslash.*`, each a variant-less capture/hash family of its scan construct.
 >
 > **Retired (U-6f):** the **per-construct `onStart` / `onEnd` lifecycle events of the four
 > scan-native Showdown extras** — `makehtml.emoji`, `makehtml.ellipsis`, `makehtml.underline` and
 > `makehtml.strikethrough` — no longer fire. Those constructs were whole-text passes with their own
 > lifecycle; they are now recognized inside the single-pass inline scan, and per the event-contract
-> amendment the inline-pass lifecycle belongs to `spanGamut` alone (`makehtml.spanGamut.onStart` /
+> amendment the inline-pass lifecycle belongs to the engine alone (`makehtml.inlineEngine.onStart` /
 > `.onEnd`). Each extra still emits its **`onCapture` / `onHash`** family once per occurrence (per
 > substituted emoji / ellipsis, per `<u>` / `<del>` span), so a listener that only hooked capture/hash
 > is unaffected; a listener that hooked `makehtml.{emoji,ellipsis,underline,strikethrough}.onStart` /
-> `.onEnd` must move to the `makehtml.spanGamut` lifecycle. (`@mentions` became the scan-native
-> `makehtml.inline.ghMentions` construct in the same increment; it emits `makehtml.link.reference.*`
-> like an ordinary reference link, and GFM naked-URL/mail linking remains a by-design post-scan pass —
-> see the [`makehtml.inline.*` namespace](#the-makehtmlinline-namespace) above.)
+> `.onEnd` must move to the `makehtml.inlineEngine` lifecycle. (`@mentions` became the scan-native
+> `makehtml.inline.ghMentions` construct in the same increment; GFM naked-URL/mail linking remains a
+> by-design post-scan pass — see the [`makehtml.inline.*` namespace](#the-makehtmlinline-namespace)
+> above.)
 
 Notable per-construct events:
 
 * **`makehtml.paragraphs.onCapture` / `.onHash`** — one event per paragraph. `matches.text` is
   the paragraph's Markdown (mutable and honored); `attributes` are applied to the generated
   `<p>`. `regexp` is `null` (paragraphs are found by a blank-line split, not a regex).
-* **`makehtml.hardLineBreaks.onCapture` / `.onHash`** — one event per hard break. No `text`
+* **`makehtml.hardLineBreak.onCapture` / `.onHash`** — one event per hard break. No `text`
   key; `attributes` are applied to the emitted `<br>`, and a listener may override `output`.
 * **`makehtml.disallowedHtmlTags.onCapture` / `.onHash`** — one event per neutralized tag
   (only runs under the `disallowRawHTML`/`safeMode` options). `matches.text` is the matched tag
@@ -521,7 +537,7 @@ Event names follow the same `<converter>.<subparser>.<event>` convention, with `
 
 The full lifecycle (all three phases) is emitted by each construct sub-parser: `blockquote`, `break`, `codeBlock`, `codeSpan`, `emphasis`, `footnotes`, `header`, `hr`, `image`, `input`, `links`, `list`, `listItem`, `paragraph`, `pre`, `strikethrough`, `strong`, `table`, `tableCell`, `txt`, `underline`.
 
-The recursive `node` dispatcher (the analogue of makehtml's `blockGamut`/`spanGamut`) is a **documented exception**: it has no syntax of its own, but because every node passes through it, it is the one place to observe (or override) content that has no dedicated sub-parser — HTML comments and unknown/raw elements. It therefore keeps the same three-phase treatment — **`makeMarkdown.node.onStart`** / **`makeMarkdown.node.onCapture`** / **`makeMarkdown.node.onEnd`** — where the capture's output-override replaces the default node dispatch. Like `break`/`hr`/`input`, it carries no `text` key (it renders no inner content of its own).
+The recursive `node` dispatcher (the analogue of makehtml's block and inline engines) is a **documented exception**: it has no syntax of its own, but because every node passes through it, it is the one place to observe (or override) content that has no dedicated sub-parser — HTML comments and unknown/raw elements. It therefore keeps the same three-phase treatment — **`makeMarkdown.node.onStart`** / **`makeMarkdown.node.onCapture`** / **`makeMarkdown.node.onEnd`** — where the capture's output-override replaces the default node dispatch. Like `break`/`hr`/`input`, it carries no `text` key (it renders no inner content of its own).
 
 In addition, two **document-level** events wrap the whole conversion (unchanged):
 

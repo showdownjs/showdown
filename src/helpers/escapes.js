@@ -5,25 +5,10 @@
  * @copyright 2018-2026 ShowdownJS
  * @license   MIT
  *
- * `escapeCharactersCallback`, the `¨E<code>E` escape-placeholder scheme
- * (`escapePlaceholder`/`unescapePlaceholders`), the `$`/`¨` sentinel restore
- * (`restoreDollarsAndTremas`) and HTML entity (un)escaping. Load-order safe: no
- * other-helper reads happen at load time.
+ * The `¨E<code>E` escape-placeholder scheme (the group-aware `escapePlaceholder`/
+ * `unescapePlaceholders`), the `$`/`¨` sentinel restore (`restoreDollarsAndTremas`) and HTML
+ * entity (un)escaping. Load-order safe: no other-helper reads happen at load time.
  */
-
-function escapeCharactersCallback (wholeMatch, m1) {
-  'use strict';
-  return showdown.helper.escapePlaceholder(m1);
-}
-
-/**
- * Callback used to escape characters when passing through String.replace
- * @static
- * @param {string} wholeMatch
- * @param {string} m1
- * @returns {string}
- */
-showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
 
 // --- Internal escape-placeholder scheme (single source of truth) ------------------------
 // A protected character X (e.g. a backslash-escaped punctuation mark) is stored as the
@@ -32,12 +17,24 @@ showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
 // wherever a bare/backslashed form is needed.
 
 /**
- * Produce the escape placeholder for a single character.
- * @param {string} chr
+ * Produce the escape placeholder for a character. A dual-use primitive, callable three ways:
+ *  1. Direct single-char call: `escapePlaceholder('*')` -> `'¨E42E'`.
+ *  2. As a `String.replace` callback for a pattern with NO capture group (e.g. `/[*]/g`): the
+ *     match itself (`chr`) is the character to escape; `replace` passes the match's numeric
+ *     offset as the second argument, so `m1` is a number here, not the capture-group contract's
+ *     string — that is precisely how this shape is told apart from shape 3.
+ *  3. As a `String.replace` callback for a pattern WITH a capture group (e.g. `/\\(\|)/` on
+ *     `"\|"`): the group IS the character to escape, not the whole match — a pattern used this
+ *     way must always capture exactly the single character to escape. `m1` is then that
+ *     (string) captured character and wins over `chr`.
+ * @param {string} chr the matched substring (direct call, or `String.replace`'s whole match)
+ * @param {(string|number)} [m1] `String.replace`'s first extra argument: the captured group
+ *   (string, shape 3) when the pattern has one, or the match offset (number, shape 2) when it
+ *   doesn't
  * @returns {string}
  */
-showdown.helper.escapePlaceholder = function (chr) {
-  return '¨E' + chr.charCodeAt(0) + 'E';
+showdown.helper.escapePlaceholder = function (chr, m1) {
+  return '¨E' + (typeof m1 === 'string' ? m1 : chr).charCodeAt(0) + 'E';
 };
 
 /**

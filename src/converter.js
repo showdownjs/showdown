@@ -650,12 +650,26 @@ showdown.Converter = function (converterOptions) {
   };
 
   /**
-   * Set an option of this Converter instance
+   * Set an option of this Converter instance. The resulting option set is re-validated with the
+   * same rules the constructor applies (declared type per options.js, via
+   * showdown.helper.validateOptions); an invalid value throws a TypeError and leaves the
+   * converter's options unchanged. Keys not declared in options.js are stored as-is (they are
+   * outside the validated set), preserving the historical extension point.
    * @param {string} key
    * @param {*} value
+   * @throws {TypeError} when the new value violates the option's declared type
    */
   this.setOption = function (key, value) {
+    let had = Object.prototype.hasOwnProperty.call(options, key),
+        previous = options[key];
     options[key] = value;
+    try {
+      showdown.helper.validateOptions(options);
+    } catch (e) {
+      // roll back so a failed set cannot leave the converter half-configured
+      if (had) { options[key] = previous; } else { delete options[key]; }
+      throw e;
+    }
   };
 
   /**

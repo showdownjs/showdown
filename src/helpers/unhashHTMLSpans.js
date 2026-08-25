@@ -5,7 +5,8 @@
  * @copyright 2018-2026 ShowdownJS
  * @license   MIT
  *
- * The inverse of `hashHTMLSpans`. A `showdown.helper.*` mechanism, not a construct; emits no events.
+ * The inverse of `showdown.helper._hashHTMLSpan` (misc.js) and of the inline engine's file-local
+ * span hasher. A `showdown.helper.*` mechanism, not a construct; emits no events.
  */
 
 

@@ -2700,6 +2700,16 @@ AT&T sells &quot;phones&quot; &mdash; for &#36;5.
 <p>AT&amp;T sells &quot;phones&quot; &mdash; for &#36;5.</p>
 ````````````````````````````````
 
+Whether an ampersand "looks like" an entity is decided by its name, not
+just by the trailing semicolon: `&_;` is not a valid reference name, so
+its ampersand is escaped, while `&copy;` is:
+
+```````````````````````````````` example
+&_; and &copy;
+.
+<p>&amp;_; and &copy;</p>
+````````````````````````````````
+
 Angle brackets that do not delimit an HTML tag (or an [automatic
 link](#automatic-links)) are converted to `&lt;` and `&gt;`, and bare
 double quotes to `&quot;`:
@@ -2760,6 +2770,18 @@ produces a `<br />`, as in GFM comments — no trailing spaces needed:
 
 ```````````````````````````````` example options:simpleLineBreaks
 aaa
+bbb
+.
+<p>aaa<br />
+bbb</p>
+````````````````````````````````
+
+The explicit hard line break spellings — trailing spaces or a trailing
+backslash — produce a single `<br />` under this option too, exactly like
+a plain line ending; they do not double up:
+
+```````````````````````````````` example options:simpleLineBreaks
+aaa  
 bbb
 .
 <p>aaa<br />

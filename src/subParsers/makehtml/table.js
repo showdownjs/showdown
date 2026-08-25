@@ -44,13 +44,13 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
     // Neutralize escaped pipes only within the actual table text (not the trailing block
     // or any non-table content) so `\|` inside code spans elsewhere is left for the normal
     // backslash-escape / code-span passes to handle.
-    let table = split.table.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+    let table = split.table.replace(/\\(\|)/g, showdown.helper.escapePlaceholder);
     return parse(tableRgx, table) + split.tail;
   });
 
   const singeColTblRgx = /^ {0,3}\|.+\|[ \t]*\n {0,3}\|?[ \t]*:?[ \t]*[-=]+[ \t]*:?[ \t]*\|[ \t]*\n( {0,3}\|.+\|[ \t]*\n)*(?:\n|¨0)/gm;
   text = text.replace(singeColTblRgx, function (wholeMatch) {
-    let table = wholeMatch.replace(/\\(\|)/g, showdown.helper.escapeCharactersCallback);
+    let table = wholeMatch.replace(/\\(\|)/g, showdown.helper.escapePlaceholder);
     return parse(singeColTblRgx, table);
   });
 
@@ -315,7 +315,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
   function parseHeader (headerText, attributes) {
     headerText = headerText.trim();
 
-    // Derive the id from the raw header text *before* spanGamut runs. spanGamut hashes any
+    // Derive the id from the raw header text *before* the inline engine runs. The engine hashes any
     // inline HTML/code into ¨-prefixed placeholders; lowercasing one for the id (¨C0C -> ¨c0c)
     // stops unhashHTMLSpans from ever restoring it, so the placeholder would otherwise leak
     // verbatim into the id (and the derived `_col` cell class). This mirrors the pre-refactor
@@ -324,7 +324,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
       attributes.id = headerText.replace(/ /g, '_').toLowerCase();
     }
 
-    headerText = showdown.subParser('makehtml.spanGamut')(headerText, options, globals);
+    headerText = showdown.subParser('makehtml.inlineEngine')(headerText, options, globals);
     return '<th' + showdown.helper._populateAttributes(attributes) + '>' + headerText + '</th>\n';
   }
 
@@ -335,7 +335,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
    * @returns {string}
    */
   function parseCell (cellText, attributes) {
-    cellText = showdown.subParser('makehtml.spanGamut')(cellText, options, globals);
+    cellText = showdown.subParser('makehtml.inlineEngine')(cellText, options, globals);
     return '<td' + showdown.helper._populateAttributes(attributes) + '>' + cellText + '</td>\n';
   }
 });

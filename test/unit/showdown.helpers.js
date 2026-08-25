@@ -464,13 +464,16 @@ describe('helpers/text.js', function () {
 describe('helpers/escapes.js', function () {
   'use strict';
 
-  describe('escapePlaceholder() / escapeCharactersCallback()', function () {
+  describe('escapePlaceholder()', function () {
     it('should produce the ¨E<code>E placeholder for a character', function () {
       expect(showdown.helper.escapePlaceholder('*')).toBe('¨E42E');
       expect(showdown.helper.escapePlaceholder('_')).toBe('¨E95E');
     });
-    it('escapeCharactersCallback should placeholder-escape its capture group', function () {
-      expect(showdown.helper.escapeCharactersCallback('*', '*')).toBe('¨E42E');
+    it('should work as a String.replace callback for a pattern with a capture group', function () {
+      expect('a*b'.replace(/([*])/g, showdown.helper.escapePlaceholder)).toBe('a¨E42Eb');
+    });
+    it('should work as a String.replace callback for a pattern with no capture group', function () {
+      expect('a*b'.replace(/[*]/g, showdown.helper.escapePlaceholder)).toBe('a¨E42Eb');
     });
   });
 
@@ -786,14 +789,13 @@ describe('helpers/regexes.js', function () {
 
   it('should expose the expected keys', function () {
     let regexes = showdown.helper.regexes;
-    ['asteriskDashTildeAndColon', 'asteriskDashAndTilde', 'cmHTMLTagSource',
+    ['asteriskDashTildeAndColon', 'cmHTMLTagSource',
       'cmOpenTagSource', 'cmCloseTagSource'].forEach(function (key) {
       expect(Object.prototype.hasOwnProperty.call(regexes, key)).toBe(true);
     });
   });
   it('should expose precompiled RegExps for the character classes', function () {
     expect(showdown.helper.regexes.asteriskDashTildeAndColon instanceof RegExp).toBe(true);
-    expect(showdown.helper.regexes.asteriskDashAndTilde instanceof RegExp).toBe(true);
   });
   it('should expose the CommonMark grammar as source strings', function () {
     expect(typeof showdown.helper.regexes.cmHTMLTagSource).toBe('string');
@@ -850,19 +852,23 @@ describe('helpers mechanisms', function () {
     });
   });
 
-  describe('hashHTMLSpans() / unhashHTMLSpans()', function () {
-    it('should hash whole <tag>…</tag> spans to ¨C<n>C placeholders and round-trip back', function () {
+  describe('unhashHTMLSpans()', function () {
+    it('should restore every ¨C<n>C placeholder to its stored HTML', function () {
       let globals = mkGlobals(),
-          hashed = showdown.helper.hashHTMLSpans('a <span>x</span> b <br/> c', options, globals);
-      expect(hashed).toMatch(/¨C\d+C/);
-      // Only whole open/close spans (`<span>x</span>`) are hashed. Source raw-HTML recognition —
-      // including lone self-closing/opening tags like `<br/>` — moved into the unified inline scan, so
-      // this pass no longer hashes a bare `<br/>`; it is left in place for encodeAmpsAndAngles.
-      expect(globals.gHtmlSpans.length).toBe(1);
-      expect(globals.gHtmlSpans[0]).toBe('<span>x</span>');
-      expect(hashed).toContain('<br/>');
-      expect(showdown.helper.unhashHTMLSpans(hashed, options, globals))
+          a = showdown.helper._hashHTMLSpan('<span>x</span>', globals),
+          b = showdown.helper._hashHTMLSpan('<br/>', globals);
+      expect(a).toMatch(/¨C\d+C/);
+      expect(globals.gHtmlSpans.length).toBe(2);
+      expect(showdown.helper.unhashHTMLSpans('a ' + a + ' b ' + b + ' c', options, globals))
         .toBe('a <span>x</span> b <br/> c');
+    });
+
+    it('should expand placeholders nested inside a stored span', function () {
+      let globals = mkGlobals(),
+          inner = showdown.helper._hashHTMLSpan('<em>x</em>', globals),
+          outer = showdown.helper._hashHTMLSpan('<strong>' + inner + '</strong>', globals);
+      expect(showdown.helper.unhashHTMLSpans(outer, options, globals))
+        .toBe('<strong><em>x</em></strong>');
     });
   });
 

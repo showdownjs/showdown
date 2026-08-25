@@ -5,7 +5,7 @@
  * @copyright 2018-2026 ShowdownJS
  * @license   MIT
  *
- * Splits on `\n{2,}`, passes non-hash grafs through `spanGamut` and re-emits hashed HTML block/span
+ * Splits on `\n{2,}`, passes non-hash grafs through the inline engine and re-emits hashed HTML block/span
  * placeholders untouched. Emits one `onCapture`/`onHash` per paragraph with `regexp: null` (a legal
  * value — paragraphs are found by split, not regex); `matches.text` is mutable and honored, and
  * `attributes` apply to the `<p>`.
@@ -50,7 +50,7 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
       if (captureStartEvent.output && captureStartEvent.output !== '') {
         otp = captureStartEvent.output;
       } else {
-        let graf = showdown.subParser('makehtml.spanGamut')(captureStartEvent.matches.text, options, globals);
+        let graf = showdown.subParser('makehtml.inlineEngine')(captureStartEvent.matches.text, options, globals);
         graf = graf.replace(/^([ \t]*)/g, '<p' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>');
         graf += '</p>';
         otp = graf;
@@ -86,7 +86,7 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
         // we need to check if ghBlock is a false positive
         if (codeFlag) {
           // use encoded version of all text
-          blockText = showdown.helper.encodeCode(globals.ghCodeBlocks[num].text, options, globals);
+          blockText = showdown.helper.encodeCode(globals.ghCodeBlocks[num].text);
         } else {
           blockText = globals.ghCodeBlocks[num].codeblock;
         }

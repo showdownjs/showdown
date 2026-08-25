@@ -68,7 +68,7 @@ showdown.subParser('makehtml.blockquote', function (text, options, globals) {
       bq = showdown.subParser('makehtml.htmlBlock')(bq, options, globals);
       bq = showdown.subParser('makehtml.stripLinkDefinitions')(bq, options, globals);
       globals.blockquoteDepth = (globals.blockquoteDepth || 0) + 1;
-      bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
+      bq = showdown.subParser('makehtml.blockEngine')(bq, options, globals); // recurse
       bq = showdown.subParser('makehtml.paragraphs')(bq, options, globals);
       globals.blockquoteDepth--;
       bq = bq.replace(/(^|\n)/g, '$1  ');

@@ -24,6 +24,82 @@ describe('showdown.Converter', function () {
     });
   });
 
+  describe('setOption() re-validation', function () {
+
+    it('should apply a valid value to a declared option', function () {
+      let converter = new showdown.Converter();
+      converter.setOption('tables', true);
+      expect(converter.getOption('tables')).toBe(true);
+    });
+
+    it('should throw a TypeError when a declared option is set to the wrong type', function () {
+      let converter = new showdown.Converter();
+      expect(function () {
+        converter.setOption('ghMentionsLink', 123);
+      }).toThrow(TypeError);
+    });
+
+    it('should throw a TypeError when a boolean option is set to a string', function () {
+      let converter = new showdown.Converter();
+      expect(function () {
+        converter.setOption('tables', 'yes');
+      }).toThrow(TypeError);
+    });
+
+    it('should name the option and the expected type in the error message', function () {
+      let converter = new showdown.Converter();
+      expect(function () {
+        converter.setOption('ghMentionsLink', 123);
+      }).toThrow(/Option ghMentionsLink must be of type string/);
+    });
+
+    it('should roll back to the previous value after a failed set', function () {
+      let converter = new showdown.Converter();
+      converter.setOption('ghMentionsLink', 'https://example.com/{u}');
+      expect(function () {
+        converter.setOption('ghMentionsLink', 123);
+      }).toThrow(TypeError);
+      expect(converter.getOption('ghMentionsLink')).toBe('https://example.com/{u}');
+    });
+
+    it('should keep converting correctly after a rolled-back failed set', function () {
+      let converter = new showdown.Converter();
+      try {
+        converter.setOption('tables', 'yes');
+      } catch (e) {
+        // expected: swallow so we can assert the converter still works
+      }
+      expect(converter.makeHtml('hello')).toBe('<p>hello</p>');
+    });
+
+    it('should store an undeclared key as-is without throwing', function () {
+      let converter = new showdown.Converter();
+      converter.setOption('someUndeclaredOption', 123);
+      expect(converter.getOption('someUndeclaredOption')).toBe(123);
+    });
+
+    it('should accept `false` for the special-cased headerIds option', function () {
+      let converter = new showdown.Converter();
+      converter.setOption('headerIds', false);
+      expect(converter.getOption('headerIds')).toBe(false);
+    });
+
+    it('should accept a plain object for the special-cased headerIds option', function () {
+      let converter = new showdown.Converter();
+      converter.setOption('headerIds', {prefix: 'x-'});
+      expect(converter.getOption('headerIds')).toEqual({prefix: 'x-'});
+    });
+
+    it('should throw and roll back when headerIds is set to a string', function () {
+      let converter = new showdown.Converter();
+      converter.setOption('headerIds', {prefix: 'x-'});
+      expect(function () {
+        converter.setOption('headerIds', 'nope');
+      }).toThrow(TypeError);
+      expect(converter.getOption('headerIds')).toEqual({prefix: 'x-'});
+    });
+  });
+
   describe('metadata methods', function () {
     let converter = new showdown.Converter();
 

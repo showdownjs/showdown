@@ -284,6 +284,72 @@ showdown.Event = class {
 // fail loudly at their source instead of producing a silently broken event.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// The family umbrella (maintainer contract)
+//
+// Event names follow `<side>.<family>[.<variant>].<phase>`. When a family has
+// variants — `makehtml.link.{inline, reference, autolink, ghMention}`,
+// `makehtml.image.{inline, reference}`, `makehtml.heading.{setext, atx}`, … —
+// a variant event is, FOR USER CONVENIENCE, re-dispatched under the family-level
+// name too: `makehtml.link.inline.onCapture` also fires `makehtml.link.onCapture`
+// carrying the exact same event content. So a listener on the family name catches
+// every variant (`makehtml.link.onCapture` = all links), while a listener on a
+// variant name targets one syntax. This is structural — every variant family gets
+// it, present and future; nothing is hardcoded per family.
+//
+// Ordering: variant listeners run FIRST, the family listeners see the variant
+// listeners' edits (the matches/attributes objects are shared, not copied), and
+// the state after both is what the construct honors. A family-level name has no
+// variant segment, so it is never itself re-dispatched (no recursion).
+// ---------------------------------------------------------------------------
+
+// Event names arrive lowercased (the Event constructor lowercases them):
+// `<side>.<family>.<variant>.<phase>` -> the family name `<side>.<family>.<phase>`.
+const eventFamilyUmbrellaRegex = /^((?:makehtml|makemarkdown)\.[^.]+)\.[^.]+\.(on[a-z]+)$/;
+
+/**
+ * The family-level umbrella name for a variant event name, or null when the name
+ * carries no variant segment.
+ * @param {string} name (already lowercased)
+ * @returns {string|null}
+ */
+showdown.Event._familyEventName = function (name) {
+  'use strict';
+  let m = eventFamilyUmbrellaRegex.exec(name);
+  return m ? (m[1] + '.' + m[2]) : null;
+};
+
+/**
+ * Dispatch `event` and, when its name is a `<side>.<family>.<variant>.<phase>` variant
+ * event, re-dispatch the resulting state under the family-level `<side>.<family>.<phase>`
+ * name (see the umbrella contract above). Returns the final event — the one the calling
+ * construct must honor.
+ * @param {showdown.Event} event
+ * @param {{}} options
+ * @param {{}} globals
+ * @returns {showdown.Event}
+ */
+showdown.Event._dispatchWithFamily = function (event, options, globals) {
+  'use strict';
+  event = globals.converter.dispatch(event);
+  let familyName = showdown.Event._familyEventName(event.name);
+  if (familyName === null) {
+    return event;
+  }
+  let familyEvent = new showdown.Event(familyName, event.input);
+  familyEvent
+    .setOutput(event.output)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setRegexp(event.regexp);
+  // share (not copy) the variant event's matches/attributes: the family listeners see the
+  // variant listeners' edits, their own edits land on the same objects the construct reads,
+  // and the read-only `_` keys keep their wrapping
+  familyEvent._matches = event._matches;
+  familyEvent._attributes = event._attributes;
+  return globals.converter.dispatch(familyEvent);
+};
+
 /**
  * Build, dispatch and return a lifecycle event whose input and output both start
  * as `text`. Shared by dispatchStart / dispatchEnd / dispatchHash. An optional
@@ -306,7 +372,7 @@ showdown.Event._dispatchLifecycle = function (name, text, options, globals, matc
   if (matches) {
     event.setMatches(matches);
   }
-  return globals.converter.dispatch(event);
+  return showdown.Event._dispatchWithFamily(event, options, globals);
 };
 
 /**
@@ -411,5 +477,5 @@ showdown.Event.dispatchCapture = function (name, input, params, options, globals
     .setRegexp(regexp)
     .setMatches(matches)
     .setAttributes(attributes);
-  return globals.converter.dispatch(event);
+  return showdown.Event._dispatchWithFamily(event, options, globals);
 };

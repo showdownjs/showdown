@@ -26,6 +26,12 @@ describe('ReDoS resistance', function () {
     {name: 'inline image destination — unbalanced (', input: '![a](' + 'a('.repeat(N)},
     {name: 'inline image destination — unbalanced ( + )', input: '![a](' + 'a('.repeat(N) + ')'},
     {name: 'link destination with many open parens', input: '[a](http://x/' + '('.repeat(N)},
+    // Each `]` retries the bare-destination walk at the following `(`; with no cap on unmatched
+    // depth, a tail of unbroken `(` (here, the next repetition's own opener) walks to
+    // end-of-string before failing, so a run of `[](` pairs cost one full-tail walk per pair -
+    // O(n^2) overall. The 32-unmatched-paren cap (see cmScanDestination) bounds each walk to a
+    // constant, keeping this linear.
+    {name: 'many [](  pairs, each destination walk unbounded without the paren-depth cap', input: '[]('.repeat(8000)},
     {name: 'balanced nested links', input: '[x]('.repeat(N) + 'u' + ')'.repeat(N)},
     {name: 'balanced nested images', input: '![x]('.repeat(N) + 'u' + ')'.repeat(N)},
 
@@ -191,6 +197,33 @@ describe('ReDoS resistance', function () {
       expect(elapsed).toBeLessThan(BUDGET_MS);
     }, HARD_TIMEOUT_MS);
   });
+
+  // The paren-depth cap in cmScanDestination bounds UNMATCHED depth, not the total parenthesis
+  // count: a destination with several balanced, sequentially-closed pairs never carries more
+  // than a couple of levels of unmatched depth at once, so it must still resolve to a link.
+  it('should still parse a destination with several balanced parens', function () {
+    var converter = new showdown.Converter(),
+        html = converter.makeHtml('[x](/url(a(b)c)d)');
+    expect(html).toBe('<p><a href="/url(a(b)c)d">x</a></p>');
+  });
+
+  // The emphasis pairing pass (spec §6.2 process_emphasis) is run a second time by every
+  // resolving bracket, fenced to the delimiters opened inside the label. The fencing is the walk
+  // that positions the first closer ABOVE stackBottom, and it MUST be allowed to run off the
+  // bottom of the stack and yield null when there is nothing above it — the ordinary case for a
+  // label with no delimiters of its own, where stackBottom is the current stack top. A walk that
+  // stops one node early instead hands that fenced call the WHOLE stack, so it pairs and consumes
+  // delimiters from outside the label and leaves already-consumed ones (numdelims === 0) linked;
+  // the next pass then decrements them past zero forever, because only an exact zero retires a
+  // delimiter. That was an unbounded loop — memory exhaustion, not merely slow — on this
+  // 21-character input, under the DEFAULT converter.
+  it('should terminate when a bracket fences emphasis over an already-consumed stack', function () {
+    var converter = new showdown.Converter(),
+        start = Date.now();
+    expect(converter.makeHtml('**d\n*\n\\__\\h*d**\n*[]()'))
+      .toBe('<p><strong>d\n*\n__\\h*d</strong>\n*<a href=""></a></p>');
+    expect(Date.now() - start).toBeLessThan(BUDGET_MS);
+  }, HARD_TIMEOUT_MS);
 
   // Same pathological inputs must also be safe with safeMode on (its extra passes run over
   // the near-final output and must not reintroduce quadratic scanning).

@@ -195,7 +195,7 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
     // parseImgDimensions (Showdown extension, not CommonMark): an optional ` =WxH`
     // between the destination and the title. Always consumed here; only stored as
     // dimensions when the option is on (see commitDefinition). Regex fragment mirrors
-    // the inline image regex in image.js.
+    // the historic inline-image regex.
     let width = null, height = null;
     let dimPos = afterDest;
     while (dimPos < n && /[ \t]/.test(str.charAt(dimPos))) { dimPos++; }
@@ -262,38 +262,24 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
    * Normalize a link-definition destination. Percent-encoding, backslash-escape
    * resolution and residual-`&` guarding are CommonMark behavior for every flavor
    * (spec-silent → CommonMark); decoding character references is the one documented
-   * divergence, gated on `decodeEntities` (on in the `commonmark`/`gfm` presets).
+   * divergence, gated on `decodeEntities` (on in the `commonmark`/`gfm` presets) — the
+   * `decode` flag is threaded straight through to `cmNormalizeURL`.
    * @param {string} url the destination with `relativePathBaseUrl` already applied
    * @returns {string}
    */
   function normalizeDefinitionURL (url) {
-    if (options.decodeEntities) {
-      return showdown.helper.cmNormalizeURL(url);
-    }
-    // cmNormalizeURL without step 3 (the entity-decode): restore backslash-escape
-    // placeholders, resolve raw backslash escapes, percent-encode, guard bare `&`.
-    url = showdown.helper.unescapePlaceholders(url);
-    url = url.replace(/\\([!-/:-@[-`{-~])/g, '$1');
-    url = showdown.helper.cmEncodeURI(url);
-    return url.replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;');
+    return showdown.helper.cmNormalizeURL(url, options.decodeEntities);
   }
 
   /**
    * Escape a link-definition title for use in a `title="..."` attribute. Guarding
    * the residual `&` and escaping `<`, `>`, `"` is CommonMark behavior for every
-   * flavor; decoding character references is gated on `decodeEntities`.
+   * flavor; decoding character references is gated on `decodeEntities` — the `decode`
+   * flag is threaded straight through to `cmEscapeTitle`.
    * @param {string} title
    * @returns {string}
    */
   function escapeDefinitionTitle (title) {
-    if (options.decodeEntities) {
-      return showdown.helper.cmEscapeTitle(title);
-    }
-    // cmEscapeTitle without the entity-decode step
-    return title
-      .replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    return showdown.helper.cmEscapeTitle(title, options.decodeEntities);
   }
 });

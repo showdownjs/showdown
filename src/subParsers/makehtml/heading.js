@@ -60,9 +60,9 @@
 
     } else {
       headingText = captureStartEvent.matches.text;
-      let spanGamut = showdown.subParser('makehtml.spanGamut')(headingText, options, globals),
+      let inlineHTML = showdown.subParser('makehtml.inlineEngine')(headingText, options, globals),
           attributes = captureStartEvent.attributes;
-      otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + spanGamut + '</h' + headingLevel + '>';
+      otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + inlineHTML + '</h' + headingLevel + '>';
     }
 
     let beforeHashEvent = showdown.Event.dispatchHash('makehtml.heading.' + subEvtName + '.onHash', otp, options, globals);
@@ -341,7 +341,7 @@
             line2 = nPrepend;
             // it is, so now we must parse line1 also
             if (line1) {
-              line1 = showdown.subParser('makehtml.blockGamut')(line1, options, globals);
+              line1 = showdown.subParser('makehtml.blockEngine')(line1, options, globals);
               line1 = showdown.subParser('makehtml.paragraphs')(line1, options, globals);
               line1 = line1.trim() + '\n';
               prepend = line1;
@@ -360,7 +360,7 @@
         // block(s) found before the underline win (they take precedence over the heading)
         let multilineText = line1 + line2 + ((line3) ? line3 : '');
 
-        nPrepend = showdown.subParser('makehtml.blockGamut')(multilineText, options, globals, 'makehtml.heading.setext');
+        nPrepend = showdown.subParser('makehtml.blockEngine')(multilineText, options, globals, 'makehtml.heading.setext');
         if (nPrepend !== multilineText) {
           // we found one or more blocks, so we need to reparse (blocks should take precendence though)
           nPrepend = trimEnd(nPrepend);

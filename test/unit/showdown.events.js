@@ -40,9 +40,9 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '    foo\n    bar', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
-      // Since the inline layer unified onto spanGamut (U-6), a bare inline code span is recognized
-      // by the spanGamut engine, which fires codeSpan's capture/hash but not its lifecycle
-      // (spanGamut owns the onStart/onEnd for the whole inline pass). The codeSpan subparser's own
+      // A bare inline code span is recognized by the inline engine, which fires codeSpan's
+      // capture/hash but not its lifecycle (the engine owns the onStart/onEnd for the whole inline
+      // pass). The codeSpan subparser's own
       // onStart/onEnd still fire when it is invoked directly (table cell splitting) — exercised by
       // the coverage sweep below.
       codeSpan: [
@@ -51,18 +51,18 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '`foo`', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
-      // Ellipsis is scan-native (recognized inline by the spanGamut engine), so it fires only its
-      // capture/hash per `...` occurrence — the onStart/onEnd lifecycle belongs to spanGamut, not to
-      // ellipsis. It has no whole-text pass form any more.
+      // Ellipsis is scan-native (recognized inline by the engine), so it fires only its
+      // capture/hash per `...` occurrence — the onStart/onEnd lifecycle belongs to the engine, not
+      // to ellipsis. It has no whole-text pass form any more.
       ellipsis: [
         { event: 'onCapture', text: '...', result: true },
         { event: 'onCapture', text: 'foo', result: false },
         { event: 'onHash', text: '...', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
-      // Emoji is scan-native (recognized inline by the spanGamut engine), so it fires only its
-      // capture/hash per substituted shortcode — the onStart/onEnd lifecycle belongs to spanGamut, not
-      // to emoji. It has no whole-text pass form any more.
+      // Emoji is scan-native (recognized inline by the engine), so it fires only its
+      // capture/hash per substituted shortcode — the onStart/onEnd lifecycle belongs to the engine,
+      // not to emoji. It has no whole-text pass form any more.
       emoji: [
         { event: 'onCapture', text: ':smile:', result: true },
         { event: 'onCapture', text: ':blablablablabla:', result: false }, // this emoji does not exist
@@ -71,12 +71,12 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: ':blablablablabla:', result: false }, // this emoji does not exist
         { event: 'onHash', text: 'smile', result: false }
       ],
-      // Since the inline layer unified onto spanGamut (U-6), emphasis is resolved by spanGamut's
-      // delimiter-stack pass, which fires the SEPARATE makehtml.emphasis / makehtml.strong
+      // Emphasis is resolved by the inline engine's delimiter-stack resolver, which fires the
+      // SEPARATE makehtml.emphasis / makehtml.strong
       // families (capture/hash) instead of the retired makehtml.emphasisAndStrong family. There
       // is no combined `***foo***` event any more: `***foo***` is `<em><strong>foo</strong></em>`,
       // so it fires BOTH a strong capture (inner `<strong>`) and an emphasis capture (outer
-      // `<em>`). The lifecycle for the pass belongs to spanGamut (checked in taxonomy coverage).
+      // `<em>`). The lifecycle for the pass belongs to the engine (checked in taxonomy coverage).
       emphasis: [
         { event: 'onCapture', text: '*foo*', result: true },
         { event: 'onCapture', text: '**foo**', result: false },
@@ -107,17 +107,14 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '```\nfoo\n```', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
-      // The hardLineBreaks subparser still runs (end of spanGamut) so its lifecycle fires for any
-      // text, but since the inline unification (U-6) a top-level hard break (`foo  \nbar`) is turned
-      // into the hashed <br /> by the inline scan's own newline handling, so the trailing
-      // hardLineBreaks pass no longer sees the `  \n` and its capture/hash do not fire for it (this
-      // already held under the commonmark flavor; the flip makes the default path match).
-      hardLineBreaks: [
-        { event: 'onStart', text: 'foo', result: true },
-        { event: 'onEnd', text: 'foo', result: true },
-        { event: 'onCapture', text: 'foo  \nbar', result: false },
+      // The hard break is a SCAN construct: the inline engine resolves `  \n` / `\\\n` on its own
+      // single pass and the singular makehtml.hardLineBreak family fires capture/hash per break.
+      // There is no whole-text pass form any more (the plural makehtml.hardLineBreaks family died
+      // with its subparser at the flip), so the lifecycle belongs to the inline engine, not here.
+      hardLineBreak: [
+        { event: 'onCapture', text: 'foo  \nbar', result: true },
         { event: 'onCapture', text: 'foo', result: false },
-        { event: 'onHash', text: 'foo  \nbar', result: false },
+        { event: 'onHash', text: 'foo  \nbar', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
       'heading.atx': [
@@ -172,12 +169,13 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '---', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
-      // Since the inline layer unified onto spanGamut (U-6), links and images are recognized by the
-      // spanGamut engine, which fires the per-variant capture/hash families below (image.inline /
-      // image.reference / link.inline / link.reference) but not the image/link lifecycle — the
-      // legacy image.js / link.js subparsers are no longer on the inline path (removed in U-6c). The
-      // angle-bracket autolink family (link.angleBrackets) was PORTED onto spanGamut, not retired:
-      // spanGamut recognizes `<url>` autolinks inline and fires link.angleBrackets capture/hash for them.
+      // Links and images are recognized by the inline engine, which fires the per-variant
+      // capture/hash families below (image.inline / image.reference / link.inline /
+      // link.reference) — there is no image/link lifecycle, since the engine owns the inline pass.
+      // The angle-bracket variant (link.angleBrackets) is RETIRED: `<uri>`/`<email>`/`<www…>` and
+      // the simplifiedAutoLink naked URLs are one construct family now and both fire
+      // makehtml.link.autolink (covered by its own describe block below, which needs
+      // simplifiedAutoLink; the angle arm fires it without that option).
       'image.inline': [
         { event: 'onCapture', text: '![foo](bar.jpg)', result: true },
         { event: 'onCapture', text: 'foo', result: false },
@@ -190,10 +188,19 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '![foo][1]\n\n[1]: bar.jpg', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
-      'link.angleBrackets': [
+      // the angle-bracket spelling of an autolink, firing the shared `autolink` variant
+      'link.autolink': [
         { event: 'onCapture', text: '<https://foo.com>', result: true },
         { event: 'onCapture', text: 'foo', result: false },
         { event: 'onHash', text: '<https://foo.com>', result: true },
+        { event: 'onHash', text: 'foo', result: false }
+      ],
+      // ghMentions fire their own `ghMention` variant of the link family (they used to be routed
+      // through link.reference, which is retired).
+      'link.ghMention': [
+        { event: 'onCapture', text: 'hi @tivie', result: true },
+        { event: 'onCapture', text: 'foo', result: false },
+        { event: 'onHash', text: 'hi @tivie', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
       'link.inline': [
@@ -267,9 +274,9 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: 'foo\n\nbar', result: true },
         { event: 'onHash', text: '# foo', result: false }
       ],
-      // Strikethrough is scan-native (recognized inline by the spanGamut engine), so it fires only its
-      // capture/hash per resolved `~~..~~` run — the onStart/onEnd lifecycle belongs to spanGamut, not
-      // to strikethrough. It has no whole-text pass form any more.
+      // Strikethrough is scan-native (recognized inline by the engine), so it fires only its
+      // capture/hash per resolved `~~..~~` run — the onStart/onEnd lifecycle belongs to the engine,
+      // not to strikethrough. It has no whole-text pass form any more.
       strikethrough: [
         { event: 'onCapture', text: '~~foo~~', result: true },
         { event: 'onCapture', text: 'foo', result: false },
@@ -306,9 +313,9 @@ describe('showdown.Event', function () {
         { event: 'onHash', text: '|foo|bar|\n|---|---|\n|1|2|', result: true },
         { event: 'onHash', text: 'foo', result: false }
       ],
-      // Underline is scan-native (recognized inline by the spanGamut engine), so it fires only its
+      // Underline is scan-native (recognized inline by the engine), so it fires only its
       // capture/hash per claimed `__..__`/`___..___` region — the onStart/onEnd lifecycle belongs to
-      // spanGamut, not to underline. It has no whole-text pass form any more.
+      // the engine, not to underline. It has no whole-text pass form any more.
       underline: [
         { event: 'onCapture', text: '__foo__', result: true },
         { event: 'onCapture', text: 'foo', result: false },
@@ -523,9 +530,13 @@ describe('showdown.Event', function () {
       });
     });
 
-    // autoLink capture/hash events need a converter with simplifiedAutoLink enabled, which the
-    // shared converter above does not have, so they get their own dedicated converters here.
-    describe('makehtml link.autoLink (requires simplifiedAutoLink)', function () {
+    // The NAKED spelling of the autolink variant needs a converter with simplifiedAutoLink
+    // enabled, which the shared converter above does not have, so it gets its own converter here.
+    // (The angle spelling `<https://foo.com>` fires the same variant without the option — covered
+    // by the link.autolink entries in the spec table above.) Registered with the legacy `autoLink`
+    // camelCase spelling on purpose: event names are lowercased on the wire, so this pins that
+    // `makehtml.link.autoLink.*` and `makehtml.link.autolink.*` remain the same subscription.
+    describe('makehtml link.autolink, naked spelling (requires simplifiedAutoLink)', function () {
       ['onCapture', 'onHash'].forEach(function (evt) {
         it('should trigger "makehtml.link.autoLink.' + evt + '" event', function () {
           let fired = false;
@@ -623,24 +634,20 @@ describe('showdown.Event', function () {
   // subparser names whose onStart never fired.
   describe('event coverage sweep', function () {
 
-    // Only registered subparsers that emit lifecycle events remain here. The 13 demoted
-    // mechanism passes (encode*/escape*/hash*/unhash*) are now showdown.helper.* functions
-    // with no events; blockGamut (dispatcher) and decodeEntities were stripped of their events in
-    // D10 — so they do not appear below. spanGamut DOES appear: it is no longer an event-less
-    // dispatcher but the unified inline engine, and owns the inline-pass onStart/onEnd lifecycle.
-    // image/link are absent: since the inline layer unified onto spanGamut (U-6) the legacy
-    // image.js / link.js subparsers are off the inline path (they no longer emit lifecycle events);
-    // spanGamut owns links/images now and fires the image.<variant>/link.<variant> capture families
-    // instead (covered by the event contract conformance suite). codeSpan remains: it is still
-    // invoked directly by table.js cell splitting, so its own lifecycle fires there. ellipsis,
-    // strikethrough, emoji and underline are absent for the same reason as image/link: they are now
-    // scan-native (recognized inline by spanGamut, firing only makehtml.ellipsis / makehtml.strikethrough /
-    // makehtml.emoji / makehtml.underline capture/hash), so they no longer have an onStart/onEnd
-    // lifecycle — their capture/hash are covered by the event contract conformance suite below.
+    // Only registered subparsers that emit lifecycle events remain here. The demoted mechanism
+    // passes (encode*/escape*/hash*/unhash*) are showdown.helper.* functions with no events;
+    // blockGamut (dispatcher) and decodeEntities were stripped of their events in D10 — so they do
+    // not appear below. inlineEngine DOES appear: it owns the inline-pass onStart/onEnd lifecycle
+    // for every flavor. Every INLINE construct is absent — link, image, autolink, ghMentions,
+    // emphasis, strong, ellipsis, strikethrough, emoji, underline, entity, backslash, rawHtml and
+    // the singular hardLineBreak are all scan constructs resolved by the engine, so they emit
+    // capture/hash only (covered by the event contract conformance suite below) and have no
+    // lifecycle of their own. codeSpan is the one exception: it keeps a whole-text PASS form that
+    // table.js invokes directly for cell splitting, so its own lifecycle still fires there.
     let makehtmlSubparsers = [
-      'blockquote', 'spanGamut', 'codeBlock', 'codeSpan', 'completeHTMLDocument',
+      'blockquote', 'inlineEngine', 'codeBlock', 'codeSpan', 'completeHTMLDocument',
       'disallowedHtmlTags', 'footnotes',
-      'githubCodeBlock', 'hardLineBreaks', 'htmlBlock',
+      'githubCodeBlock', 'htmlBlock',
       'heading.atx', 'heading.setext', 'horizontalRule',
       'list', 'list.taskListItem.checkbox', 'metadata', 'paragraphs',
       'stripLinkDefinitions', 'table'
@@ -761,13 +768,17 @@ describe('showdown.Event', function () {
       { event: 'makehtml.table.cell', hasText: true },
       { event: 'makehtml.link.inline', hasText: true },
       { event: 'makehtml.link.reference', hasText: true },
-      { event: 'makehtml.link.angleBrackets', hasText: true },
-      { event: 'makehtml.link.autoLink', hasText: true },
+      // one `autolink` variant for both spellings: `<uri>`/`<email>`/`<www…>` angle autolinks and
+      // the simplifiedAutoLink naked URLs/mails (the separate `angleBrackets` variant is retired)
+      { event: 'makehtml.link.autolink', hasText: true },
+      // @-mentions fire their own variant of the link family (they used to route through
+      // link.reference)
+      { event: 'makehtml.link.ghMention', hasText: true },
       { event: 'makehtml.image.inline', hasText: true },
       { event: 'makehtml.image.reference', hasText: true },
-      // Since the inline layer unified onto spanGamut (U-6), the inline layer fires the SEPARATE
-      // emphasis/strong capture families for every flavor. The combined makehtml.emphasisAndStrong
-      // family (including the `***foo***` combined event) is retired.
+      // The inline engine fires the SEPARATE emphasis/strong capture families for every flavor.
+      // The combined makehtml.emphasisAndStrong family (including the `***foo***` combined event)
+      // is retired.
       { event: 'makehtml.emphasis', hasText: true },
       { event: 'makehtml.strong', hasText: true },
       { event: 'makehtml.list', hasText: true },
@@ -780,7 +791,13 @@ describe('showdown.Event', function () {
       // D10 additions: paragraphs carry their graf text; a hard break has no inner content
       // (like a horizontal rule), so it carries no `text` key.
       { event: 'makehtml.paragraphs', hasText: true },
-      { event: 'makehtml.hardLineBreaks', hasText: false },
+      { event: 'makehtml.hardLineBreak', hasText: false },
+      // The remaining scan constructs the inline engine resolves. rawHtml carries the recognized
+      // tag/comment source, entity the character reference and backslash the escaped sequence —
+      // all three are the construct's own main content, so all three carry `text`.
+      { event: 'makehtml.rawHtml', hasText: true },
+      { event: 'makehtml.entity', hasText: true },
+      { event: 'makehtml.backslash', hasText: true },
       // remaining capture families: footnote definitions carry the body, references render a
       // generated <sup> (no inner content); disallowedHtmlTags carries the matched tag opening;
       // heading.id is the capture-only slug hook (its onHash never fires).
@@ -798,6 +815,7 @@ describe('showdown.Event', function () {
       'Para `codespan` **strong** *em* ***both*** ~~strike~~ __under__ ...ellipsis ',
       'a [ref][1] an [inline](https://example.com "t") <https://angle.com> https://naked.com ',
       'an ![img](pic.png) a ![refimg][1] an emoji :smile: <span title="a&b">html</span>.', '',
+      'A hard break here  ', 'then an entity &amp; an escape \\* and a @mention.', '',
       '    indented code', '',
       '```js', 'fenced', '```', '',
       '- list item', '', '- [ ] task', '', '- # heading in item', '',
@@ -892,12 +910,15 @@ describe('showdown.Event', function () {
         'makehtml.heading.setext', 'makehtml.blockquote', 'makehtml.codeBlock',
         'makehtml.githubCodeBlock', 'makehtml.metadata', 'makehtml.table', 'makehtml.table.header',
         'makehtml.table.cell', 'makehtml.link.inline', 'makehtml.link.reference',
-        'makehtml.image.inline', 'makehtml.emphasis',
+        'makehtml.link.autolink', 'makehtml.link.ghMention',
+        'makehtml.image.inline', 'makehtml.image.reference', 'makehtml.emphasis',
         'makehtml.strong', 'makehtml.list', 'makehtml.list.listItem',
         'makehtml.list.taskListItem', 'makehtml.list.taskListItem.checkbox',
         'makehtml.stripLinkDefinitions', 'makehtml.paragraphs', 'makehtml.htmlBlock',
         'makehtml.footnotes.definition', 'makehtml.footnotes.reference',
-        'makehtml.disallowedHtmlTags', 'makehtml.heading.id'
+        'makehtml.disallowedHtmlTags', 'makehtml.heading.id',
+        // the inline scan constructs with no pass form of their own
+        'makehtml.rawHtml', 'makehtml.entity', 'makehtml.backslash', 'makehtml.hardLineBreak'
       ];
       let missing = core.filter(function (name) { return !fired[name]; });
       expect(missing).toEqual([]);
@@ -993,15 +1014,16 @@ describe('showdown.Event', function () {
       '    indented code', '', '<div>raw block</div>', '', '> quote', '', '- item', ''
     ].join('\n');
 
-    // The 13 demoted mechanism passes + blockGamut (dispatcher) + decodeEntities + the deleted
-    // hashElement/runExtension: none of these may emit ANY of the four events, in any flavor.
-    // (spanGamut is NOT here: it is the inline engine now and owns the inline-pass lifecycle.)
+    // The demoted mechanism passes + blockGamut (dispatcher) + decodeEntities + the deleted
+    // hashElement/runExtension/spanGamut: none of these may emit ANY of the four events, in any
+    // flavor. (inlineEngine is NOT here: it owns the inline-pass lifecycle.)
     let noEventNames = [
-      'blockGamut', 'decodeEntities',
+      'blockGamut', 'decodeEntities', 'spanGamut',
       'encodeAmpsAndAngles', 'encodeBackslashEscapes', 'encodeCode',
       'escapeSpecialCharsWithinTagAttributes', 'unescapeSpecialChars',
       'hashBlock', 'hashCodeTags', 'hashPreCodeTags', 'hashHTMLBlocks',
-      'hashHTMLSpans', 'unhashHTMLSpans', 'hashElement', 'runExtension'
+      'hashHTMLSpans', 'unhashHTMLSpans', 'hashElement', 'runExtension',
+      'hardLineBreaks'
     ];
 
     /* jshint -W083 */
@@ -1023,8 +1045,8 @@ describe('showdown.Event', function () {
       expect(fired.onHash).toBeUndefined();
     });
 
-    it('spanGamut is lifecycle-only (onStart/onEnd, no capture/hash)', function () {
-      let fired = firedPhases('spanGamut', showdown.getFlavorOptions('commonmark'), richMd);
+    it('inlineEngine is lifecycle-only (onStart/onEnd, no capture/hash)', function () {
+      let fired = firedPhases('inlineEngine', showdown.getFlavorOptions('commonmark'), richMd);
       expect(fired.onStart).toBe(true);
       expect(fired.onEnd).toBe(true);
       expect(fired.onCapture).toBeUndefined();
@@ -1321,12 +1343,12 @@ describe('showdown.Event', function () {
     });
   });
 
-  // The spanGamut inline engine's own CommonMark links/images dispatch the SAME event families as
-  // every other flavor — makehtml.link.<variant>.* / makehtml.image.<variant>.* — so listener
-  // extensions behave identically across flavors. Post-unification there is a single event stream,
-  // fully covered by the generic conformance/coverage suites above; these tests additionally pin
-  // the commonmark flavor's links/images specifically.
-  describe('spanGamut link/image events (commonmark flavor)', function () {
+  // The inline engine's CommonMark links/images dispatch the SAME event families as every other
+  // flavor — makehtml.link.<variant>.* / makehtml.image.<variant>.* — so listener extensions
+  // behave identically across flavors. There is a single event stream, fully covered by the
+  // generic conformance/coverage suites above; these tests additionally pin the commonmark
+  // flavor's links/images specifically.
+  describe('inline engine link/image events (commonmark flavor)', function () {
 
     function cm (register) {
       let conv = new showdown.Converter(showdown.getFlavorOptions('commonmark'));

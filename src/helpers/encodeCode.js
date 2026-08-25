@@ -14,17 +14,9 @@
 showdown.helper.encodeCode = function (text) {
   'use strict';
 
-  // Encode all ampersands; HTML entities are not
-  // entities within a Markdown code span.
-  text = text
-    .replace(/&/g, '&amp;')
-  // Do the angle bracket song and dance:
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-  // encode "
-    .replace(/"/g, '&quot;')
-  // Now, escape characters that are magic in Markdown:
-    .replace(/([*_{}[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
-
-  return text;
+  // Code interiors render literally: entity-escape the HTML specials, then
+  // placeholder-escape the code-context magic set (wider than the anchor-part set:
+  // code must also survive the block passes — brackets, braces, backslashes, `=`/`-`).
+  return showdown.helper.escapeHTMLEntities(text)
+    .replace(/([*_{}[\]\\=~-])/g, showdown.helper.escapePlaceholder);
 };

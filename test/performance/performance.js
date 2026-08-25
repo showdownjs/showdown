@@ -63,9 +63,6 @@ function runTests () {
     .add('hashBlock', function () {
       showdown.helper.hashBlock(testMDFile, options, globals);
     })
-    .add('hashHTMLSpans', function () {
-      showdown.helper.hashHTMLSpans(testMDFile, options, globals);
-    })
     .add('headers', function () {
       let t = showdown.subParser('makehtml.heading.setext')(testMDFile, options, globals);
       showdown.subParser('makehtml.heading.atx')(t, options, globals);
@@ -79,11 +76,8 @@ function runTests () {
     .add('paragraphs', function () {
       showdown.subParser('makehtml.paragraphs')(testMDFile, options, globals);
     })
-    .add('spanGamut', function () {
-      showdown.subParser('makehtml.spanGamut')(testMDFile, options, globals);
-    })
-    .add('strikethrough', function () {
-      showdown.subParser('makehtml.strikethrough')(testMDFile, options, globals);
+    .add('inlineEngine', function () {
+      showdown.subParser('makehtml.inlineEngine')(testMDFile, options, globals);
     })
     .add('stripLinkDefinitions', function () {
       showdown.subParser('makehtml.stripLinkDefinitions')(testMDFile, options, globals);

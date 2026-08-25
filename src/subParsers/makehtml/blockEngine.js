@@ -45,13 +45,16 @@
 // The block engine pass. Callers invoke it like any other subparser
 // (`showdown.subParser('makehtml.blockEngine')(text, options, globals)`); it owns the
 // block-pipeline lifecycle events.
-showdown.subParser('makehtml.blockEngine', function (text, options, globals) {
+// `skip` is blockGamut's transitional re-entry guard (a construct name the dispatcher must not
+// re-invoke, e.g. heading.setext recursing through the block layer) — forwarded verbatim while
+// the engine delegates; it dies with the delegation once the registry pipeline lands.
+showdown.subParser('makehtml.blockEngine', function (text, options, globals, skip) {
   'use strict';
 
   let startEvent = showdown.Event.dispatchStart('makehtml.blockEngine.onStart', text, options, globals);
   text = startEvent.output;
 
-  text = showdown.subParser('makehtml.blockGamut')(text, options, globals);
+  text = showdown.subParser('makehtml.blockGamut')(text, options, globals, skip);
 
   // TODO: build the pipeline from the `makehtml.block.*` definition objects in
   //   showdown.getSubParserList() (validate shape, normalize a missing `enabled` to true,

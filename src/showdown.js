@@ -168,10 +168,20 @@ showdown.getDefaultOptions = function (simple) {
  *
  * subParser(name) - Get a registered subParser
  * subParser(name, func) - Register a subParser
+ *
+ * What is registered decides what the entry is:
+ *  - a FUNCTION registers a classic whole-text pass, `(text, options, globals) -> text`,
+ *    invoked directly by its callers;
+ *  - an OBJECT registers a construct definition for an engine. The namespace declares the
+ *    owner — `makehtml.inline.<name>` definitions belong to the inline engine,
+ *    `makehtml.block.<name>` to the block engine — and only the owning engine dispatches
+ *    them (it enumerates the registry, validates each definition at table/pipeline build
+ *    and resolves its `enabled` gate against the conversion options). See
+ *    makehtml/inlineEngine.js and makehtml/blockEngine.js for the definition shapes.
  * @static
  * @param {string} name
- * @param {function} [func]
- * @returns {*}
+ * @param {function|{}} [func] a pass function, or a construct definition object
+ * @returns {*} the registered pass function or definition object
  */
 showdown.subParser = function (name, func) {
   'use strict';

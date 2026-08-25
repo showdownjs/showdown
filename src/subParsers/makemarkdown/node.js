@@ -5,7 +5,7 @@
  * @copyright 2018-2026 ShowdownJS
  * @license   MIT
  *
- * The reverse-direction analogue of `blockGamut`/`spanGamut`: handles text nodes, HTML comments and
+ * The reverse-direction analogue of the block and inline engines: handles text nodes, HTML comments and
  * unknown/raw elements itself, and dispatches known elements (headings, lists, links, tables, …) to
  * their subparser, falling back to `renderRawElement` when a feature-gated construct's option is off.
  * Emits `makeMarkdown.node.onStart`/`onCapture`/`onEnd` for every node — the one place to observe content without
@@ -19,7 +19,7 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
   let input = node.outerHTML || node.nodeValue || '';
   showdown.Event.dispatchStart('makeMarkdown.node.onStart', input, options, globals, {_node: node});
 
-  // node is the recursive dispatcher (the makeMarkdown analogue of blockGamut/spanGamut) and
+  // node is the recursive dispatcher (the makeMarkdown analogue of the block/inline engines) and
   // has no syntax of its own, but it IS the sole observation point for content with no
   // dedicated subparser — HTML comments and unknown/raw elements — so it emits a capture whose
   // output-override lets a listener replace the default dispatch. It has no inner content of

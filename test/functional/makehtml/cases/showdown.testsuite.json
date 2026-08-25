@@ -1202,40 +1202,55 @@
     "number": 179
   },
   {
+    "markdown": "&_; and &copy;\n",
+    "html": "<p>&amp;_; and &copy;</p>\n",
+    "section": "Automatic escaping",
+    "number": 180
+  },
+  {
     "markdown": "4 < 5 and 6 > 3\n",
     "html": "<p>4 &lt; 5 and 6 &gt; 3</p>\n",
     "section": "Automatic escaping",
-    "number": 180
+    "number": 181
   },
   {
     "markdown": "He said \"hi\" loudly\n",
     "html": "<p>He said &quot;hi&quot; loudly</p>\n",
     "section": "Automatic escaping",
-    "number": 181
+    "number": 182
   },
   {
     "markdown": "Roses are red,  \nviolets are blue.\n",
     "html": "<p>Roses are red,<br />\nviolets are blue.</p>\n",
     "section": "Hard line breaks",
-    "number": 182
+    "number": 183
   },
   {
     "markdown": "Roses are red,\\\nviolets are blue.\n",
     "html": "<p>Roses are red,<br />\nviolets are blue.</p>\n",
     "section": "Hard line breaks",
-    "number": 183
+    "number": 184
   },
   {
     "markdown": "aaa\nbbb\n",
     "html": "<p>aaa\nbbb</p>\n",
     "section": "Hard line breaks",
-    "number": 184
+    "number": 185
   },
   {
     "markdown": "aaa\nbbb\n",
     "html": "<p>aaa<br />\nbbb</p>\n",
     "section": "Hard line breaks",
-    "number": 185,
+    "number": 186,
+    "options": {
+      "simpleLineBreaks": true
+    }
+  },
+  {
+    "markdown": "aaa  \nbbb\n",
+    "html": "<p>aaa<br />\nbbb</p>\n",
+    "section": "Hard line breaks",
+    "number": 187,
     "options": {
       "simpleLineBreaks": true
     }
@@ -1244,7 +1259,7 @@
     "markdown": "- a\n- b\n\npara\nhere\n",
     "html": "<ul>\n<li>a</li>\n<li>b</li>\n</ul>\n<p>para<br />\nhere</p>\n",
     "section": "Hard line breaks",
-    "number": 186,
+    "number": 188,
     "options": {
       "simpleLineBreaks": true
     }
@@ -1253,13 +1268,13 @@
     "markdown": "hello $.;'there\n",
     "html": "<p>hello $.;'there</p>\n",
     "section": "Textual content",
-    "number": 187
+    "number": 189
   },
   {
     "markdown": "AT&amp;T &mdash; &#36;5 &lt;tag&gt;\n",
     "html": "<p>AT&amp;T — $5 &lt;tag&gt;</p>\n",
     "section": "decodeEntities (option: `decodeEntities`)",
-    "number": 188,
+    "number": 190,
     "options": {
       "decodeEntities": true
     }
@@ -1268,7 +1283,7 @@
     "markdown": "<script>alert(1)</script>\n\n<em>fine</em>\n",
     "html": "&lt;script>alert(1)&lt;/script>\n<p><em>fine</em></p>\n",
     "section": "disallowRawHTML (option: `disallowRawHTML`)",
-    "number": 189,
+    "number": 191,
     "options": {
       "disallowRawHTML": true
     }
@@ -1277,7 +1292,7 @@
     "markdown": "a <iframe src=\"x\"></iframe> b\n",
     "html": "<p>a &lt;iframe src=\"x\">&lt;/iframe> b</p>\n",
     "section": "disallowRawHTML (option: `disallowRawHTML`)",
-    "number": 190,
+    "number": 192,
     "options": {
       "disallowRawHTML": true
     }
@@ -1286,7 +1301,7 @@
     "markdown": "[click](javascript:alert(1))\n",
     "html": "<p><a href=\"\">click</a></p>\n",
     "section": "safeMode (option: `safeMode`)",
-    "number": 191,
+    "number": 193,
     "options": {
       "safeMode": true
     }
@@ -1295,7 +1310,7 @@
     "markdown": "![x](data:image/png;base64,AAAA) ![y](data:text/html;base64,AAAA)\n",
     "html": "<p><img src=\"data:image/png;base64,AAAA\" alt=\"x\" /> <img src=\"\" alt=\"y\" /></p>\n",
     "section": "safeMode (option: `safeMode`)",
-    "number": 192,
+    "number": 194,
     "options": {
       "safeMode": true
     }
@@ -1304,7 +1319,7 @@
     "markdown": "<img src=x onerror=alert(1)>\n",
     "html": "<p><img src=x></p>\n",
     "section": "safeMode (option: `safeMode`)",
-    "number": 193,
+    "number": 195,
     "options": {
       "safeMode": true
     }
@@ -1313,7 +1328,7 @@
     "markdown": "# Hi\n\npara\n",
     "html": "<!DOCTYPE HTML>\n<html>\n<head>\n<meta charset=\"utf-8\">\n</head>\n<body>\n<h1 id=\"hi\">Hi</h1>\n<p>para</p>\n</body>\n</html>\n",
     "section": "completeHTMLDocument (option: `completeHTMLDocument`)",
-    "number": 194,
+    "number": 196,
     "options": {
       "completeHTMLDocument": true
     }
@@ -1322,7 +1337,7 @@
     "markdown": "---\ntitle: T\nlang: en\n---\n\npara\n",
     "html": "<!DOCTYPE HTML>\n<html lang=\"en\">\n<head>\n<title>T</title>\n<meta charset=\"utf-8\">\n<meta name=\"lang\" content=\"en\">\n</head>\n<body>\n<p>para</p>\n</body>\n</html>\n",
     "section": "completeHTMLDocument (option: `completeHTMLDocument`)",
-    "number": 195,
+    "number": 197,
     "options": {
       "completeHTMLDocument": true,
       "metadata": true
@@ -1332,7 +1347,7 @@
     "markdown": "[a](/foo) ![b](img/x.png) [c](http://absolute.com/)\n",
     "html": "<p><a href=\"https://example.com/foo\">a</a> <img src=\"https://example.com/img/x.png\" alt=\"b\" /> <a href=\"http://absolute.com/\">c</a></p>\n",
     "section": "relativePathBaseUrl (option: `relativePathBaseUrl`)",
-    "number": 196,
+    "number": 198,
     "options": {
       "relativePathBaseUrl": "https://example.com/"
     }
@@ -1341,7 +1356,7 @@
     "markdown": "    # heading\n    para\n    here\n",
     "html": "<h1 id=\"heading\">heading</h1>\n<p>para\nhere</p>\n",
     "section": "smartIndentationFix (option: `smartIndentationFix`)",
-    "number": 197,
+    "number": 199,
     "options": {
       "smartIndentationFix": true
     }

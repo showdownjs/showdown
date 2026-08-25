@@ -419,13 +419,13 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
       let vanillaMultiBlock = !options.cmSpec && /\n[ \t]*\n/.test(str);
 
       // Render the checkbox on the raw line, before any block/span parsing, so the
-      // injected <input> flows through blockGamut/spanGamut just like any other inline HTML.
+      // injected <input> flows through the block/inline engines just like any other inline HTML.
       if (taskMatch) {
         str = showdown.subParser('makehtml.list.taskListItem.checkbox')(str, options, globals);
       }
       str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
       globals.listDepth = (globals.listDepth || 0) + 1;
-      str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
+      str = showdown.subParser('makehtml.blockEngine')(str, options, globals);
       globals.listDepth--;
       str = str.replace(/^\n+/, '').replace(/\n+$/, '');
 
@@ -441,7 +441,7 @@ showdown.subParser('makehtml.list', function (text, options, globals) {
         if (/¨([KG])(\d+)\1/.test(g)) {
           out.push(g);
         } else if (/\S/.test(g)) {
-          g = showdown.subParser('makehtml.spanGamut')(g, options, globals);
+          g = showdown.subParser('makehtml.inlineEngine')(g, options, globals);
           if (wrapParagraphs) {
             g = g.replace(/^[ \t]*/, '<p>') + '</p>';
           }

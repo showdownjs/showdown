@@ -2,8 +2,11 @@
 //
 // The src/ files are NOT ES modules: they are concatenated in a fixed order and share one
 // lexical scope (a single `showdown` identifier, hoisted `getDefaultOpts`, etc.). Order
-// matters, and the two subParser globs MUST be sorted deterministically — readdir order is
+// matters, and the subParser globs MUST be sorted deterministically — readdir order is
 // not guaranteed across platforms/filesystems, and a different order changes the output.
+//
+// A directory glob only picks up the `.js` files directly inside it, never subdirectories, so
+// nested construct directories (src/subParsers/makehtml/inline) get their own ORDER entry.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -23,6 +26,7 @@ const ORDER = [
   'src/helpers',               // directory glob (sorted)
   'src/event.js',
   'src/subParsers/makehtml',   // directory glob (sorted)
+  'src/subParsers/makehtml/inline', // directory glob (sorted) — the inline engine's constructs
   'src/subParsers/makemarkdown', // directory glob (sorted)
   'src/converter.js',
   'src/loader.js'

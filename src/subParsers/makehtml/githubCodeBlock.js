@@ -114,7 +114,7 @@ showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals,
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
       codeblock = captureStartEvent.matches.text;
-      codeblock = showdown.helper.encodeCode(codeblock, options, globals);
+      codeblock = showdown.helper.encodeCode(codeblock);
       //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
       codeblock = codeblock
         .replace(/^\n+/g, '')  // trim leading newlines

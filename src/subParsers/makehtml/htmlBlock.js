@@ -34,7 +34,14 @@
  * Emits the `makehtml.htmlBlock.*` event family: `onStart`/`onEnd` lifecycle plus, per recognized
  * block, `onCapture` (`matches.text` = the raw block source; a listener may rewrite it or set
  * `output` to replace/suppress the block) and `onHash`.
+ *
+ * After the block strategies, a linear pass hashes span-level tags whose closing `>` sits at
+ * blockquote position on a later line (`\n {0,3}>`) so the blockquote parser cannot split them
+ * (issue #842). Sticky open/close regexes are built from the shared CommonMark HTML-tag grammar.
  */
+const reMultilineHtmlOpen = new RegExp(showdown.helper.regexes.cmOpenTagSource, 'y');
+const reMultilineHtmlClose = new RegExp(showdown.helper.regexes.cmCloseTagSource, 'y');
+
 showdown.subParser('makehtml.htmlBlock', function (text, options, globals) {
   'use strict';
 
@@ -53,6 +60,8 @@ showdown.subParser('makehtml.htmlBlock', function (text, options, globals) {
   } else {
     text = hashLegacyHTMLBlocks(text);
   }
+
+  text = hashMultilineHtmlTags(text);
 
   let afterEvent = showdown.Event.dispatchEnd('makehtml.htmlBlock.onEnd', text, options, globals);
   return afterEvent.output;
@@ -123,6 +132,105 @@ showdown.subParser('makehtml.htmlBlock', function (text, options, globals) {
    */
   function hashM (content) {
     return '\n\n¨M' + (globals.gHtmlMdBlocks.push(content) - 1) + 'M\n\n';
+  }
+
+  /**
+   * Hash a CommonMark open/close tag that spans lines with its `>` at blockquote
+   * position (`^ {0,3}>`). The blockquote parser would otherwise split the tag
+   * (issue #842). Single-line tags and tags whose `>` is not at column 0-3 are
+   * left for the inline raw-HTML scanner. Fenced regions are protected first so
+   * a pretty-printed tag inside a fence is not claimed. Linear: one forward
+   * cursor; no-ops when the document has no `\n {0,3}>`.
+   * @param {string} str
+   * @returns {string}
+   */
+  function hashMultilineHtmlTags (str) {
+    // a tag we would claim must contain both `<` and a later line whose `>` is at
+    // blockquote position; without that shape this pass is a no-op (and must stay
+    // O(1) on the ReDoS corpus of huge `<a>`/`</a>`/declaration runs with no newline)
+    if (str.indexOf('<') === -1 || !/\n {0,3}>/.test(str)) {
+      return str;
+    }
+    let fenceStore = [];
+    if (options.ghCodeBlocks) {
+      str = protectFencesForTags(str);
+    }
+    let parts = [],
+        i = 0;
+    while (i < str.length) {
+      let lt = str.indexOf('<', i);
+      if (lt === -1) {
+        parts.push(str.slice(i));
+        break;
+      }
+      if (lt > i) {
+        parts.push(str.slice(i, lt));
+      }
+      i = lt;
+      // indented code (4+ leading spaces): leave the `<` for codeBlock
+      let ls = i;
+      while (ls > 0 && str.charAt(ls - 1) !== '\n') {
+        ls--;
+      }
+      if (str.charAt(ls) === ' ' && str.charAt(ls + 1) === ' ' &&
+          str.charAt(ls + 2) === ' ' && str.charAt(ls + 3) === ' ') {
+        parts.push('<');
+        i++;
+        continue;
+      }
+      reMultilineHtmlOpen.lastIndex = i;
+      let m = reMultilineHtmlOpen.exec(str);
+      if (!m) {
+        reMultilineHtmlClose.lastIndex = i;
+        m = reMultilineHtmlClose.exec(str);
+      }
+      if (m && /\n {0,3}>/.test(m[0])) {
+        parts.push(showdown.helper._hashHTMLSpan(m[0], globals));
+        i += m[0].length;
+        continue;
+      }
+      parts.push('<');
+      i++;
+    }
+    let out = parts.join('');
+    if (fenceStore.length) {
+      out = restoreFencesForTags(out);
+    }
+    return out;
+
+    function protectFencesForTags (s) {
+      if (s.indexOf('```') === -1 && s.indexOf('~~~') === -1) {
+        return s;
+      }
+      let lines = s.split('\n'),
+          buf = [],
+          p = 0;
+      while (p < lines.length) {
+        let fm = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(lines[p]);
+        if (fm && !(fm[1].charAt(0) === '`' && fm[2].indexOf('`') !== -1)) {
+          let ch = fm[1].charAt(0),
+              closeRe = new RegExp('^ {0,3}[' + ch + ']{' + fm[1].length + ',}[ \\t]*$'),
+              region = [lines[p]];
+          p++;
+          while (p < lines.length) {
+            region.push(lines[p]);
+            if (closeRe.test(lines[p])) { p++; break; }
+            p++;
+          }
+          buf.push('¨F' + (fenceStore.push(region.join('\n')) - 1) + 'F');
+          continue;
+        }
+        buf.push(lines[p]);
+        p++;
+      }
+      return buf.join('\n');
+    }
+
+    function restoreFencesForTags (s) {
+      return s.replace(/¨F(\d+)F/g, function (wholeMatch, num) {
+        return fenceStore[Number(num)];
+      });
+    }
   }
 
   /**

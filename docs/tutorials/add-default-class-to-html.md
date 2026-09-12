@@ -26,8 +26,8 @@ const classMap = {
 const bindings = Object.keys(classMap)
   .map(key => ({
     type: 'output',
-    regex: new RegExp(`<${key}(.*)>`, 'g'),
-    replace: `<${key} class="${classMap[key]}" $1>`
+    regex: new RegExp(`<${key}(?=[\\s>])`, 'g'),
+    replace: `<${key} class="${classMap[key]}"`
   }));
 
 const conv = new showdown.Converter({
@@ -42,6 +42,11 @@ const text = `
 - second item
 `;
 ```
+
+The expression matches only the opening tag name, followed by whitespace or `>`.
+This adds a class to every matching element, including multiple elements on the same
+line, without consuming their attributes or matching longer tag names (such as
+`article` when the key is `a`).
 
 With this extension, the output will be as follows:
 

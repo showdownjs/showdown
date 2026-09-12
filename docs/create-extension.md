@@ -119,6 +119,36 @@ Each callback receives a [`showdown.Event`](event-system.md#event-object) object
     };
     ```
 
+#### Using a replacement function
+
+If `replace` is a function, Showdown passes it directly to JavaScript's `String.prototype.replace`. It is called once for each match (for all matches when the regular expression has the `g` flag), with these arguments:
+
+1. `match`: the entire matched text.
+2. `p1`, `p2`, …: the text captured by each parenthesized group, in order. These arguments are absent if the regular expression has no capturing groups; an unmatched optional group is `undefined`.
+3. `offset`: the zero-based position of the match in the text being processed.
+4. `string`: the entire text being processed by the extension.
+5. `groups`: an object containing named captures, only if the regular expression has named capturing groups.
+
+Return the string that should replace that match. Unlike a string-valued `replace`, the returned string does not expand substitution patterns such as `$1`. This callback does not receive a converter or options; use [`filter`](#filter) if you need those arguments. For `lang` extensions, the text has already undergone [escaping and normalization](#escape-and-normalization).
+
+!!! example "Replacement function example"
+
+    This legacy language extension turns `[[upper:hello]]` into `HELLO`. The capturing group supplies `word` separately from the full `match`. The `g` flag lets it transform both occurrences.
+
+    ```js
+    var uppercaseExtension = {
+      type: 'lang',
+      regex: /\[\[upper:([a-z]+)\]\]/g,
+      replace: function (match, word) {
+        return word.toUpperCase();
+      }
+    };
+
+    var converter = new showdown.Converter({ extensions: [uppercaseExtension] });
+    converter.makeHtml('[[upper:hello]] [[upper:world]]');
+    // <p>HELLO WORLD</p>
+    ```
+
 ### Filter
 
 Alternately, if you'd like to have more control over the modification process, you can use `filter` property.

@@ -16,9 +16,32 @@ import { concatSources, pkgVersion, buildDate, root } from './concat.mjs';
 
 const version = pkgVersion();
 const stamp = `showdown v ${version} - ${buildDate()}`;
-const distBanner = `;/*! ${stamp} */\n(function(){\n`;
+const licenseComment = `/*
+ * Showdown v ${version}
+ *
+ * Copyright (c) 2018-2026 ShowdownJS
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+ * of the Software, and to permit persons to whom the Software is furnished to do
+ * so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */`;
+const distBanner = licenseComment + `\n;/*! ${stamp} */\n(function(){\n`;
 const distFooter = '}).call(this);\n';
-const minBanner = `/*! ${stamp} */`;
+const minBanner = licenseComment.replace(/\n/g, ' ') + ` /*! ${stamp} */`;
 
 const LF = s => s.replace(/\r\n/g, '\n');
 const write = (rel, content) => {
@@ -50,7 +73,7 @@ console.log('wrote dist/showdown.min.js (+ .map)');
 // Wrap the body (minus loader.js) in an IIFE invoked with a real `this` (globalThis) so
 // the helpers' `this`-based environment detection works, then export the namespace.
 const esmBodyNoLoader = concatSources({ omitLoader: true });
-const esm = `/*! ${stamp} */\nconst showdown = (function () {\n${esmBodyNoLoader}\nreturn showdown;\n}).call(globalThis);\nexport default showdown;\nexport { showdown };\n`;
+const esm = `${licenseComment}\n/*! ${stamp} */\nconst showdown = (function () {\n${esmBodyNoLoader}\nreturn showdown;\n}).call(globalThis);\nexport default showdown;\nexport { showdown };\n`;
 write('dist/showdown.esm.js', esm);
 
 await esbuild.build({

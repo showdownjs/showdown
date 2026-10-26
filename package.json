@@ -97,7 +97,7 @@
   },
   "dependencies": {
     "commander": "^14.0.0",
-    "happy-dom": "^20.10.6"
+    "happy-dom": "^21.0.4"
   },
   "overrides": {
     "minimist": "^1.2.6",

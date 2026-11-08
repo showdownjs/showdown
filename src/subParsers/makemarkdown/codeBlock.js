@@ -31,7 +31,21 @@ showdown.subParser('makeMarkdown.codeBlock', function (node, options, globals) {
     code = captureEvent.matches.text;
     lang = captureEvent.matches.language;
     if (options.ghCodeBlocks) {
-      result = '```' + lang + '\n' + code + '\n```';
+      let backtickRuns = code.match(/`+/g),
+          longestRun = 0;
+
+      if (backtickRuns) {
+        for (let b = 0; b < backtickRuns.length; ++b) {
+          if (backtickRuns[b].length > longestRun) {
+            longestRun = backtickRuns[b].length;
+          }
+        }
+      }
+
+      let fenceLength = Math.max(3, longestRun + 1),
+          fence = new Array(fenceLength + 1).join('`');
+
+      result = fence + lang + '\n' + code + '\n' + fence;
     } else {
       // fenced code blocks disabled -> emit raw HTML (re-escape the special chars that
       // substitutePreCodeTags decoded when it stashed the content)

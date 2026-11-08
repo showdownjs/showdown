@@ -22,4 +22,20 @@ describe('showdown.Converter', function () {
     });
 
   });
+
+  describe('makeMarkdown code blocks', function () {
+    it('should preserve backticks inside fenced code blocks', function () {
+      let converter = new showdown.Converter();
+      let html = '<pre><code>' + '```js' + '\n' +
+        'let x = 1;' + '\n' +
+        '```</code></pre>';
+
+      let markdown = converter.makeMarkdown(html);
+
+      expect(markdown).toContain('````');
+      expect(markdown).toContain('```js');
+      expect(markdown).toContain('let x = 1;');
+      expect(markdown.trim().endsWith('````')).toBe(true);
+    });
+  });
 });

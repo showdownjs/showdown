@@ -21,20 +21,26 @@ showdown.subParser('makeMarkdown.listItem', function (node, options, globals) {
 
     for (let i = 0; i < childrenLenght; ++i) {
       let child = children[i];
-      // A nested list must begin on its own line, otherwise the indentation step below
-      // glues it to the preceding inline text (e.g. `a<ul>…` would render as `- a- b`
-      // instead of `- a` followed by an indented `- b`).
-      if (child.nodeType === 1 && /^[ou]l$/i.test(child.tagName) &&
-          listItemTxt !== '' && !/\n$/.test(listItemTxt)) {
-        listItemTxt += '\n';
+      // A nested list or following block element must begin on its own line,
+      // otherwise the indentation step below glues it to the preceding inline
+      // text (e.g. `a<ul>…` would render as `- a- b`, and `Step one<p>…`
+      // would render as `- Step oneDetails here.`).
+      if (child.nodeType === 1 && listItemTxt !== '' && !/\n$/.test(listItemTxt)) {
+        if (/^[ou]l$/i.test(child.tagName)) {
+          listItemTxt += '\n';
+        } else if (/^(?:p|pre|blockquote)$/i.test(child.tagName)) {
+          listItemTxt += '\n\n';
+        }
       }
       listItemTxt += showdown.subParser('makeMarkdown.node')(child, options, globals);
     }
     // if it's only one liner, we need to add a newline at the end
     if (!/\n$/.test(listItemTxt)) {
       listItemTxt += '\n';
-    } else {
-      // it's multiparagraph, so we need to indent
+    }
+    // A trailing newline alone is still a single line. Internal newlines mean
+    // a nested list or a following block that must be indented to stay in the item.
+    if (listItemTxt.indexOf('\n') !== listItemTxt.length - 1) {
       listItemTxt = listItemTxt
         .split('\n')
         .join('\n    ')

@@ -1,6 +1,6 @@
 /**
  * @file      makemarkdown/txt.js
- * @summary   Renders a text node: collapses space runs, restores `¨NBSP;` sentinels, unescapes entities, and reverses `ellipsis`.
+ * @summary   Renders a text node: collapses space runs, restores `¨NBSP;` sentinels, re-escapes entity-like text and tag openers, and reverses `ellipsis`.
  * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
  * @copyright 2018-2026 ShowdownJS
  * @license   MIT
@@ -23,8 +23,10 @@ showdown.subParser('makeMarkdown.txt', function (node, options, globals) {
     // replace the custom ¨NBSP; with a space
     txt = txt.replace(/¨NBSP;/g, ' ');
 
-    // ", <, > and & should replace escaped html entities
-    txt = showdown.helper.unescapeHTMLEntities(txt);
+    // the DOM has already decoded entities, so nodeValue is plain text. Markdown reads `&name;`
+    // as an entity and `<tag` as raw html, so a literal `&lt;` or `<br>` must be re-escaped,
+    // or it round-trips into a different character or a real tag.
+    txt = txt.replace(/&(?=#?\w+;)/g, '&amp;').replace(/<(?=[A-Za-z/])/g, '&lt;');
 
     // reverse the `ellipsis` option: … -> ...  (only when the converter would have produced it)
     if (options.ellipsis) {

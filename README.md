@@ -512,7 +512,7 @@ PRs are awesome. However, before you submit your pull request consider the follo
    hard to review big one.
  - If the PR introduces a new feature or fixes an issue, **please add the appropriate test case**.
  - We use [conventional commit][conventional-commits] notes to generate the changelog that follow the conventional changelog spec. It's extremely helpful if your commit messages adhere to these [Commit Guidelines][conventional-commits].
- - Don't forget to add your name to the [CREDITS.md](https://github.com/showdownjs/showdown/blob/master/CREDITS.md) file. We like to give credit were it's due.
+ - Don't forget to add your name to the [CREDITS.md](https://github.com/showdownjs/showdown/blob/master/docs/credits.md) file. We like to give credit were it's due.
  - If we suggest changes then:
      - Make the required updates.
      - Re-run the test suite to ensure tests are still passing.
@@ -533,7 +533,7 @@ We're looking for members to help maintaining Showdown.
 Please see [this issue](https://github.com/showdownjs/showdown/issues/114) to express interest or comment on this note.
 
 ## Credits
-Full credit list at https://github.com/showdownjs/showdown/blob/master/CREDITS.md
+Full credit list at https://github.com/showdownjs/showdown/blob/master/docs/credits.md
 
 Showdown is powered by:<br/>
 [![webstorm](https://www.jetbrains.com/webstorm/documentation/docs/logo_webstorm.png)](https://www.jetbrains.com/webstorm/)

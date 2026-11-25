@@ -1,9 +1,18 @@
-/*! showdown v 3.0.0-rc2 - 05-07-2026 */
+/*! showdown v 3.0.0-rc2 - 25-11-2026 */
 const showdown = (function () {
 // noinspection HtmlRequiredLangAttribute
 
 /**
- * Created by Tivie on 13-07-2015.
+ * @file      options.js
+ * @summary   Declares every converter option with its default value, type, and description.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Exports a single `getDefaultOpts(simple)` function (called from sibling files via the shared
+ * concat scope) returning the canonical option-metadata table. When `simple` is true it returns
+ * just `{key: defaultValue}`; otherwise it returns the full `{defaultValue, describe, type}`
+ * descriptors used by the CLI's `--config-help`. Pure declaration — no conversion logic, no events.
  */
 
 // eslint-disable-next-line no-unused-vars -- called from sibling src files via the shared concat scope (see scripts/concat.mjs)
@@ -89,11 +98,6 @@ function getDefaultOpts (simple) {
     simpleLineBreaks: {
       defaultValue: false,
       describe: 'Parses simple line breaks as <br>',
-      type: 'boolean'
-    },
-    requireSpaceBeforeHeadingText: {
-      defaultValue: false,
-      describe: 'Makes adding a space between `#` and the header text mandatory (GFM Style)',
       type: 'boolean'
     },
     ghMentions: {
@@ -190,7 +194,17 @@ function getDefaultOpts (simple) {
 }
 
 /**
- * Created by Tivie on 06-01-2015.
+ * @file      showdown.js
+ * @summary   The static `showdown` namespace: global options, subparser/extension registries, and flavor presets.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Creates the shared `showdown` object and its private `parsers`, `extensions` and `globalOptions`
+ * state, and defines the flavor bundles (`commonmark`, `gfm`, `original`, `vanilla`, with `github`
+ * aliased to `gfm` — each flavor is just a set of option overrides). Exposes `subParser(name[, fn])`
+ * to get/register subparsers and `extension(...)`/`validate()` for the three extension types. Runs
+ * first in the concatenation so every later file can register against it.
  */
 // Private properties
 let showdown = {},
@@ -201,7 +215,6 @@ let showdown = {},
     flavor = {
       commonmark: {
         headerIds:                            false,
-        requireSpaceBeforeHeadingText:        true,
         decodeEntities:                       true,
         cmSpec:                               true,
         strikethrough:                        false,
@@ -209,7 +222,6 @@ let showdown = {},
       },
       gfm: {
         headerIds:                            false,
-        requireSpaceBeforeHeadingText:        true,
         decodeEntities:                       true,
         cmSpec:                               true,
         strikethrough:                        true,
@@ -295,17 +307,13 @@ showdown.resetOptions = function () {
  */
 showdown.setFlavor = function (name) {
   'use strict';
-  if (!Object.prototype.hasOwnProperty.call(flavor, name)) {
+  let preset = showdown.getFlavorOptions(name);
+  if (!preset) {
     throw Error(name + ' flavor was not found');
   }
   showdown.resetOptions();
-  let preset = flavor[name];
   setFlavor = name;
-  for (let option in preset) {
-    if (Object.prototype.hasOwnProperty.call(preset, option)) {
-      globalOptions[option] = preset[option];
-    }
-  }
+  showdown.helper.applyFlavor(preset, globalOptions); // fresh globalOptions after reset
 };
 
 /**
@@ -580,740 +588,97 @@ showdown.validateExtension = function (ext) {
   return true;
 };
 
-// noinspection HtmlDeprecatedAttribute,CheckImageSize
-
 /**
- * showdownjs helper functions
- */
-
-if (!Object.prototype.hasOwnProperty.call(showdown, 'helper')) {
-  showdown.helper = {};
-}
-
-// makeMarkdown needs a DOM to parse the input HTML. Resolution is lazy (first access of
-// `showdown.helper.document`) so Node users that only call makeHtml never pay the cost of
-// loading happy-dom; in environments with an ambient window/document (browsers, DOM test
-// environments) the require branch is never reached, so happy-dom never ends up in bundles.
-let lazyDocument = null;
-Object.defineProperty(showdown.helper, 'document', {
-  get: function () {
-    'use strict';
-    if (lazyDocument === null) {
-      if (typeof window !== 'undefined' && window.document) {
-        lazyDocument = window.document;
-      } else if (typeof document !== 'undefined') {
-        lazyDocument = document;
-      } else if (typeof require === 'function') {
-        let happyDom = require('happy-dom');
-        lazyDocument = new happyDom.Window().document;
-      } else {
-        throw new Error('makeMarkdown requires a DOM: provide a global window/document, ' +
-          'or run in Node (CommonJS) with happy-dom installed.');
-      }
-    }
-    return lazyDocument;
-  }
-});
-
-/**
- * Parse an untrusted HTML string into a detached <div> and return it, for
- * makeMarkdown to walk. The HTML is parsed inside an *inert* document (one with
- * no browsing context, obtained via document.implementation.createHTMLDocument)
- * whenever the host DOM supports it. In an inert document, assigning to innerHTML
- * never executes <script> and never triggers resource loads or fires on* handlers
- * such as `<img onerror>` / `<svg onload>` — so parsing attacker HTML client-side
- * cannot run script. happy-dom (Node) is already inert; using the same path keeps
- * behavior uniform.
- * @param {string} html
- * @returns {Object} a detached div element whose innerHTML is the parsed html
- */
-let lazyInertDocument = null;
-showdown.helper.parseHTML = function (html) {
-  'use strict';
-  let ownerDoc = showdown.helper.document;
-  if (ownerDoc.implementation && typeof ownerDoc.implementation.createHTMLDocument === 'function') {
-    if (lazyInertDocument === null) {
-      lazyInertDocument = ownerDoc.implementation.createHTMLDocument('');
-    }
-    ownerDoc = lazyInertDocument;
-  }
-  let div = ownerDoc.createElement('div');
-  div.innerHTML = html;
-  return div;
-};
-
-/**
- * Check if var is string
- * @static
- * @param {*} a
- * @returns {boolean}
- */
-showdown.helper.isString = function (a) {
-  'use strict';
-  return (typeof a === 'string' || a instanceof String);
-};
-
-/**
- * Check if var is a number
- * @static
- * @param {*} a
- * @returns {boolean}
- */
-showdown.helper.isNumber = function (a) {
-  return !isNaN(a);
-};
-
-/**
- * Check if var is a function
- * @static
- * @param {*} a
- * @returns {boolean}
- */
-showdown.helper.isFunction = function (a) {
-  'use strict';
-  let getType = {};
-  return a && getType.toString.call(a) === '[object Function]';
-};
-
-/**
- * isArray helper function
- * @static
- * @param {*} a
- * @returns {boolean}
- */
-showdown.helper.isArray = function (a) {
-  'use strict';
-  let isArray;
-  if (!Array.isArray) {
-    isArray = function (arg) {
-      return Object.prototype.toString.call(arg) === '[object Array]';
-    };
-  } else {
-    isArray = Array.isArray;
-  }
-  return isArray(a);
-};
-
-/**
- * Check if value is undefined
- * @static
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is `undefined`, else `false`.
- */
-showdown.helper.isUndefined = function (value) {
-  'use strict';
-  return typeof value === 'undefined';
-};
-
-/**
- * Check if value is an object (excluding arrays)
- * @param {*} value
- * @returns {boolean}
- */
-showdown.helper.isObject = function (value) {
-  'use strict';
-  return (
-    typeof value === 'object' &&
-    !Array.isArray(value) &&
-    value !== null
-  );
-};
-
-/**
- * ForEach helper function
- * Iterates over Arrays and Objects (own properties only)
- * @static
- * @param {*} obj
- * @param {function} callback Accepts 3 params: 1. value, 2. key, 3. the original array/object
- */
-showdown.helper.forEach = function (obj, callback) {
-  'use strict';
-  // check if obj is defined
-  if (showdown.helper.isUndefined(obj)) {
-    throw new Error('obj param is required');
-  }
-
-  if (showdown.helper.isUndefined(callback)) {
-    throw new Error('callback param is required');
-  }
-
-  if (!showdown.helper.isFunction(callback)) {
-    throw new Error('callback param must be a function/closure');
-  }
-
-  if (typeof obj.forEach === 'function') {
-    obj.forEach(callback);
-  } else if (showdown.helper.isArray(obj)) {
-    for (let i = 0; i < obj.length; i++) {
-      callback(obj[i], i, obj);
-    }
-  } else if (typeof (obj) === 'object') {
-    for (let prop in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
-        callback(obj[prop], prop, obj);
-      }
-    }
-  } else {
-    throw new Error('obj does not seem to be an array or an iterable object');
-  }
-};
-
-/**
- * Standardize extension name
- * @static
- * @param {string} s extension name
- * @returns {string}
- */
-showdown.helper.stdExtName = function (s) {
-  'use strict';
-  return s.replace(/[_?*+/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
-};
-
-function escapeCharactersCallback (wholeMatch, m1) {
-  'use strict';
-  let charCodeToEscape = m1.charCodeAt(0);
-  return '¨E' + charCodeToEscape + 'E';
-}
-
-/**
- * Callback used to escape characters when passing through String.replace
- * @static
- * @param {string} wholeMatch
- * @param {string} m1
- * @returns {string}
- */
-showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
-
-/**
- * Escape characters in a string
- * @static
- * @param {string} text
- * @param {string} charsToEscape
- * @param {boolean} afterBackslash
- * @returns {string|void|*}
- */
-showdown.helper.escapeCharacters = function (text, charsToEscape, afterBackslash) {
-  'use strict';
-  // First we have to escape the escape characters so that
-  // we can build a character class out of them
-  let regexString = '([' + charsToEscape.replace(/([[\]\\])/g, '\\$1') + '])';
-
-  if (afterBackslash) {
-    regexString = '\\\\' + regexString;
-  }
-
-  let regex = new RegExp(regexString, 'g');
-  text = text.replace(regex, escapeCharactersCallback);
-
-  return text;
-};
-
-let rgxFindMatchPos = function (str, left, right, flags) {
-  'use strict';
-  let f = flags || '',
-      g = f.indexOf('g') > -1,
-      x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
-      l = new RegExp(left, f.replace(/g/g, '')),
-      pos = [],
-      t, s, m, start, end;
-
-  do {
-    t = 0;
-    while ((m = x.exec(str))) {
-      if (l.test(m[0])) {
-        if (!(t++)) {
-          s = x.lastIndex;
-          start = s - m[0].length;
-        }
-      } else if (t) {
-        if (!--t) {
-          end = m.index + m[0].length;
-          let obj = {
-            left: {start: start, end: s},
-            match: {start: s, end: m.index},
-            right: {start: m.index, end: end},
-            wholeMatch: {start: start, end: end}
-          };
-          pos.push(obj);
-          if (!g) {
-            return pos;
-          }
-        }
-      }
-    }
-  } while (t && (x.lastIndex = s));
-
-  return pos;
-};
-
-/**
- * matchRecursiveRegExp
+ * @file      helpers/commonmark.js
+ * @summary   CommonMark-specific text processing: entity decoding, URL/title normalization, label folding, scanners and the flanking character classifiers.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
  *
- * (c) 2007 Steven Levithan <stevenlevithan.com>
- * MIT License
- *
- * Accepts a string to search, a left and right format delimiter
- * as regex patterns, and optional regex flags. Returns an array
- * of matches, allowing nested instances of left/right delimiters.
- * Use the "g" flag to return all matches, otherwise only the
- * first is returned. Be careful to ensure that the left and
- * right format delimiters produce mutually exclusive matches.
- * Backreferences are not supported within the right delimiter
- * due to how it is internally combined with the left delimiter.
- * When matching strings whose format delimiters are unbalanced
- * to the left or right, the output is intentionally as a
- * conventional regex library with recursion support would
- * produce, e.g. "<<x>" and "<x>>" both produce ["x"] when using
- * "<" and ">" as the delimiters (both strings contain a single,
- * balanced instance of "<x>").
- *
- * examples:
- * matchRecursiveRegExp("test", "\\(", "\\)")
- * returns: []
- * matchRecursiveRegExp("<t<<e>><s>>t<>", "<", ">", "g")
- * returns: ["t<<e>><s>", ""]
- * matchRecursiveRegExp("<div id=\"x\">test</div>", "<div\\b[^>]*>", "</div>", "gi")
- * returns: ["test"]
+ * `cmDecodeEntities`, `cmEncodeURI`, `cmNormalizeURL`, `cmEscapeTitle`, `cmNormalizeLabel`, the
+ * link-destination/title scanners (`cmScanDestination`/`cmScanTitle`) and the `isAsciiPunct`
+ * character classifier (with the authoritative `cmAsciiPunct` class it shares with the flanking
+ * classifiers in spanGamut.js). Load-order safe: every reference to another helper (`htmlEntities`,
+ * `unescapePlaceholders`) happens inside function bodies (call time), never at load time.
  */
-showdown.helper.matchRecursiveRegExp = function (str, left, right, flags) {
-  'use strict';
 
-  let matchPos = rgxFindMatchPos (str, left, right, flags),
-      results = [];
+/* jshint esnext: false, esversion: 9 */
+// (esversion 9 enables the \p{...} Unicode property escapes used for CommonMark flanking rules)
 
-  for (let i = 0; i < matchPos.length; ++i) {
-    results.push([
-      str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
-      str.slice(matchPos[i].match.start, matchPos[i].match.end),
-      str.slice(matchPos[i].left.start, matchPos[i].left.end),
-      str.slice(matchPos[i].right.start, matchPos[i].right.end)
-    ]);
-  }
-  return results;
-};
+// Guarded ampersand: a bare `&` that does NOT already begin an entity reference. Shared by
+// cmNormalizeURL and cmEscapeTitle (both HTML-escape residual bare ampersands the same way).
+// File-local const (load-order safe: only read inside function bodies below, at call time).
+const cmGuardedAmpersand = /&(?![a-zA-Z#0-9]+;)/g;
+
+// CommonMark punctuation = ASCII punctuation + Unicode P and S categories. This is the authoritative
+// copy of the class: `isAsciiPunct` (below) tests it directly, and the flanking `isPunct` classifier
+// in spanGamut.js reads this same const at call time (one shared concat scope). File-local const
+// (load-order safe: only read inside function bodies).
+const cmAsciiPunct = /[!-/:-@[-`{-~]/;
 
 /**
- *
+ * Unicode case folding for case-insensitive matching of link reference labels.
+ * Uses `toLowerCase().toUpperCase()` (the round-trip used by commonmark.js) so that
+ * characters like `ß`, `ẞ` and `SS` all fold together - which plain `toLowerCase`
+ * does not (`ẞ` -> `ß`, not `ss`). File-local to commonmark.js (cmNormalizeLabel is its sole caller).
  * @param {string} str
- * @param {string|function} replacement
- * @param {string} left
- * @param {string} right
- * @param {string} flags
  * @returns {string}
  */
-showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right, flags) {
-  'use strict';
-
-  if (!showdown.helper.isFunction(replacement)) {
-    let repStr = replacement;
-    replacement = function () {
-      return repStr;
-    };
-  }
-
-  let matchPos = rgxFindMatchPos(str, left, right, flags),
-      finalStr = str,
-      lng = matchPos.length;
-
-  if (lng > 0) {
-    let bits = [];
-    if (matchPos[0].wholeMatch.start !== 0) {
-      bits.push(str.slice(0, matchPos[0].wholeMatch.start));
-    }
-    for (let i = 0; i < lng; ++i) {
-      bits.push(
-        replacement(
-          str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
-          str.slice(matchPos[i].match.start, matchPos[i].match.end),
-          str.slice(matchPos[i].left.start, matchPos[i].left.end),
-          str.slice(matchPos[i].right.start, matchPos[i].right.end)
-        )
-      );
-      if (i < lng - 1) {
-        bits.push(str.slice(matchPos[i].wholeMatch.end, matchPos[i + 1].wholeMatch.start));
-      }
-    }
-    if (matchPos[lng - 1].wholeMatch.end < str.length) {
-      bits.push(str.slice(matchPos[lng - 1].wholeMatch.end));
-    }
-    finalStr = bits.join('');
-  }
-  return finalStr;
-};
-
-/**
- * Returns the index within the passed String object of the first occurrence of the specified regex,
- * starting the search at fromIndex. Returns -1 if the value is not found.
- *
- * @param {string} str string to search
- * @param {RegExp} regex Regular expression to search
- * @param {int} [fromIndex = 0] Index to start the search
- * @returns {Number}
- * @throws InvalidArgumentError
- */
-showdown.helper.regexIndexOf = function (str, regex, fromIndex) {
-  'use strict';
-  if (!showdown.helper.isString(str)) {
-    throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
-  }
-  if (!(regex instanceof RegExp)) {
-    throw 'InvalidArgumentError: second parameter of showdown.helper.regexIndexOf function must be an instance of RegExp';
-  }
-  let indexOf = str.substring(fromIndex || 0).search(regex);
-  return (indexOf >= 0) ? (indexOf + (fromIndex || 0)) : indexOf;
-};
-
-/**
- * Splits the passed string object at the defined index, and returns an array composed of the two substrings
- * @param {string} str string to split
- * @param {int} index index to split string at
- * @returns {[string,string]}
- * @throws InvalidArgumentError
- */
-showdown.helper.splitAtIndex = function (str, index) {
-  'use strict';
-  if (!showdown.helper.isString(str)) {
-    throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
-  }
-  return [str.substring(0, index), str.substring(index)];
-};
-
-
-/**
- * MurmurHash3's mixing function
- * https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
- *
- * @param {string} string
- * @returns {Number}
- */
-/*jshint bitwise: false*/
-function xmur3 (str) {
-  let h;
-  for (let i = 0, h = 1779033703 ^ str.length; i < str.length; i++) {
-    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
-    h = h << 13 | h >>> 19;
-  }
-  return function () {
-    h = Math.imul(h ^ h >>> 16, 2246822507);
-    h = Math.imul(h ^ h >>> 13, 3266489909);
-    return (h ^= h >>> 16) >>> 0;
-  };
+function caseFold (str) {
+  return str.toLowerCase().toUpperCase();
 }
 
 /**
- * Random Number Generator
- * https://stackoverflow.com/questions/521295/seeding-the-random-number-generator-in-javascript/47593316#47593316
- *
- * @param {Number} seed
- * @returns {Number}
+ * True when `ch` is an ASCII punctuation character (and defined). Used for
+ * backslash-escapability and as one input to the flanking rules.
+ * @param {string|undefined} ch
+ * @returns {boolean}
  */
-/*jshint bitwise: false*/
-function mulberry32 (a) {
-  return function () {
-    let t = a += 0x6D2B79F5;
-    t = Math.imul(t ^ t >>> 15, t | 1);
-    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
-  };
-}
+showdown.helper.isAsciiPunct = function (ch) {
+  return ch !== undefined && cmAsciiPunct.test(ch);
+};
 
 /**
- * Obfuscate an e-mail address through the use of Character Entities,
- * transforming ASCII characters into their equivalent decimal or hex entities.
- *
- *
- * @param {string} mail
+ * The single character-reference decoder backing both `cmDecodeEntities` (raw output) and the
+ * `makehtml.decodeEntities` subparser (HTML-re-escaped output). Resolves HTML5 named (`&ouml;`),
+ * decimal (`&#246;`) and hexadecimal (`&#xf6;`) references. The `escapeOutput` policy flag is the
+ * only difference between the two public surfaces:
+ *  - `false` (CommonMark helper): emit the raw decoded character; leave an invalid reference verbatim.
+ *  - `true` (subparser): HTML-escape the decoded character (so e.g. `&lt;` -> `&lt;`, not a live `<`)
+ *    and rewrite an invalid reference's leading `&` to `&amp;`.
+ * @param {string} str
+ * @param {boolean} escapeOutput
  * @returns {string}
  */
-showdown.helper.encodeEmailAddress = function (mail) {
-  'use strict';
-  let encode = [
-    function (ch) {
-      return '&#' + ch.charCodeAt(0) + ';';
-    },
-    function (ch) {
-      return '&#x' + ch.charCodeAt(0).toString(16) + ';';
-    },
-    function (ch) {
-      return ch;
+showdown.helper.decodeCharacterReferences = function (str, escapeOutput) {
+  let entities = showdown.helper.htmlEntities || {};
+  function fromCodePoint (cp) {
+    if (cp === 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) {
+      return '�';
     }
-  ];
-
-  // RNG seeded with mail, so that we can get determined results for each email.
-  let rand = mulberry32(xmur3(mail));
-
-  mail = mail.replace(/./g, function (ch) {
-    if (ch === '@') {
-      // this *must* be encoded. I insist.
-      ch = encode[Math.floor(rand() * 2)](ch);
-    } else {
-      let r = rand();
-      // roughly 10% raw, 45% hex, 45% dec
-      ch = (
-        r > 0.9 ? encode[2](ch) : r > 0.45 ? encode[1](ch) : encode[0](ch)
-      );
+    try {
+      return String.fromCodePoint(cp);
+    } catch {
+      return '�';
     }
-    return ch;
+  }
+  function emit (ch) {
+    return escapeOutput ? showdown.helper.escapeHTMLEntities(ch) : ch;
+  }
+  return str.replace(/&([#0-9a-zA-Z]+);/g, function (wholeMatch, body) {
+    let m;
+    if ((m = /^#([0-9]{1,7})$/.exec(body))) {
+      return emit(fromCodePoint(parseInt(m[1], 10)));
+    }
+    if ((m = /^#[xX]([0-9a-fA-F]{1,6})$/.exec(body))) {
+      return emit(fromCodePoint(parseInt(m[1], 16)));
+    }
+    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && Object.prototype.hasOwnProperty.call(entities, body)) {
+      return emit(entities[body]);
+    }
+    // not a valid reference
+    return escapeOutput ? ('&amp;' + body + ';') : wholeMatch;
   });
-
-  return mail;
-};
-
-/**
- * String.prototype.repeat polyfill
- *
- * @param {string} str
- * @param {int} count
- * @returns {string}
- */
-showdown.helper.repeat = function (str, count) {
-  'use strict';
-  // use built-in method if it's available
-  if (!showdown.helper.isUndefined(String.prototype.repeat)) {
-    return str.repeat(count);
-  }
-  str = '' + str;
-  if (count < 0) {
-    throw new RangeError('repeat count must be non-negative');
-  }
-  if (count === Infinity) {
-    throw new RangeError('repeat count must be less than infinity');
-  }
-  count = Math.floor(count);
-  if (str.length === 0 || count === 0) {
-    return '';
-  }
-  // Ensuring count is a 31-bit integer allows us to heavily optimize the
-  // main part. But anyway, most current (August 2014) browsers can't handle
-  // strings 1 << 28 chars or longer, so:
-  /*jshint bitwise: false*/
-  if (str.length * count >= 1 << 28) {
-    throw new RangeError('repeat count must not overflow maximum string size');
-  }
-  /*jshint bitwise: true*/
-  let maxCount = str.length * count;
-  count = Math.floor(Math.log(count) / Math.log(2));
-  while (count) {
-    str += str;
-    count--;
-  }
-  str += str.substring(0, maxCount - str.length);
-  return str;
-};
-
-/**
- * String.prototype.padEnd polyfill
- *
- * @param {string} str
- * @param {int} targetLength
- * @param {string} [padString]
- * @returns {string}
- */
-showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
-  'use strict';
-  // eslint-disable-next-line @stylistic/space-infix-ops
-  targetLength = targetLength>>0; //floor if number or convert non-number to 0;
-  padString = String(padString || ' ');
-  if (str.length > targetLength) {
-    return String(str);
-  } else {
-    targetLength = targetLength - str.length;
-    if (targetLength > padString.length) {
-      padString += showdown.helper.repeat(padString, targetLength / padString.length); //append to original to ensure we are longer than needed
-    }
-    return String(str) + padString.slice(0,targetLength);
-  }
-};
-
-/**
- * Unescape HTML entities
- * @param txt
- * @returns {string}
- */
-showdown.helper.unescapeHTMLEntities = function (txt) {
-  'use strict';
-
-  return txt
-    .replace(/&quot;/g, '"')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&');
-};
-
-showdown.helper._hashHTMLSpan = function (html, globals) {
-  return '¨C' + (globals.gHtmlSpans.push(html) - 1) + 'C';
-};
-
-/**
- * Prepends a base URL to relative paths.
- *
- * @param {string} baseUrl the base URL to prepend to a relative path
- * @param {string} url the path to modify, which may be relative
- * @returns {string} the full URL
- */
-showdown.helper.applyBaseUrl = function (baseUrl, url) {
-  // Only prepend if given a base URL and the path is not absolute.
-  if (baseUrl && baseUrl !== '' && !showdown.helper.isAbsolutePath(url)) {
-    let urlResolve = new showdown.helper.URLUtils(url, baseUrl);
-    url = urlResolve.href;
-  }
-
-  return url;
-};
-
-/**
- * Checks if the given path is absolute.
- *
- * @param {string} path the path to test for absolution
- * @returns {boolean} `true` if the given path is absolute, else `false`
- */
-showdown.helper.isAbsolutePath = function (path) {
-  // Absolute paths begin with '[protocol:]//' or '#' (anchors)
-  return /(^([a-z]+:)?\/\/)|(^#)/i.test(path);
-};
-
-// URL schemes allowed by safeMode. Relative URLs, fragments (#...) and
-// protocol-relative URLs (//host) carry no scheme and are always allowed.
-showdown.helper.safeUrlSchemes = ['http', 'https', 'ftp', 'ftps', 'mailto', 'tel', 'sms'];
-
-/**
- * safeMode URL guard: decide whether a link/image destination is safe to emit.
- * Rejects dangerous schemes (javascript:, vbscript:, data:text/html, ...). The
- * scheme is resolved after decoding character references and stripping the
- * characters browsers ignore when parsing a scheme (whitespace and control
- * chars), so evasions like `java&#115;cript:` or `java\tscript:` are caught.
- * `data:` is only permitted when opts.allowDataImage is set and the payload is a
- * `data:image/...` URL (so inline base64 images keep working under safeMode).
- * @param {string} url
- * @param {{allowDataImage?: boolean}} [opts]
- * @returns {boolean}
- */
-showdown.helper.isSafeUrl = function (url, opts) {
-  'use strict';
-  let allowDataImage = !!(opts && opts.allowDataImage);
-  // resolve character references (numeric + named) that could hide the scheme
-  let decoded = showdown.helper.cmDecodeEntities(String(url));
-  // restore showdown's internal escape placeholders (¨E<code>E) to their chars
-  decoded = decoded.replace(/¨E(\d+)E/g, function (wm, code) {
-    return String.fromCharCode(+code);
-  });
-  // remove whitespace/control chars browsers ignore while resolving the scheme
-  // eslint-disable-next-line no-control-regex -- intentionally stripping ASCII control chars used to obfuscate schemes
-  let stripped = decoded.replace(/[\u0000-\u0020\u00a0]+/g, '');
-  let m = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(stripped);
-  if (!m) {
-    // no scheme: relative path, fragment (#...) or protocol-relative (//host)
-    return true;
-  }
-  let scheme = m[1].toLowerCase();
-  if (scheme === 'data') {
-    return allowDataImage && /^data:image\//i.test(stripped);
-  }
-  return showdown.helper.safeUrlSchemes.indexOf(scheme) !== -1;
-};
-
-
-/**
- * Polyfill method for trimStart
- * @param {string} text
- * @returns {string}
- */
-showdown.helper.trimStart = function (text) {
-  return (!String.prototype.trimStart) ?
-    // eslint-disable-next-line no-control-regex -- Unicode whitespace class (incl. \x09-\x0D) in trim polyfill
-    text.replace(/^[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+/, '') :
-    text.trimStart();
-};
-
-/**
- * Polyfill method for trimEnd
- * @param {string} text
- * @returns {string}
- */
-showdown.helper.trimEnd = function (text) {
-  return (!String.prototype.trimEnd) ?
-    // eslint-disable-next-line no-control-regex -- Unicode whitespace class (incl. \x09-\x0D) in trim polyfill
-    text.replace(/[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+$/, '') :
-    text.trimEnd();
-};
-
-
-
-showdown.helper.URLUtils = function (url, baseURL) {
-  const pattern2 = /^([^:/?#]+:)?(?:\/\/(?:([^:@/?#]*)(?::([^:@/?#]*))?@)?(([^:/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
-
-  let m = String(url)
-    .trim()
-    .match(pattern2);
-  if (!m) {
-    throw new RangeError();
-  }
-  let protocol = m[1] || '';
-  let username = m[2] || '';
-  let password = m[3] || '';
-  let host = m[4] || '';
-  let hostname = m[5] || '';
-  let port = m[6] || '';
-  let pathname = m[7] || '';
-  let search = m[8] || '';
-  let hash = m[9] || '';
-  if (baseURL !== undefined) {
-    let base = new showdown.helper.URLUtils(baseURL);
-    let flag = protocol === '' && host === '' && username === '';
-    if (flag && pathname === '' && search === '') {
-      search = base.search;
-    }
-    if (flag && pathname.charAt(0) !== '/') {
-      pathname = (pathname !== '' ? (((base.host !== '' || base.username !== '') && base.pathname === '' ? '/' : '') + base.pathname.slice(0, base.pathname.lastIndexOf('/') + 1) + pathname) : base.pathname);
-    }
-    // dot segments removal
-    let output = [];
-    pathname.replace(/^(\.\.?(\/|$))+/, '')
-      .replace(/\/(\.(\/|$))+/g, '/')
-      .replace(/\/\.\.$/, '/../')
-      .replace(/\/?[^/]*/g, function (p) {
-        if (p === '/..') {
-          output.pop();
-        } else {
-          output.push(p);
-        }
-      });
-    pathname = output.join('').replace(/^\//, pathname.charAt(0) === '/' ? '/' : '');
-    if (flag) {
-      port = base.port;
-      hostname = base.hostname;
-      host = base.host;
-      password = base.password;
-      username = base.username;
-    }
-    if (protocol === '') {
-      protocol = base.protocol;
-    }
-  }
-  this.origin = protocol + (protocol !== '' || host !== '' ? '//' : '') + host;
-  this.href = protocol + (protocol !== '' || host !== '' ? '//' : '') + (username !== '' ? username + (password !== '' ? ':' + password : '') + '@' : '') + host + pathname + search + hash;
-  this.protocol = protocol;
-  this.username = username;
-  this.password = password;
-  this.host = host;
-  this.hostname = hostname;
-  this.port = port;
-  this.pathname = pathname;
-  this.search = search;
-  this.hash = hash;
-};
-
-/**
- *
- * @param {string} url
- * @returns {string}
- */
-showdown.helper.urlASCIIEncoding = function (url) {
-  url = url
-    .replace(/\\/g, '%5C')
-    .replace(/ /g, '%20');
-
-  return url;
 };
 
 /**
@@ -1326,30 +691,7 @@ showdown.helper.urlASCIIEncoding = function (url) {
  * @returns {string}
  */
 showdown.helper.cmDecodeEntities = function (str) {
-  let entities = showdown.helper.htmlEntities || {};
-  function fromCodePoint (cp) {
-    if (cp === 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) {
-      return '�';
-    }
-    try {
-      return String.fromCodePoint(cp);
-    } catch {
-      return '�';
-    }
-  }
-  return str.replace(/&([#0-9a-zA-Z]+);/g, function (wholeMatch, body) {
-    let m;
-    if ((m = /^#([0-9]{1,7})$/.exec(body))) {
-      return fromCodePoint(parseInt(m[1], 10));
-    }
-    if ((m = /^#[xX]([0-9a-fA-F]{1,6})$/.exec(body))) {
-      return fromCodePoint(parseInt(m[1], 16));
-    }
-    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && Object.prototype.hasOwnProperty.call(entities, body)) {
-      return entities[body];
-    }
-    return wholeMatch;
-  });
+  return showdown.helper.decodeCharacterReferences(str, false);
 };
 
 /**
@@ -1391,53 +733,11 @@ showdown.helper.cmEncodeURI = function (uri) {
  * @returns {string}
  */
 showdown.helper.cmNormalizeURL = function (url) {
-  url = url.replace(/¨E(\d+)E/g, function (wholeMatch, code) {
-    return String.fromCharCode(parseInt(code, 10));
-  });
+  url = showdown.helper.unescapePlaceholders(url);
   url = url.replace(/\\([!-/:-@[-`{-~])/g, '$1');
   url = showdown.helper.cmDecodeEntities(url);
   url = showdown.helper.cmEncodeURI(url);
-  return url.replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;');
-};
-
-/**
- * HTML-escape the characters that are significant in element and (double-quoted)
- * attribute contexts: `&`, `<`, `>`, `"`. Ampersand is escaped unconditionally,
- * so callers must pass a decoded/plain string (not one that already contains
- * entities they wish to preserve). Used to harden values that are concatenated
- * straight into generated markup (e.g. document metadata).
- * @param {string} str
- * @returns {string}
- */
-showdown.helper.escapeHTMLEntities = function (str) {
-  'use strict';
-  return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-};
-
-/**
- * makeMarkdown emitters: backslash-escape the characters that would otherwise let
- * an attribute value break out of the generated Markdown syntax and inject new
- * constructs when the Markdown is re-rendered (round-trip injection).
- *
- * - Destination: emitted inside `<...>`, so `\`, `<` and `>` must be escaped.
- * - Title: emitted inside `"..."`, so `\` and `"` must be escaped.
- * - Text (link/image alt): emitted inside `[...]`, so `\`, `[` and `]` must be escaped.
- */
-showdown.helper.escapeMarkdownDestination = function (url) {
-  'use strict';
-  return String(url).replace(/([\\<>])/g, '\\$1');
-};
-showdown.helper.escapeMarkdownTitle = function (title) {
-  'use strict';
-  return String(title).replace(/([\\"])/g, '\\$1');
-};
-showdown.helper.escapeMarkdownText = function (text) {
-  'use strict';
-  return String(text).replace(/([\\[\]])/g, '\\$1');
+  return url.replace(cmGuardedAmpersand, '&amp;');
 };
 
 /**
@@ -1448,42 +748,30 @@ showdown.helper.escapeMarkdownText = function (text) {
  */
 showdown.helper.cmEscapeTitle = function (title) {
   return showdown.helper.cmDecodeEntities(title)
-    .replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;')
+    .replace(cmGuardedAmpersand, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 };
 
 /**
- * Normalize a CommonMark link label for reference matching: resolve backslash
- * escapes (both raw `\x` and showdown's `¨E<code>E` placeholders), collapse
- * internal whitespace runs to a single space, trim and case-fold. The same
- * normalization must be applied to both the definition label and the use label
- * so that they compare equal.
+ * Normalize a CommonMark link label for reference matching: restore showdown's
+ * `¨E<code>E` escape placeholders to their literal character, collapse internal
+ * whitespace runs to a single space, trim and case-fold. The same normalization
+ * must be applied to both the definition label and the use label so that they
+ * compare equal.
  * @param {string} label
  * @returns {string}
  */
 showdown.helper.cmNormalizeLabel = function (label) {
-  // CommonMark matches labels by case-fold + whitespace collapse only; backslash
-  // escapes are NOT resolved (so `[foo\!]` does not match a `[foo!]` definition).
-  return showdown.helper.caseFold(label
-    .replace(/¨E(\d+)E/g, function (wholeMatch, code) {
-      return String.fromCharCode(parseInt(code, 10));
-    })
+  // CommonMark matches labels by case-fold + whitespace collapse only; raw backslash
+  // escapes are NOT resolved (`[foo\!]` does not match a `[foo!]` definition), which is
+  // why the inline link construct passes the raw source label. The `¨E<code>E` replace below only restores
+  // placeholders produced earlier in the pipeline, so definition and use labels that went
+  // through the same escaping normalize identically.
+  return caseFold(showdown.helper.unescapePlaceholders(label)
     .replace(/\s+/g, ' ')
     .trim());
-};
-
-/**
- * Unicode case folding for case-insensitive matching of link reference labels.
- * Uses `toLowerCase().toUpperCase()` (the round-trip used by commonmark.js) so that
- * characters like `ß`, `ẞ` and `SS` all fold together - which plain `toLowerCase`
- * does not (`ẞ` -> `ß`, not `ss`).
- * @param {string} str
- * @returns {string}
- */
-showdown.helper.caseFold = function (str) {
-  return str.toLowerCase().toUpperCase();
 };
 
 /**
@@ -1555,277 +843,17 @@ showdown.helper.cmScanTitle = function (str, j) {
   return null;
 };
 
-/**
- * Clones an object . If the second parameter is true, it deep clones the object.
- * Note: It should not be used in other contexts than showdown, since this algorithm might fail for
- * cyclic references, and dataypes such as Dates, RegExps, Typed Arrays, etc...
- * @param {{}} obj Object to clone
- * @param {boolean} [deep] [optional] If it should deep clone the object. Default is false
- */
-showdown.helper.cloneObject = function (obj, deep) {
-  deep = !!deep;
-  if (obj === null || typeof (obj) !== 'object') {
-    return obj;
-  }
-
-  if (obj instanceof Date) {
-    return new Date(obj);
-  }
-
-  if (!deep) {
-    let newObj = {};
-    for (let key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        newObj[key] = obj[key];
-      }
-    }
-    return newObj;
-  }
-
-  if (typeof structuredClone === 'function') {
-    return structuredClone(obj);
-  } else {
-    // note: This is not a real deep clone, and might work in weird ways if used in a dif
-    //this is costly and should be used sparsly
-    return JSON.parse(JSON.stringify(obj));
-  }
-};
+// noinspection HtmlDeprecatedAttribute,CheckImageSize
 
 /**
- * Populate attributes in output text
- * @param {{}} attributes
- * @returns {string}
+ * @file      helpers/emojis.js
+ * @summary   The `showdown.helper.emojis` lookup table and the lazily-built `emojiReverse` inverse tables.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The (large) emoji shortcode table and the reverse-lookup builder used by the HTML->Markdown converters. `emojiReverse` is an IIFE that only caches on first *call*, so it does not read the table at load time; the whole feature nonetheless lives in one file for cohesion.
  */
-showdown.helper._populateAttributes = function (attributes) {
-  let text = '';
-  if (!attributes || !showdown.helper.isObject(attributes)) {
-    return text;
-  }
-
-  for (let attr in attributes) {
-    if (Object.prototype.hasOwnProperty.call(attributes, attr)) {
-      let key = attr,
-          val;
-
-      // since class is a javascript reserved word we use classes
-      if (attr === 'classes') {
-        key = 'class';
-      }
-      if (attributes[attr] === null || showdown.helper.isUndefined(attributes[attr])) {
-        val = null;
-      } else if (showdown.helper.isArray(attributes[attr])) {
-        val = attributes[attr].join(' ');
-        if (val === '') {
-          val = null;
-        }
-      } else if (showdown.helper.isString(attributes[attr])) {
-        val = attributes[attr];
-      } else if (showdown.helper.isNumber(attributes[attr])) {
-        val = String(attributes[attr]);
-      } else {
-        throw new TypeError('Attribute "' + attr + '" must be either an array or string but ' + typeof attributes[attr] + ' given');
-      }
-      // special attributes
-      switch (attr) {
-        // these attributes don't expect a value. If they are false, they should be removed. If they are true,
-        // they should be present but without any value
-        case 'checked':
-        case 'disabled':
-          if (val === true || val === 'true' || val === attr) {
-            text += ' ' + key;
-          }
-          // if falsy, they are just ignored
-          break;
-
-        // default behavior for all other attributes types
-        default:
-          // Encode any literal double-quote so an attribute value cannot break out of
-          // the quoted attribute. Core callers already pre-escape their values (so this
-          // is a no-op for them); this closes the hole for values injected via an
-          // extension/listener through the setAttributes() event API.
-          text += (val === null) ? '' : ' ' + key + '="' + String(val).replace(/"/g, '&quot;') + '"';
-          break;
-      }
-    }
-  }
-
-  return text;
-};
-
-showdown.helper.normalizeLeadingTabs = function (text) {
-  // 1. (1 to 3 spaces followed by a tab at the start of the line) becomes (1 tab)
-  text = text.replace(/^ {1,3}\t/gm, '\t');
-
-  // 2.
-  return text;
-};
-
-/**
- * CommonMark tab expansion: tabs are expanded to spaces using 4-column tab stops,
- * but only in the part of a line that defines block structure - the leading
- * whitespace plus an optional single list/block-quote marker and the whitespace
- * after it. Tabs in content (after that prefix) are preserved. Lines without a tab
- * in their prefix are returned unchanged.
- * @param {string} text
- * @returns {string}
- */
-showdown.helper.expandCmTabs = function (text) {
-  if (text.indexOf('\t') === -1) {
-    return text;
-  }
-  const prefixRgx = /^[ \t]*(?:(?:[-+*]|\d{1,9}[.)]|>)[ \t]*)?/;
-  const thematicBreakRgx = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/;
-  return text.split('\n').map(function (line) {
-    // a thematic break (e.g. `*\t*\t*`) is not a list item: do not let the marker
-    // branch of the prefix expansion mangle it
-    if (thematicBreakRgx.test(line)) {
-      return line;
-    }
-    let prefix = prefixRgx.exec(line)[0];
-    if (prefix.indexOf('\t') === -1) {
-      return line;
-    }
-    let out = '',
-        col = 0;
-    for (let k = 0; k < prefix.length; ++k) {
-      let ch = prefix.charAt(k);
-      if (ch === '\t') {
-        let adv = 4 - (col % 4);
-        out += new Array(adv + 1).join(' ');
-        col += adv;
-      } else {
-        out += ch;
-        col++;
-      }
-    }
-    return out + line.slice(prefix.length);
-  }).join('\n');
-};
-
-/**
- * Remove one level of line-leading tabs or spaces
- * @param {string} text
- * @returns {string}
- */
-showdown.helper.outdent = function (text) {
-  'use strict';
-  if (!showdown.helper.isString(text)) {
-    return text;
-  }
-  return text.replace(/^(\t| {1,4})/gm, '');
-};
-
-/**
- * Validate options
- * @param {{}} options
- * @returns {{}}
- */
-showdown.helper.validateOptions = function (options) {
-  if (!showdown.helper.isObject(options)) {
-    throw new TypeError('Options must be an object, but ' + typeof options + ' given');
-  }
-
-  let defaultOptions = getDefaultOpts(false);
-
-  for (let opt in defaultOptions) {
-    if (!Object.prototype.hasOwnProperty.call(defaultOptions, opt)) {
-      continue;
-    }
-
-    if (!Object.prototype.hasOwnProperty.call(options, opt)) {
-      options[opt] = defaultOptions[opt].defaultValue;
-    }
-
-    switch (opt) {
-      case 'headerIds':
-        // accepts `false` (or any boolean) or a plain object {prefix, raw}
-        if (typeof options[opt] !== 'boolean' && !showdown.helper.isObject(options[opt])) {
-          throw new TypeError('Option headerIds must be `false` or an object but ' + typeof options[opt] + ' given');
-        }
-        break;
-      default:
-        if (typeof options[opt] !== defaultOptions[opt].type) {
-          throw new TypeError('Option ' + opt + ' must be of type ' + defaultOptions[opt].type + ' but ' + typeof options[opt] + ' given');
-        }
-    }
-  }
-  //options.headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart);
-  return options;
-};
-
-/**
- * POLYFILLS
- */
-// use this instead of builtin is undefined for IE8 compatibility
-if (typeof (console) === 'undefined') {
-  // noinspection JSValidateTypes
-  // eslint-disable-next-line no-global-assign -- deliberate polyfill for environments without console
-  console = {
-    warn: function (msg) {
-      'use strict';
-      alert(msg);
-    },
-    log: function (msg) {
-      'use strict';
-      alert(msg);
-    },
-    error: function (msg) {
-      'use strict';
-      throw msg;
-    }
-  };
-}
-
-// Math.imul() polyfill
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/imul
-if (!Math.imul) {
-  Math.imul = function (opA, opB) {
-    opB |= 0; // ensure that opB is an integer. opA will automatically be coerced.
-    // floating points give us 53 bits of precision to work with plus 1 sign bit
-    // automatically handled for our convienence:
-    // 1. 0x003fffff /*opA & 0x000fffff*/ * 0x7fffffff /*opB*/ = 0x1fffff7fc00001
-    //    0x1fffff7fc00001 < Number.MAX_SAFE_INTEGER /*0x1fffffffffffff*/
-    let result = (opA & 0x003fffff) * opB;
-    // 2. We can remove an integer coersion from the statement above because:
-    //    0x1fffff7fc00001 + 0xffc00000 = 0x1fffffff800001
-    //    0x1fffffff800001 < Number.MAX_SAFE_INTEGER /*0x1fffffffffffff*/
-    if (opA & 0xffc00000 /*!== 0*/) {
-      result += (opA & 0xffc00000) * opB | 0;
-    }
-    return result | 0;
-  };
-}
-
-/**
- * Common regexes.
- * We declare some common regexes to improve performance
- */
-// CommonMark inline raw-HTML grammar (mirrors commonmark.js' HTMLTAG): an open tag,
-// close tag, HTML comment, processing instruction, declaration or CDATA section.
-let cmAttributeName = '[a-zA-Z_:][a-zA-Z0-9:._-]*',
-    cmAttributeValue = '(?:[^"\'=<>`\\x00-\\x20]+|\'[^\']*\'|"[^"]*")',
-    cmAttribute = '(?:\\s+' + cmAttributeName + '(?:\\s*=\\s*' + cmAttributeValue + ')?)',
-    cmOpenTag = '<[A-Za-z][A-Za-z0-9\\-]*' + cmAttribute + '*\\s*/?>',
-    cmCloseTag = '</[A-Za-z][A-Za-z0-9\\-]*\\s*>',
-    cmHTMLComment = '<!-->|<!--->|<!--(?:[^-]|-[^-]|--[^>])*-->',
-    cmProcessingInstruction = '<[?][\\s\\S]*?[?]>',
-    cmDeclaration = '<![A-Za-z]+[^>]*>',
-    cmCDATA = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>';
-
-showdown.helper.regexes = {
-  asteriskDashTildeAndColon: /([*_:~])/g,
-  asteriskDashAndTilde:      /([*_~])/g,
-  // Source string (not a RegExp) for the CommonMark inline raw-HTML grammar.
-  // hashHTMLSpans builds a *fresh* global RegExp from this per call, because that
-  // subparser runs re-entrantly and a shared stateful /g regex would corrupt its
-  // lastIndex between nested invocations.
-  cmHTMLTagSource:           '(?:' + cmOpenTag + '|' + cmCloseTag + '|' + cmHTMLComment +
-                               '|' + cmProcessingInstruction + '|' + cmDeclaration + '|' + cmCDATA + ')',
-  // Open and close tag sources on their own, used for the CommonMark "type 7" HTML
-  // block start condition (a complete tag that fills the line).
-  cmOpenTagSource:           cmOpenTag,
-  cmCloseTagSource:          cmCloseTag
-};
 
 /**
  * EMOJIS LIST
@@ -3649,17 +2677,17 @@ showdown.helper.emojis = {
  */
 showdown.helper.emojiReverse = (function () {
   'use strict';
-  var cache = null;
+  let cache = null;
   return function () {
     if (cache) { return cache; }
-    var images = {},
+    let images = {},
         unicode = {},
         values = [];
-    for (var code in showdown.helper.emojis) {
+    for (let code in showdown.helper.emojis) {
       if (!Object.prototype.hasOwnProperty.call(showdown.helper.emojis, code)) { continue; }
-      var val = showdown.helper.emojis[code];
+      let val = showdown.helper.emojis[code];
       if (/^\s*<img/.test(val)) {
-        var srcMatch = val.match(/src="([^"]*)"/);
+        let srcMatch = val.match(/src="([^"]*)"/);
         if (srcMatch && !Object.prototype.hasOwnProperty.call(images, srcMatch[1])) {
           images[srcMatch[1]] = code;
         }
@@ -3670,7 +2698,7 @@ showdown.helper.emojiReverse = (function () {
     }
     // longest first so e.g. `zombie_woman` (🧟‍♀️) matches before `zombie` (🧟)
     values.sort(function (a, b) { return b.length - a.length; });
-    var escaped = values.map(function (v) {
+    const escaped = values.map(function (v) {
       return v.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     });
     cache = {
@@ -3683,3045 +2711,20 @@ showdown.helper.emojiReverse = (function () {
 })();
 
 /**
- * Created by Estevao on 31-05-2015.
+ * @file      helpers/encodeCode.js
+ * @summary   Entity-encodes and neutralizes Markdown-magic characters inside code spans/blocks.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Encodes `&`/`<`/`>`/`"` and escapes `*_{}[]\=~-` so code interiors render literally. A
+ * character-level pass attached as a `showdown.helper.*` mechanism, not a construct; emits no events.
  */
 
-showdown.Event = class {
-
-  /**
-   * Creates a new showdown Event object
-   * @param {string} name
-   * @param {string} input
-   * @param {{}} [params]
-   * @param {string} params.output
-   * @param {RegExp} params.regexp
-   * @param {{}} params.matches
-   * @param {{}} params.attributes
-   * @param {{}} params.globals
-   * @param {{}} params.options
-   * @param {showdown.Converter} params.converter
-   */
-  constructor (name, input, params) {
-    params = params || {};
-    let {output, regexp, matches, attributes, globals, options, converter} = params;
-    if (!showdown.helper.isString(name)) {
-      if (!showdown.helper.isString(name)) {
-        throw new TypeError('Event.name must be a string but ' + typeof name + ' given');
-      }
-    }
-    this._name = name.toLowerCase();
-    this.input = input;
-    this.output = output || input;
-    this.regexp = regexp || null;
-    this.matches = matches || {};
-    this.attributes = attributes || {};
-    this._globals = globals || {};
-    this._options = showdown.helper.cloneObject(options, true) || {};
-    this._converter = converter || undefined;
-  }
-
-  /** @returns {string} */
-  get name () {
-    return this._name;
-  }
-
-  /** @returns {string} */
-  get input () {
-    return this._input;
-  }
-
-  /** @param {string} value */
-  set input (value) {
-    if (!showdown.helper.isString(value)) {
-      throw new TypeError('Event.input must be a string but ' + typeof value + ' given');
-    }
-    this._input = value;
-  }
-
-  /** @returns {string} */
-  get output () {
-    return this._output;
-  }
-
-  /** @param {string|null} value */
-  set output (value) {
-    if (!showdown.helper.isString(value) && value !== null) {
-      throw new TypeError('Event.output must be a string but ' + typeof value + ' given');
-    }
-    this._output = value;
-  }
-
-  /** @returns {null|RegExp} */
-  get regexp () {
-    return this._regexp;
-  }
-
-  /** @param {null|RegExp} value */
-  set regexp (value) {
-    if (!(value instanceof RegExp) && value !== null) {
-      throw new TypeError('Event.regexp must be a RegExp object (or null) but ' + typeof value + ' given');
-    }
-    this._regexp = value;
-  }
-
-  /** @returns {{}} */
-  get matches () {
-    return this._matches;
-  }
-
-  /** @param {{}}value */
-  set matches (value) {
-    if (typeof value !== 'object') {
-      throw new TypeError('Event.matches must be an object (or null) but ' + typeof value + ' given');
-    }
-    this._matches = {};
-    for (let prop in value) {
-      if (Object.prototype.hasOwnProperty.call(value, prop)) {
-        let descriptor;
-        if (/^_(.+)/.test(prop)) {
-          descriptor = {
-            enumerable: true,
-            configurable: false,
-            writable: false,
-            value: value[prop]
-          };
-        } else {
-          descriptor = {
-            enumerable: true,
-            configurable: false,
-            writable: true,
-            value: value[prop]
-          };
-        }
-        Object.defineProperty(this._matches, prop, descriptor);
-      }
-    }
-  }
-
-  /** @returns {{}} */
-  get attributes () {
-    return this._attributes;
-  }
-
-  /** @param {{}} value */
-  set attributes (value) {
-    if (typeof value !== 'object') {
-      throw new TypeError('Event.attributes must be an object (or null) but ' + typeof value + ' given');
-    }
-    this._attributes = value;
-  }
-
-  /** @param {showdown.Converter} converter */
-  set converter (converter) {
-    this._converter = converter;
-  }
-
-  /** @returns {showdown.Converter} */
-  get converter () {
-    return this._converter;
-  }
-
-  get options () {
-    return this._options;
-  }
-
-  get globals () {
-    return this._globals;
-  }
-  // FLUID INTERFACE
-
-  /**
-   *
-   * @param {string} value
-   * @returns {showdown.Event}
-   */
-  setInput (value) {
-    this.input = value;
-    return this;
-  }
-
-  /**
-   *
-   * @param {string|null} value
-   * @returns {showdown.Event}
-   */
-  setOutput (value) {
-    this.output = value;
-    return this;
-  }
-
-  /**
-   *
-   * @param {RegExp} value
-   * @returns {showdown.Event}
-   */
-  setRegexp (value) {
-    this.regexp = value;
-    return this;
-  }
-
-  /**
-   *
-   * @param {{}}value
-   * @returns {showdown.Event}
-   */
-  setMatches (value) {
-    this.matches = value;
-    return this;
-  }
-
-  /**
-   *
-   * @param {{}}value
-   * @returns {showdown.Event}
-   */
-  setAttributes (value) {
-    this.attributes = value;
-    return this;
-  }
-
-  _setOptions (value) {
-    this._options = value;
-    return this;
-  }
-
-  _setGlobals (value) {
-    this._globals = value;
-    return this;
-  }
-
-  _setConverter (value) {
-    this.converter = value;
-    return this;
-  }
-
-  /**
-   * Legacy: Return the output text
-   * @returns {string}
-   */
-  getText () {
-    return this.output;
-  }
-
-  getMatches () {
-    return this.matches;
-  }
-};
-
-////
-// makehtml/blockGamut.js
-// Copyright (c) 2018 ShowdownJS
-//
-// These are all the transformations that form block-level
-// tags like paragraphs, headers, and list items.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip) {
+// Mechanism (not a construct): a character-level encoding pass. Attached as a
+// showdown.helper (no events) rather than registered as a subparser.
+showdown.helper.encodeCode = function (text) {
   'use strict';
-
-  skip = skip || false;
-
-  let startEvent = new showdown.Event('makehtml.blockGamut.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  if (skip !== 'makehtml.heading.setext') {
-    text = showdown.subParser('makehtml.heading.setext')(text, options, globals);
-  }
-  if (skip !== 'makehtml.heading.atx') {
-    text = showdown.subParser('makehtml.heading.atx')(text, options, globals);
-  }
-
-  // Do Horizontal Rules:
-  if (skip !== 'makehtml.horizontalRule') {
-    text = showdown.subParser('makehtml.horizontalRule')(text, options, globals);
-  }
-
-  text = showdown.subParser('makehtml.list')(text, options, globals);
-  // In CommonMark container mode the converter-level githubCodeBlock pass only claims
-  // indent-0 fences; list items own their indented fences (renderItem already ran
-  // githubCodeBlock on the de-indented content). This pass picks up genuinely top-level
-  // indented (1-3) fences here, after the list parser has claimed item content and before
-  // codeBlock could mistake their content lines for indented code.
-  if (options.cmSpec) {
-    text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
-  }
-  text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
-  text = showdown.subParser('makehtml.table')(text, options, globals);
-  text = showdown.subParser('makehtml.blockquote')(text, options, globals);
-  // The block quote container can reveal top-level content that the earlier codeBlock pass
-  // never saw (e.g. an indented-code line that followed a `>` line and so was not yet at the
-  // start of a block). Re-run codeBlock in container mode so that revealed indented code is
-  // recognized instead of falling through to a paragraph.
-  if (options.cmSpec) {
-    text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
-  }
-
-  // We already ran _HashHTMLBlocks() before, in Markdown(), but that
-  // was to escape raw HTML in the original Markdown source. This time,
-  // we're escaping the markup we've just created, so that we don't wrap
-  // <p> tags around block-level tags.
-  text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals);
-
-  let afterEvent = new showdown.Event('makehtml.blockGamut.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/blockquote.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Transforms MD blockquotes into `<blockquote>` html entities
-//
-// Markdown uses email-style > characters for blockquoting.
-// Markdown allows you to be lazy and only put the > before the first line of a hard-wrapped paragraph but
-// it looks best if the text is hard wrapped with a > before every line.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.blockquote', function (text, options, globals) {
-  'use strict';
-
-  // Pathologically nested block quotes (e.g. `> > > …` thousands deep) recurse once per
-  // level through blockGamut, which exhausts the call stack in the default path and blows
-  // up super-linearly under cmSpec. Refuse to descend past a sane nesting depth; beyond it
-  // the surplus `>` markers simply render as literal text. The deepest nesting in the whole
-  // test corpus is 3, so this bound never affects real documents.
-  const maxNestingDepth = 25;
-  if ((globals.blockquoteDepth || 0) >= maxNestingDepth) {
-    return text;
-  }
-
-  let startEvent = new showdown.Event('makehtml.blockquote.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  if (options.cmSpec) {
-    text = parseCmBlockquotes(text);
-  } else {
-    let pattern = /(^ {0,3}>[ \t]?.+\n(.+\n)*\n*)+/gm;
-
-    if (options.splitAdjacentBlockquotes) {
-      pattern = /^ {0,3}>[\s\S]*?\n\n/gm;
-    }
-
-    text = text.replace(pattern, function (bq) {
-      let wholeMatch = bq;
-      bq = bq.replace(/^[ \t]*>[ \t]?/gm, ''); // trim one level of quoting
-      bq = bq.replace(/^[ \t]+$/gm, ''); // trim whitespace-only lines
-      return renderBlockquote(bq, wholeMatch, pattern);
-    });
-  }
-
-  let afterEvent = new showdown.Event('makehtml.blockquote.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-
-  /**
-   * Render one block quote's already-stripped content into a hashed
-   * `<blockquote>` element, dispatching the capture/hash lifecycle events.
-   * @param {string} bq the block-quote content with markers already removed
-   * @param {string} wholeMatch the original matched text (for the capture event)
-   * @param {RegExp|null} pattern the matching pattern (event metadata only)
-   * @returns {string}
-   */
-  function renderBlockquote (bq, wholeMatch, pattern) {
-    let otp,
-        attributes;
-
-    let captureStartEvent = new showdown.Event('makehtml.blockquote.onCapture', bq);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern || null)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        blockquote: bq
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-
-    } else {
-      bq = captureStartEvent.matches.blockquote;
-      bq = showdown.subParser('makehtml.githubCodeBlock')(bq, options, globals);
-      // CommonMark container mode: run the source-level leaf-block passes on the quote's
-      // own (marker-stripped) content, mirroring the converter pipeline, so an HTML block
-      // or a link reference definition nested inside the block quote is recognized in the
-      // quote's context instead of only at the top level.
-      if (options.cmSpec) {
-        bq = showdown.subParser('makehtml.hashHTMLBlocks')(bq, options, globals, true);
-        bq = showdown.subParser('makehtml.stripLinkDefinitions')(bq, options, globals);
-      }
-      globals.blockquoteDepth = (globals.blockquoteDepth || 0) + 1;
-      bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
-      bq = showdown.subParser('makehtml.paragraphs')(bq, options, globals);
-      globals.blockquoteDepth--;
-      bq = bq.replace(/(^|\n)/g, '$1  ');
-      // These leading spaces screw with <pre> content, so we need to fix that:
-      bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wm, m1) {
-        return m1.replace(/^ {2}/mg, '');
-      });
-      attributes = captureStartEvent.attributes;
-      otp = '<blockquote' + showdown.helper._populateAttributes(attributes) + '>\n' +  bq + '\n</blockquote>';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.blockquote.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
-  }
-
-  /**
-   * CommonMark block-quote container parsing (spec section 5.1). Scans line by
-   * line: a block quote consumes consecutive lines that carry the `>` marker
-   * (an optional single space after `>` is stripped), plus lazy paragraph
-   * continuation lines (markerless non-blank text that follows a paragraph line).
-   * A blank line, or a markerless line that cannot lazily continue a paragraph,
-   * ends the block quote; two block quotes separated by a blank line are distinct.
-   * @param {string} str
-   * @returns {string}
-   */
-  function parseCmBlockquotes (str) {
-    let marker = /^ {0,3}>/,
-        lines = str.split('\n'),
-        out = [],
-        i = 0,
-        n = lines.length;
-
-    // a markerless line that can lazily continue a paragraph: non-blank text that
-    // does not itself begin a block which would interrupt the paragraph
-    function isLazyParagraph (line) {
-      if (line.trim() === '') { return false; }
-      return !(
-        marker.test(line) ||                                // block quote
-        /^ {0,3}#{1,6}(?:[ \t]|$)/.test(line) ||             // ATX heading
-        /^ {0,3}(?:```|~~~)/.test(line) ||                   // fenced code
-        /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(line) ||// thematic break
-        /^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/.test(line)       // list item
-      );
-    }
-
-    // true if, after peeling nested block-quote/list markers, the innermost block
-    // on this line is an open paragraph - so a following markerless line may lazily
-    // continue it (laziness propagates through container nesting)
-    function isParagraphLine (stripped) {
-      let s = stripped,
-          indentedCode = /^ {4}/.test(stripped),
-          m;
-      while ((m = s.match(/^ {0,3}>[ \t]?/) || s.match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/))) {
-        s = s.slice(m[0].length);
-        indentedCode = false; // leading spaces after a marker are container indent
-      }
-      if (s.trim() === '' || indentedCode) { return false; }
-      return !(
-        /^ {0,3}(?:```|~~~)/.test(s) ||
-        /^ {0,3}#{1,6}(?:[ \t]|$)/.test(s) ||
-        /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(s)
-      );
-    }
-
-    while (i < n) {
-      if (!marker.test(lines[i])) {
-        out.push(lines[i]);
-        i++;
-        continue;
-      }
-      let bqLines = [],
-          prevParagraph = false;
-      while (i < n) {
-        let line = lines[i];
-        if (marker.test(line)) {
-          let stripped = line.replace(/^ {0,3}>[ \t]?/, '');
-          bqLines.push(stripped);
-          prevParagraph = isParagraphLine(stripped);
-          i++;
-        } else if (prevParagraph && isLazyParagraph(line)) {
-          // CommonMark: a setext underline may not be a lazy continuation line. Escape the
-          // leading marker so the recursive setext parser can't claim it as an underline;
-          // encodeBackslashEscapes restores the literal `=`/`-` downstream.
-          if (/^ {0,3}(?:=+|-+)[ \t]*$/.test(line)) {
-            line = line.replace(/^( {0,3})([=-])/, '$1\\$2');
-          }
-          bqLines.push(line);
-          prevParagraph = isParagraphLine(line);
-          i++;
-        } else {
-          break; // blank line or non-continuing line ends the block quote
-        }
-      }
-      // trailing newline mirrors the original regex match (which ended in \n) so the
-      // recursive block parsers see a complete final line
-      let content = bqLines.join('\n') + '\n';
-      out.push(renderBlockquote(content, content, null));
-    }
-    return out.join('\n');
-  }
-});
-
-////
-// makehtml/cmInline.js
-// Copyright (c) 2024 ShowdownJS
-//
-// Unified CommonMark inline parser (spec section 6).
-//
-// Invoked only when the `commonmarkInline` option is enabled. It resolves code
-// spans, backslash escapes, character references, autolinks, raw HTML, links,
-// images and emphasis together on a single delimiter stack, so the cross-construct
-// precedence rules CommonMark requires (a link cannot contain a link; code spans /
-// autolinks / raw HTML bind before links; emphasis interleaves with link brackets)
-// are expressible - which the sequential per-construct passes could not.
-//
-// It is built on the same doubly-linked node list + delimiter stack + processEmphasis
-// design used by makehtml.emphasisAndStrong's CommonMark path.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-/* jshint esnext: false, esversion: 9 */
-
-showdown.subParser('makehtml.cmInline', function (text, options, globals) {
-  'use strict';
-
-  // ASCII punctuation, used by the flanking rules and backslash-escape check.
-  // Declared before parseCmInline runs (const is in the temporal dead zone until here).
-  const asciiPunct = /[!-/:-@[-`{-~]/;
-
-  // Sticky regexes anchored at the scan cursor (lastIndex) so the recognizers never
-  // slice the tail of the string - keeps the tokenizer linear on `<`/`&`-heavy input.
-  // Reused across calls; each recognizer sets lastIndex before exec and the parse is
-  // not re-entrant within a single string.
-  const reEntity = /&(?:#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]*);/y;
-  // eslint-disable-next-line no-control-regex -- CommonMark autolinks exclude control chars (\x00-\x20) per spec
-  const reAutoUri = /<[A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*>/y;
-  // Showdown extension: <www...> angle autolinks (cmark-gfm does not autolink these, but the
-  // explicit <> is unambiguous user intent). Single variable class → linear / ReDoS-safe.
-  // eslint-disable-next-line no-control-regex -- same control-char exclusion as reAutoUri
-  const reAutoWww = /<www\.[^<>\x00-\x20]+>/y;
-  const reAutoEmail = /<[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*>/y;
-  const reRawHtml = new RegExp('(?:' + showdown.helper.regexes.cmHTMLTagSource + ')', 'y');
-
-  let startEvent = new showdown.Event('makehtml.cmInline.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  text = parseCmInline(text);
-
-  // ghMentions and simplifiedAutoLink (GFM extensions) are applied to the serialized
-  // inline output and to emphasis inner content (see parseCmInline) so URLs and mentions
-  // inside emphasis are linked too. Real links, images and code spans are hashed by
-  // parseCmInline, so they are protected from these regexes. Copied from link.js;
-  // the writeAnchorTag / parseMail helpers below are too. TODO: share with link.js.
-  text = applyGfmInlineLinks(text);
-
-  function applyGfmInlineLinks (text) {
-    // 5. Handle GithubMentions (if option is enabled)
-    if (options.ghMentions) {
-      let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
-      text = text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
-        // bail if the mentions was escaped
-        if (escape === '\\') {
-          return st + mentions;
-        }
-        // check if options.ghMentionsLink is a string
-        // TODO Validation should be done at initialization not at runtime
-        if (!showdown.helper.isString(options.ghMentionsLink)) {
-          throw new Error('ghMentionsLink option must be a string');
-        }
-        let url = options.ghMentionsLink.replace(/\{u}/g, username);
-        return st + writeAnchorTag ('reference', ghMentionsRegex, wholeMatch, mentions, null, url);
-      });
-    }
-
-    // 8. Handle naked links (if option is enabled)
-    if (options.simplifiedAutoLink) {
-      // 8.1. Check for naked URLs
-      // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
-      // An explicit scheme (http/https/ftp) does not require the host to contain a dot;
-      // a `www.` shortcut does (and is domain-validated below).
-      let nakedUrlRegex = /([_*~]*?)((?:(?:https?|ftp):\/\/[^\s<>"'`´]+|www\.[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*))\1/gi;
-      text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url, offset, fullText) {
-        let isWww = /^www\./i.test(url);
-        // GFM boundary rule: a "www." autolink (unlike a scheme URL) is not recognized when
-        // preceded by "<". By this pass "<" has been escaped to "&lt;", so a www match sitting
-        // right after it (e.g. the interior of a malformed <www.x.com foo> the angle recognizer
-        // could not consume) is left untouched — matching cmark-gfm, which links <https://x bim>
-        // but not <www.x bim>.
-        let urlStart = offset + leadingMDChars.length;
-        if (isWww && fullText.substring(urlStart - 4, urlStart) === '&lt;') { return wholeMatch; }
-        // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
-        const len = url.length;
-        let suffix = '';
-
-        for (let i = len - 1; i >= 0; --i) {
-          let char = url.charAt(i);
-          if (/[_*~,;:.!?]/.test(char)) {
-            // it's a punctuation char so we remove it from the url
-            url = url.slice(0, -1);
-            // and prepend it to the suffix
-            suffix = char + suffix;
-          } else if (/[)\]]/.test(char)) {
-            // it's a parenthesis so we need to check for "balance" (kinda)
-            let opPar, clPar;
-            if (/\)/.test(char)) {
-              // it's a curved parenthesis
-              opPar = url.match(/\(/g) || [];
-              clPar = url.match(/\)/g);
-            } else {
-              // it's a squared parenthesis
-              opPar = url.match(/\[/g) || [];
-              clPar = url.match(/]/g);
-            }
-            if (opPar.length < clPar.length) {
-              // there are more closing Parenthesis than opening so chop it!!!!!
-              url = url.slice(0, -1);
-              // and prepend it to the suffix
-              suffix = char + suffix;
-            } else {
-              // it's (kinda) balanced so our work is done
-              break;
-            }
-          } else {
-            // it's not a punctuation or a parenthesis so our work is done
-            break;
-          }
-        }
-
-        // GFM: a trailing ";" that completes an entity-reference-like "&name" is excluded
-        // from the link, so move the whole "&name;" into the suffix.
-        if (suffix.charAt(0) === ';') {
-          let entity = url.match(/&(?:amp;)?[a-z\d]+$/i);
-          if (entity) {
-            url = url.slice(0, -entity[0].length);
-            suffix = entity[0] + suffix;
-          }
-        }
-
-        // GFM: "<" terminates the link. By this pass it has already been escaped to "&lt;"
-        // (and ">" to "&gt;"), so split there and keep the remainder as plain text.
-        let ltMatch = url.match(/&(?:lt|gt);/);
-        if (ltMatch) {
-          let at = url.indexOf(ltMatch[0]);
-          suffix = url.slice(at) + suffix;
-          url = url.slice(0, at);
-        }
-
-        // GFM: the last two labels of the host may not contain "_"; otherwise it is not a
-        // valid autolink.
-        if (!validAutolinkHost(url, isWww)) {
-          return wholeMatch;
-        }
-
-        // we copy the treated url to the text variable
-        let txt = url;
-        // finally, if it's a www shortcut, we prepend http(s)
-        // noinspection HttpUrlsUsage
-        url = isWww ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
-        // GFM: percent-encode non-ASCII characters in the href (the display text keeps the
-        // literal characters)
-        // eslint-disable-next-line no-control-regex -- \x00-\x7F is the ASCII range
-        url = url.replace(/[^\x00-\x7F]+/g, function (s) { return encodeURI(s); });
-
-        // url part is done so let's take care of text now
-        // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
-        txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-
-        // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
-        // we consumed those characters in the regexp
-        return leadingMDChars +
-          writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
-          suffix +
-          leadingMDChars;
-      });
-
-      // 8.2. Check for naked mail (GFM extended email autolink).
-      let localPart = '[A-Za-z\\d._+-]+',
-          domainPart = '[A-Za-z\\d_-]+(?:\\.[A-Za-z\\d_-]+)*';
-
-      // A scheme is only recognised when it is not part of a preceding word (so `mmmmailto:`
-      // does not count) — any non-alphanumeric character (including `/`) is a valid boundary.
-      let schemeBoundary = '(^|[^A-Za-z\\d])';
-
-      // 8.2.1. `xmpp:` addresses keep their scheme and an optional `/resource`.
-      let xmppMailRegex = new RegExp(schemeBoundary + '(xmpp:)(' + localPart + '@' + domainPart + ')(\\/[A-Za-z\\d._-]*)?', 'gi');
-      text = text.replace(xmppMailRegex, function (wholeMatch, lead, scheme, addr, resource) {
-        resource = resource || '';
-        let trail = '',
-            body = resource || addr;
-        while (/[.,;:!?]$/.test(body)) {
-          trail = body.slice(-1) + trail;
-          body = body.slice(0, -1);
-        }
-        if (resource) { resource = body; } else { addr = body; }
-        if (!validMailAddr(addr)) { return wholeMatch; }
-        let target = 'xmpp:' + addr + resource;
-        return lead + writeAnchorTag ('autoLink', xmppMailRegex, wholeMatch, target, null, target) + trail;
-      });
-
-      // 8.2.2. `mailto:` addresses keep their scheme but never carry a path.
-      let mailtoRegex = new RegExp(schemeBoundary + '(mailto:)(' + localPart + '@' + domainPart + ')', 'gi');
-      text = text.replace(mailtoRegex, function (wholeMatch, lead, scheme, addr) {
-        let trail = '';
-        while (/[.,;:!?]$/.test(addr)) {
-          trail = addr.slice(-1) + trail;
-          addr = addr.slice(0, -1);
-        }
-        if (!validMailAddr(addr)) { return wholeMatch; }
-        let target = 'mailto:' + addr;
-        return lead + writeAnchorTag ('autoLink', mailtoRegex, wholeMatch, target, null, target) + trail;
-      });
-
-      // 8.2.3. Bare addresses become mailto: links. The address must be preceded by the
-      // string start or a character that cannot be part of the local-part (this also keeps
-      // us out of hash placeholders like the `¨E43E` produced for an escaped char).
-      let nakedMailRegex = new RegExp('(^|[^A-Za-z\\d._+\\-\\u00a8])(' + localPart + '@' + domainPart + ')', 'g');
-      text = text.replace(nakedMailRegex, function (wholeMatch, lead, addr) {
-        if (!validMailAddr(addr)) { return wholeMatch; }
-        const m = parseMail(addr);
-        return lead + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
-      });
-    }
-    return text;
-  }
-
-  let afterEvent = new showdown.Event('makehtml.cmInline.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-
-  // ---- shared character helpers (flanking rules) -------------------------------
-
-  function isPunct (ch) {
-    return ch !== undefined && (asciiPunct.test(ch) || /[\p{P}\p{S}]/u.test(ch));
-  }
-  function isWhitespace (ch) {
-    return ch === undefined || /\s/.test(ch) || /\p{Z}/u.test(ch);
-  }
-  function isEscapable (ch) {
-    return ch !== undefined && asciiPunct.test(ch);
-  }
-
-  // HTML-escape a run of plain text (entities already resolved to characters)
-  function escapeText (str) {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  function hashSpan (html) {
-    return showdown.helper._hashHTMLSpan(html, globals);
-  }
-
-  // resolve backslash escapes of ASCII punctuation to the literal character
-  function resolveBackslash (str) {
-    return str.replace(/\\([!-/:-@[-`{-~])/g, '$1');
-  }
-
-  // ---- main parse --------------------------------------------------------------
-
-  function parseCmInline (str) {
-    let head = null,
-        tail = null,
-        delimiters = null, // top of emphasis delimiter stack
-        brackets = null,   // top of bracket (link/image) stack
-        // backtick runs of these lengths have no closer in the rest of the string;
-        // future opens of the same length fail immediately (keeps backticks linear)
-        backtickNoCloser = {};
-
-    function appendNode (node) {
-      node.prev = tail;
-      node.next = null;
-      node.raw = node.raw || false;
-      if (tail) { tail.next = node; } else { head = node; }
-      tail = node;
-      return node;
-    }
-    function appendText (literal) {
-      return appendNode({type: 'text', literal: literal});
-    }
-    // append already-final HTML that must not be escaped at render time
-    function appendRaw (html) {
-      return appendNode({type: 'text', literal: html, raw: true});
-    }
-
-    const len = str.length;
-    let i = 0;
-    while (i < len) {
-      let ch = str.charAt(i);
-
-      if (ch === '\n') {
-        // hard line break: two+ trailing spaces or a backslash before the newline.
-        // The <br /> is hashed so the later encodeAmpsAndAngles pass leaves it intact.
-        let n = tail;
-        if (n && n.type === 'text' && !n.raw && / {2,}$/.test(n.literal)) {
-          n.literal = n.literal.replace(/ +$/, '');
-          appendRaw(hashSpan('<br />') + '\n');
-        } else if (n && n.type === 'text' && !n.raw && /\\$/.test(n.literal)) {
-          n.literal = n.literal.slice(0, -1);
-          appendRaw(hashSpan('<br />') + '\n');
-        } else {
-          if (n && n.type === 'text' && !n.raw) { n.literal = n.literal.replace(/ +$/, ''); }
-          appendText('\n');
-        }
-        i++;
-        continue;
-      }
-
-      if (ch === '\\') {
-        let next = str.charAt(i + 1);
-        if (next === '\n') {
-          appendRaw(hashSpan('<br />') + '\n');
-          i += 2;
-        } else if (next === '¨' && str.charAt(i + 2) === 'D') {
-          // escaped `$` (the converter hashes `$` to the `¨D` placeholder early)
-          appendText('¨D');
-          i += 3;
-        } else if (isEscapable(next)) {
-          // Emit ordinary escaped punctuation as a Showdown escape placeholder (¨E<code>E)
-          // so the later passes (ghMentions, simplifiedAutoLink, emoji, strikethrough,
-          // ellipsis, ...) don't treat the char as markup - e.g. `\@user` must not become a
-          // mention. unescapeSpecialChars restores the literal char at the end of the
-          // pipeline. HTML-special chars stay literal so escapeText turns them into entities
-          // (&amp; &lt; &gt; &quot;); placeholders would otherwise round-trip to raw `<`/`&`.
-          if (next === '&' || next === '<' || next === '>' || next === '"') {
-            appendText(next);
-          } else {
-            appendText('¨E' + next.charCodeAt(0) + 'E');
-          }
-          i += 2;
-        } else {
-          appendText('\\');
-          i++;
-        }
-        continue;
-      }
-
-      if (ch === '`') {
-        let res = parseBacktick(str, i, backtickNoCloser);
-        if (res) {
-          appendRaw(res.html); i = res.end;
-        } else {
-          let e = skipRun(str, i, '`'); appendText(str.slice(i, e)); i = e;
-        }
-        continue;
-      }
-
-      if (ch === '<') {
-        let res = parseAutolink(str, i) || parseRawHTML(str, i);
-        if (res) { appendRaw(res.html); i = res.end; continue; }
-        appendText('<');
-        i++;
-        continue;
-      }
-
-      if (ch === '&') {
-        reEntity.lastIndex = i;
-        let m = reEntity.exec(str);
-        if (m) {
-          let decoded = showdown.helper.cmDecodeEntities(m[0]);
-          if (decoded !== m[0]) { appendText(decoded); i += m[0].length; continue; }
-        }
-        appendText('&');
-        i++;
-        continue;
-      }
-
-      if (ch === '!' && str.charAt(i + 1) === '[') {
-        let node = appendText('![');
-        pushBracket(node, true, i + 2);
-        i += 2;
-        continue;
-      }
-      if (ch === '[') {
-        let node = appendText('[');
-        pushBracket(node, false, i + 1);
-        i++;
-        continue;
-      }
-      if (ch === ']') {
-        i = parseCloseBracket(str, i);
-        continue;
-      }
-
-      if (ch === '*' || ch === '_') {
-        let start = i;
-        while (i < len && str.charAt(i) === ch) { ++i; }
-        let run = str.slice(start, i),
-            before = (start === 0) ? undefined : str.charAt(start - 1),
-            after = (i >= len) ? undefined : str.charAt(i);
-        // `$` and `¨` are swapped for the two-char placeholders `¨D`/`¨T` before inline
-        // parsing (see converter.js) and only restored at the end. Resolve them here so
-        // flanking sees the real adjacent character rather than the placeholder's
-        // trailing/leading letter (e.g. the `D` of `¨D` would otherwise read as a letter).
-        if ((before === 'D' || before === 'T') && str.charAt(start - 2) === '¨') {
-          before = (before === 'D') ? '$' : '¨';
-        }
-        if (after === '¨' && (str.charAt(i + 1) === 'D' || str.charAt(i + 1) === 'T')) {
-          after = (str.charAt(i + 1) === 'D') ? '$' : '¨';
-        }
-        let beforeWs = isWhitespace(before),
-            afterWs = isWhitespace(after),
-            beforePt = isPunct(before),
-            afterPt = isPunct(after),
-            leftFlanking = !afterWs && (!afterPt || beforeWs || beforePt),
-            rightFlanking = !beforeWs && (!beforePt || afterWs || afterPt),
-            canOpen, canClose;
-        if (ch === '_') {
-          canOpen = leftFlanking && (!rightFlanking || beforePt);
-          canClose = rightFlanking && (!leftFlanking || afterPt);
-        } else {
-          canOpen = leftFlanking;
-          canClose = rightFlanking;
-        }
-        let node = appendNode({type: 'delim', cc: ch, literal: run, numdelims: run.length, origdelims: run.length, canOpen: canOpen, canClose: canClose});
-        node.delimPrev = delimiters;
-        node.delimNext = null;
-        if (delimiters) { delimiters.delimNext = node; }
-        delimiters = node;
-        continue;
-      }
-
-      // plain text run up to the next significant char
-      let start = i;
-      while (i < len && '\n\\`<&![]*_'.indexOf(str.charAt(i)) === -1) { ++i; }
-      if (i === start) {
-        appendText(str.charAt(i)); i++;
-      } else {
-        appendText(str.slice(start, i));
-      }
-    }
-
-    processEmphasis(null);
-
-    // render the node list
-    let out = '';
-    for (let n = head; n !== null; n = n.next) {
-      out += n.raw ? n.literal : escapeText(n.literal);
-    }
-    return out;
-
-    // ---- bracket stack ---------------------------------------------------------
-
-    function pushBracket (node, image, sourceStart) {
-      brackets = {
-        node: node,
-        prev: brackets,
-        prevDelim: delimiters,
-        image: image,
-        active: true,
-        sourceStart: sourceStart // index in `str` where the label text begins
-      };
-    }
-
-    function parseCloseBracket (s, idx) {
-      let opener = brackets;
-      if (opener === null) { appendText(']'); return idx + 1; }
-      if (!opener.active) { brackets = opener.prev; appendText(']'); return idx + 1; }
-
-      // try to parse the destination/title or a reference that follows the `]`
-      let dest = null, title = null, width = null, height = null, matched = false, endIdx = idx + 1;
-
-      if (s.charAt(idx + 1) === '(') {
-        let j = idx + 2, n2 = s.length, isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; };
-        while (j < n2 && isWs(s.charAt(j))) { j++; }
-        let d = showdown.helper.cmScanDestination(s, j);
-        if (d) {
-          j = d.end;
-          // parseImgDimensions (Showdown extension, not CommonMark): an optional
-          // ` =WxH` between destination and title. The `=WxH` is always consumed here so
-          // it never leaks into the output; buildImage only renders it when the option is
-          // on. Regex fragment copied from the inline image regex in image.js.
-          let dimStart = j;
-          while (dimStart < n2 && isWs(s.charAt(dimStart))) { dimStart++; }
-          if (dimStart > j && s.charAt(dimStart) === '=') {
-            let dim = /^=([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4})/.exec(s.slice(dimStart));
-            if (dim) {
-              width = dim[1];
-              height = dim[2];
-              j = dimStart + dim[0].length;
-            }
-          }
-          let hadWs = false;
-          while (j < n2 && isWs(s.charAt(j))) { hadWs = true; j++; }
-          let tc = s.charAt(j), t = null;
-          if (hadWs && (tc === '"' || tc === '\'' || tc === '(')) {
-            t = showdown.helper.cmScanTitle(s, j);
-            if (t) { j = t.end; }
-          }
-          while (j < n2 && isWs(s.charAt(j))) { j++; }
-          if (s.charAt(j) === ')') {
-            dest = d.url;
-            title = t ? t.title : null;
-            matched = true;
-            endIdx = j + 1;
-          }
-        }
-      }
-
-      if (!matched) {
-        // reference: full [label], collapsed [] or shortcut. Use the RAW source label
-        // (backslash escapes intact) - CommonMark matches labels by case-fold +
-        // whitespace only, so `[foo\!]` must not match a `[foo!]` definition.
-        let labelText = s.slice(opener.sourceStart, idx),
-            refKey = null;
-        if (s.charAt(idx + 1) === '[') {
-          let close = findRefClose(s, idx + 2);
-          if (close !== -1) {
-            let inner = s.slice(idx + 2, close);
-            refKey = inner.trim() === '' ? labelText : inner;
-            endIdx = close + 1;
-          }
-        } else {
-          refKey = labelText; // shortcut
-          endIdx = idx + 1;
-        }
-        if (refKey !== null) {
-          let key = showdown.helper.cmNormalizeLabel(refKey);
-          if (key !== '' && !showdown.helper.isUndefined(globals.gUrls[key])) {
-            dest = globals.gUrls[key];
-            title = globals.gTitles[key];
-            // parseImgDimensions: reference-style dimensions stored by stripLinkDefinitions
-            if (globals.gDimensions[key]) {
-              width = globals.gDimensions[key].width;
-              height = globals.gDimensions[key].height;
-            }
-            matched = true;
-          }
-        }
-      }
-
-      if (!matched) { brackets = opener.prev; appendText(']'); return idx + 1; }
-
-      // process emphasis on the delimiters inside the brackets
-      processEmphasis(opener.prevDelim);
-
-      // collect and render the inner nodes
-      let innerHTML = renderNodes(opener.node.next, null);
-
-      let otpHTML;
-      if (opener.image) {
-        otpHTML = buildImage(innerHTML, dest, title, width, height);
-      } else {
-        otpHTML = buildLink(innerHTML, dest, title);
-      }
-
-      // drop the opener node and everything after it, append the built span
-      removeFrom(opener.node);
-      appendRaw(otpHTML);
-      // remove any emphasis delimiters that belonged to the consumed range
-      pruneDelimiters(opener.prevDelim);
-
-      if (!opener.image) {
-        // a link cannot be nested in another link
-        for (let b = opener.prev; b !== null; b = b.prev) {
-          if (!b.image) { b.active = false; }
-        }
-      }
-      brackets = opener.prev;
-      return endIdx;
-    }
-
-    // ---- rendering helpers -----------------------------------------------------
-
-    // concatenate the rendered HTML of nodes [from .. to)
-    function renderNodes (from, to) {
-      let out = '';
-      for (let n = from; n !== null && n !== to; n = n.next) {
-        out += n.raw ? n.literal : escapeText(n.literal);
-      }
-      return out;
-    }
-    function removeFrom (node) {
-      tail = node.prev;
-      if (tail) { tail.next = null; } else { head = null; }
-    }
-
-    function normalizeDest (dest) {
-      dest = resolveBackslash(dest);
-      dest = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, dest);
-      return showdown.helper.cmNormalizeURL(dest);
-    }
-    function buildTitleAttr (title) {
-      if (title === null || title === undefined) { return ''; }
-      return ' title="' + showdown.helper.cmEscapeTitle(resolveBackslash(title)) + '"';
-    }
-
-    function buildLink (innerHTML, dest, title) {
-      // safeMode: neutralize dangerous URL schemes (javascript:, vbscript:, data:, ...)
-      let href = (options.safeMode && !showdown.helper.isSafeUrl(dest)) ? '' : normalizeDest(dest);
-      let attrs = ' href="' + href + '"' + buildTitleAttr(title);
-      innerHTML = showdown.subParser('makehtml.hardLineBreaks')(innerHTML, options, globals);
-      return hashSpan('<a' + attrs + '>' + innerHTML + '</a>');
-    }
-
-    function buildImage (innerHTML, dest, title, width, height) {
-      // alt text is the plain-text rendering of the label (markup stripped); the inner
-      // spans are hashed, so restore them before flattening
-      let alt = showdown.subParser('makehtml.unhashHTMLSpans')(innerHTML, options, globals)
-        .replace(/<img\b[^>]*?\salt="([^"]*)"[^>]*?\/?>/g, '$1')
-        .replace(/<[^>]*>/g, '');
-      // safeMode: neutralize dangerous URL schemes; data:image/* stays allowed
-      let src = (options.safeMode && !showdown.helper.isSafeUrl(dest, {allowDataImage: true})) ? '' : normalizeDest(dest);
-      let attrs = ' src="' + src + '" alt="' + alt + '"' + buildTitleAttr(title);
-      // width/height gating copied from writeImageTag in image.js (parseImgDimensions)
-      if (options.parseImgDimensions) {
-        if (width)  { attrs += ' width="'  + (width  === '*' ? 'auto' : width)  + '"'; }
-        if (height) { attrs += ' height="' + (height === '*' ? 'auto' : height) + '"'; }
-      }
-      return hashSpan('<img' + attrs + ' />');
-    }
-
-    // ---- emphasis (CommonMark reference algorithm) -----------------------------
-
-    function removeDelimiter (d) {
-      if (d.delimPrev) { d.delimPrev.delimNext = d.delimNext; }
-      if (d.delimNext) { d.delimNext.delimPrev = d.delimPrev; } else { delimiters = d.delimPrev; }
-    }
-    function insertAfter (node, newNode) {
-      newNode.prev = node;
-      newNode.next = node.next;
-      if (node.next) { node.next.prev = newNode; } else { tail = newNode; }
-      node.next = newNode;
-    }
-    // drop every delimiter at or above `bottom` from the stack (after a bracket span
-    // has consumed the nodes they pointed at)
-    function pruneDelimiters (bottom) {
-      let d = delimiters;
-      while (d !== null && d !== bottom) {
-        let p = d.delimPrev;
-        removeDelimiter(d);
-        d = p;
-      }
-    }
-
-    function processEmphasis (stackBottom) {
-      let openersBottom = {
-        '_': [stackBottom, stackBottom, stackBottom],
-        '*': [stackBottom, stackBottom, stackBottom]
-      };
-
-      let closer = delimiters;
-      while (closer !== null && closer.delimPrev !== null && closer.delimPrev !== stackBottom) {
-        closer = closer.delimPrev;
-      }
-      if (closer === stackBottom) { closer = (stackBottom === null) ? closer : stackBottom.delimNext; }
-
-      while (closer !== null) {
-        if (!closer.canClose) { closer = closer.delimNext; continue; }
-        let opener = closer.delimPrev,
-            openerFound = false,
-            oddMatch;
-        while (opener !== null && opener !== stackBottom && opener !== openersBottom[closer.cc][closer.origdelims % 3]) {
-          oddMatch = (closer.canOpen || opener.canClose) &&
-                     (closer.origdelims % 3 !== 0) &&
-                     ((opener.origdelims + closer.origdelims) % 3 === 0);
-          if (opener.cc === closer.cc && opener.canOpen && !oddMatch) { openerFound = true; break; }
-          opener = opener.delimPrev;
-        }
-        let oldCloser = closer;
-
-        if (openerFound) {
-          let use = (opener.numdelims >= 2 && closer.numdelims >= 2) ? 2 : 1,
-              tagOpen = (use === 2) ? '<strong>' : '<em>',
-              tagClose = (use === 2) ? '</strong>' : '</em>';
-
-          opener.literal = opener.literal.slice(0, opener.literal.length - use);
-          opener.numdelims -= use;
-          closer.literal = closer.literal.slice(use);
-          closer.numdelims -= use;
-
-          let inner = renderNodes(opener.next, closer);
-          inner = applyGfmInlineLinks(inner);
-          inner = showdown.subParser('makehtml.hardLineBreaks')(inner, options, globals);
-          let wrapped = hashSpan(tagOpen + inner + tagClose);
-
-          let n2 = opener.next;
-          while (n2 !== null && n2 !== closer) {
-            let nx = n2.next;
-            if (n2.type === 'delim') { removeDelimiter(n2); }
-            n2 = nx;
-          }
-          let wrapNode = {type: 'text', literal: wrapped, raw: true};
-          insertAfter(opener, wrapNode);
-          wrapNode.next = closer;
-          closer.prev = wrapNode;
-
-          if (opener.numdelims === 0) { opener.literal = ''; removeDelimiter(opener); }
-          if (closer.numdelims === 0) {
-            closer.literal = '';
-            let tmp = closer.delimNext;
-            removeDelimiter(closer);
-            closer = tmp;
-          }
-        } else {
-          openersBottom[oldCloser.cc][oldCloser.origdelims % 3] = oldCloser.delimPrev;
-          if (!oldCloser.canOpen) { removeDelimiter(oldCloser); }
-          closer = oldCloser.delimNext;
-        }
-      }
-    }
-  }
-
-  // ---- token recognizers (return {html, end} or null) ----------------------------
-
-  function skipRun (str, i, ch) {
-    let j = i;
-    while (j < str.length && str.charAt(j) === ch) { j++; }
-    return j;
-  }
-
-  function parseBacktick (str, i, noCloser) {
-    let openEnd = skipRun(str, i, '`'),
-        runLen = openEnd - i,
-        n = str.length,
-        j = openEnd;
-    if (noCloser[runLen]) { return null; }
-    // find a closing run of backticks of exactly runLen (not part of a longer run)
-    while (j < n) {
-      if (str.charAt(j) === '`') {
-        let runStart = j,
-            runEnd = skipRun(str, j, '`');
-        if (runEnd - runStart === runLen) {
-          let content = str.slice(openEnd, runStart).replace(/\n/g, ' ');
-          // strip exactly one leading and trailing space if the content is not all spaces
-          if (content.length >= 2 && content.charAt(0) === ' ' && content.charAt(content.length - 1) === ' ' && /[^ ]/.test(content)) {
-            content = content.slice(1, -1);
-          }
-          let encoded = showdown.subParser('makehtml.encodeCode')(content, options, globals);
-          return {html: showdown.helper._hashHTMLSpan('<code>' + encoded + '</code>', globals), end: runEnd};
-        }
-        j = runEnd;
-      } else {
-        j++;
-      }
-    }
-    noCloser[runLen] = true; // no closer of this length anywhere after here
-    return null;
-  }
-
-  function parseAutolink (str, i) {
-    if (!options.cmSpec) { return null; }
-    reAutoUri.lastIndex = i;
-    let uri = reAutoUri.exec(str);
-    if (uri) {
-      let raw = uri[0].slice(1, -1),
-          href = showdown.helper.cmEncodeURI(raw).replace(/&/g, '&amp;');
-      // safeMode: neutralize dangerous autolink schemes but keep the visible text
-      if (options.safeMode && !showdown.helper.isSafeUrl(raw)) { href = ''; }
-      return {html: showdown.helper._hashHTMLSpan('<a href="' + href + '">' + escapeAngles(raw) + '</a>', globals), end: i + uri[0].length};
-    }
-    reAutoEmail.lastIndex = i;
-    let email = reAutoEmail.exec(str);
-    if (email) {
-      let raw = email[0].slice(1, -1),
-          href, txt;
-      // encodeEmails: entity-encode the address (href and text) when the option is on,
-      // so it works under cmSpec too. Mirrors parseMail in link.js (copied behavior).
-      if (options.encodeEmails) {
-        href = showdown.helper.encodeEmailAddress('mailto:' + raw);
-        txt = showdown.helper.encodeEmailAddress(raw);
-      } else {
-        href = 'mailto:' + escapeAngles(raw);
-        txt = escapeAngles(raw);
-      }
-      return {html: showdown.helper._hashHTMLSpan('<a href="' + href + '">' + txt + '</a>', globals), end: i + email[0].length};
-    }
-    // Showdown extension: <www...> angle autolink. Applies the GFM www rule (http(s)://
-    // prepend + domain validation) to the explicitly delimited form. Active whenever
-    // cmSpec is on (the early `!options.cmSpec` guard above already scopes this).
-    reAutoWww.lastIndex = i;
-    let www = reAutoWww.exec(str);
-    if (www) {
-      let raw = www[0].slice(1, -1),
-          host = raw.split(/[/?#]/)[0];
-      // GFM www rule: the domain after "www." must contain a period, plus the shared host
-      // validation (>= 2 labels, last two labels have no "_").
-      if (host.slice(4).indexOf('.') !== -1 && validAutolinkHost(raw, true)) {
-        let full = (options.httpsAutoLinks ? 'https://' : 'http://') + raw,
-            href = showdown.helper.cmEncodeURI(full).replace(/&/g, '&amp;');
-        // safeMode: neutralize dangerous schemes but keep the visible text
-        if (options.safeMode && !showdown.helper.isSafeUrl(full)) { href = ''; }
-        return {html: showdown.helper._hashHTMLSpan('<a href="' + href + '">' + escapeAngles(raw) + '</a>', globals), end: i + www[0].length};
-      }
-    }
-    return null;
-  }
-
-  function escapeAngles (s) {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-
-  // ==== writeAnchorTag and parseMail copied verbatim from link.js ====
-  // Used by the copied ghMentions / simplifiedAutoLink post-passes above so they emit
-  // the exact same anchors as the legacy path. TODO: refactor to share with link.js.
-  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
-
-    let matches = {
-          _wholeMatch: wholeMatch,
-          _linkId: linkId,
-          _url: url,
-          _title: title,
-          text: text
-        },
-        otp,
-        attributes = {};
-
-    title = title || null;
-    url = url || null;
-    if (linkId) {
-      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
-    } else {
-      linkId = null;
-    }
-    emptyCase = !!emptyCase;
-
-    if (emptyCase) {
-      url = '';
-    } else if (!url) {
-      if (!linkId) {
-        // lower-case and turn embedded newlines into spaces
-        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
-      }
-      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
-        url = globals.gUrls[linkId];
-        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
-          title = globals.gTitles[linkId];
-        }
-      } else {
-        return wholeMatch;
-      }
-    }
-
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    // NOTE: deliberately diverges from the link.js original - we do NOT call
-    // cmNormalizeURL here even though cmSpec is on. These ghMentions/simplifiedAutoLink
-    // anchors are legacy GFM constructs; cmNormalizeURL would decode the entity-encoded
-    // mailto: href produced by encodeEmails, making the href/text inconsistent. Skipping
-    // it makes the output identical to the legacy (non-cmSpec) path.
-    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-    attributes.href = url;
-
-    if (title && showdown.helper.isString(title)) {
-      if (options.cmSpec) {
-        title = showdown.helper.cmEscapeTitle(title);
-      } else {
-        title = title
-          .replace(/"/g, '&quot;');
-      }
-      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-      attributes.title = title;
-    }
-
-    let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches(matches)
-      .setAttributes(attributes);
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      attributes = captureStartEvent.attributes;
-      text = captureStartEvent.matches.text || '';
-      // Text can be a markdown element, so we run through the appropriate parsers
-      text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
-      text = showdown.subParser('makehtml.emoji')(text, options, globals);
-      text = showdown.subParser('makehtml.underline')(text, options, globals);
-      text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
-      text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
-      text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
-      text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
-      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-  }
-
-  function parseMail (mail) {
-    let url = 'mailto:';
-    mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
-    if (options.encodeEmails) {
-      url = showdown.helper.encodeEmailAddress(url + mail);
-      mail = showdown.helper.encodeEmailAddress(mail);
-    } else {
-      url = url + mail;
-    }
-    return {
-      mail: mail,
-      url: url
-    };
-  }
-  // ==== end copied region ====
-
-  // GFM extended www autolink: the host must have at least two labels and the last two
-  // must not contain "_". Explicit-scheme (http/https/ftp) urls are not domain-validated.
-  function validAutolinkHost (url, isWww) {
-    if (!isWww) { return true; }
-    let host = url.split(/[/?#]/)[0],
-        labels = host.split('.');
-    if (labels.length < 2) { return false; }
-    return !/_/.test(labels.slice(-2).join('.'));
-  }
-
-  // GFM extended email autolink: the domain must have at least two labels, must not end in
-  // "-" or "_", and its last two labels must not contain "_".
-  function validMailAddr (addr) {
-    let at = addr.lastIndexOf('@');
-    if (at < 1) { return false; }
-    let domain = addr.slice(at + 1),
-        labels = domain.split('.');
-    if (labels.length < 2) { return false; }
-    if (/[-_]$/.test(domain)) { return false; }
-    return !/_/.test(labels.slice(-2).join('.'));
-  }
-
-  function parseRawHTML (str, i) {
-    if (!options.cmSpec) { return null; }
-    reRawHtml.lastIndex = i;
-    let m = reRawHtml.exec(str);
-    if (!m) { return null; }
-    return {html: showdown.helper._hashHTMLSpan(m[0], globals), end: i + m[0].length};
-  }
-
-  // find the closing `]` of a reference label, honoring backslash escapes
-  function findRefClose (str, j) {
-    let n = str.length;
-    while (j < n) {
-      let c = str.charAt(j);
-      if (c === '\\' && j + 1 < n) { j += 2; continue; }
-      if (c === ']') { return j; }
-      if (c === '[') { return -1; }
-      j++;
-    }
-    return -1;
-  }
-});
-
-////
-// makehtml/cmList.js
-// Copyright (c) 2024 ShowdownJS
-//
-// CommonMark list container-block parser (spec section 5.2/5.3).
-//
-// This is a separate, line-based parser invoked only when the `commonmarkLists`
-// option is enabled (it is part of the `commonmark` flavor). Showdown's default
-// regex list parser (`makehtml.list`) is left untouched; `makehtml.list` simply
-// delegates here when the flag is on.
-//
-// It differs from the regex parser in the ways CommonMark requires: a change of
-// bullet character or ordered delimiter starts a new list, ordered lists keep
-// their start number and the `)` delimiter, loose/tight is decided per list (not
-// per item), and items nest by content indentation.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.cmList', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.list.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  text = parseCmList(text);
-
-  let afterEvent = new showdown.Event('makehtml.list.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-
-  /** @param {string} line @returns {number} count of leading spaces */
-  function leadingSpaces (line) {
-    let m = line.match(/^ */);
-    return m[0].length;
-  }
-
-  /** @param {string} line @returns {boolean} */
-  function isBlank (line) {
-    return /^[ \t]*$/.test(line);
-  }
-
-  // a markerless line that can lazily continue an open paragraph: non-blank text
-  // that does not itself begin an interrupting block
-  function isLazyParagraph (line) {
-    if (isBlank(line)) { return false; }
-    return !(
-      /^ {0,3}>/.test(line) ||                               // block quote
-      /^ {0,3}#{1,6}(?:[ \t]|$)/.test(line) ||               // ATX heading
-      /^ {0,3}(?:```|~~~)/.test(line) ||                     // fenced code
-      /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(line) ||  // thematic break
-      /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(line)   // list item
-    );
-  }
-
-  /**
-   * Match a list-item marker at the start of a line.
-   * @param {string} line
-   * @returns {{type:string, bullet:(string|null), delim:(string|null),
-   *   num:(number|null), markerIndent:number, contentIndent:number,
-   *   firstContent:string}|null}
-   */
-  function matchMarker (line) {
-    let m = line.match(/^( {0,3})([-+*]|\d{1,9}[.)])( *)([\s\S]*)$/);
-    if (!m) { return null; }
-    let indent = m[1].length,
-        markerTxt = m[2],
-        spaces = m[3].length,
-        rest = m[4];
-    // the marker must be followed by at least one space (or end the line); `-one`
-    // is a paragraph, not a list
-    if (rest !== '' && spaces === 0) { return null; }
-
-    let k = markerTxt.length,
-        type = /[-+*]/.test(markerTxt) ? 'ul' : 'ol',
-        contentIndent,
-        firstContent;
-    if (rest === '') {
-      contentIndent = indent + k + 1;
-      firstContent = '';
-    } else if (spaces >= 5) {
-      // 5+ spaces: one space is the marker gap, the rest is indented code
-      contentIndent = indent + k + 1;
-      firstContent = new Array(spaces).join(' ') + rest;
-    } else {
-      contentIndent = indent + k + spaces;
-      firstContent = rest;
-    }
-    return {
-      type: type,
-      bullet: type === 'ul' ? markerTxt : null,
-      delim: type === 'ol' ? markerTxt.slice(-1) : null,
-      num: type === 'ol' ? parseInt(markerTxt, 10) : null,
-      markerIndent: indent,
-      contentIndent: contentIndent,
-      firstContent: firstContent
-    };
-  }
-
-  /**
-   * Gather one list item starting at line index `i`. Consumes the marker line and
-   * subsequent lines indented to the item's content column, plus lazy paragraph
-   * continuations. Blank lines that are followed by more item content are kept
-   * (internal); trailing blank lines are left for the caller.
-   * @returns {{content:string[], end:number, blanksFollow:number, internalBlank:boolean}}
-   */
-  function gatherItem (lines, i, m) {
-    let n = lines.length,
-        w = m.contentIndent,
-        content = [m.firstContent],
-        internalBlank = false;
-    i++;
-    // a list item may begin with at most one blank line: an empty marker followed
-    // by a blank line is an empty item; later indented content is not part of it
-    if (m.firstContent === '' && i < n && isBlank(lines[i])) {
-      let j = i;
-      while (j < n && isBlank(lines[j])) { j++; }
-      return {content: [''], end: i, blanksFollow: j - i, internalBlank: false};
-    }
-    while (i < n) {
-      let line = lines[i];
-      if (isBlank(line)) {
-        // look ahead: blanks are internal only if the item continues afterwards
-        let j = i;
-        while (j < n && isBlank(lines[j])) { j++; }
-        if (j < n && leadingSpaces(lines[j]) >= w && !isBlank(lines[j])) {
-          for (let b = i; b < j; ++b) { content.push(''); }
-          if (content.some(function (c) { return c.trim() !== ''; })) { internalBlank = true; }
-          i = j;
-          continue;
-        }
-        return {content: content, end: i, blanksFollow: j - i, internalBlank: internalBlank};
-      }
-      if (leadingSpaces(line) >= w) {
-        content.push(line.slice(w));
-        i++;
-      } else if (isLazyParagraph(line) && lastIsParagraph(content)) {
-        content.push(line);
-        i++;
-      } else {
-        return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
-      }
-    }
-    return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
-  }
-
-  // Whether an item's content has a blank line separating two of its *top-level*
-  // blocks (which makes the list loose). A blank line inside a nested list/block
-  // quote does not count - it makes the nested list loose, not this one. We track
-  // the content-indent of the deepest open nested container and ignore lines (and
-  // blanks) inside it.
-  function itemLoose (content) {
-    let containerIndent = -1, // content indent of the open nested container (-1 = none)
-        topBlockSeen = false,
-        blank = false;
-    for (let li = 0; li < content.length; ++li) {
-      let line = content[li];
-      if (line.trim() === '') { blank = true; continue; }
-      let ind = leadingSpaces(line);
-      if (containerIndent >= 0 && ind >= containerIndent) {
-        continue; // inside the nested container - not a top-level line of this item
-      }
-      if (blank && topBlockSeen) { return true; } // blank between two top-level blocks
-      blank = false;
-      topBlockSeen = true;
-      let mk = matchMarker(line);
-      if (mk) {
-        containerIndent = mk.contentIndent;
-      } else if (/^ {0,3}>/.test(line)) {
-        containerIndent = ind + 1;
-      } else {
-        containerIndent = -1; // a plain top-level block (paragraph / indented code)
-        // a fenced code block is a single block: skip its interior (including blank
-        // lines) so blanks inside the fence are not counted as separators between two
-        // top-level blocks (which would wrongly make the list loose)
-        let fence = line.match(/^ {0,3}(```+|~~~+)/);
-        if (fence) {
-          let closeRe = new RegExp('^ {0,3}[' + fence[1][0] + ']{' + fence[1].length + ',}[ \\t]*$');
-          while (li + 1 < content.length && !closeRe.test(content[li + 1])) { li++; }
-          if (li + 1 < content.length) { li++; } // consume the closing fence line
-        }
-      }
-    }
-    return false;
-  }
-
-  // whether the last content line is an open paragraph (so a lazy continuation line
-  // may be appended). Nested block-quote / list markers are peeled first, so lazy
-  // continuation propagates through container nesting (e.g. `1. > Blockquote`
-  // followed by a markerless line continues the inner block quote's paragraph).
-  function lastIsParagraph (content) {
-    let last = content[content.length - 1];
-    if (last === undefined) { return false; }
-    let s = last,
-        indentedCode = /^ {4}/.test(last),
-        m;
-    while ((m = s.match(/^ {0,3}>[ \t]?/) || s.match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/))) {
-      s = s.slice(m[0].length);
-      indentedCode = false;
-    }
-    if (s.trim() === '' || indentedCode) { return false; }
-    return !(
-      /^ {0,3}(?:```|~~~)/.test(s) ||
-      /^ {0,3}#{1,6}(?:[ \t]|$)/.test(s)
-    );
-  }
-
-  /**
-   * Render one list item's content into `<li>…</li>`. In a tight list the item's
-   * direct paragraphs are not wrapped in `<p>`; in a loose list they are. Nested
-   * blocks (sub-lists, block quotes, code) are produced by blockGamut.
-   */
-  function renderItem (content, loose) {
-    // trailing newline so the recursive block parsers (esp. indented code, which
-    // requires each line to end in \n) see a complete final line
-    let str = content.join('\n') + '\n';
-    // drop the empty leading line that an empty marker (`-` with content on the next
-    // line) contributes, so an indented-code first block sees a clean block start
-    // (codeBlock keys off `^`/a preceding blank line) instead of a lone leading newline
-    str = str.replace(/^\n+/, '');
-
-    // The item's raw source — the payload for the per-item capture event below (matches
-    // makehtml.list, which emits the item's raw markdown).
-    let rawItem = content.join('\n');
-
-    // GFM task detection on the (leading-newline-stripped) raw line: it selects the event
-    // name and the <li> attributes. The marker must be followed by whitespace (see
-    // makehtml.list.taskListItem.checkbox); a bare `[ ]` is not a task.
-    let taskMatch = options.tasklists ? /^[ \t]*\[([xX ])](?=[ \t])/.exec(str) : null,
-        checked = !!taskMatch && taskMatch[1].trim() !== '',
-        eventName = taskMatch ? 'makehtml.list.taskListItem' : 'makehtml.list.listItem',
-        attributes = {},
-        matches = { _wholeMatch: rawItem, listItem: rawItem };
-
-    if (taskMatch) {
-      matches._taskListButton = '[' + taskMatch[1] + ']';
-      matches._taskListButtonChecked = taskMatch[1];
-      // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
-      // when `moreStyling` is enabled.
-      if (options.moreStyling) {
-        attributes.classes = ['task-list-item'];
-        attributes.style = 'list-style-type: none;';
-        if (checked) {
-          attributes.classes.push('task-list-item-complete');
-        }
-      }
-    }
-
-    let captureStartEvent = new showdown.Event(eventName + '.onCapture', rawItem);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setMatches(matches)
-      .setAttributes(attributes);
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    let rendered;
-    // A listener may pass output, which takes precedence and is used verbatim as the item
-    // markup (mirrors makehtml.list); otherwise we render the (possibly edited) item.
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      rendered = captureStartEvent.output;
-    } else {
-      attributes = captureStartEvent.attributes;
-      let liAttrs = showdown.helper._populateAttributes(attributes);
-
-      // honor a listener that rewrote the item's raw markdown via matches.listItem
-      if (captureStartEvent.matches.listItem !== rawItem) {
-        str = (captureStartEvent.matches.listItem + '\n').replace(/^\n+/, '');
-      }
-
-      // Render the checkbox on the raw line, before any block/span parsing, so the
-      // injected <input> flows through blockGamut/spanGamut just like any other inline HTML.
-      if (taskMatch) {
-        str = showdown.subParser('makehtml.list.taskListItem.checkbox')(str, options, globals);
-      }
-      str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
-      str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
-      str = str.replace(/^\n+/, '').replace(/\n+$/, '');
-
-      let grafs = str.split(/\n{2,}/g),
-          out = [];
-      for (let gi = 0; gi < grafs.length; ++gi) {
-        let g = grafs[gi];
-        if (/¨([KG])(\d+)\1/.test(g)) {
-          out.push(g);
-        } else if (/\S/.test(g)) {
-          g = showdown.subParser('makehtml.spanGamut')(g, options, globals);
-          if (loose) {
-            g = g.replace(/^[ \t]*/, '<p>') + '</p>';
-          }
-          out.push(g);
-        }
-      }
-      let body = out.join('\n');
-
-      // an empty item is always `<li></li>`, regardless of loose/tight
-      if (body.trim() === '') {
-        rendered = '<li' + liAttrs + '></li>\n';
-      } else {
-        // CommonMark serialization: a loose item opens/closes on its own lines; a tight
-        // item opens on a new line only when its content begins with a block child, and
-        // closes on a new line only when its content ends with a block child (so trailing
-        // inline text hugs `</li>`).
-        let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li' + liAttrs + '>\n' : '<li' + liAttrs + '>',
-            close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
-        rendered = open + body + close;
-      }
-    }
-
-    let beforeHashEvent = new showdown.Event(eventName + '.onHash', rendered);
-    beforeHashEvent
-      .setOutput(rendered)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    return beforeHashEvent.output;
-  }
-
-  // a line that is open paragraph text (so a following list marker would have to
-  // "interrupt a paragraph" - which empty items and non-1 ordered lists may not do)
-  function isParaText (line) {
-    if (isBlank(line) || /¨[A-Za-z]?\d+[A-Za-z]/.test(line)) { return false; }
-    return isLazyParagraph(line) || matchMarker(line) !== null;
-  }
-
-  /**
-   * CommonMark list parsing. Scans line by line, leaving non-list lines untouched
-   * and converting each run of list items of the same type into a hashed list.
-   * @param {string} str
-   * @returns {string}
-   */
-  function parseCmList (str) {
-    let lines = str.split('\n'),
-        out = [],
-        i = 0,
-        n = lines.length,
-        prevParagraph = false;
-
-    while (i < n) {
-      let m = matchMarker(lines[i]);
-      if (!m) {
-        out.push(lines[i]);
-        prevParagraph = isParaText(lines[i]);
-        i++;
-        continue;
-      }
-
-      // a list item may interrupt a paragraph only if it is non-empty and (for
-      // ordered lists) starts with 1; otherwise the marker line is paragraph text
-      if (prevParagraph && (m.firstContent.trim() === '' || (m.type === 'ol' && m.num !== 1))) {
-        out.push(lines[i]);
-        prevParagraph = true;
-        i++;
-        continue;
-      }
-
-      // collect a run of items that form a single list
-      let type = m.type,
-          bullet = m.bullet,
-          delim = m.delim,
-          startNum = m.num,
-          listStart = i,
-          items = [],
-          loose = false;
-
-      while (i < n) {
-        let mm = matchMarker(lines[i]);
-        if (!mm || mm.type !== type) { break; }
-        if (type === 'ul' && mm.bullet !== bullet) { break; }
-        if (type === 'ol' && mm.delim !== delim) { break; }
-
-        let item = gatherItem(lines, i, mm);
-        if (itemLoose(item.content)) { loose = true; }
-        items.push(item.content);
-        i = item.end;
-
-        if (item.blanksFollow > 0) {
-          let j = i + item.blanksFollow,
-              next = (j < n) ? matchMarker(lines[j]) : null,
-              continues = next && next.type === type &&
-                (type === 'ul' ? next.bullet === bullet : next.delim === delim);
-          if (continues) {
-            loose = true; // blank line between items
-            i = j;
-            continue;
-          }
-          break; // blanks end the list (left in place for the outer loop)
-        }
-      }
-
-      // the raw source of this whole list block — payload for the list-level capture event
-      let rawList = lines.slice(listStart, i).join('\n');
-      let listCapture = new showdown.Event('makehtml.list.onCapture', rawList);
-      listCapture
-        .setOutput(null)
-        ._setGlobals(globals)
-        ._setOptions(options)
-        .setMatches({ _wholeMatch: rawList, list: rawList })
-        .setAttributes({});
-      listCapture = globals.converter.dispatch(listCapture);
-
-      let otp;
-      // a listener may pass output, which takes precedence over rendering the items
-      if (listCapture.output && listCapture.output !== '') {
-        otp = listCapture.output;
-      } else {
-        let attrs = listCapture.attributes || {};
-        if (type === 'ol' && startNum !== 1) {
-          attrs.start = startNum;
-        }
-        let body = '';
-        for (let k = 0; k < items.length; ++k) {
-          body += renderItem(items[k], loose);
-        }
-        otp = '\n\n<' + type + showdown.helper._populateAttributes(attrs) + '>\n' + body + '</' + type + '>\n';
-      }
-
-      let listHash = new showdown.Event('makehtml.list.onHash', otp);
-      listHash
-        .setOutput(otp)
-        ._setGlobals(globals)
-        ._setOptions(options);
-      listHash = globals.converter.dispatch(listHash);
-      otp = listHash.output;
-
-      out.push(showdown.subParser('makehtml.hashBlock')(otp, options, globals));
-      prevParagraph = false;
-    }
-
-    return out.join('\n');
-  }
-});
-
-////
-// makehtml/codeBlock.js
-// Copyright (c) 2022 ShowdownJS
-//
-// Process Markdown `<pre><code>` blocks.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.codeBlock.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  // sentinel workarounds for lack of \A and \Z, safari\khtml bug
-  text += '¨0';
-
-  let pattern = /(?:\n\n|^)((?:(?: {4}|\t).*\n+)+)(\n* {0,3}[^ \t\n]|(?=¨0))/g;
-  text = text.replace(pattern, function (wholeMatch, m1, m2) {
-    let codeblock = m1,
-        nextChar = m2,
-        end = '\n',
-        otp,
-        attributes = {
-          pre: {},
-          code: {}
-        };
-
-    let captureStartEvent = new showdown.Event('makehtml.codeBlock.onCapture', codeblock);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        codeblock: codeblock
-      })
-      .setAttributes(attributes);
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      codeblock = captureStartEvent.matches.codeblock;
-      codeblock = showdown.helper.outdent(codeblock);
-      codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
-      //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
-      codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
-      codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing newlines
-      attributes = captureStartEvent.attributes;
-
-      otp = '<pre><code>';
-      if (!showdown.helper.isUndefined(attributes)) {
-        otp = '<pre' + showdown.helper._populateAttributes(attributes.pre) + '>';
-        otp += '<code' + showdown.helper._populateAttributes(attributes.code) + '>';
-      }
-      if (options.omitExtraWLInCodeBlocks) {
-        end = '';
-      }
-      otp += codeblock + end + '</code></pre>';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.codeBlock.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    return showdown.subParser('makehtml.hashBlock')(otp, options, globals) + nextChar;
-  });
-
-  // strip sentinel
-  text = text.replace(/¨0/, '');
-
-  let afterEvent = new showdown.Event('makehtml.codeBlock.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/codeSpan.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Transforms MD code spans into `<code>` html entities
-//
-// Backtick quotes are used for <code></code> spans.
-//
-// You can use multiple backticks as the delimiters if you want to
-// include literal backticks in the code span. So, this input:
-//
-// Just type ``foo `bar` baz`` at the prompt.
-//
-// Will translate to:
-//
-// <p>Just type <code>foo `bar` baz</code> at the prompt.</p>
-//
-// There's no arbitrary limit to the number of backticks you
-// can use as delimters. If you need three consecutive backticks
-// in your code, use four for delimiters, etc.
-//
-// You can use spaces to get literal backticks at the edges:
-// ... type `` `bar` `` ...
-//
-// Turns to:
-// ... type <code>`bar`</code> ...
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.codeSpan.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-
-  startEvent = globals.converter.dispatch(startEvent);
-
-  text = startEvent.output;
-
-  if (showdown.helper.isUndefined((text))) {
-    text = '';
-  }
-
-  let pattern = /(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)/gm;
-
-  text = text.replace(pattern, function (wholeMatch, m1, m2, c) {
-    let otp,
-        attributes = {};
-
-    c = c.replace(/^([ \t]*)/g, '');	// leading whitespace
-    c = c.replace(/[ \t]*$/g, '');	// trailing whitespace
-    // remove newlines
-    c = c.replace(/\n/g, ' ');
-
-    let captureStartEvent = new showdown.Event('makehtml.codeSpan.onCapture', c);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        code: c
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = m1 + captureStartEvent.output;
-    } else {
-      c = captureStartEvent.matches.code;
-      c = showdown.subParser('makehtml.encodeCode')(c, options, globals);
-      otp = m1 + '<code' + showdown.helper._populateAttributes(attributes) + '>' +  c + '</code>';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.codeSpan.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-  });
-
-  let afterEvent = new showdown.Event('makehtml.codeSpan.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/completeHTMLDocument.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Create a full HTML document from the processed markdown
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-// noinspection HtmlRequiredLangAttribute
-
-
-showdown.subParser('makehtml.completeHTMLDocument', function (text, options, globals) {
-  'use strict';
-
-  if (!options.completeHTMLDocument) {
-    return text;
-  }
-
-  let startEvent = new showdown.Event('makehtml.completeHTMLDocument.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  let doctype = 'html',
-      doctypeParsed = '<!DOCTYPE HTML>\n',
-      title = '',
-      charset = '<meta charset="utf-8">\n',
-      lang = '',
-      metadata = '';
-
-  if (typeof globals.metadata.parsed.doctype !== 'undefined') {
-    doctypeParsed = '<!DOCTYPE ' +  globals.metadata.parsed.doctype + '>\n';
-    doctype = globals.metadata.parsed.doctype.toString().toLowerCase();
-    if (doctype === 'html' || doctype === 'html5') {
-      charset = '<meta charset="utf-8">';
-    }
-  }
-
-  for (let meta in globals.metadata.parsed) {
-    if (Object.prototype.hasOwnProperty.call(globals.metadata.parsed, meta)) {
-      switch (meta.toLowerCase()) {
-        case 'doctype':
-          break;
-
-        case 'title':
-          title = '<title>' +  globals.metadata.parsed.title + '</title>\n';
-          break;
-
-        case 'charset':
-          if (doctype === 'html' || doctype === 'html5') {
-            charset = '<meta charset="' + globals.metadata.parsed.charset + '">\n';
-          } else {
-            charset = '<meta name="charset" content="' + globals.metadata.parsed.charset + '">\n';
-          }
-          break;
-
-        case 'language':
-        case 'lang':
-          lang = ' lang="' + globals.metadata.parsed[meta] + '"';
-          metadata += '<meta name="' + meta + '" content="' + globals.metadata.parsed[meta] + '">\n';
-          break;
-
-        default:
-          metadata += '<meta name="' + meta + '" content="' + globals.metadata.parsed[meta] + '">\n';
-      }
-    }
-  }
-
-  text = doctypeParsed + '<html' + lang + '>\n<head>\n' + title + charset + metadata + '</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
-
-  let afterEvent = new showdown.Event('makehtml.completeHTMLDocument.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/decodeEntities.js
-// Copyright (c) 2024 ShowdownJS
-//
-// Resolves HTML5 named (`&copy;`), decimal (`&#35;`) and hexadecimal (`&#xcab;`)
-// character references to their corresponding characters, per the CommonMark spec.
-//
-// This diverges from Showdown's default behavior (which preserves entities verbatim),
-// so it is gated behind the `decodeEntities` option (enabled by the `commonmark` flavor).
-//
-// It runs late in the pipeline - after inline parsing and while code spans/blocks are
-// still hashed - so that:
-//   - a decoded markdown character (e.g. `&#42;` -> `*`) is NOT re-parsed as emphasis;
-//   - entities inside code remain escaped (the code is hashed, hence untouched);
-//   - decoded newlines stay literal inside their block.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-showdown.subParser('makehtml.decodeEntities', function (text, options, globals) {
-  'use strict';
-
-  if (!options.decodeEntities) {
-    return text;
-  }
-
-  let startEvent = new showdown.Event('makehtml.decodeEntities.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  const entities = showdown.helper.htmlEntities;
-
-  // Re-escape HTML-significant characters so a decoded char (e.g. `&lt;` -> `<`) stays
-  // a literal in the HTML output rather than being read as markup.
-  function escapeOutput (str) {
-    return str
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-  }
-
-  // Map a code point to its character, replacing disallowed values with U+FFFD.
-  function fromCodePoint (cp) {
-    if (cp === 0 || cp > 0x10FFFF || (cp >= 0xD800 && cp <= 0xDFFF)) {
-      return '�';
-    }
-    try {
-      return String.fromCodePoint(cp);
-    } catch {
-      return '�';
-    }
-  }
-
-  // Match any `&…;` candidate that survived encodeAmpsAndAngles (which already escaped
-  // bare ampersands and `&name`/`&name?;` non-references). We classify each candidate here.
-  text = text.replace(/&([#0-9a-zA-Z]+);/g, function (wholeMatch, body) {
-    let m;
-    // decimal numeric reference: 1-7 digits
-    if ((m = /^#([0-9]{1,7})$/.exec(body))) {
-      return escapeOutput(fromCodePoint(parseInt(m[1], 10)));
-    }
-    // hexadecimal numeric reference: 1-6 hex digits
-    if ((m = /^#[xX]([0-9a-fA-F]{1,6})$/.exec(body))) {
-      return escapeOutput(fromCodePoint(parseInt(m[1], 16)));
-    }
-    // named reference (must be a known HTML5 entity name)
-    if (/^[a-zA-Z][a-zA-Z0-9]*$/.test(body) && Object.prototype.hasOwnProperty.call(entities, body)) {
-      return escapeOutput(entities[body]);
-    }
-    // not a valid reference - escape the ampersand and leave the rest intact
-    return '&amp;' + body + ';';
-  });
-
-  let afterEvent = new showdown.Event('makehtml.decodeEntities.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/disallowedHtmlTags.js
-// Copyright (c) 2018 ShowdownJS
-//
-// GFM "disallowed raw HTML" extension (tagfilter): a small blacklist of HTML tags
-// is neutralized in the output by escaping their leading `<` to `&lt;`. These tags
-// are singled out because they change how the surrounding markup is interpreted
-// (script/style/iframe/etc.). See https://github.github.com/gfm/#disallowed-raw-html-extension-
-//
-// When the `safeMode` option is on, this stage also neutralizes a broader set of
-// dangerous raw-HTML tags Showdown never generates and strips inline event-handler
-// attributes (on*=...), so that embedded `<script>`, `<img onerror>`, `<svg onload>`
-// and similar cannot execute. This is defense-in-depth, not a full HTML sanitizer.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.disallowedHtmlTags', function (text, options, globals) {
-  'use strict';
-  if (!options.disallowRawHTML && !options.safeMode) {
-    return text;
-  }
-
-  let startEvent = new showdown.Event('makehtml.disallowedHtmlTags.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  // Run over the (near final) output: Showdown never generates these tags from Markdown
-  // and code blocks/spans already entity-escape `<`, so only genuine raw-HTML passthrough
-  // is touched. Both opening and closing forms are filtered, case-insensitively.
-  text = text.replace(
-    /<(\/?(?:title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext))/gi,
-    '&lt;$1'
-  );
-
-  if (options.safeMode) {
-    // Additional dangerous tags Showdown never emits from Markdown (svg/math/form/
-    // media/embedding/document-metadata). Escaping the leading `<` renders them inert.
-    text = text.replace(
-      /<(\/?(?:svg|math|form|object|embed|base|link|meta|applet|frame|frameset|button|select|option|audio|video|source|track|template|portal))(?=[\s/>])/gi,
-      '&lt;$1'
-    );
-    // Strip inline event-handler attributes (onclick, onerror, onload, ...) from any
-    // surviving tag. Showdown's own generated attributes are never `on*`, so this only
-    // affects raw-HTML passthrough (e.g. `<img src=x onerror=alert(1)>`). The separator
-    // before the handler may be whitespace, `/`, or the closing quote of the previous
-    // attribute — browsers accept all of these (`<img/onerror>`, `<img\tonerror>`,
-    // `<a href="x"onmouseover=y>`). A whitespace/`/` separator is dropped; a quote
-    // separator is preserved so the previous attribute stays terminated.
-    text = text.replace(
-      /(["'\s/])on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+)/gi,
-      function (whole, sep) { return (sep === '"' || sep === '\'') ? sep : ''; }
-    );
-    // Neutralize dangerous URL schemes (javascript:, vbscript:, data:text/html, ...) in the
-    // URL-bearing attributes of raw-HTML tags — Showdown's own scheme allowlist only covers the
-    // links/images it generates, not raw HTML the author embedded. This runs over EVERY surviving
-    // tag (not just `<a>`/`<area>`) so it also catches e.g. `<input formaction="javascript:...">`
-    // (`<input>` is intentionally not escaped, to keep tasklist checkboxes). Only real tags are
-    // matched (code blocks have their `<` entity-escaped, so `&lt;a ...` is skipped), and Showdown's
-    // generated tags carry only safe/relative URLs so re-checking them is a harmless no-op.
-    //   - The tag body is `(?:"[^"]*"|'[^']*'|[^>])*` (quote-aware) rather than `[^>]*` so a `>`
-    //     inside a quoted attribute value does not truncate the tag early.
-    //   - The attribute separator is `["'\s/]` (not just `\s`) because browsers accept `/` and
-    //     quote-adjacent attributes (`<a/href=…>`, `<a id="x"href=…>`); the separator is preserved.
-    text = text.replace(/<[a-zA-Z][a-zA-Z0-9:-]*\b(?:"[^"]*"|'[^']*'|[^>])*>/g, function (tag) {
-      return tag.replace(
-        /(["'\s/](?:href|xlink:href|formaction|action)\s*=\s*)("[^"]*"|'[^']*'|[^\s"'>]+)/gi,
-        function (whole, pre, val) {
-          let unquoted = val.replace(/^(["'])([\s\S]*)\1$/, '$2');
-          return showdown.helper.isSafeUrl(unquoted) ? whole : pre + '""';
-        }
-      );
-    });
-  }
-
-  let afterEvent = new showdown.Event('makehtml.disallowedHtmlTags.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/ellipsis.js
-// Copyright (c) 2018 ShowdownJS
-//
-// transform three dots (...) into ellipsis (…)
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.ellipsis', function (text, options, globals) {
-  'use strict';
-
-  if (!options.ellipsis) {
-    return text;
-  }
-
-  let startEvent = new showdown.Event('makehtml.ellipsis.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  const ellipsisRegex = /\.\.\./g;
-  text = text.replace(ellipsisRegex, function (wholeMatch) {
-
-    let otp;
-    let captureStartEvent = new showdown.Event('makehtml.ellipsis.onCapture', wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(ellipsisRegex)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        ellipsis: wholeMatch
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      otp = '…';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.ellipsis.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    return beforeHashEvent.output;
-  });
-
-  let afterEvent = new showdown.Event('makehtml.ellipsis.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/emoji.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Turn emoji codes into emojis
-// List of supported emojis: https://github.com/showdownjs/showdown/wiki/Emojis
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.emoji', function (text, options, globals) {
-  'use strict';
-
-  if (!options.emoji) {
-    return text;
-  }
-
-  let startEvent = new showdown.Event('makehtml.emoji.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  let pattern = /:(\S+?):/g;
-
-  text = text.replace(pattern, function (wholeMatch, emojiCode) {
-    if (!Object.prototype.hasOwnProperty.call(showdown.helper.emojis, emojiCode)) {
-      return wholeMatch;
-    }
-    let otp;
-    let captureStartEvent = new showdown.Event('makehtml.emoji.onCapture', emojiCode);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        emojiCode: emojiCode
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    // if something was passed as output, it takes precedence and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      otp = showdown.helper.emojis[emojiCode];
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.emoji.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-
-    // Image-based emoji (e.g. :octocat:) render as an <img> tag. Hash it so later
-    // HTML-escaping passes don't turn its `<`/`>` into entities - under cmSpec the
-    // generic span hashing skips void tags (it is meant to escape malformed raw HTML),
-    // so the generated markup must protect itself here. Unicode emoji are returned as-is.
-    if (/^\s*</.test(otp)) {
-      otp = showdown.helper._hashHTMLSpan(otp, globals);
-    }
-    return otp;
-  });
-
-  let afterEvent = new showdown.Event('makehtml.emoji.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/emphasisAndStrong.js
-// Copyright (c) 2022 ShowdownJS
-//
-// Transforms MD emphasis and strong into `<em>` and `<strong>` html entities
-//
-// Markdown treats asterisks (*) and underscores (_) as indicators of emphasis.
-// Text wrapped with one * or _ will be wrapped with an HTML <em> tag;
-// double *’s or _’s will be wrapped with an HTML <strong> tag
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-/* jshint esnext: false, esversion: 9 */
-// (esversion 9 enables the \p{...} Unicode property escapes used for CommonMark flanking rules)
-
-showdown.subParser('makehtml.emphasisAndStrong', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.emphasisAndStrong.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  /**
-   * @param {string} txt
-   * @param {string} tags
-   * @param {string} wholeMatch
-   * @param {RegExp} pattern
-   * @returns {string}
-   */
-  function parseInside (txt, tags, wholeMatch, pattern) {
-    let otp = 'ERROR',
-        attributes,
-        subEventName;
-
-    switch (tags) {
-      case '<em>':
-        attributes = {
-          em: {}
-        };
-        subEventName = 'emphasis';
-        break;
-      case '<strong>':
-        attributes = {
-          strong: {}
-        };
-        subEventName = 'strong';
-        break;
-      case '<strong><em>':
-        attributes = {
-          em: {},
-          strong: {}
-        };
-        subEventName = 'emphasisAndStrong';
-        break;
-      default:
-        attributes = {};
-        subEventName = 'emphasisAndStrong';
-        break;
-    }
-
-    let captureStartEvent = new showdown.Event('makehtml.emphasisAndStrong.' + subEventName + '.onCapture', txt);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        text: txt
-      })
-      .setAttributes(attributes);
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      attributes = captureStartEvent.attributes;
-      if (showdown.helper.isUndefined(attributes.em)) {
-        attributes.em = {};
-      }
-      if (showdown.helper.isUndefined(attributes.strong)) {
-        attributes.strong = {};
-      }
-
-      switch (tags) {
-        case '<em>':
-          otp = '<em' + showdown.helper._populateAttributes(attributes.em) + '>' +
-                showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
-                '</em>';
-          break;
-        case '<strong>':
-          otp = '<strong' + showdown.helper._populateAttributes(attributes.strong) + '>' +
-                showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
-                '</strong>';
-          break;
-        case '<strong><em>':
-          otp = '<strong' + showdown.helper._populateAttributes(attributes.strong) + '>' +
-                '<em' + showdown.helper._populateAttributes(attributes.em) + '>' +
-                showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
-                '</em>' +
-                '</strong>';
-          break;
-      }
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.emphasisAndStrong.' + subEventName + '.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    otp = showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-    return otp;
-  }
-
-  // CommonMark-compliant emphasis/strong parsing (delimiter-run algorithm).
-  // Gated behind the `commonmarkEmphasis` option (enabled by the commonmark flavor) because
-  // it diverges from Showdown's default behavior (e.g. intraword underscores, flanking rules).
-  if (options.cmSpec) {
-    text = parseCommonmarkEmphasis(text);
-
-    let cmAfterEvent = new showdown.Event('makehtml.emphasisAndStrong.onEnd', text);
-    cmAfterEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    cmAfterEvent = globals.converter.dispatch(cmAfterEvent);
-    return cmAfterEvent.output;
-  }
-
-  /**
-   * Parse emphasis and strong emphasis using the CommonMark delimiter-run algorithm.
-   * @param {string} str
-   * @returns {string}
-   */
-  function parseCommonmarkEmphasis (str) {
-    // CommonMark punctuation = ASCII punctuation + Unicode P and S categories
-    const asciiPunct = /[!-/:-@[-`{-~]/;
-    function isPunct (ch) {
-      return ch !== undefined && (asciiPunct.test(ch) || /[\p{P}\p{S}]/u.test(ch));
-    }
-    function isWhitespace (ch) {
-      return ch === undefined || /\s/.test(ch) || /\p{Z}/u.test(ch);
-    }
-
-    // 1. Tokenize into a doubly-linked list of nodes; collect a delimiter stack.
-    let head = null,
-        tail = null,
-        delimiters = null; // tail of delimiter stack
-
-    function appendNode (node) {
-      node.prev = tail;
-      node.next = null;
-      if (tail) {
-        tail.next = node;
-      } else {
-        head = node;
-      }
-      tail = node;
-      return node;
-    }
-
-    const len = str.length;
-    let i = 0;
-    while (i < len) {
-      let ch = str.charAt(i);
-      if (ch === '*' || ch === '_') {
-        let start = i;
-        while (i < len && str.charAt(i) === ch) {
-          ++i;
-        }
-        let run = str.slice(start, i),
-            before = (start === 0) ? undefined : str.charAt(start - 1),
-            after = (i >= len) ? undefined : str.charAt(i),
-            beforeWs = isWhitespace(before),
-            afterWs = isWhitespace(after),
-            beforePt = isPunct(before),
-            afterPt = isPunct(after),
-            leftFlanking = !afterWs && (!afterPt || beforeWs || beforePt),
-            rightFlanking = !beforeWs && (!beforePt || afterWs || afterPt),
-            canOpen, canClose;
-        if (ch === '_') {
-          canOpen = leftFlanking && (!rightFlanking || beforePt);
-          canClose = rightFlanking && (!leftFlanking || afterPt);
-        } else {
-          canOpen = leftFlanking;
-          canClose = rightFlanking;
-        }
-        let node = appendNode({type: 'delim', cc: ch, literal: run, numdelims: run.length, origdelims: run.length, canOpen: canOpen, canClose: canClose});
-        node.delimPrev = delimiters;
-        node.delimNext = null;
-        if (delimiters) {
-          delimiters.delimNext = node;
-        }
-        delimiters = node;
-      } else {
-        // accumulate a literal text run up to the next delimiter
-        let start = i;
-        while (i < len && str.charAt(i) !== '*' && str.charAt(i) !== '_') {
-          ++i;
-        }
-        appendNode({type: 'text', literal: str.slice(start, i)});
-      }
-    }
-
-    // 2. Process emphasis (CommonMark reference algorithm).
-    processEmphasis();
-
-    // 3. Render remaining nodes back to a string.
-    let out = '';
-    for (let n = head; n !== null; n = n.next) {
-      out += n.literal;
-    }
-    return out;
-
-    function removeDelimiter (d) {
-      if (d.delimPrev) {
-        d.delimPrev.delimNext = d.delimNext;
-      }
-      if (d.delimNext) {
-        d.delimNext.delimPrev = d.delimPrev;
-      } else {
-        delimiters = d.delimPrev; // top of stack
-      }
-    }
-
-    function insertAfter (node, newNode) {
-      newNode.prev = node;
-      newNode.next = node.next;
-      if (node.next) {
-        node.next.prev = newNode;
-      } else {
-        tail = newNode;
-      }
-      node.next = newNode;
-    }
-
-    function processEmphasis () {
-      // one lower-bound per delimiter char, bucketed by (origdelims % 3) per the spec
-      let openersBottom = {'_': [null, null, null], '*': [null, null, null]};
-
-      // start from the bottom-most delimiter on the stack
-      let closer = delimiters;
-      while (closer !== null && closer.delimPrev !== null) {
-        closer = closer.delimPrev;
-      }
-
-      while (closer !== null) {
-        if (!closer.canClose) {
-          closer = closer.delimNext;
-          continue;
-        }
-        // look back for a matching opener
-        let opener = closer.delimPrev,
-            openerFound = false,
-            oddMatch;
-        while (opener !== null && opener !== openersBottom[closer.cc][closer.origdelims % 3]) {
-          oddMatch = (closer.canOpen || opener.canClose) &&
-                     (closer.origdelims % 3 !== 0) &&
-                     ((opener.origdelims + closer.origdelims) % 3 === 0);
-          if (opener.cc === closer.cc && opener.canOpen && !oddMatch) {
-            openerFound = true;
-            break;
-          }
-          opener = opener.delimPrev;
-        }
-        let oldCloser = closer;
-
-        if (openerFound) {
-          let use = (opener.numdelims >= 2 && closer.numdelims >= 2) ? 2 : 1,
-              tagOpen = (use === 2) ? '<strong>' : '<em>',
-              tagClose = (use === 2) ? '</strong>' : '</em>';
-
-          // trim consumed delimiters from the opener (end) and closer (start) literals
-          opener.literal = opener.literal.slice(0, opener.literal.length - use);
-          opener.numdelims -= use;
-          closer.literal = closer.literal.slice(use);
-          closer.numdelims -= use;
-
-          // collect inner nodes (between opener and closer), render and hash them
-          let inner = '';
-          for (let n = opener.next; n !== null && n !== closer; n = n.next) {
-            inner += n.literal;
-          }
-          // emphasis content is hashed here, before the rest of the span gamut runs, so apply
-          // hard line breaks and encode double quotes now (CommonMark renders quotes as &quot;)
-          inner = showdown.subParser('makehtml.hardLineBreaks')(inner, options, globals);
-          inner = inner.replace(/"/g, '&quot;');
-          let wrapped = showdown.subParser('makehtml.hashHTMLSpans')(tagOpen + inner + tagClose, options, globals);
-
-          // remove inner nodes and their delimiters from the lists
-          let n2 = opener.next;
-          while (n2 !== null && n2 !== closer) {
-            let nx = n2.next;
-            if (n2.type === 'delim') {
-              removeDelimiter(n2);
-            }
-            n2 = nx;
-          }
-          // splice in a single text node holding the wrapped (hashed) result
-          let wrapNode = {type: 'text', literal: wrapped};
-          insertAfter(opener, wrapNode);
-          // relink opener.next directly to closer (drop the removed inner nodes)
-          wrapNode.next = closer;
-          closer.prev = wrapNode;
-
-          // drop fully-consumed delimiters
-          if (opener.numdelims === 0) {
-            opener.literal = '';
-            removeDelimiter(opener);
-          }
-          if (closer.numdelims === 0) {
-            closer.literal = '';
-            let tmp = closer.delimNext;
-            removeDelimiter(closer);
-            closer = tmp;
-          }
-        } else {
-          openersBottom[oldCloser.cc][oldCloser.origdelims % 3] = oldCloser.delimPrev;
-          if (!oldCloser.canOpen) {
-            removeDelimiter(oldCloser);
-          }
-          closer = oldCloser.delimNext;
-        }
-      }
-    }
-  }
-
-  // it's faster to have separate regexes for each case than have just one
-  // because of backtracking, in some cases, it could lead to an exponential effect
-  // called "catastrophic backtrace". Ominous!
-  const lmwuStrongEmRegex         = /\b___(\S[\s\S]*?)___\b/g,
-      lmwuStrongRegex             = /\b__(\S[\s\S]*?)__\b/g,
-      lmwuEmRegex                 = /\b_(\S[\s\S]*?)_\b/g,
-      underscoreStrongEmRegex     = /___(\S[\s\S]*?)___/g,
-      unserscoreStrongRegex       = /__(\S[\s\S]*?)__/g,
-      unserscoreEmRegex           = /_([^\s_][\s\S]*?)_/g,
-
-      asteriskStrongEm            = /\*\*\*(\S[\s\S]*?)\*\*\*/g,
-      asteriskStrong              = /\*\*(\S[\s\S]*?)\*\*/g,
-      asteriskEm                  = /\*([^\s*][\s\S]*?)\*/g;
-
-
-  // Parse underscores
-  if (options.literalMidWordUnderscores) {
-    text = text.replace(lmwuStrongEmRegex, function (wm, txt) {
-      return parseInside (txt, '<strong><em>', wm, lmwuStrongEmRegex);
-    });
-    text = text.replace(lmwuStrongRegex, function (wm, txt) {
-      return parseInside (txt, '<strong>', wm, lmwuStrongRegex);
-    });
-    text = text.replace(lmwuEmRegex, function (wm, txt) {
-      return parseInside (txt, '<em>', wm, lmwuEmRegex);
-    });
-  } else {
-    text = text.replace(underscoreStrongEmRegex, function (wm, m) {
-      return (/\S$/.test(m)) ? parseInside (m, '<strong><em>', wm, underscoreStrongEmRegex) : wm;
-    });
-    text = text.replace(unserscoreStrongRegex, function (wm, m) {
-      return (/\S$/.test(m)) ? parseInside (m, '<strong>', wm, unserscoreStrongRegex) : wm;
-    });
-    text = text.replace(unserscoreEmRegex, function (wm, m) {
-      // !/^_[^_]/.test(m) - test if it doesn't start with __ (since it seems redundant, we removed it)
-      return (/\S$/.test(m)) ? parseInside (m, '<em>', wm, unserscoreEmRegex) : wm;
-    });
-  }
-
-  // Now parse asterisks
-  text = text.replace(asteriskStrongEm, function (wm, m) {
-    return (/\S$/.test(m)) ? parseInside (m, '<strong><em>', wm, asteriskStrongEm) : wm;
-  });
-  text = text.replace(asteriskStrong, function (wm, m) {
-    return (/\S$/.test(m)) ? parseInside (m, '<strong>', wm, asteriskStrong) : wm;
-  });
-  text = text.replace(asteriskEm, function (wm, m) {
-    // !/^\*[^*]/.test(m) - test if it doesn't start with ** (since it seems redundant, we removed it)
-    return (/\S$/.test(m)) ? parseInside (m, '<em>', wm, asteriskEm) : wm;
-  });
-  //}
-  let afterEvent = new showdown.Event('makehtml.emphasisAndStrong.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/encodeAmpsAndAngles.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Smart processing for ampersands and angle brackets that need to be encoded.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.encodeAmpsAndAngles', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.encodeAmpsAndAngles.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  // Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
-  // http://bumppo.net/projects/amputator/
-  text = text.replace(/&(?!#?[xX]?(?:[\da-fA-F]+|\w+);)/g, '&amp;');
-
-  // Encode naked <'s
-  text = text.replace(/<(?![a-z/?$!])/gi, '&lt;');
-
-  // Encode <
-  text = text.replace(/</g, '&lt;');
-
-  // Encode >
-  text = text.replace(/>/g, '&gt;');
-
-  // encode "
-  text = text.replace(/"/g, '&quot;');
-
-  let afterEvent = new showdown.Event('makehtml.encodeAmpsAndAngles.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/encodeBackslashEscapes.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Returns the string, with after processing the following backslash escape sequences.
-//
-// The polite way to do this is with the new escapeCharacters() function:
-//
-// text = escapeCharacters(text,"\\",true);
-// text = escapeCharacters(text,"`*_{}[]()>#+-.!",true);
-//
-// ...but we're sidestepping its use of the (slow) RegExp constructor
-// as an optimization for Firefox.  This function gets called a LOT.
-//
-// ***Author:***
-// - attacklab
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.encodeBackslashEscapes', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.encodeBackslashEscapes.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  text = text
-    .replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback)
-    .replace(/\\([!#%'()*+,\-./:;=?@[\]\\^_`{|}~])/g, showdown.helper.escapeCharactersCallback)
-    .replace(/\\¨D/g, '¨D') // escape $ (which was already escaped as ¨D) (charcode is 36)
-    .replace(/\\&/g, '&amp;') // escape &
-    .replace(/\\"/g, '&quot;') // escaping "
-    .replace(/\\</g, '&lt;') // escaping <
-    .replace(/\\>/g, '&gt;'); // escaping >
-
-  let afterEvent = new showdown.Event('makehtml.encodeBackslashEscapes.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/emoji.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Encode/escape certain characters inside Markdown code runs.
-// The point is that in code, these characters are literals,
-// and lose their special Markdown meanings.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.encodeCode.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
 
   // Encode all ampersands; HTML entities are not
   // entities within a Markdown code span.
@@ -6735,667 +2738,312 @@ showdown.subParser('makehtml.encodeCode', function (text, options, globals) {
   // Now, escape characters that are magic in Markdown:
     .replace(/([*_{}[\]\\=~-])/g, showdown.helper.escapeCharactersCallback);
 
-  let afterEvent = new showdown.Event('makehtml.encodeCode.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/escapeSpecialCharsWithinTagAttributes.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Within tags -- meaning between < and > -- encode [\ ` * _ ~ =] so they
-// don't conflict with their use in Markdown for code, italics and strong.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  // In CommonMark raw-HTML mode this escaping is skipped: inline raw HTML is instead
-  // recognized with the strict grammar and hashed in spanGamut (makehtml.hashCmRawHTML),
-  // after backslash escapes and link/image destinations have been resolved. Escaping
-  // `=`/`_`/etc. here would corrupt that later strict tag recognition.
-  if (!options.cmSpec) {
-    // Build a regex to find HTML tags.
-    let tags     = /<\/?[a-z\d_:-]+(?:\s+[\s\S]+?)?>/gi,
-        comments = /<!(--(([^>-]|-[^>])([^-]|-[^-])*)--)>/gi;
-
-    text = text.replace(tags, function (wholeMatch) {
-      return wholeMatch
-        .replace(/(.)<\/?code>(?=.)/g, '$1`')
-        .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
-    });
-
-    text = text.replace(comments, function (wholeMatch) {
-      return wholeMatch
-        .replace(/([\\`*_~=|])/g, showdown.helper.escapeCharactersCallback);
-    });
-  }
-
-  let afterEvent = new showdown.Event('makehtml.escapeSpecialCharsWithinTagAttributes.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
+  return text;
+};
 
 /**
- * GFM footnotes (cmark-gfm footnotes extension).
+ * @file      helpers/escapes.js
+ * @summary   Character escaping and showdown's internal escape/sentinel placeholder plumbing.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
  *
- * Runs in two phases (selected by the `phase` argument):
- *   'strip' - before stripLinkDefinitions: collect `[^label]: body` definitions
- *             into globals and replace `[^label]` references that have a definition
- *             with a hashed `<sup>` span (numbered by order of first reference).
- *   'build' - after paragraphs: render the referenced footnotes into a
- *             `<section class="footnotes">` and append it to the document.
+ * `escapeCharactersCallback`, the `¨E<code>E` escape-placeholder scheme
+ * (`escapePlaceholder`/`unescapePlaceholders`), the `$`/`¨` sentinel restore
+ * (`restoreDollarsAndTremas`) and HTML entity (un)escaping. Load-order safe: no
+ * other-helper reads happen at load time.
  */
-showdown.subParser('makehtml.footnotes', function (text, options, globals, phase) {
+
+function escapeCharactersCallback (wholeMatch, m1) {
+  'use strict';
+  return showdown.helper.escapePlaceholder(m1);
+}
+
+/**
+ * Callback used to escape characters when passing through String.replace
+ * @static
+ * @param {string} wholeMatch
+ * @param {string} m1
+ * @returns {string}
+ */
+showdown.helper.escapeCharactersCallback = escapeCharactersCallback;
+
+// --- Internal escape-placeholder scheme (single source of truth) ------------------------
+// A protected character X (e.g. a backslash-escaped punctuation mark) is stored as the
+// placeholder `¨E<charCode>E` so later passes don't treat it as markup; it is restored to
+// the literal character at the end of the pipeline (showdown.helper.unescapePlaceholders) or
+// wherever a bare/backslashed form is needed.
+
+/**
+ * Produce the escape placeholder for a single character.
+ * @param {string} chr
+ * @returns {string}
+ */
+showdown.helper.escapePlaceholder = function (chr) {
+  return '¨E' + chr.charCodeAt(0) + 'E';
+};
+
+/**
+ * Restore every `¨E<code>E` placeholder in a string. Without `transform` each placeholder
+ * becomes its literal character; `transform` (given that character) can customize the
+ * replacement (e.g. re-adding a leading backslash inside raw HTML).
+ * @param {string} text
+ * @param {function(string):string} [transform]
+ * @returns {string}
+ */
+showdown.helper.unescapePlaceholders = function (text, transform) {
+  return text.replace(/¨E(\d+)E/g, function (wholeMatch, code) {
+    let chr = String.fromCharCode(parseInt(code, 10));
+    return transform ? transform(chr) : chr;
+  });
+};
+
+// `$` and `¨` are swapped for the two-char sentinels `¨D`/`¨T` at the very start of
+// makeHtml (see the converter's hashDollarsAndTremas) so they survive the pipeline
+// without being read as regex-replacement metacharacters or as showdown's `¨` escape
+// marker; they are restored verbatim at the end. The restorer reverses in the opposite
+// order to the producer (which replaces `¨` first).
+
+/**
+ * Restore the `¨D`/`¨T` sentinels back to literal `$` and `¨`.
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.restoreDollarsAndTremas = function (text) {
+  return text.replace(/¨D/g, function () { return '$'; })
+    .replace(/¨T/g, function () { return '¨'; });
+};
+
+/**
+ * Unescape HTML entities
+ * @param txt
+ * @returns {string}
+ */
+showdown.helper.unescapeHTMLEntities = function (txt) {
   'use strict';
 
-  if (!options.footnotes) {
-    return text;
-  }
+  return txt
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&');
+};
 
-  if (phase === 'strip') {
-    text = collectDefinitions(text);
-    text = replaceReferences(text);
-    return text;
-  }
-  if (phase === 'build') {
-    return buildSection(text);
-  }
-  return text;
-
-  // ---- phase 1a: collect (and remove) `[^label]: body` definitions ----------
-
-  function collectDefinitions (str) {
-    globals.gFootnotes = globals.gFootnotes || {};
-    str += '¨0';
-    let n = str.length,
-        out = '',
-        i = 0;
-    while (i < n) {
-      // `i` is always at a line start here; a footnote definition may begin at any line
-      // (it can interrupt a paragraph), so we try one at every line.
-      let def = tryParseDefinition(str, i);
-      if (def) {
-        let norm = showdown.helper.cmNormalizeLabel(def.rawLabel);
-        if (norm !== '' && showdown.helper.isUndefined(globals.gFootnotes[norm])) {
-          globals.gFootnotes[norm] = { bodyRaw: def.body, rawLabel: def.rawLabel };
-        }
-        i = def.end;
-        continue;
-      }
-      let nl = str.indexOf('\n', i);
-      if (nl === -1) {
-        out += str.slice(i);
-        break;
-      }
-      out += str.slice(i, nl + 1);
-      i = nl + 1;
-    }
-    return out.replace(/¨0/, '');
-  }
-
-  /**
-   * Try to parse a single footnote definition starting at `start` (a line start).
-   * The body is the same-line remainder plus continuation lines indented by at
-   * least 4 spaces (with that 4-space base removed), up to a less-indented line.
-   * @returns {{rawLabel: string, body: string, end: number}|null}
-   */
-  function tryParseDefinition (str, start) {
-    let n = str.length,
-        j = start,
-        sp = 0;
-    while (j < n && str.charAt(j) === ' ' && sp < 3) { j++; sp++; }
-    if (str.charAt(j) !== '[' || str.charAt(j + 1) !== '^') { return null; }
-    j += 2;
-
-    let label = '';
-    while (j < n) {
-      let c = str.charAt(j);
-      if (c === '\\' && j + 1 < n) { label += c + str.charAt(j + 1); j += 2; continue; }
-      if (c === ']') { break; }
-      // a footnote label may not contain whitespace or a nested '['
-      if (c === '[' || /\s/.test(c)) { return null; }
-      label += c;
-      j++;
-    }
-    if (str.charAt(j) !== ']' || label === '' || str.charAt(j + 1) !== ':') { return null; }
-    j += 2;
-
-    let nl = str.indexOf('\n', j),
-        firstEnd = (nl === -1) ? n : nl,
-        firstLine = str.slice(j, firstEnd).replace(/^[ \t]+/, '').replace(/¨0$/, ''),
-        bodyLines = [];
-    if (firstLine !== '') { bodyLines.push(firstLine); }
-    let k = (nl === -1) ? n : nl + 1;
-
-    while (k < n) {
-      let lineNl = str.indexOf('\n', k),
-          lineEnd = (lineNl === -1) ? n : lineNl,
-          line = str.slice(k, lineEnd);
-      if (line.slice(0, 2) === '¨0') { break; }
-      if (/^[ \t]*$/.test(line)) {
-        bodyLines.push('');
-        k = (lineNl === -1) ? n : lineNl + 1;
-        continue;
-      }
-      if (/^ {4}/.test(line)) {
-        bodyLines.push(line.slice(4));
-        k = (lineNl === -1) ? n : lineNl + 1;
-      } else {
-        break;
-      }
-    }
-
-    while (bodyLines.length && bodyLines[bodyLines.length - 1] === '') { bodyLines.pop(); }
-    return { rawLabel: label, body: bodyLines.join('\n'), end: k };
-  }
-
-  // ---- phase 1b: replace `[^label]` references with hashed <sup> spans -------
-
-  // Replace inline code spans with `¨FN<n>¨` placeholders so a `[^id]` inside them stays
-  // literal. Linear scan (ReDoS-safe): a code span is a back-tick run closed by a run of the
-  // same length. Unbalanced runs are left as text. Worst case is sub-quadratic because runs
-  // that stay unmatched must have distinct lengths (equal-length runs pair up).
-  function hashInlineCodeSpans (str, store) {
-    let pieces = [], textStart = 0, i = 0, n = str.length;
-    while (i < n) {
-      if (str.charAt(i) !== '`') { i++; continue; }
-      let j = i;
-      while (j < n && str.charAt(j) === '`') { j++; }
-      let len = j - i, k = j, close = -1;
-      while (k < n) {
-        if (str.charAt(k) === '`') {
-          let m = k;
-          while (m < n && str.charAt(m) === '`') { m++; }
-          if (m - k === len) { close = m; break; }
-          k = m;
-        } else {
-          k++;
-        }
-      }
-      if (close !== -1) {
-        pieces.push(str.substring(textStart, i));
-        store.push(str.substring(i, close));
-        pieces.push('¨FN' + (store.length - 1) + '¨');
-        textStart = close;
-        i = close;
-      } else {
-        // opening run with no matching closer: leave it as literal text
-        i = j;
-      }
-    }
-    pieces.push(str.substring(textStart));
-    return pieces.join('');
-  }
-
-  function replaceReferences (str, raw) {
-    globals.gFootnoteOrder = globals.gFootnoteOrder || [];
-    globals.gFootnoteRefs = globals.gFootnoteRefs || {};
-
-    // Protect inline code spans so a `[^id]` inside back-ticks stays literal. A linear scan
-    // (not a backtracking regex) keeps this safe on long back-tick runs in attacker input.
-    // Fenced/indented code is already hashed before this pass.
-    let spans = [];
-    str = hashInlineCodeSpans(str, spans);
-
-    // a footnote label may not contain whitespace, so `[^a b]` is not a reference.
-    // `[` is excluded from the label too: it can never appear in a valid label, and
-    // excluding it stops the scan from running past the label start of the *next*
-    // `[^...` (which would otherwise backtrack quadratically on inputs like `[^`.repeat(n)).
-    str = str.replace(/\[\^([^\s\][]+)]/g, function (whole, rawLabel, offset, full) {
-      // an escaped reference (`\[^id]`, an odd number of leading back-slashes) is literal
-      let bs = 0, p = offset - 1;
-      while (p >= 0 && full.charAt(p) === '\\') { bs++; p--; }
-      if (bs % 2 === 1) {
-        return whole;
-      }
-      let norm = showdown.helper.cmNormalizeLabel(rawLabel),
-          fn = globals.gFootnotes[norm];
-      if (showdown.helper.isUndefined(fn)) {
-        return whole;
-      }
-      let ref = globals.gFootnoteRefs[norm];
-      if (showdown.helper.isUndefined(ref)) {
-        globals.gFootnoteOrder.push(norm);
-        ref = globals.gFootnoteRefs[norm] = {
-          number: globals.gFootnoteOrder.length,
-          encId: showdown.helper.cmEncodeURI(fn.rawLabel),
-          occurrences: 0
-        };
-      }
-      ref.occurrences++;
-      let idSuffix = (ref.occurrences === 1) ? '' : '-' + ref.occurrences,
-          sup = '<sup class="footnote-ref"><a href="#fn-' + ref.encId +
-            '" id="fnref-' + ref.encId + idSuffix + '" data-footnote-ref>' + ref.number + '</a></sup>';
-      // `raw` (footnote bodies): emit the markup inline so the nested conversion keeps it;
-      // otherwise (main text) hash it so the inline parser leaves it alone.
-      return raw ? sup : showdown.helper._hashHTMLSpan(sup, globals);
-    });
-
-    // restore the protected code spans
-    str = str.replace(/¨FN(\d+)¨/g, function (whole, n) { return spans[n]; });
-    return str;
-  }
-
-  // ---- phase 2: render the referenced footnotes into a <section> ------------
-
-  function buildSection (str) {
-    let order = globals.gFootnoteOrder;
-    if (!order || order.length === 0) {
-      return str;
-    }
-    let items = '';
-    for (let idx = 0; idx < order.length; idx++) {
-      let norm = order[idx],
-          fn = globals.gFootnotes[norm],
-          ref = globals.gFootnoteRefs[norm],
-          body = renderBody(fn.bodyRaw);
-      body = insertBackrefs(body, buildBackrefs(ref));
-      items += '<li id="fn-' + ref.encId + '">\n' + body + '\n</li>\n';
-    }
-    return str + '\n<section class="footnotes" data-footnotes>\n<ol>\n' + items + '</ol>\n</section>\n';
-  }
-
-  function renderBody (bodyRaw) {
-    // Resolve any footnote references nested inside this body, continuing the document's
-    // numbering (this may append further footnotes to the order, which buildSection's
-    // loop then renders). They are emitted as raw <sup> markup so the nested conversion
-    // preserves them.
-    let body = replaceReferences(bodyRaw, true);
-    // Render the (multi-block) body to complete HTML via a nested conversion. This runs
-    // the full block pipeline (indented-code framing, fenced code, block quotes,
-    // paragraphs) and leaves no hash placeholders behind, which matters because the
-    // section is appended after the main paragraphs pass.
-    return globals.converter.makeHtml(body).replace(/\n+$/, '');
-  }
-
-  function buildBackrefs (ref) {
-    let parts = [];
-    for (let j = 1; j <= ref.occurrences; j++) {
-      let id = 'fnref-' + ref.encId + (j === 1 ? '' : '-' + j),
-          idx = ref.number + (j === 1 ? '' : '-' + j),
-          inner = (j === 1) ? '↩' : '↩<sup class="footnote-ref">' + j + '</sup>';
-      parts.push('<a href="#' + id + '" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="' +
-        idx + '" aria-label="Back to reference ' + idx + '">' + inner + '</a>');
-    }
-    return parts.join(' ');
-  }
-
-  function insertBackrefs (body, backrefs) {
-    if (/<\/p>\s*$/.test(body)) {
-      return body.replace(/<\/p>\s*$/, ' ' + backrefs + '</p>');
-    }
-    return body + '\n' + backrefs;
-  }
-});
-
-////
-// makehtml/githubCodeBlock.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Handle github codeblocks prior to running HashHTML so that
-// HTML contained within the codeblock gets escaped properly
-// Example:
-// ```ruby
-// def hello_world(x)
-//     puts "Hello, #{x}"
-// end
-// ```
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals, topLevelOnly) {
+/**
+ * HTML-escape the characters that are significant in element and (double-quoted)
+ * attribute contexts: `&`, `<`, `>`, `"`. Ampersand is escaped unconditionally,
+ * so callers must pass a decoded/plain string (not one that already contains
+ * entities they wish to preserve). Used to harden values that are concatenated
+ * straight into generated markup (e.g. document metadata).
+ * @param {string} str
+ * @returns {string}
+ */
+showdown.helper.escapeHTMLEntities = function (str) {
   'use strict';
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+};
 
-  // early exit if option is not enabled
-  if (!options.ghCodeBlocks) {
-    return text;
+/**
+ * @file      helpers/gfmAutolinks.js
+ * @summary   The shared GFM anchor machinery used by the inline anchor constructs that route through it (nakedUrl/ghMentions).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * `writeAnchorTag` (the `<a>` builder + `makehtml.link.<variant>.*` events), the `validAutolinkHost`
+ * GFM host validator and the two `*_ANCHOR_URL_POLICY` href-policy constants. The real callers of
+ * `writeAnchorTag` are nakedUrl.js and ghMentions.js — link.js and autolink.js build their `<a>`
+ * directly via `_populateAttributes`/`_hashHTMLSpan` and do NOT route through here; `validAutolinkHost`
+ * is shared by autolink.js and nakedUrl.js. The one real divergence — the CM/GFM href policy
+ * deliberately does NOT run safeMode / cmNormalizeURL / the quote-angle attribute escape on the href
+ * (doing so would corrupt the entity-encoded mailto emitted by encodeEmails) — is injected through the
+ * `urlPolicy` argument rather than forked. Load-order safe: every cross-helper / subParser / Event
+ * reference happens inside function bodies (call time).
+ */
+
+/**
+ * The href post-processing a caller wants `writeAnchorTag` to apply. The legacy anchor policy
+ * enables all three; the CM/GFM policy (cmSpec, and the GFM naked-URL/mention overlay) enables none
+ * of them. Each flag still respects the relevant runtime option (`safeMode` also checks
+ * `options.safeMode`; `cmNormalize` also checks `options.cmSpec`).
+ */
+showdown.helper.LEGACY_ANCHOR_URL_POLICY = {safeMode: true, cmNormalize: true, escapeAttr: true};
+showdown.helper.CM_GFM_ANCHOR_URL_POLICY = {safeMode: false, cmNormalize: false, escapeAttr: false};
+
+/**
+ * Build an `<a>` anchor, resolving reference ids, applying the href post-processing selected by
+ * `urlPolicy`, dispatching the `makehtml.link.<subEvtName>.onCapture`/`.onHash` events (so listener
+ * extensions can rewrite the anchor) and hashing the result. Shared by the inline anchor constructs
+ * that route through it (nakedUrl.js, ghMentions.js).
+ * @param {string} subEvtName link variant (`inline`/`reference`/`angleBrackets`/`autoLink`)
+ * @param {RegExp} pattern the matching regex (event metadata)
+ * @param {string} wholeMatch
+ * @param {string} text the link text
+ * @param {string|null} [linkId]
+ * @param {string|null} [url]
+ * @param {string|null} [title]
+ * @param {boolean} [emptyCase]
+ * @param {{}} options
+ * @param {{}} globals
+ * @param {{safeMode: boolean, cmNormalize: boolean, escapeAttr: boolean}} urlPolicy
+ * @returns {string}
+ */
+showdown.helper.writeAnchorTag = function (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase, options, globals, urlPolicy) {
+
+  let matches = {
+        _wholeMatch: wholeMatch,
+        _linkId: linkId,
+        _url: url,
+        _title: title,
+        text: text
+      },
+      otp,
+      attributes = {};
+
+  title = title || null;
+  url = url || null;
+  if (linkId) {
+    // one label normalization for all flavors: definitions are stored under
+    // cmNormalizeLabel (see stripLinkDefinitions), so uses must fold identically
+    linkId = showdown.helper.cmNormalizeLabel(linkId);
+  } else {
+    linkId = null;
   }
+  emptyCase = !!emptyCase;
 
-  let startEvent = new showdown.Event('makehtml.githubCodeBlock.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output + '¨0';
-
-  // In CommonMark container mode the converter-level pass restricts the *opening* fence to
-  // indent 0; indent 1-3 opening fences are owned by the container parsers (a list item's /
-  // block quote's own fence) or handled by a later blockGamut pass for true top-level ones.
-  // This stops an item's indented opening/closing fence from being mistaken for a new
-  // top-level opening fence. The closing fence keeps its 0-3 indent allowance either way.
-  const open = topLevelOnly ? '' : ' {0,3}';
-  //const accentRegex = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)(?:(\n {0,3}\1[`~]*)|¨0)/g;
-  // The info string is the rest of the opening line. CommonMark forbids backticks only in a
-  // *backtick* fence's info string (a tilde fence may contain backticks and tildes); that
-  // restriction is enforced in parse() since it needs to know the fence type. The `(?!`)` /
-  // `(?!~)` lookaheads keep the opening fence maximal: without them the now-permissive info
-  // class lets the delimiter backtrack (e.g. `~~~~~~` splitting into a `~~~` fence + `~~~`
-  // info), inventing a spurious shorter fence.
-  const fence = '(```+(?!`)|~~~+(?!~))';
-  const closedBlockRegex   = new RegExp('^' + open + fence + ' *([^\\n]*)\\n([\\s\\S]*?)\\n {0,3}\\1[`~]*', 'gm');
-  const unclosedBlockRegex = new RegExp('^' + open + fence + ' *([^\\n]*)\\n([\\s\\S]*?)¨0', 'gm');
-  const emptyBlockRegex    = new RegExp('^' + open + fence + ' *([^\\n]*)\\n {0,3}\\1[`~]*', 'gm');
-
-  text = text.replace(closedBlockRegex, function (wholeMatch, delim, language, codeblock) {
-    return parse(closedBlockRegex, wholeMatch, delim, language, codeblock);
-  });
-
-  text = text.replace(emptyBlockRegex, function (wholeMatch, delim, language) {
-    return parse(emptyBlockRegex, wholeMatch, delim, language, '');
-  });
-
-  // In topLevelOnly mode, skip the unclosed (run-to-EOF) pass: a genuine indent-0 opener
-  // pairs via the closed/empty passes above, whereas a lone indent-0 *closing* fence of an
-  // indent 1-3 top-level block would otherwise be mistaken for an opener and swallow the
-  // rest of the document. Such an indented top-level fence (and any truly unclosed one) is
-  // handled by the 0-3 blockGamut pass that runs after the container parsers.
-  if (!topLevelOnly) {
-    text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
-      return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
-    });
-  }
-
-  // attacklab: strip sentinel
-  text = text.replace(/¨0/, '');
-
-  let afterEvent = new showdown.Event('makehtml.githubCodeBlock.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-
-
-  function parse (pattern, wholeMatch, delim, language, codeblock) {
-    // CommonMark: a backtick info string may not contain backticks (tilde fences may). When it
-    // does, this is not a code block, so leave the text for inline/paragraph parsing.
-    if (delim.charAt(0) === '`' && language.indexOf('`') !== -1) {
+  if (emptyCase) {
+    url = '';
+  } else if (!url) {
+    if (!linkId) {
+      // shortcut/collapsed reference: fold the link text as the label
+      linkId = showdown.helper.cmNormalizeLabel(text);
+    }
+    if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
+      url = globals.gUrls[linkId];
+      if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
+        title = globals.gTitles[linkId];
+      }
+    } else {
       return wholeMatch;
     }
-    let end = (options.omitExtraWLInCodeBlocks) ? '' : '\n',
-        otp,
-        attributes = {
-          pre: {},
-          code: {},
-        };
+  }
 
-    let captureStartEvent = new showdown.Event('makehtml.githubCodeBlock.onCapture', codeblock);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
-        _whoteMatch: wholeMatch,
-        codeblock: codeblock,
-        infostring: language
-      })
-      .setAttributes(attributes);
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+  url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+  // safeMode: neutralize dangerous URL schemes (javascript:, vbscript:, data:, ...)
+  if (urlPolicy.safeMode && options.safeMode && !showdown.helper.isSafeUrl(url)) {
+    url = '';
+  }
+  // cmSpec flavors percent-encode the destination. The CommonMark GFM post-pass skips this
+  // (urlPolicy.cmNormalize === false): cmNormalizeURL would decode the entity-encoded mailto:
+  // href produced by encodeEmails, making the href/text inconsistent, so skipping it keeps the
+  // output identical to the legacy (non-cmSpec) path.
+  if (urlPolicy.cmNormalize && options.cmSpec) {
+    url = showdown.helper.cmNormalizeURL(url);
+  }
+  url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+  // escape characters that would otherwise break out of the quoted href attribute
+  // (a `"` in the destination is an attribute-injection vector). cmSpec flavors already
+  // percent-encode the URL above, so this is a no-op there.
+  if (urlPolicy.escapeAttr) {
+    url = url
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+  attributes.href = url;
 
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-
+  if (title && showdown.helper.isString(title)) {
+    if (options.cmSpec) {
+      title = showdown.helper.cmEscapeTitle(title);
     } else {
-
-      // First parse the github code block
-      let infostring = captureStartEvent.matches.infostring;
-      let lang = infostring.trim().split(' ')[0];
-      // CommonMark resolves backslash escapes of ASCII punctuation in the info string
-      if (options.decodeEntities) {
-        lang = lang.replace(/\\([!-/:-@[-`{-~])/g, '$1');
-      }
-      // The language ends up inside the code element's `class` attribute, so escape the
-      // characters that could break out of it. Otherwise an info string such as
-      // `js"onmouseover="alert(1)` would close the attribute and inject an event handler (XSS).
-      // `&` is intentionally left alone: the later decodeEntities pass resolves real entities
-      // (e.g. `&ouml;`) for the class and re-escapes any that decode to `"`/`<`/`>`, so these
-      // replacements survive it while a literal quote is neutralized in both modes.
-      lang = lang
-        .replace(/"/g, '&quot;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-      codeblock = captureStartEvent.matches.codeblock;
-      codeblock = showdown.subParser('makehtml.encodeCode')(codeblock, options, globals);
-      //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
-      codeblock = codeblock
-        .replace(/^\n+/g, '')  // trim leading newlines
-        .replace(/\n+$/g, ''); // trim trailing whitespace
-
-      attributes = captureStartEvent.attributes;
-      otp = '<pre><code>';
-      if (!showdown.helper.isUndefined(attributes)) {
-        otp = '<pre' + showdown.helper._populateAttributes(attributes.pre) + '>';
-
-        // if the language has spaces followed by some other chars, according to the spec we should just ignore everything
-        // after the first space
-        if (infostring) {
-          if (!attributes.code) {
-            attributes.code = {};
-          }
-          if (!attributes.code.classes) {
-            attributes.code.classes = [];
-          }
-
-          if (attributes.code.classes) {
-            if (showdown.helper.isString(attributes.code.classes)) {
-              attributes.code.classes += ' ' + lang + ' language-' + lang;
-            } else if (showdown.helper.isArray(attributes.code.classes)) {
-              attributes.code.classes.push(lang);
-              attributes.code.classes.push('language-' + lang);
-            }
-          }
-        }
-
-        otp += '<code' + showdown.helper._populateAttributes(attributes.code) + '>';
-      }
-      if (options.omitExtraWLInCodeBlocks) {
-        end = '';
-      }
-      otp += codeblock + end + '</code></pre>';
+      title = title
+        .replace(/"/g, '&quot;');
     }
-
-    let beforeHashEvent = new showdown.Event('makehtml.githubCodeBlock.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    otp = showdown.subParser('makehtml.hashBlock')(otp, options, globals);
-
-    // Since GHCodeblocks can be false positives, we need to
-    // store the primitive text and the parsed text in a global var,
-    // and then return a token
-    return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: otp}) - 1) + 'G\n\n';
+    title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+    attributes.title = title;
   }
 
+  let captureStartEvent = showdown.Event.dispatchCapture('makehtml.link.' + subEvtName + '.onCapture', wholeMatch, {
+    regexp: pattern,
+    matches: matches,
+    attributes: attributes
+  }, options, globals);
 
-});
-
-////
-// makehtml/hardLineBreaks.js
-// Copyright (c) 2022 ShowdownJS
-//
-// Transforms hard line breaks (trailing spaces / backslash) into `<br />` tags.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-showdown.subParser('makehtml.hardLineBreaks', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.hardLineBreaks.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  // Do hard breaks
-  if (options.simpleLineBreaks) {
-    // GFM style hard breaks
-    // only add line breaks if the text does not contain a block (special case for lists)
-    if (!/\n\n¨K/.test(text)) {
-      text = text.replace(/\n+/gm, '<br />\n');
-    }
+  // if something was passed as output, it takes precedence
+  // and will be used as output
+  if (captureStartEvent.output && captureStartEvent.output !== '') {
+    otp = captureStartEvent.output;
   } else {
-    // Vanilla hard breaks
-    text = text.replace(/  +\n/g, '<br />\n');
+    attributes = captureStartEvent.attributes;
+    text = captureStartEvent.matches.text || '';
+    // The only real callers pass plain anchor text — a ghMentions `@user` handle or the
+    // pre-escaped naked-URL / mail address — which never contains inline markdown, so there
+    // is nothing to re-parse here. The final hashHTMLSpans below protects the built anchor.
+    otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
   }
-  text = text.replace(/\\\n/g, '<br />\n');
 
-  let afterEvent = new showdown.Event('makehtml.hardLineBreaks.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
+  let beforeHashEvent = showdown.Event.dispatchHash('makehtml.link.' + subEvtName + '.onHash', otp, options, globals);
+  otp = beforeHashEvent.output;
+  return showdown.helper.hashHTMLSpans(otp, options, globals);
+};
 
-});
+/**
+ * GFM extended www autolink host validation: the host must have at least two labels and the last
+ * two must not contain `_`. Explicit-scheme (http/https/ftp) urls are not domain-validated. Shared
+ * (≥2 call sites → helper per the project's rule) by the autolink construct (the `<www...>` arm)
+ * and the simplifiedAutoLink naked-URL post-pass.
+ * @param {string} url
+ * @param {boolean} isWww
+ * @returns {boolean}
+ */
+showdown.helper.validAutolinkHost = function (url, isWww) {
+  if (!isWww) { return true; }
+  let host = url.split(/[/?#]/)[0],
+      labels = host.split('.');
+  if (labels.length < 2) { return false; }
+  return !/_/.test(labels.slice(-2).join('.'));
+};
 
-////
-// makehtml/hashBlock.js
-// Copyright (c) 2018 ShowdownJS
-//
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
+/**
+ * @file      helpers/hashBlock.js
+ * @summary   Replaces a finished block of HTML with a `¨K…K` placeholder stored in `globals.gHtmlBlocks`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Core hash plumbing so processed blocks aren't reparsed. A `showdown.helper.*` mechanism, not a
+ * construct; emits no events.
+ */
 
-
-showdown.subParser('makehtml.hashBlock', function (text, options, globals) {
+showdown.helper.hashBlock = function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.Event('makehtml.hashBlock.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
 
   text = text.replace(/(^\n+|\n+$)/g, '');
   text = '\n\n¨K' + (globals.gHtmlBlocks.push(text) - 1) + 'K\n\n';
 
-  let afterEvent = new showdown.Event('makehtml.hashBlock.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
+  return text;
+};
 
-////
-// makehtml/hashCodeTags.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Hash and escape <code> elements that should not be parsed as markdown
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
+/**
+ * @file      helpers/hashHTMLBlocks.js
+ * @summary   Hashes block-level HTML that the block parsers GENERATED, so `paragraphs` won't wrap it in `<p>`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `showdown.helper.*` MECHANISM (no events, not a construct): it protects the markup the block
+ * parsers just produced from a spurious `<p>` wrap. It has NO source-recognition role — recognizing
+ * raw HTML blocks in the Markdown *source* is the job of the `makehtml.htmlBlock` subparser. Called
+ * by `blockGamut` and `list` on generated markup. Uses the shared `¨K`/`gHtmlBlocks` placeholder
+ * store (see `hashBlock`).
+ */
 
-
-showdown.subParser('makehtml.hashCodeTags', function (text, options, globals) {
+showdown.helper.hashHTMLBlocks = function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.Event('makehtml.hashCodeTags.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  let repFunc = function (wholeMatch, match, left, right) {
-    let codeblock = left + showdown.subParser('makehtml.encodeCode')(match, options, globals) + right;
-    return '¨C' + (globals.gHtmlSpans.push(codeblock) - 1) + 'C';
-  };
-
-  // Hash naked <code>
-  text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '<code\\b[^>]*>', '</code>', 'gim');
-
-  let afterEvent = new showdown.Event('makehtml.hashCodeTags.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-showdown.subParser('makehtml.hashElement', function (text, options, globals) {
-  'use strict';
-
-  return function (wholeMatch, m1) {
-    let blockText = m1;
-
-    // Undo double lines
-    blockText = blockText.replace(/\n\n/g, '\n');
-    blockText = blockText.replace(/^\n/, '');
-
-    // strip trailing blank lines
-    blockText = blockText.replace(/\n+$/g, '');
-
-    // Replace the element text with a marker ("¨KxK" where x is its key)
-    blockText = '\n\n¨K' + (globals.gHtmlBlocks.push(blockText) - 1) + 'K\n\n';
-
-    return blockText;
-  };
-});
-
-////
-// makehtml/hashHTMLBlocks.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Hash HTML blocks
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, sourceMode) {
-  'use strict';
-  let startEvent = new showdown.Event('makehtml.hashHTMLBlocks.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
 
   let blockTags = [
         'pre',
@@ -7444,27 +3092,22 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, 
         return '\n\n¨K' + (globals.gHtmlBlocks.push(txt) - 1) + 'K\n\n';
       };
 
-  if (options.backslashEscapesHTMLTags) {
-    // encode backslash escaped HTML tags
-    text = text.replace(/\\<(\/?[^>]+?)>/g, function (wm, inside) {
-      return '&lt;' + inside + '&gt;';
-    });
-  }
+  // Replace a standalone element (captured in group 1) with a `¨KxK` placeholder — the shared
+  // `¨K` placeholder builder for standalone HR / processor-instruction generated markup below.
+  function hashElement (wholeMatch, m1) {
+    let blockText = m1;
 
-  // The CommonMark block scanner only applies to the original Markdown source
-  // (the converter-level pass). blockGamut re-invokes this subparser on the markup
-  // it has just generated to prevent <p>-wrapping; there the existing balanced-tag
-  // hashing is correct (and must not over-consume generated block tags).
-  if (options.cmSpec && sourceMode) {
-    text = parseCmHTMLBlocks(text);
+    // Undo double lines
+    blockText = blockText.replace(/\n\n/g, '\n');
+    blockText = blockText.replace(/^\n/, '');
 
-    let cmAfterEvent = new showdown.Event('makehtml.hashHTMLBlocks.onEnd', text);
-    cmAfterEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    cmAfterEvent = globals.converter.dispatch(cmAfterEvent);
-    return cmAfterEvent.output;
+    // strip trailing blank lines
+    blockText = blockText.replace(/\n+$/g, '');
+
+    // Replace the element text with a marker ("¨KxK" where x is its key)
+    blockText = '\n\n¨K' + (globals.gHtmlBlocks.push(blockText) - 1) + 'K\n\n';
+
+    return blockText;
   }
 
   // hash HTML Blocks
@@ -7473,17 +3116,23 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, 
     let opTagPos,
         rgx1     = new RegExp('^ {0,3}(<' + blockTags[i] + '\\b[^>]*>)', 'im'),
         patLeft  = '<' + blockTags[i] + '\\b[^>]*>',
-        patRight = '</' + blockTags[i] + '>';
+        patRight = '</' + blockTags[i] + '>',
+        closeRe  = new RegExp(patRight, 'im');
     // 1. Look for the first position of the first opening HTML tag in the text
     while ((opTagPos = showdown.helper.regexIndexOf(text, rgx1)) !== -1) {
 
-      // if the HTML tag is \ escaped, we need to escape it and break
-
-
       //2. Split the text in that position
-      let subTexts = showdown.helper.splitAtIndex(text, opTagPos),
-          //3. Match recursively
-          newSubText1 = showdown.helper.replaceRecursiveRegExp(subTexts[1], repFunc, patLeft, patRight, 'im');
+      let subTexts = showdown.helper.splitAtIndex(text, opTagPos);
+      // Absent-close-tag guard (ReDoS). replaceRecursiveRegExp -> rgxFindMatchPos restarts its
+      // scan once per unbalanced opener, so a run of openers with no matching closer ahead is
+      // O(n^2). If no closing tag follows the opener no balanced block can form, so skip the
+      // recursive scan — its result would be the text unchanged, exactly the `break` below, so
+      // this is byte-identical (mirrors the same guard in the makehtml.htmlBlock subparser).
+      if (!closeRe.test(subTexts[1])) {
+        break;
+      }
+      //3. Match recursively
+      let newSubText1 = showdown.helper.replaceRecursiveRegExp(subTexts[1], repFunc, patLeft, patRight, 'im');
 
       // prevent an infinite loop
       if (newSubText1 === subTexts[1]) {
@@ -7493,8 +3142,7 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, 
     }
   }
   // HR SPECIAL CASE
-  text = text.replace(/(\n {0,3}(<(hr)\b([^<>])*?\/?>)[ \t]*(?=\n{2,}))/g,
-    showdown.subParser('makehtml.hashElement')(text, options, globals));
+  text = text.replace(/(\n {0,3}(<(hr)\b([^<>])*?\/?>)[ \t]*(?=\n{2,}))/g, hashElement);
 
   // Special case for standalone HTML comments
   // A comment is terminated by either `-->` or `--!>` (the HTML "comment end
@@ -7505,157 +3153,37 @@ showdown.subParser('makehtml.hashHTMLBlocks', function (text, options, globals, 
   }, '^ {0,3}<!--', '--!?>', 'gm');
 
   // PHP and ASP-style processor instructions (<?...?> and <%...%>)
-  text = text.replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g,
-    showdown.subParser('makehtml.hashElement')(text, options, globals));
+  text = showdown.helper.replaceProcessorInstructions(text, hashElement);
 
-  let afterEvent = new showdown.Event('makehtml.hashHTMLBlocks.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
+  return text;
+};
 
-  /**
-   * CommonMark HTML blocks (spec section 4.6): a line-based scanner implementing the
-   * 7 block types, each with its own start and end condition. Block content is hashed
-   * verbatim (not parsed as Markdown). Types 1-6 may interrupt a paragraph; type 7
-   * may only start at a block boundary (document start or after a blank line).
-   * @param {string} str
-   * @returns {string}
-   */
-  function parseCmHTMLBlocks (str) {
-    const blockNames = 'address|article|aside|base|basefont|blockquote|body|caption|' +
-      'center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|' +
-      'footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hr|html|iframe|legend|' +
-      'li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|section|' +
-      'summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul';
+/**
+ * @file      helpers/hashHTMLSpans.js
+ * @summary   Replaces inline raw-HTML spans/self-closing tags with `¨C…C` placeholders (stored in `globals.gHtmlSpans`).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Uses a forward-cursor scan with an absent-close-tag cache to stay linear (ReDoS-safe). A
+ * `showdown.helper.*` mechanism, not a construct; emits no events.
+ */
 
-    let type1Start = /^ {0,3}<(?:script|pre|style|textarea)(?:[ \t>]|$)/i,
-        type1End   = /<\/(?:script|pre|style|textarea)>/i,
-        type2Start = /^ {0,3}<!--/,
-        type2End   = /-->/,
-        type3Start = /^ {0,3}<\?/,
-        type3End   = /\?>/,
-        type4Start = /^ {0,3}<![A-Za-z]/,
-        type4End   = />/,
-        type5Start = /^ {0,3}<!\[CDATA\[/,
-        type5End   = /]]>/,
-        type6Start = new RegExp('^ {0,3}</?(?:' + blockNames + ')(?:[ \\t/>]|$)', 'i'),
-        type7Start = new RegExp('^ {0,3}(?:' + showdown.helper.regexes.cmOpenTagSource + '|' +
-                      showdown.helper.regexes.cmCloseTagSource + ')[ \\t]*$'),
-        isBlank    = /^[ \t]*$/;
-
-    function startType (line, prevBlank) {
-      if (type1Start.test(line)) { return 1; }
-      if (type2Start.test(line)) { return 2; }
-      if (type3Start.test(line)) { return 3; }
-      if (type5Start.test(line)) { return 5; }
-      if (type4Start.test(line)) { return 4; }
-      if (type6Start.test(line)) { return 6; }
-      // type 7 cannot interrupt a paragraph
-      if (prevBlank && type7Start.test(line)) { return 7; }
-      return 0;
-    }
-
-    // a fenced-code opener (mirrors githubCodeBlock: an info string carries no backtick,
-    // tilde or tab). A fenced code block takes precedence over an HTML block start, so its
-    // interior lines must not be scanned for HTML block starts.
-    let fenceOpen = /^ {0,3}(```+|~~~+) *[^`~\t]*$/;
-
-    let lines = str.split('\n'),
-        out = [],
-        i = 0,
-        prevBlank = true; // document start behaves like "after a blank line"
-
-    while (i < lines.length) {
-      let type = startType(lines[i], prevBlank);
-      if (type === 0) {
-        let fence = lines[i].match(fenceOpen);
-        if (fence) {
-          // consume the whole fenced region verbatim (closing fence inclusive, or EOF) so
-          // an HTML-block-like line inside the fence cannot open an HTML block. The fence
-          // itself is hashed later by githubCodeBlock.
-          let closeRe = new RegExp('^ {0,3}[' + fence[1][0] + ']{' + fence[1].length + ',}[ \\t]*$');
-          out.push(lines[i]);
-          i++;
-          while (i < lines.length) {
-            out.push(lines[i]);
-            if (closeRe.test(lines[i])) { i++; break; }
-            i++;
-          }
-          prevBlank = false;
-          continue;
-        }
-        out.push(lines[i]);
-        prevBlank = isBlank.test(lines[i]);
-        i++;
-        continue;
-      }
-
-      let blockLines = [];
-      if (type >= 1 && type <= 5) {
-        // ends on (and includes) the line matching the end condition; may be the
-        // start line itself
-        let endRe = [null, type1End, type2End, type3End, type4End, type5End][type];
-        while (i < lines.length) {
-          let l = lines[i];
-          blockLines.push(l);
-          i++;
-          if (endRe.test(l)) { break; }
-        }
-      } else {
-        // types 6 and 7 end before the first following blank line (or at EOF)
-        while (i < lines.length && !isBlank.test(lines[i])) {
-          blockLines.push(lines[i]);
-          i++;
-        }
-      }
-
-      // wrap the placeholder in blank lines so later block parsing treats it as its
-      // own block. A CommonMark HTML block is raw verbatim source: its content (including
-      // any entities) must NOT be decoded, so it gets a distinct `¨R` marker and a separate
-      // store, and is restored late - after decodeEntities - rather than being unhashed in
-      // paragraphs like generated `¨K`/`¨G` blocks (which legitimately decode).
-      out.push('\n¨R' + (globals.gHtmlRawBlocks.push(blockLines.join('\n')) - 1) + 'R\n');
-      prevBlank = false;
-    }
-
-    return out.join('\n');
-  }
-});
-
-////
-// makehtml/hashHTMLSpans.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Hash span elements that should not be parsed as markdown
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
+showdown.helper.hashHTMLSpans = function (text, options, globals) {
   'use strict';
-  let startEvent = new showdown.Event('makehtml.hashHTMLSpans.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
 
   // NOTE: the self-closing character classes exclude `<` (`[^<>]` rather than `[^>]`) so a scan
   // for a tag's `>` can never run across the start of the *next* `<`. This keeps matching linear
   // on pathological input (`'<'.repeat(n)`) without changing results — a real tag has no bare `<`.
 
-  // Hash Self Closing tags
-  if (!options.cmSpec) {
-    text = text.replace(/<[^<>]+?\/>/gi, function (wm) {
-      return showdown.helper._hashHTMLSpan(wm, globals);
-    });
-  }
+  // This pass hashes whole `<tag …>…</tag>` spans generated by the span-gamut extras
+  // (strikethrough's `<del>`, image-based emoji's `<img>`, underline's `<u>`) before
+  // encodeAmpsAndAngles escapes their `<`/`>`. Inline raw HTML from the SOURCE is recognized
+  // and hashed by the unified inline scan (the makehtml.inline.rawHtml construct) for every flavor
+  // now, so this pass no longer owns source raw-HTML recognition — the two former non-cmSpec
+  // catch-all hashers are gone, and a
+  // bare `<`/`>` in the source (e.g. `4 < 5 and 6 > 3`) is escaped by encodeAmpsAndAngles
+  // instead of being swallowed here.
 
   // Hash whole `<tag …>…</tag>` spans. This is done with a forward cursor + an "absent close
   // tag" cache rather than a `<([^<>]+?)>[\s\S]*?<\/\1>` regex: that regex re-scans to EOF for a
@@ -7666,15 +3194,6 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
   // closing name (no attributes), then tags whose first token is the closing name (with attributes).
   text = hashPairedTags(text, 'full');
   text = hashPairedTags(text, 'name');
-
-  // Hash self closing tags without />. In CommonMark raw-HTML mode the valid inline
-  // raw HTML has already been hashed earlier (spanGamut); any `<…>` left here is
-  // malformed and must NOT be hashed (it is escaped by encodeAmpsAndAngles instead).
-  if (!options.cmSpec) {
-    text = text.replace(/<[^<>]+?>/gi, function (wm) {
-      return showdown.helper._hashHTMLSpan(wm, globals);
-    });
-  }
 
   /**
    * Hash `<open>…</close>` spans in a single linear pass.
@@ -7715,623 +3234,20 @@ showdown.subParser('makehtml.hashHTMLSpans', function (text, options, globals) {
     return out;
   }
 
-  let afterEvent = new showdown.Event('makehtml.hashHTMLSpans.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/githubCodeBlock.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Hash and escape <pre><code> elements that should not be parsed as markdown
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.hashPreCodeTags', function (text, options, globals) {
-  'use strict';
-  let startEvent = new showdown.Event('makehtml.hashPreCodeTags.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  let repFunc = function (wholeMatch, match, left, right) {
-    // encode html entities
-    let codeblock = left + showdown.subParser('makehtml.encodeCode')(match, options, globals) + right;
-    return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
-  };
-
-  // Hash <pre><code>
-  text = showdown.helper.replaceRecursiveRegExp(text, repFunc, '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>', '^ {0,3}</code>\\s*</pre>', 'gim');
-
-  let afterEvent = new showdown.Event('makehtml.hashPreCodeTags.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/blockquote.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Transforms MD headings into `<h#>` html entities
-//
-// Setext-style headers:
-//	Header 1
-//	========
-//
-//	Header 2
-//	--------
-//
-// atx-style headers:
-//  # Header 1
-//  ## Header 2
-//  ## Header 2 with closing hashes ##
-//  ...
-//  ###### Header 6
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-(function () {
-
-  /**
-   *
-   * @param {string} subEvtName Heading style ('atx' or 'setext'), used to namespace the dispatched events
-   * @param {RegExp} pattern
-   * @param {string} wholeMatch
-   * @param {string} headingText
-   * @param {string} headingLevel
-   * @param {string} headingId
-   * @param {{}} options
-   * @param {{}} globals
-   * @returns {string}
-   */
-  function parseHeader (subEvtName, pattern, wholeMatch, headingText, headingLevel, headingId, options, globals) {
-    let captureStartEvent = new showdown.Event('makehtml.heading.' + subEvtName + '.onCapture', headingText),
-        otp;
-
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        heading: headingText
-      })
-      .setAttributes({
-        id: headingId
-      });
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-
-    } else {
-      headingText = captureStartEvent.matches.heading;
-      let spanGamut = showdown.subParser('makehtml.spanGamut')(headingText, options, globals),
-          attributes = captureStartEvent.attributes;
-      otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + spanGamut + '</h' + headingLevel + '>';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.heading.' + subEvtName + '.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-
-    return showdown.subParser('makehtml.hashBlock')(otp, options, globals);
-  }
-
-  showdown.subParser('makehtml.heading', function (text, options, globals) {
-    'use strict';
-
-    let startEvent = new showdown.Event('makehtml.heading.onStart', text);
-    startEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    startEvent = globals.converter.dispatch(startEvent);
-    text = startEvent.output;
-
-    text = showdown.subParser('makehtml.heading.setext')(text, options, globals);
-    text = showdown.subParser('makehtml.heading.atx')(text, options, globals);
-
-    let afterEvent = new showdown.Event('makehtml.heading.onEnd', text);
-    afterEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    afterEvent = globals.converter.dispatch(afterEvent);
-    return afterEvent.output;
-
-  });
-
-  // Normalize the `headerIds` option into {enabled, prefix, raw}. Accepts `false`
-  // (no ids), an object `{prefix, raw}`, or `true`/undefined (github ids, no prefix).
-  function resolveHeaderIds (opt) {
-    if (opt === false) {
-      return { enabled: false, prefix: '', raw: false };
-    }
-    if (showdown.helper.isObject(opt)) {
-      return {
-        enabled: true,
-        prefix: showdown.helper.isString(opt.prefix) ? opt.prefix : '',
-        raw: !!opt.raw
-      };
-    }
-    // true / null / undefined / anything else: default github ids, no prefix
-    return { enabled: true, prefix: '', raw: false };
-  }
-
-  showdown.subParser('makehtml.heading.id', function (m, options, globals) {
-    let title;
-
-    let cfg = resolveHeaderIds(options.headerIds);
-    // when ids are disabled the caller omits the attribute entirely
-    if (!cfg.enabled) {
-      return null;
-    }
-
-    // Prefix id to prevent causing inadvertent pre-existing style matches.
-    title = cfg.prefix + m;
-
-    if (cfg.raw) {
-      // minimal sanitization: only spaces, ', ", > and < become dashes (the prefix is
-      // included, so it gets the same treatment). WARNING: may produce malformed ids.
-      title = title
-        .replace(/ /g, '-')
-        // replace previously escaped chars (&, ¨ and $)
-        .replace(/&amp;/g, '&')
-        .replace(/¨T/g, '¨')
-        .replace(/¨D/g, '$')
-        // replace ", ', > and <
-        .replace(/["'><]/g, '-')
-        .toLowerCase();
-    } else {
-      // default: GitHub-compatible ids (spaces become dashes, non-alphanumeric chars
-      // are stripped). Borrowed from github's redcarpet so results are similar.
-      title = title
-        .replace(/ /g, '-')
-        // replace previously escaped chars (&, ¨ and $)
-        .replace(/&amp;/g, '')
-        .replace(/¨T/g, '')
-        .replace(/¨D/g, '')
-        // replace rest of the chars (&~$ are repeated as they might have been escaped)
-        .replace(/[&+$,/:;=?@"#{}|^¨¿？：~[\]`、゠＝…‥『』〝〟「」\\*()｛｝（）［］【】%.。，¡!！'<>]/g, '')
-        .toLowerCase();
-    }
-
-    if (globals.hashLinkCounts[title]) {
-      title = title + '-' + (globals.hashLinkCounts[title]++);
-    } else {
-      globals.hashLinkCounts[title] = 1;
-    }
-    return title;
-  });
-
-  showdown.subParser('makehtml.heading.setext', function (text, options, globals) {
-
-    let startEvent = new showdown.Event('makehtml.heading.setext.onStart', text);
-    startEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    startEvent = globals.converter.dispatch(startEvent);
-    text = startEvent.output;
-
-    // NOTE: the first line is `[^ \t\n].*` (single leading non-space + rest) rather
-    // than `[^ \t\n]+.*`. The latter has two overlapping greedy quantifiers that can
-    // consume the same characters, causing O(n^2) backtracking on a long line with no
-    // trailing underline (a DoS via any long whitespace-free input). The two forms
-    // match the same set of lines and capture the same substring.
-    const setextRegexH1 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}=+[ \t]*)$/gm,
-        setextRegexH2 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}(-+)[ \t]*)$/gm;
-
-    // CommonMark: a setext heading's text is a paragraph, so the line(s) before the
-    // underline may not begin another kind of block. Since setext runs before the
-    // list/block-quote parsers in blockGamut, a `-` underline would otherwise steal
-    // list-item lines (e.g. `- foo\n-`). When commonmarkLists is enabled, skip the
-    // match if the heading text starts a list item or block quote; the container
-    // parsers then handle those lines (and any genuine underline inside an item).
-    function cmSkipSetext (headingText) {
-      let first = headingText.split('\n')[0];
-      return /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(first) ||
-             /^ {0,3}>/.test(first) ||
-             // a fenced-code opener is a leaf block, not setext paragraph text. In container
-             // mode the converter-level fence pass leaves indent 1-3 fences for the block
-             // parsers, so they can reach setext here; let the fence (and any container
-             // marker below it) be claimed by the block/container parsers instead.
-             /^ {0,3}(?:```|~~~)/.test(first);
-    }
-
-    text = text.replace(setextRegexH1, function (wholeMatch, headingText, line1, line2, line3, line4) {
-      if (options.cmSpec && cmSkipSetext(headingText)) { return wholeMatch; }
-      return parseSetextHeading(setextRegexH2, options.headerLevelStart, wholeMatch, headingText, line1, line2, line3, line4);
-    });
-
-    text = text.replace(setextRegexH2, function (wholeMatch, headingText, line1, line2, line3, line4) {
-      if (options.cmSpec && cmSkipSetext(headingText)) { return wholeMatch; }
-      return parseSetextHeading(setextRegexH2, options.headerLevelStart + 1, wholeMatch, headingText, line1, line2, line3, line4);
-    });
-
-    let afterEvent = new showdown.Event('makehtml.heading.setext.onEnd', text);
-    afterEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    afterEvent = globals.converter.dispatch(afterEvent);
-
-    return showdown.subParser('makehtml.hashHTMLBlocks')(afterEvent.output, options, globals);
-
-
-    function parseSetextHeading (pattern, headingLevel, wholeMatch, headingText, line1, line2, line3, line4) {
-
-      // count lines
-      let count = headingText.trim().split('\n').length;
-      let prepend = '';
-      let nPrepend;
-      const hrCheckRgx = /^ {0,3}[-_*]([-_*] ?){2,}$/;
-
-      // one liner edge cases
-      if (count === 1) {
-        // hr
-        // let's find the hr edge case first
-        if (showdown.helper.trimEnd(line1).match(hrCheckRgx)) {
-          // it's the edge case, so it's a false positive
-          prepend = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
-          if (prepend !== line1) {
-            // it's an oneliner list
-            return prepend.trim() + '\n' + line4;
-          }
-        }
-
-        // now check if it's an unordered list
-        if (line1.match(/^ {0,3}[-*+][ \t]/)) {
-          if (line4.trim().match(/^=+/)) {
-            line1 += line4;
-          }
-          prepend = showdown.subParser('makehtml.list')(line1, options, globals);
-          if (prepend !== line1) {
-            // it's an oneliner list
-            return prepend.trim() + '\n' + line4;
-          }
-        }
-
-        // check if it's a blockquote
-        if (line1.match(/^ {0,3}>[ \t]?[^ \t]/)) {
-          if (line4.trim().match(/^=+/)) {
-            line1 += line4;
-          }
-          prepend = showdown.subParser('makehtml.blockquote')(line1, options, globals);
-          if (prepend !== line1) {
-            // it's an oneliner blockquote
-            return prepend.trim() + '\n' + line4;
-          }
-        }
-
-        // no edge case let's proceed as usual
-      } else {
-        let multilineText;
-
-        // multiline is a bit trickier
-        // first we must take care of the edge cases of:
-        // case1: |  case2:
-        // ---    |  ---
-        // foo    |  foo
-        // ---    |  bar
-        //        |  ---
-        //
-        if (showdown.helper.trimEnd(line1).match(hrCheckRgx)) {
-          nPrepend  = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
-          if (nPrepend !== line1) {
-            line1 = '';
-            // we add the parsed block to prepend
-            prepend = nPrepend.trim();
-            // and remove the line from the headingText, so it doesn't appear repeated
-            headingText = line2 + ((line3) ? line3 : '');
-          }
-        }
-
-        // now we take care of these cases:
-        // case1: |  case2:
-        // foo    |  foo
-        // ***    |  ***
-        // ---    |  bar
-        //        |  ---
-        //
-        if (showdown.helper.trimEnd(line2).match(hrCheckRgx)) {
-          // This case sucks, because the first line could be anything!!!
-          // first let's make sure it's a hr
-          nPrepend  = showdown.subParser('makehtml.horizontalRule')(line2, options, globals);
-          if (nPrepend !== line2) {
-            line2 = nPrepend;
-            // it is, so now we must parse line1 also
-            if (line1) {
-              line1 = showdown.subParser('makehtml.blockGamut')(line1, options, globals);
-              line1 = showdown.subParser('makehtml.paragraphs')(line1, options, globals);
-              line1 = line1.trim() + '\n';
-              prepend = line1;
-              // and clear line1
-              line1 = '';
-            }
-            // we add the parsed blocks to prepend
-            prepend += line2.trim() + '\n';
-            line2 = '';
-            // and remove the lines from the headingText, so it doesn't appear repeated
-            headingText = (line3) ? line3 : '';
-          }
-        }
-
-        // all edge cases should be treated now
-        multilineText = line1 + line2 + ((line3) ? line3 : '');
-        //if (line4.trim().match(/^=+/)) {
-        //  multilineText += line4;
-        //}
-
-        nPrepend = showdown.subParser('makehtml.blockGamut')(multilineText, options, globals, 'makehtml.heading.setext');
-        if (nPrepend !== multilineText) {
-          // we found one or more blocks, so we need to reparse (blocks should take precendence though)
-          nPrepend = showdown.helper.trimEnd(nPrepend);
-          // let's check if the last line is a parsed block
-          let newLines = nPrepend.trim().split('\n');
-          let nLastLine = newLines.pop().toString();
-
-          if (/^¨K\d+K$/.test(nLastLine) || /^\s*$/gm.test(nLastLine)) {
-            // everything before --- or === is a block or empty line, so it's a false positive
-            prepend += nPrepend + '\n\n';
-            headingText = '';
-          } else {
-            // the last line is something else... so let's look at the line before that
-            let toHeading = nLastLine;
-            nLastLine = newLines.pop().toString();
-            if (/^¨K\d+K$/.test(nLastLine) === false && /^\s*$/gm.test(nLastLine) === false) {
-              toHeading = nLastLine + '\n' + toHeading;
-            }
-            headingText = toHeading;
-            prepend = newLines.join('\n').trim();
-          }
-        }
-      }
-
-      // trim stuff
-      headingText = headingText.trim();
-
-      // let's check if heading is empty
-      // after looking for blocks, heading text might be empty which is a false positive
-      if (!headingText) {
-        return prepend + line4;
-      }
-
-      // after this, we're pretty sure it's a heading so let's proceed
-      // (the id subparser returns null when the headerIds option disables ids)
-      let id = showdown.subParser('makehtml.heading.id')(headingText, options, globals);
-      return prepend + parseHeader('setext', pattern, wholeMatch, headingText, headingLevel, id, options, globals);
-    }
-
-
-  });
-
-  // Strip a trailing ATX closing sequence — `[ \t]*#*[ \t]*` — from a heading's text, computed
-  // right-to-left in linear time (a regex `/[ \t]*#*[ \t]*$/` would itself backtrack quadratically
-  // while searching for the match position). If the whole text is strippable (e.g. `# ###`), the
-  // legacy lazy regex kept the first character, so we do the same.
-  function stripAtxClosingSequence (str) {
-    let end = str.length;
-    while (end > 0 && (str.charAt(end - 1) === ' ' || str.charAt(end - 1) === '\t')) { end--; }
-    while (end > 0 && str.charAt(end - 1) === '#') { end--; }
-    while (end > 0 && (str.charAt(end - 1) === ' ' || str.charAt(end - 1) === '\t')) { end--; }
-    let stripped = str.slice(0, end);
-    return stripped === '' ? str.charAt(0) : stripped;
-  }
-
-  showdown.subParser('makehtml.heading.atx', function (text, options, globals) {
-
-    let startEvent = new showdown.Event('makehtml.heading.atx.onStart', text);
-    startEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    startEvent = globals.converter.dispatch(startEvent);
-    text = startEvent.output;
-
-    // The default variant captures the heading text greedily (`(.+)$`) and strips the optional
-    // trailing closing-hash sequence (of ANY length, per CommonMark) in code below. The old
-    // `(.+?)[ \t]*#*[ \t]*$` form backtracked quadratically on a line of many `#` followed by
-    // text (e.g. `'#'.repeat(n) + ' h'`), because the lazy text capture re-scanned the `#` run
-    // at every position. The requireSpace variant already can't backtrack that way (its `[ \t]+`
-    // after the opening hashes fails fast on a pure/`#`-prefixed line), so it is left unchanged.
-    const atxRegex = (options.requireSpaceBeforeHeadingText) ? /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm : /^ {0,3}(#{1,6})[ \t]*(.+)$/gm;
-    const stripClosing = !options.requireSpaceBeforeHeadingText;
-    text = text.replace(atxRegex, function (wholeMatch, m1, m2) {
-      let headingText = stripClosing ? stripAtxClosingSequence(m2) : m2,
-          headingLevel = options.headerLevelStart - 1 + m1.length,
-          // the id subparser returns null when the headerIds option disables ids
-          id = showdown.subParser('makehtml.heading.id')(headingText, options, globals);
-      return parseHeader('atx', atxRegex, wholeMatch, headingText, headingLevel, id, options, globals);
-    });
-
-    let afterEvent = new showdown.Event('makehtml.heading.atx.onEnd', text);
-    afterEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    afterEvent = globals.converter.dispatch(afterEvent);
-
-    return showdown.subParser('makehtml.hashHTMLBlocks')(afterEvent.output, options, globals);
-
-  });
-
-})();
-
-////
-// makehtml/blockquote.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Turn Markdown horizontal rule shortcuts into <hr /> tags.
-//
-// Any 3 or more unindented consecutive hyphens, asterisks or underscores with or without a space beetween them
-// in a single line is considered a horizontal rule
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-showdown.subParser('makehtml.horizontalRule', function (text, options, globals) {
-  'use strict';
-  let startEvent = new showdown.Event('makehtml.horizontalRule.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-
-  // CommonMark: an *indented* line of consecutive dashes that directly follows a
-  // non-blank line is a setext underline inside a list item (e.g. `- Bar\n  ---`),
-  // not a thematic break. When commonmarkLists is on, leave it for the list/setext
-  // parsers. An unindented `---` after a list item is still a real thematic break
-  // (it ends the list), and a spaced form like `- - -` is never an underline.
-  function isSetextUnderlineDash (wholeMatch, args) {
-    if (!options.cmSpec || !/^ +-+[ \t]*$/.test(wholeMatch)) { return false; }
-    return precededByNonBlank(args[args.length - 1], args[args.length - 2]);
-  }
-
-  // parses: --- and - - -
-  const rgx1 = /^ {0,2}( ?-){3,}[ \t]*$/gm;
-  text = text.replace(rgx1, function (wholeMatch) {
-    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
-    return parse(rgx1, wholeMatch);
-  });
-  // parses: -\t-\t-
-  const rgx2 = /^ {0,3}-(\t?-){2,}[ \t]*$/gm;
-  text = text.replace(rgx2, function (wholeMatch) {
-    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
-    return parse(rgx2, wholeMatch);
-  });
-
-  const rgx3 = /^ {0,2}( ?\*){3,}[ \t]*$/gm;
-  text = text.replace(rgx3, function (wholeMatch) {
-    return parse(rgx3, wholeMatch);
-  });
-  const rgx4 = /^ {0,3}\*(\t?\*){2,}[ \t]*$/gm;
-  text = text.replace(rgx4, function (wholeMatch) {
-    return parse(rgx4, wholeMatch);
-  });
-
-
-  const rgx5 = /^ {0,2}( ?_){3,}[ \t]*$/gm;
-  text = text.replace(rgx5, function (wholeMatch) {
-    return parse(rgx5, wholeMatch);
-  });
-  const rgx6 = /^ {0,3}_(\t?_){2,}[ \t]*$/gm;
-  text = text.replace(rgx6, function (wholeMatch) {
-    return parse(rgx6, wholeMatch);
-  });
-
-  // super weird horizontal rule
-
-  const rgx7 = /^ {0,3}(- *){2,}-[ \t]*$/gm;
-  text = text.replace(rgx7, function (wholeMatch) {
-    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
-    return parse(rgx7, wholeMatch);
-  });
-  const rgx8 = /^ {0,3}(\* *){2,}\*[ \t]*$/gm;
-  text = text.replace(rgx8, function (wholeMatch) {
-    return parse(rgx8, wholeMatch);
-  });
-  const rgx9 = /^ {0,3}(_ *){2,}_[ \t]*$/gm;
-  text = text.replace(rgx9, function (wholeMatch) {
-    return parse(rgx9, wholeMatch);
-  });
-
-  let afterEvent = new showdown.Event('makehtml.horizontalRule.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-
-  /**
-   * Whether the line preceding the match at `offset` is non-blank.
-   * @param {string} str
-   * @param {number} offset start index of the matched line (a line start)
-   * @returns {boolean}
-   */
-  function precededByNonBlank (str, offset) {
-    if (offset === 0) { return false; }
-    let end = offset - 1, // index of the newline ending the previous line
-        start = str.lastIndexOf('\n', end - 1) + 1;
-    return str.slice(start, end).trim() !== '';
-  }
-
-  /**
-   *
-   * @param {RegExp} pattern
-   * @param {string} wholeMatch
-   * @returns {string}
-   */
-  function parse (pattern, wholeMatch) {
-    let otp;
-    let captureStartEvent = new showdown.Event('makehtml.horizontalRule.onCapture', wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
-        _whoteMatch: wholeMatch
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      otp = '<hr' + showdown.helper._populateAttributes(captureStartEvent.attributes) + ' />';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.horizontalRule.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    otp = showdown.subParser('makehtml.hashBlock')(otp, options, globals);
-    return otp;
-  }
-
-});
-
-////
-// makehtml/htmlEntities.js
-// Copyright (c) 2024 ShowdownJS
-//
-// HTML5 named character reference table (name -> replacement string).
-// Generated from the WHATWG HTML5 named character reference set.
-// Used by makehtml.decodeEntities to resolve &name; references (CommonMark).
-////
+  return text;
+};
+
+/**
+ * @file      helpers/htmlEntities.js
+ * @summary   The HTML5 named-character-reference table (`showdown.helper.htmlEntities`).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Maps HTML5 entity names to their replacement strings, generated from the WHATWG named
+ * character reference set and consumed by `makehtml.decodeEntities`. Pure data — a mechanism,
+ * not a construct; emits no events.
+ */
 
 showdown.helper.htmlEntities = {
   'AElig': 'Æ',
@@ -10461,1253 +5377,5229 @@ showdown.helper.htmlEntities = {
   'zwnj': '‌'
 };
 
-////
-// makehtml/blockquote.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Turn Markdown image into <img> tags.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
-
-
-showdown.subParser('makehtml.image', function (text, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makehtml.image.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  let inlineRegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(\S+?(?:\(\S{0,200}?\)\S{0,200}?)?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
-      crazyRegExp       = /!\[([^\]]*?)][ \t]*\([ \t]?<([^>]*)>(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\5)?[ \t]?\)/g,
-      base64RegExp      = /!\[([^\]]*?)][ \t]*\([ \t]?<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*(?:(["'])([^"]*?)\6)?[ \t]?\)/g,
-      referenceRegExp   = /!\[([^\]]*?)] ?(?:\n *)?\[([\s\S]*?)]/g,
-      refShortcutRegExp = /!\[([^[\]]+)]/g;
-
-  // Every markdown image syntax requires a closing ']'. When there is none there is nothing to
-  // match, so skip the (backtracking-prone) passes. This also neutralizes pathological inputs
-  // such as '!['.repeat(n), whose alt-text scan would otherwise cost O(n^2) looking for a ']'.
-  if (text.indexOf(']') !== -1) {
-  // First, handle reference-style labeled images: ![alt text][id]
-    text = text.replace(referenceRegExp, function (wholeMatch, altText, linkId) {
-      return writeImageTag ('reference', referenceRegExp, wholeMatch, altText, null, linkId);
-    });
-
-    // Next, handle inline images:  ![alt text](url =<width>x<height> "optional title")
-    if (options.cmSpec) {
-    // CommonMark inline-image parsing, symmetric to the link scanner: balanced-paren
-    // and `<...>` destinations, titles, backslash escapes, arbitrary label nesting.
-      text = parseCmInlineImages(text);
-    } else if (text.indexOf(')') !== -1) {
-    // Every legacy inline-image syntax ends in ')'. Without one there is nothing to match, so
-    // skip these passes — this neutralizes inputs like '![a](' + 'a('.repeat(n) whose
-    // destination scan would otherwise backtrack quadratically looking for a ')'.
-    // base64 encoded images
-      text = text.replace(base64RegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-        url = url.replace(/\s/g, '');
-        return writeImageTag ('inline', base64RegExp, wholeMatch, altText, url, null, width, height, title);
-      });
-
-      // cases with crazy urls like ./image/cat1).png
-      text = text.replace(crazyRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-        url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-        return writeImageTag ('inline', crazyRegExp, wholeMatch, altText, url, null, width, height, title);
-      });
-
-      // normal cases
-      text = text.replace(inlineRegExp, function (wholeMatch, altText, url, width, height, m5, title) {
-        url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-        return writeImageTag ('inline', inlineRegExp, wholeMatch, altText, url, null, width, height, title);
-      });
-    }
-
-    // handle reference-style shortcuts: ![img text]
-    text = text.replace(refShortcutRegExp, function (wholeMatch, altText) {
-      return writeImageTag ('reference', refShortcutRegExp, wholeMatch, altText);
-    });
-  }
-
-  let afterEvent = new showdown.Event('makehtml.image.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-
-
-
-  /**
-   * @param {string} subEvtName
-   * @param {RegExp} pattern
-   * @param {string} wholeMatch
-   * @param {string} altText
-   * @param {string|null} [url]
-   * @param {string|null} [linkId]
-   * @param {string|null} [width]
-   * @param {string|null} [height]
-   * @param {string|null} [title]
-   * @returns {string}
-   */
-  function writeImageTag (subEvtName, pattern, wholeMatch, altText, url, linkId, width, height, title) {
-
-    let gUrls    = globals.gUrls,
-        gTitles  = globals.gTitles,
-        gDims    = globals.gDimensions,
-        matches = {
-          _wholeMatch: wholeMatch,
-          _altText: altText,
-          _linkId: linkId,
-          _url: url,
-          _width: width,
-          _height: height,
-          _title: title
-        },
-        otp,
-        attributes;
-
-    if (linkId) {
-      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
-    } else {
-      linkId = null;
-    }
-
-    if (!title) {
-      title = null;
-    }
-    // Special case for explicit empty url
-    if (wholeMatch.search(/\(<?\s*>? ?(['"].*['"])?\)$/m) > -1) {
-      url = '';
-
-    } else if (showdown.helper.isUndefined(url) || url === '' || url === null) {
-      if (linkId === '' || linkId === null) {
-        // lower-case and turn embedded newlines into spaces
-        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(altText) : showdown.helper.caseFold(altText).replace(/ ?\n/g, ' ');
-      }
-      if (!showdown.helper.isUndefined(gUrls[linkId])) {
-        url = gUrls[linkId];
-        if (!showdown.helper.isUndefined(gTitles[linkId])) {
-          title = gTitles[linkId];
-        }
-        if (!showdown.helper.isUndefined(gDims[linkId])) {
-          width = gDims[linkId].width;
-          height = gDims[linkId].height;
-        }
+/**
+ * @file      helpers/lazyDocument.js
+ * @summary   Lazily resolves a DOM for `makeMarkdown` (`showdown.helper.document`) and exposes the inert-parse `showdown.helper.parseHTML`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Resolution is lazy (first access of `showdown.helper.document`) so Node users that only call
+ * makeHtml never pay the cost of loading happy-dom; in environments with an ambient window/document
+ * (browsers, DOM test environments) the require branch is never reached, so happy-dom never ends up
+ * in bundles. `parseHTML` parses untrusted HTML inside an inert document so `<script>` /
+ * `<img onerror>` never execute. A `showdown.helper.*` mechanism, not a construct; emits no events.
+ */
+let lazyDocument = null;
+Object.defineProperty(showdown.helper, 'document', {
+  get: function () {
+    'use strict';
+    if (lazyDocument === null) {
+      if (typeof window !== 'undefined' && window.document) {
+        lazyDocument = window.document;
+      } else if (typeof document !== 'undefined') {
+        lazyDocument = document;
+      } else if (typeof require === 'function') {
+        let happyDom = require('happy-dom');
+        lazyDocument = new happyDom.Window().document;
       } else {
-        return wholeMatch;
+        throw new Error('makeMarkdown requires a DOM: provide a global window/document, ' +
+          'or run in Node (CommonJS) with happy-dom installed.');
       }
     }
-
-    // safeMode: neutralize dangerous URL schemes; data:image/* stays allowed so
-    // inline base64 images keep working
-    if (options.safeMode && !showdown.helper.isSafeUrl(url, {allowDataImage: true})) {
-      url = '';
-    }
-
-    if (options.cmSpec) {
-      // CommonMark: the alt text is the plain-text rendering of the label, with
-      // inline markup stripped (`![foo *bar*]` -> alt="foo bar").
-      altText = flattenAltText(altText);
-    }
-    altText = altText
-      .replace(/"/g, '&quot;')
-      //altText = showdown.helper.escapeCharacters(altText, '*_', false);
-      .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-    //url = showdown.helper.escapeCharacters(url, '*_', false);
-    if (options.cmSpec) {
-      url = showdown.helper.cmNormalizeURL(url);
-    }
-    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-    // escape characters that would otherwise break out of the quoted src attribute
-    // (a `"` in the URL is an attribute-injection vector). cmSpec flavors already
-    // percent-encode the URL above, so this is a no-op there.
-    url = url
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    if (title && showdown.helper.isString(title)) {
-      if (options.cmSpec) {
-        title = showdown.helper.cmEscapeTitle(title);
-      } else {
-        title = title
-          .replace(/"/g, '&quot;');
-      }
-      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-    }
-
-    // Image dimensions are a non-standard extension: only honor them when
-    // parseImgDimensions is enabled. The `=WxH` syntax is still consumed by the
-    // regex (so it never leaks into the output), but the width/height attributes
-    // are dropped when the option is off - matching the reference-definition path,
-    // which only stores dimensions in gDimensions when the option is on.
-    if (options.parseImgDimensions && width) {
-      width  = (width === '*') ? 'auto' : width;
-    } else {
-      width = null;
-    }
-
-    if (options.parseImgDimensions && height) {
-      height = (height === '*') ? 'auto' : height;
-    } else {
-      height = null;
-    }
-
-    let captureStartEvent = new showdown.Event('makehtml.image.' + subEvtName + '.onCapture', wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches(matches)
-      .setAttributes({
-        src: url,
-        alt: altText,
-        title: title,
-        width: width,
-        height: height
-      });
-
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      attributes = captureStartEvent.attributes;
-      otp = '<img' + showdown.helper._populateAttributes(attributes) + ' />';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.image.' + subEvtName + '.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-
-    return otp;
+    return lazyDocument;
   }
-
-  /**
-   * CommonMark inline-image scanner. Finds `![label](destination "title")` spans,
-   * matching the label by counting nested brackets and parsing the destination and
-   * title with the shared cursor-based helpers.
-   * @param {string} str
-   * @returns {string}
-   */
-  function parseCmInlineImages (str) {
-    let inlineImgRegexp = /!\[[\s\S]*?]\([\s\S]*?\)/, // representative pattern (event metadata only)
-        n = str.length,
-        out = '',
-        last = 0,
-        i = 0;
-    while (i < n) {
-      if (str.charAt(i) !== '!' || str.charAt(i + 1) !== '[') { i++; continue; }
-      let depth = 1, k = i + 2, labelEnd = -1;
-      while (k < n) {
-        let c = str.charAt(k);
-        if (c === '\\' && k + 1 < n) { k += 2; continue; }
-        if (c === '[') { depth++; } else if (c === ']') {
-          depth--;
-          if (depth === 0) { labelEnd = k; break; }
-        }
-        k++;
-      }
-      if (labelEnd !== -1 && str.charAt(labelEnd + 1) === '(') {
-        let parsed = parseCmImgDestTitle(str, labelEnd + 2);
-        if (parsed) {
-          let label = str.slice(i + 2, labelEnd),
-              url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, parsed.url);
-          out += str.slice(last, i);
-          out += writeImageTag('inline', inlineImgRegexp, str.slice(i, parsed.end + 1), label, url, null, null, null, parsed.title);
-          i = parsed.end + 1;
-          last = i;
-          continue;
-        }
-      }
-      i++;
-    }
-    out += str.slice(last);
-    return out;
-  }
-
-  /**
-   * Parse an image destination and optional title starting just after the opening
-   * `(`. Returns `{url, title, end}` (end = index of the closing `)`) or `null`.
-   * @param {string} str
-   * @param {number} j
-   * @returns {{url: string, title: (string|null), end: number}|null}
-   */
-  function parseCmImgDestTitle (str, j) {
-    let n = str.length,
-        isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; };
-    while (j < n && isWs(str.charAt(j))) { j++; }
-    let dest = showdown.helper.cmScanDestination(str, j);
-    if (!dest) { return null; }
-    j = dest.end;
-    let hadWs = false;
-    while (j < n && isWs(str.charAt(j))) { hadWs = true; j++; }
-    let title = null,
-        tc = str.charAt(j);
-    if (j < n && (tc === '"' || tc === '\'' || tc === '(')) {
-      if (!hadWs) { return null; }
-      let t = showdown.helper.cmScanTitle(str, j);
-      if (!t) { return null; }
-      title = t.title;
-      j = t.end;
-    }
-    while (j < n && isWs(str.charAt(j))) { j++; }
-    if (j >= n || str.charAt(j) !== ')') { return null; }
-    return {url: dest.url, title: title, end: j};
-  }
-
-  /**
-   * Produce the plain-text rendering of an image label for the `alt` attribute,
-   * per CommonMark: inline markup is processed and then flattened to text. Nested
-   * images contribute their own alt text; links and emphasis contribute their
-   * text content.
-   * @param {string} t
-   * @returns {string}
-   */
-  function flattenAltText (t) {
-    t = showdown.subParser('makehtml.codeSpan')(t, options, globals);
-    t = showdown.subParser('makehtml.image')(t, options, globals);
-    t = showdown.subParser('makehtml.link')(t, options, globals);
-    t = showdown.subParser('makehtml.emoji')(t, options, globals);
-    t = showdown.subParser('makehtml.underline')(t, options, globals);
-    t = showdown.subParser('makehtml.emphasisAndStrong')(t, options, globals);
-    t = showdown.subParser('makehtml.strikethrough')(t, options, globals);
-    t = showdown.subParser('makehtml.ellipsis')(t, options, globals);
-    // restore hashed spans (e.g. produced by nested images/links) so we can read them
-    t = showdown.subParser('makehtml.unhashHTMLSpans')(t, options, globals);
-    // a nested image contributes its alt text; every other tag contributes its
-    // text content, so replace images by their alt then strip the remaining tags
-    t = t.replace(/<img\b[^>]*?\salt="([^"]*)"[^>]*?\/?>/g, '$1');
-    t = t.replace(/<[^>]*>/g, '');
-    return t;
-  }
-
 });
 
-////
-// makehtml/links.js
-// Copyright (c) 2018 ShowdownJS
-//
-// Transforms MD links into `<a>` html anchors
-//
-// A link contains link text (the visible text), a link destination (the URI that is the link destination), and
-// optionally a link title. There are two basic kinds of links in Markdown.
-// In inline links the destination and title are given immediately after the link text.
-// In reference links the destination and title are defined elsewhere in the document.
-//
-// ***Author:***
-// - Estevão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
+/**
+ * Parse an untrusted HTML string into a detached <div> and return it, for
+ * makeMarkdown to walk. The HTML is parsed inside an *inert* document (one with
+ * no browsing context, obtained via document.implementation.createHTMLDocument)
+ * whenever the host DOM supports it. In an inert document, assigning to innerHTML
+ * never executes <script> and never triggers resource loads or fires on* handlers
+ * such as `<img onerror>` / `<svg onload>` — so parsing attacker HTML client-side
+ * cannot run script. happy-dom (Node) is already inert; using the same path keeps
+ * behavior uniform.
+ * @param {string} html
+ * @returns {Object} a detached div element whose innerHTML is the parsed html
+ */
+let lazyInertDocument = null;
+showdown.helper.parseHTML = function (html) {
+  'use strict';
+  let ownerDoc = showdown.helper.document;
+  if (ownerDoc.implementation && typeof ownerDoc.implementation.createHTMLDocument === 'function') {
+    if (lazyInertDocument === null) {
+      lazyInertDocument = ownerDoc.implementation.createHTMLDocument('');
+    }
+    ownerDoc = lazyInertDocument;
+  }
+  let div = ownerDoc.createElement('div');
+  div.innerHTML = html;
+  return div;
+};
 
-showdown.subParser('makehtml.link', function (text, options, globals) {
+/**
+ * @file      helpers/markdownEscapes.js
+ * @summary   Backslash-escaping for makeMarkdown emitters (destination/title/text) to prevent round-trip injection.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The `escapeMarkdownDestination`/`escapeMarkdownTitle`/`escapeMarkdownText` helpers used by the HTML->Markdown converters. Load-order safe: no other-helper reads at load time.
+ */
 
-  //
-  // Parser starts here
-  //
-  let startEvent = new showdown.Event('makehtml.link.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
+/**
+ * makeMarkdown emitters: backslash-escape the characters that would otherwise let
+ * an attribute value break out of the generated Markdown syntax and inject new
+ * constructs when the Markdown is re-rendered (round-trip injection).
+ *
+ * - Destination: emitted inside `<...>`, so `\`, `<` and `>` must be escaped.
+ * - Title: emitted inside `"..."`, so `\` and `"` must be escaped.
+ * - Text (link/image alt): emitted inside `[...]`, so `\`, `[` and `]` must be escaped.
+ */
+showdown.helper.escapeMarkdownDestination = function (url) {
+  'use strict';
+  return String(url).replace(/([\\<>])/g, '\\$1');
+};
+showdown.helper.escapeMarkdownTitle = function (title) {
+  'use strict';
+  return String(title).replace(/([\\"])/g, '\\$1');
+};
+showdown.helper.escapeMarkdownText = function (text) {
+  'use strict';
+  return String(text).replace(/([\\[\]])/g, '\\$1');
+};
 
-  // Every markdown link/reference syntax requires a closing ']'. When there is none there is
-  // nothing for the (backtracking-prone) reference/inline passes to match, so skip them. This
-  // also neutralizes pathological inputs such as '['.repeat(n), which would otherwise cost
-  // O(n^2) as each pass scans forward for a ']' that never appears. Autolinks (< >) below do
-  // not need ']', so they stay outside this guard.
-  if (text.indexOf(']') !== -1) {
-  // 1. Handle reference-style links: [link text] [id]
-    // The label sub-pattern excludes `[` from the inner negated class (`[^\][]` not `[^\]]`) so a
-    // scan for the label's closing `]` cannot run across the `[` that starts the *next* bracket
-    // group. This keeps matching linear on inputs like `'[^'.repeat(n) + ' ]'` (which contain a
-    // stray `]` that defeats the earlier "no `]` at all" fast-path) without changing results.
-    let referenceRegex = /\[((?:\[[^\][]*]|[^[\]])*)] ?(?:\n *)?\[(.*?)]/g;
-    text = text.replace(referenceRegex, function (wholeMatch, text, linkId) {
-    // bail if we find 2 newlines somewhere
-      if (/\n\n/.test(wholeMatch)) {
-        return wholeMatch;
+/**
+ * @file      helpers/misc.js
+ * @summary   Environment polyfills and assorted showdown helpers that do not belong to a themed group.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The `console` polyfill, `stdExtName`, `cloneObject`, `_populateAttributes`, `_hashHTMLSpan`, `applyFlavor` and `validateOptions`. Load-order safe: the polyfill is self-contained and every helper reference happens inside function bodies (call time).
+ */
+
+/**
+ * POLYFILLS
+ */
+// use this instead of builtin is undefined for IE8 compatibility
+if (typeof (console) === 'undefined') {
+  // eslint-disable-next-line no-global-assign -- deliberate polyfill for environments without console
+  console = {
+    warn: function (msg) {
+      'use strict';
+      alert(msg);
+    },
+    log: function (msg) {
+      'use strict';
+      alert(msg);
+    },
+    error: function (msg) {
+      'use strict';
+      throw msg;
+    }
+  };
+}
+
+/**
+ * Standardize extension name
+ * @static
+ * @param {string} s extension name
+ * @returns {string}
+ */
+showdown.helper.stdExtName = function (s) {
+  'use strict';
+  return s.replace(/[_?*+/\\.^-]/g, '').replace(/\s/g, '').toLowerCase();
+};
+
+/**
+ * Clones an object . If the second parameter is true, it deep clones the object.
+ * Note: It should not be used in other contexts than showdown, since this algorithm might fail for
+ * cyclic references, and dataypes such as Dates, RegExps, Typed Arrays, etc...
+ * @param {{}} obj Object to clone
+ * @param {boolean} [deep] [optional] If it should deep clone the object. Default is false
+ */
+showdown.helper.cloneObject = function (obj, deep) {
+  deep = !!deep;
+  if (obj === null || typeof (obj) !== 'object') {
+    return obj;
+  }
+
+  if (obj instanceof Date) {
+    return new Date(obj);
+  }
+
+  if (!deep) {
+    let newObj = {};
+    for (let key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        newObj[key] = obj[key];
       }
-      return writeAnchorTag ('reference', referenceRegex, wholeMatch, text, linkId);
-    });
+    }
+    return newObj;
+  }
 
-    // 2. Handle inline-style links: [link text](url "optional title")
-    if (options.cmSpec) {
-    // CommonMark inline-link parsing: a manual scanner that handles balanced-paren
-    // and `<...>` destinations, titles in "...", '...' or (...), and backslash escapes.
-      text = parseCmInlineLinks(text);
-    } else if (text.indexOf(')') !== -1) {
-    // Every legacy inline-link syntax ends in ')'. Without one there is nothing to match, so
-    // skip these passes — this neutralizes pathological inputs like '[a](' + 'a('.repeat(n),
-    // whose destination scan would otherwise backtrack quadratically looking for a ')'.
-    // 2.1. Look for empty cases: []() and [empty]() and []("title")
-      // The link text and title captures exclude their own delimiters (`[^\]]*?` / `[^"']*`)
-      // rather than the unbounded `.*?` / `.*`. Run as the first inline pass over raw text, the
-      // old form re-scanned O(n) chars from every `[` on balanced nested input like
-      // `'[x]('.repeat(n) + 'u' + ')'.repeat(n)`, giving O(n^2). This mirrors the bounding already
-      // applied to the sibling inline/image regexes (the image parser likewise disallows `]` in alt).
-      let inlineEmptyRegex = /\[([^\]]*?)]\(<? ?>? ?(["']([^"']*)["'])?\)/g;
-      text = text.replace(inlineEmptyRegex, function (wholeMatch, text, m1, title) {
-        return writeAnchorTag ('inline', inlineEmptyRegex, wholeMatch, text, null, null, title, true);
-      });
+  if (typeof structuredClone === 'function') {
+    return structuredClone(obj);
+  } else {
+    // note: This is not a real deep clone, and might work in weird ways if used in a dif
+    //this is costly and should be used sparsly
+    return JSON.parse(JSON.stringify(obj));
+  }
+};
 
-      // 2.2. Look for cases with crazy urls like ./image/cat1).png
-      // the url mus be enclosed in <>
-      let inlineCrazyRegex = /\[((?:\[[^\][]*]|[^[\]])*)]\s?\([ \t]?<([^>]*)>(?:[ \t]*((["'])([^"]*?)\4))?[ \t]?\)/g;
-      text = text.replace(inlineCrazyRegex, function (wholeMatch, text, url, m1, m2, title) {
-        return writeAnchorTag ('inline', inlineCrazyRegex, wholeMatch, text, null, url, title);
-      });
+/**
+ * Populate attributes in output text
+ * @param {{}} attributes
+ * @returns {string}
+ */
+showdown.helper._populateAttributes = function (attributes) {
+  let text = '';
+  if (!attributes || !showdown.helper.isObject(attributes)) {
+    return text;
+  }
 
-      // 2.3. inline links with no title or titles wrapped in ' or ":
-      // [text](url.com) || [text](<url.com>) || [text](url.com "title") || [text](<url.com> "title")
-      let inlineNormalRegex1 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S{0,200}?\)\S{0,200}?)?)>?\s*(?:(['"])(.*?)\3)? *\)/g;
-      text = text.replace(inlineNormalRegex1, function (wholeMatch, text, url, m1, title) {
-        return writeAnchorTag ('inline', inlineNormalRegex1, wholeMatch, text, null, url, title);
-      });
+  for (let attr in attributes) {
+    if (Object.prototype.hasOwnProperty.call(attributes, attr)) {
+      let key = attr,
+          val;
 
-      // 2.4. inline links with titles wrapped in (): [foo](bar.com (title))
-      let inlineNormalRegex2 = /\[([\S ]*?)]\s?\( *<?([^\s'"]*?(?:\(\S{0,200}?\)\S{0,200}?)?)>?\s+\((.*?)\) *\)/g;
-      text = text.replace(inlineNormalRegex2, function (wholeMatch, text, url, title) {
-        return writeAnchorTag ('inline', inlineNormalRegex2, wholeMatch, text, null, url, title);
-      });
+      // since class is a javascript reserved word we use classes
+      if (attr === 'classes') {
+        key = 'class';
+      }
+      if (attributes[attr] === null || showdown.helper.isUndefined(attributes[attr])) {
+        val = null;
+      } else if (showdown.helper.isArray(attributes[attr])) {
+        val = attributes[attr].join(' ');
+        if (val === '') {
+          val = null;
+        }
+      } else if (showdown.helper.isString(attributes[attr])) {
+        val = attributes[attr];
+      } else if (showdown.helper.isNumber(attributes[attr])) {
+        val = String(attributes[attr]);
+      } else {
+        throw new TypeError('Attribute "' + attr + '" must be either an array or string but ' + typeof attributes[attr] + ' given');
+      }
+      // special attributes
+      switch (attr) {
+        // these attributes don't expect a value. If they are false, they should be removed. If they are true,
+        // they should be present but without any value
+        case 'checked':
+        case 'disabled':
+          if (val === true || val === 'true' || val === attr) {
+            text += ' ' + key;
+          }
+          // if falsy, they are just ignored
+          break;
+
+        // default behavior for all other attributes types
+        default:
+          // Encode any literal double-quote so an attribute value cannot break out of
+          // the quoted attribute. Core callers already pre-escape their values (so this
+          // is a no-op for them); this closes the hole for values injected via an
+          // extension/listener through the setAttributes() event API.
+          text += (val === null) ? '' : ' ' + key + '="' + String(val).replace(/"/g, '&quot;') + '"';
+          break;
+      }
+    }
+  }
+
+  return text;
+};
+
+showdown.helper._hashHTMLSpan = function (html, globals) {
+  return '¨C' + (globals.gHtmlSpans.push(html) - 1) + 'C';
+};
+
+/**
+ * Merge a flavor preset's option overrides into a target options object. Shared by
+ * showdown.setFlavor (global) and Converter#setFlavor (instance).
+ * @param {{}} preset
+ * @param {{}} target
+ */
+showdown.helper.applyFlavor = function (preset, target) {
+  for (let option in preset) {
+    if (Object.prototype.hasOwnProperty.call(preset, option)) {
+      target[option] = preset[option];
+    }
+  }
+};
+
+/**
+ * Validate options
+ * @param {{}} options
+ * @returns {{}}
+ */
+showdown.helper.validateOptions = function (options) {
+  if (!showdown.helper.isObject(options)) {
+    throw new TypeError('Options must be an object, but ' + typeof options + ' given');
+  }
+
+  let defaultOptions = getDefaultOpts(false);
+
+  for (let opt in defaultOptions) {
+    if (!Object.prototype.hasOwnProperty.call(defaultOptions, opt)) {
+      continue;
     }
 
+    if (!Object.prototype.hasOwnProperty.call(options, opt)) {
+      options[opt] = defaultOptions[opt].defaultValue;
+    }
 
-    // 3. Handle reference-style shortcuts: [link text]
-    // These must come last in case there's a [link text][1] or [link text](/foo)
-    let referenceShortcutRegex = /\[([^[\]]+)]/g;
-    text = text.replace(referenceShortcutRegex, function (wholeMatch, text) {
-      return writeAnchorTag ('reference', referenceShortcutRegex, wholeMatch, text);
-    });
-  }
-
-  // 4. Handle angle brackets links -> `<http://example.com/>`
-  // Must come after links, because you can use < and > delimiters in inline links like [this](<url>).
-
-  if (options.cmSpec) {
-    // CommonMark autolinks: any scheme (2-32 chars) URI, and emails, with no entity encoding.
-    // 4.1. URI autolinks: <scheme:rest>
-    // eslint-disable-next-line no-control-regex -- CommonMark autolinks exclude control chars (\x00-\x20) per spec
-    let cmUriAutolinkRegex = /<([A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*)>/g;
-    text = text.replace(cmUriAutolinkRegex, function (wholeMatch, uri) {
-      // backslash escapes do not work inside autolinks, so restore them to literal backslash + char
-      let raw = showdown.subParser('makehtml.unescapeSpecialChars')(uri.replace(/(¨E\d+E)/g, '\\$1'), options, globals);
-      // safeMode: neutralize dangerous autolink schemes but keep the visible text
-      let href = (options.safeMode && !showdown.helper.isSafeUrl(raw)) ? '' : cmEscapeHref(showdown.helper.cmEncodeURI(raw));
-      let otp = '<a href="' + href + '">' + cmEscapeText(raw) + '</a>';
-      return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-    });
-
-    // 4.2. Email autolinks: <foo@bar.example.com>
-    let cmEmailAutolinkRegex = /<([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)>/g;
-    text = text.replace(cmEmailAutolinkRegex, function (wholeMatch, email) {
-      let raw = showdown.subParser('makehtml.unescapeSpecialChars')(email.replace(/(¨E\d+E)/g, '\\$1'), options, globals);
-      let otp = '<a href="' + cmEscapeHref('mailto:' + raw) + '">' + cmEscapeText(raw) + '</a>';
-      return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-    });
-
-  } else {
-    // 4.1. Handle links first
-    let angleBracketsLinksRegex = /<(((?:https?|ftp):\/\/|www\.)[^'">\s]+)>/gi;
-    text = text.replace(angleBracketsLinksRegex, function (wholeMatch, url, urlStart) {
-
-      // backslash escaped characters do not work inside autolinks (according to commonmark spec... sure)
-      // so let's unescape them (and add a backslash html entity before)
-      url = url.replace(/(¨E\d+E)/g, '\\$1');
-      url = showdown.subParser('makehtml.unescapeSpecialChars')(url, options, globals);
-      let text = url;
-
-      // now let's replace some entities which should be properly url encoded
-      url = showdown.helper.urlASCIIEncoding(url);
-
-      // noinspection HttpUrlsUsage
-      url = (urlStart === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
-      return writeAnchorTag ('angleBrackets', angleBracketsLinksRegex, wholeMatch, text, null, url);
-    });
-
-    // 4.2. Then mail adresses
-    let angleBracketsMailRegex = /<(?:mailto:)?([-.\w]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)>/gi;
-    text = text.replace(angleBracketsMailRegex, function (wholeMatch, mail) {
-      const m = parseMail(mail);
-      return writeAnchorTag ('angleBrackets', angleBracketsMailRegex, wholeMatch, m.mail, null, m.url);
-    });
-  }
-
-  // 5. Handle GithubMentions (if option is enabled)
-  if (options.ghMentions) {
-    let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
-    text = text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
-      // bail if the mentions was escaped
-      if (escape === '\\') {
-        return st + mentions;
-      }
-      // check if options.ghMentionsLink is a string
-      // TODO Validation should be done at initialization not at runtime
-      if (!showdown.helper.isString(options.ghMentionsLink)) {
-        throw new Error('ghMentionsLink option must be a string');
-      }
-      let url = options.ghMentionsLink.replace(/\{u}/g, username);
-      return st + writeAnchorTag ('reference', ghMentionsRegex, wholeMatch, mentions, null, url);
-    });
-  }
-
-  // 6 and 7 have to come here to prevent naked links to catch html
-  // 6. Handle <a> tags
-  text = text.replace(/<a\s[^>]*>[\s\S]*<\/a>/g, function (wholeMatch) {
-    return showdown.helper._hashHTMLSpan(wholeMatch, globals);
-  });
-
-  // 7. Handle <img> tags
-  text = text.replace(/<img\s[^>]*\/?>/g, function (wholeMatch) {
-    return showdown.helper._hashHTMLSpan(wholeMatch, globals);
-  });
-
-  // 8. Handle naked links (if option is enabled)
-  if (options.simplifiedAutoLink) {
-    // 8.1. Check for naked URLs
-    // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
-    let nakedUrlRegex = /([_*~]*?)(((?:https?|ftp):\/\/|www\.)[^\s<>"'`´.-][^\s<>"'`´]*?\.[a-z\d.]+[^\s<>"']*)\1/gi;
-    text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url, urlPrefix) {
-      // we now will start traversing the url from the front to back, looking for punctuation chars [_*~,;:.!?\)\]]
-      const len = url.length;
-      let suffix = '';
-
-      for (let i = len - 1; i >= 0; --i) {
-        let char = url.charAt(i);
-        if (/[_*~,;:.!?]/.test(char)) {
-          // it's a punctuation char so we remove it from the url
-          url = url.slice(0, -1);
-          // and prepend it to the suffix
-          suffix = char + suffix;
-        } else if (/[)\]]/.test(char)) {
-          // it's a parenthesis so we need to check for "balance" (kinda)
-          let opPar, clPar;
-          if (/\)/.test(char)) {
-            // it's a curved parenthesis
-            opPar = url.match(/\(/g) || [];
-            clPar = url.match(/\)/g);
-          } else {
-            // it's a squared parenthesis
-            opPar = url.match(/\[/g) || [];
-            clPar = url.match(/]/g);
-          }
-          if (opPar.length < clPar.length) {
-            // there are more closing Parenthesis than opening so chop it!!!!!
-            url = url.slice(0, -1);
-            // and prepend it to the suffix
-            suffix = char + suffix;
-          } else {
-            // it's (kinda) balanced so our work is done
-            break;
-          }
-        } else {
-          // it's not a punctuation or a parenthesis so our work is done
-          break;
+    switch (opt) {
+      case 'headerIds':
+        // accepts `false` (or any boolean) or a plain object {prefix, raw}
+        if (typeof options[opt] !== 'boolean' && !showdown.helper.isObject(options[opt])) {
+          throw new TypeError('Option headerIds must be `false` or an object but ' + typeof options[opt] + ' given');
         }
-      }
+        break;
+      default:
+        if (typeof options[opt] !== defaultOptions[opt].type) {
+          throw new TypeError('Option ' + opt + ' must be of type ' + defaultOptions[opt].type + ' but ' + typeof options[opt] + ' given');
+        }
+    }
+  }
+  //options.headerLevelStart = (isNaN(parseInt(options.headerLevelStart))) ? 1 : parseInt(options.headerLevelStart);
+  return options;
+};
 
-      // we copy the treated url to the text variable
-      let txt = url;
-      // finally, if it's a www shortcut, we prepend http(s)
-      // noinspection HttpUrlsUsage
-      url = (urlPrefix === 'www.') ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+/**
+ * @file      helpers/regexes.js
+ * @summary   Shared precompiled regexes and the CommonMark raw-HTML grammar source strings they are built from.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * `showdown.helper.regexes` plus the `cm*` grammar constants it is assembled from. These have load-time interdependencies (the constants feed the object literal), so they MUST stay together in this single file; because src/helpers/ is concatenated alphabetically, nothing here may read another helper's state at load time.
+ */
 
-      // url part is done so let's take care of text now
-      // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
-      txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+/**
+ * Common regexes.
+ * We declare some common regexes to improve performance
+ */
+// CommonMark inline raw-HTML grammar (mirrors commonmark.js' HTMLTAG): an open tag,
+// close tag, HTML comment, processing instruction, declaration or CDATA section.
+let cmAttributeName = '[a-zA-Z_:][a-zA-Z0-9:._-]*',
+    cmAttributeValue = '(?:[^"\'=<>`\\x00-\\x20]+|\'[^\']*\'|"[^"]*")',
+    cmAttribute = '(?:\\s+' + cmAttributeName + '(?:\\s*=\\s*' + cmAttributeValue + ')?)',
+    cmOpenTag = '<[A-Za-z][A-Za-z0-9\\-]*' + cmAttribute + '*\\s*/?>',
+    cmCloseTag = '</[A-Za-z][A-Za-z0-9\\-]*\\s*>',
+    // Deliberate deviation from CommonMark: `--!>` (the HTML "comment end bang" state) also
+    // terminates a comment, matching browser parsing of the output — recognizing only `-->`
+    // lets content the parser believes is commented out leak through as live HTML
+    // (js/bad-tag-filter). The content loop excludes both terminators.
+    cmHTMLComment = '<!-->|<!--->|<!--(?:[^-]|-[^-]|--(?:[^>!]|![^>]))*--!?>',
+    cmProcessingInstruction = '<[?][\\s\\S]*?[?]>',
+    cmDeclaration = '<![A-Za-z]+[^>]*>',
+    cmCDATA = '<!\\[CDATA\\[[\\s\\S]*?\\]\\]>';
 
-      // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
-      // we consumed those characters in the regexp
-      return leadingMDChars +
-        writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
-        suffix +
-        leadingMDChars;
-    });
+showdown.helper.regexes = {
+  asteriskDashTildeAndColon: /([*_:~])/g,
+  asteriskDashAndTilde:      /([*_~])/g,
+  // Source string (not a RegExp) for the CommonMark inline raw-HTML grammar. Its consumer is
+  // the inline raw-HTML construct (makehtml/rawHtml.js), which builds one sticky RegExp from it
+  // and anchors it at the scan cursor. Note that file recognizes the `cmHTMLComment` alternative
+  // with a cursor scan of its own instead of this regex — see the rationale there before
+  // changing this production.
+  cmHTMLTagSource:           '(?:' + cmOpenTag + '|' + cmCloseTag + '|' + cmHTMLComment +
+                               '|' + cmProcessingInstruction + '|' + cmDeclaration + '|' + cmCDATA + ')',
+  // Open and close tag sources on their own, used for the CommonMark "type 7" HTML
+  // block start condition (a complete tag that fills the line).
+  cmOpenTagSource:           cmOpenTag,
+  cmCloseTagSource:          cmCloseTag
+};
 
-    // 8.2. Now check for naked mail
-    let nakedMailRegex = /(^|\s)(?:mailto:)?([A-Za-z\d!#$%&'*+-/=?^_`{|}~.]+@[-a-z\d]+(\.[-a-z\d]+)*\.[a-z]+)(?=$|\s)/gmi;
-    text = text.replace(nakedMailRegex, function (wholeMatch, leadingChar, mail) {
-      const m = parseMail(mail);
-      return leadingChar + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
-    });
+/**
+ * @file      helpers/text.js
+ * @summary   Pure string/regex utilities: trimming, case folding, tab expansion, recursive matching.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * `outdent`, `regexIndexOf`, `splitAtIndex`, the recursive-delimiter
+ * matcher (`replaceRecursiveRegExp`) and the `repeat`/`padEnd` polyfills.
+ * Load-order safe: the only load-time evaluation (`rgxFindMatchPos`) lives in
+ * this file with its sole user; nothing here reads another helper's state at load time.
+ */
+
+/**
+ * Remove one level of line-leading tabs or spaces
+ * @param {string} text
+ * @returns {string}
+ */
+showdown.helper.outdent = function (text) {
+  'use strict';
+  if (!showdown.helper.isString(text)) {
+    return text;
+  }
+  return text.replace(/^(\t| {1,4})/gm, '');
+};
+
+/**
+ * Returns the index within the passed String object of the first occurrence of the specified regex,
+ * starting the search at fromIndex. Returns -1 if the value is not found.
+ *
+ * @param {string} str string to search
+ * @param {RegExp} regex Regular expression to search
+ * @param {int} [fromIndex = 0] Index to start the search
+ * @returns {Number}
+ * @throws InvalidArgumentError
+ */
+showdown.helper.regexIndexOf = function (str, regex, fromIndex) {
+  'use strict';
+  if (!showdown.helper.isString(str)) {
+    throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
+  }
+  if (!(regex instanceof RegExp)) {
+    throw 'InvalidArgumentError: second parameter of showdown.helper.regexIndexOf function must be an instance of RegExp';
+  }
+  let indexOf = str.substring(fromIndex || 0).search(regex);
+  return (indexOf >= 0) ? (indexOf + (fromIndex || 0)) : indexOf;
+};
+
+/**
+ * Splits the passed string object at the defined index, and returns an array composed of the two substrings
+ * @param {string} str string to split
+ * @param {int} index index to split string at
+ * @returns {[string,string]}
+ * @throws InvalidArgumentError
+ */
+showdown.helper.splitAtIndex = function (str, index) {
+  'use strict';
+  if (!showdown.helper.isString(str)) {
+    throw 'InvalidArgumentError: first parameter of showdown.helper.regexIndexOf function must be a string';
+  }
+  return [str.substring(0, index), str.substring(index)];
+};
+
+/**
+ * Locates balanced `left`…`right` delimiter pairs, outermost-first.
+ *
+ * The delimiters are tokenized in a single regex pass, then paired arithmetically over the
+ * token array. The original implementation re-ran the regex over the remainder once per
+ * unbalanced opener ("drop the first opener and try again"), which is O(n^2) on inputs like
+ * `'<div>\n'.repeat(n)` — with or without a trailing closer, so a "does a closer exist"
+ * guard does not fix it. Pairing is expressed here as depth arithmetic instead:
+ *
+ * - `D[k]` is the cumulative depth after token k (opener +1, closer -1).
+ * - A scan started at opener `j` completes at the first later token whose depth is `D[j] - 1`;
+ *   it can complete at all iff some *closer* at or after `j + 1` reaches that depth, which is
+ *   what `minCloserD` answers in O(1).
+ * - When an opener cannot complete, the next candidate is the next opener that can. Because
+ *   both that search and the match scans only ever move forward, the whole run stays linear.
+ *
+ * Emitted pairs are identical to the previous implementation's (verified by differential
+ * fuzzing over both delimiter families and every flag combination).
+ *
+ * @param {string} str
+ * @param {string} left
+ * @param {string} right
+ * @param {string} [flags]
+ * @returns {Array<{left: {}, match: {}, right: {}, wholeMatch: {}}>}
+ */
+let rgxFindMatchPos = function (str, left, right, flags) {
+  'use strict';
+  let f = flags || '',
+      g = f.indexOf('g') > -1,
+      x = new RegExp(left + '|' + right, 'g' + f.replace(/g/g, '')),
+      l = new RegExp(left, f.replace(/g/g, '')),
+      pos = [],
+      toks = [],
+      m;
+
+  while ((m = x.exec(str))) {
+    toks.push({start: m.index, end: m.index + m[0].length, isLeft: l.test(m[0])});
+    if (m[0].length === 0) {
+      // zero-length delimiter match: step forward so the scan cannot stall
+      x.lastIndex++;
+    }
   }
 
-  let afterEvent = new showdown.Event('makehtml.link.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
+  let n = toks.length,
+      depth = new Array(n),
+      minCloserDepth = new Array(n + 1),
+      acc = 0;
 
+  for (let k = 0; k < n; k++) {
+    acc += toks[k].isLeft ? 1 : -1;
+    depth[k] = acc;
+  }
+  minCloserDepth[n] = Infinity;
+  for (let k = n - 1; k >= 0; k--) {
+    minCloserDepth[k] = toks[k].isLeft ?
+      minCloserDepth[k + 1] :
+      Math.min(minCloserDepth[k + 1], depth[k]);
+  }
 
+  function completes (j) {
+    return minCloserDepth[j + 1] <= depth[j] - 1;
+  }
 
-  /**
-   * CommonMark inline-link scanner. Finds `[label](destination "title")` spans,
-   * parsing the destination and title with a hand-written cursor so that balanced
-   * parentheses, `<...>` destinations, the three title delimiters and backslash
-   * escapes are handled per the spec. Anything that does not parse as a valid
-   * inline link is left untouched (to be handled by the reference/shortcut passes).
-   * @param {string} str
-   * @returns {string}
-   */
-  function parseCmInlineLinks (str) {
-    let inlineLinkRegexp = /\[[\s\S]*?]\([\s\S]*?\)/, // representative pattern (for event metadata only)
-        n = str.length,
-        out = '',
-        last = 0,
-        i = 0;
-    while (i < n) {
-      if (str.charAt(i) !== '[') { i++; continue; }
-      // find the matching `]`, counting nested brackets and honoring backslash escapes
-      let depth = 1, k = i + 1, labelEnd = -1;
-      while (k < n) {
-        let c = str.charAt(k);
-        if (c === '\\' && k + 1 < n) { k += 2; continue; }
-        if (c === '[') { depth++; } else if (c === ']') {
-          depth--;
-          if (depth === 0) { labelEnd = k; break; }
-        }
-        k++;
-      }
-      if (labelEnd !== -1 && str.charAt(labelEnd + 1) === '(') {
-        let parsed = parseCmDestTitle(str, labelEnd + 2);
-        if (parsed) {
-          let label = str.slice(i + 1, labelEnd);
-          out += str.slice(last, i);
-          out += writeAnchorTag('inline', inlineLinkRegexp, str.slice(i, parsed.end + 1), label, null, parsed.url, parsed.title, parsed.emptyCase);
-          i = parsed.end + 1;
-          last = i;
-          continue;
-        }
-      }
-      // not a valid inline link here; advance past this `[` so a nested `[...]( )`
-      // still gets a chance to match
+  let i = 0,
+      viability = 0;
+  while (i < n) {
+    // closers before any opener are ignored, exactly as the depth counter used to
+    while (i < n && !toks[i].isLeft) {
       i++;
     }
-    out += str.slice(last);
-    return out;
+    if (i >= n) {
+      break;
+    }
+    if (!completes(i)) {
+      // this opener can never be closed: advance to the next one that can. `viability` keeps
+      // the search monotone, so no token is examined twice across the whole run.
+      let j = Math.max(i + 1, viability);
+      while (j < n && !(toks[j].isLeft && completes(j))) {
+        j++;
+      }
+      viability = j;
+      i = j;
+      continue;
+    }
+    let target = depth[i] - 1,
+        found = i + 1;
+    while (depth[found] !== target) {
+      found++;
+    }
+    pos.push({
+      left: {start: toks[i].start, end: toks[i].end},
+      match: {start: toks[i].end, end: toks[found].start},
+      right: {start: toks[found].start, end: toks[found].end},
+      wholeMatch: {start: toks[i].start, end: toks[found].end}
+    });
+    if (!g) {
+      return pos;
+    }
+    i = found + 1;
   }
 
-  /**
-   * Parse a CommonMark link destination and optional title starting just after the
-   * opening `(`. Returns `{url, title, emptyCase, end}` where `end` is the index of
-   * the closing `)`, or `null` if the span is not a valid destination/title.
-   * @param {string} str
-   * @param {number} j index right after the opening `(`
-   * @returns {{url: string, title: (string|null), emptyCase: boolean, end: number}|null}
-   */
-  function parseCmDestTitle (str, j) {
-    let n = str.length,
-        isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; },
-        url,
-        emptyCase = false;
+  return pos;
+};
 
-    // optional leading whitespace
-    while (j < n && isWs(str.charAt(j))) { j++; }
+/**
+ * Recursive-delimiter matcher/replacer.
+ *
+ * Derived from matchRecursiveRegExp (c) 2007 Steven Levithan <stevenlevithan.com>, MIT License.
+ *
+ * @param {string} str
+ * @param {string|function} replacement
+ * @param {string} left
+ * @param {string} right
+ * @param {string} flags
+ * @returns {string}
+ */
+showdown.helper.replaceRecursiveRegExp = function (str, replacement, left, right, flags) {
+  'use strict';
 
-    if (str.charAt(j) === '<') {
-      // angle-bracket destination: up to an unescaped `>`, no raw newline or `<`
-      j++;
-      let buf = '';
-      while (j < n && str.charAt(j) !== '>') {
-        let c = str.charAt(j);
-        if (c === '\n' || c === '<') { return null; }
-        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
-        buf += c; j++;
-      }
-      if (j >= n || str.charAt(j) !== '>') { return null; }
-      j++; // consume `>`
-      url = buf;
-      if (url === '') { emptyCase = true; }
-    } else {
-      // bare destination: balanced parentheses, ends at whitespace or an unbalanced `)`
-      let depth = 0, buf = '';
-      while (j < n) {
-        let c = str.charAt(j);
-        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
-        if (isWs(c)) { break; }
-        if (c === '(') { depth++; buf += c; j++; continue; }
-        if (c === ')') {
-          if (depth === 0) { break; }
-          depth--; buf += c; j++; continue;
-        }
-        buf += c; j++;
-      }
-      if (depth !== 0) { return null; } // unbalanced parens -> not a link
-      url = buf;
-      if (url === '') { emptyCase = true; }
-    }
-
-    // optional whitespace separating destination and title
-    let hadWs = false;
-    while (j < n && isWs(str.charAt(j))) { hadWs = true; j++; }
-
-    let title = null,
-        tc = str.charAt(j);
-    if (j < n && (tc === '"' || tc === '\'' || tc === '(')) {
-      // a title must be separated from the destination by whitespace
-      if (!hadWs) { return null; }
-      let close = (tc === '(') ? ')' : tc,
-          buf = '';
-      j++;
-      let closed = false;
-      while (j < n) {
-        let c = str.charAt(j);
-        if (c === '\\' && j + 1 < n) { buf += c + str.charAt(j + 1); j += 2; continue; }
-        if (tc === '(' && c === '(') { return null; } // unescaped `(` invalid in (...) title
-        if (c === close) { closed = true; j++; break; }
-        buf += c; j++;
-      }
-      if (!closed) { return null; }
-      title = buf;
-    }
-
-    // optional trailing whitespace, then the required closing `)`
-    while (j < n && isWs(str.charAt(j))) { j++; }
-    if (j >= n || str.charAt(j) !== ')') { return null; }
-    return {url: url, title: title, emptyCase: emptyCase, end: j};
-  }
-
-  /**
-   *
-   * @param {string} subEvtName
-   * @param {RegExp} pattern
-   * @param {string} wholeMatch
-   * @param {string} text
-   * @param {string|null} [linkId]
-   * @param {string|null} [url]
-   * @param {string|null} [title]
-   * @param {boolean} [emptyCase]
-   * @returns {string}
-   */
-  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
-
-    let matches = {
-          _wholeMatch: wholeMatch,
-          _linkId: linkId,
-          _url: url,
-          _title: title,
-          text: text
-        },
-        otp,
-        attributes = {};
-
-    title = title || null;
-    url = url || null;
-    if (linkId) {
-      linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(linkId) : showdown.helper.caseFold(linkId);
-    } else {
-      linkId = null;
-    }
-    emptyCase = !!emptyCase;
-
-    if (emptyCase) {
-      url = '';
-    } else if (!url) {
-      if (!linkId) {
-        // lower-case and turn embedded newlines into spaces
-        linkId = options.cmSpec ? showdown.helper.cmNormalizeLabel(text) : showdown.helper.caseFold(text).replace(/ ?\n/g, ' ');
-      }
-      if (!showdown.helper.isUndefined(globals.gUrls[linkId])) {
-        url = globals.gUrls[linkId];
-        if (!showdown.helper.isUndefined(globals.gTitles[linkId])) {
-          title = globals.gTitles[linkId];
-        }
-      } else {
-        return wholeMatch;
-      }
-    }
-
-    url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-    // safeMode: neutralize dangerous URL schemes (javascript:, vbscript:, data:, ...)
-    if (options.safeMode && !showdown.helper.isSafeUrl(url)) {
-      url = '';
-    }
-    if (options.cmSpec) {
-      url = showdown.helper.cmNormalizeURL(url);
-    }
-    url = url.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-    // escape characters that would otherwise break out of the quoted href attribute
-    // (a `"` in the destination is an attribute-injection vector). cmSpec flavors already
-    // percent-encode the URL above, so this is a no-op there.
-    url = url
-      .replace(/"/g, '&quot;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-    attributes.href = url;
-
-    if (title && showdown.helper.isString(title)) {
-      if (options.cmSpec) {
-        title = showdown.helper.cmEscapeTitle(title);
-      } else {
-        title = title
-          .replace(/"/g, '&quot;');
-      }
-      title = title.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
-      attributes.title = title;
-    }
-
-    let captureStartEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onCapture', wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches(matches)
-      .setAttributes(attributes);
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      attributes = captureStartEvent.attributes;
-      text = captureStartEvent.matches.text || '';
-      // Text can be a markdown element, so we run through the appropriate parsers
-      text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
-      text = showdown.subParser('makehtml.emoji')(text, options, globals);
-      text = showdown.subParser('makehtml.underline')(text, options, globals);
-      text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
-      text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
-      text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
-      text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
-      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + text + '</a>';
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.link.' + subEvtName + '.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    otp = beforeHashEvent.output;
-    return showdown.subParser('makehtml.hashHTMLSpans')(otp, options, globals);
-  }
-
-  /**
-   * @param {string} mail
-   * @returns {{mail: string, url: string}}
-   */
-  function parseMail (mail) {
-    let url = 'mailto:';
-    mail = showdown.subParser('makehtml.unescapeSpecialChars')(mail, options, globals);
-    if (options.encodeEmails) {
-      url = showdown.helper.encodeEmailAddress(url + mail);
-      mail = showdown.helper.encodeEmailAddress(mail);
-    } else {
-      url = url + mail;
-    }
-    return {
-      mail: mail,
-      url: url
+  if (!showdown.helper.isFunction(replacement)) {
+    let repStr = replacement;
+    replacement = function () {
+      return repStr;
     };
   }
 
-  // HTML-escape an autolink href (the URL is already percent-encoded)
-  function cmEscapeHref (url) {
-    return url
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  let matchPos = rgxFindMatchPos(str, left, right, flags),
+      finalStr = str,
+      lng = matchPos.length;
+
+  if (lng > 0) {
+    let bits = [];
+    if (matchPos[0].wholeMatch.start !== 0) {
+      bits.push(str.slice(0, matchPos[0].wholeMatch.start));
+    }
+    for (let i = 0; i < lng; ++i) {
+      bits.push(
+        replacement(
+          str.slice(matchPos[i].wholeMatch.start, matchPos[i].wholeMatch.end),
+          str.slice(matchPos[i].match.start, matchPos[i].match.end),
+          str.slice(matchPos[i].left.start, matchPos[i].left.end),
+          str.slice(matchPos[i].right.start, matchPos[i].right.end)
+        )
+      );
+      if (i < lng - 1) {
+        bits.push(str.slice(matchPos[i].wholeMatch.end, matchPos[i + 1].wholeMatch.start));
+      }
+    }
+    if (matchPos[lng - 1].wholeMatch.end < str.length) {
+      bits.push(str.slice(matchPos[lng - 1].wholeMatch.end));
+    }
+    finalStr = bits.join('');
+  }
+  return finalStr;
+};
+
+/**
+ * Hashes standalone PHP/ASP-style processor instructions (`<?…?>` and `<%…%>`).
+ *
+ * The block pattern's lazy content class matches newlines, so an opener with no closer ahead
+ * scans to end-of-input — once per opener, i.e. O(n^2) on `'\n\n<?x'.repeat(n)`. A processor
+ * instruction only forms when its closer is followed by a blank line, so the pass is run over
+ * the region up to the last such closer: no match can begin after it, and none can extend past
+ * it, which makes the restriction exact rather than approximate.
+ *
+ * Known residual: openers of one type (`<%`) followed only by a closer of the other (`?>`)
+ * still degrade, since the cutoff is computed across both delimiter types.
+ *
+ * @param {string} text
+ * @param {function} replacer passed straight to String.replace
+ * @returns {string}
+ */
+showdown.helper.replaceProcessorInstructions = function (text, replacer) {
+  'use strict';
+  let lastValidClose = -1,
+      closeRgx = /[?%]>[ \t]*(?=\n{2,})/g,
+      m;
+
+  while ((m = closeRgx.exec(text))) {
+    lastValidClose = m.index + m[0].length;
+  }
+  if (lastValidClose === -1) {
+    return text;
+  }
+  // +2 keeps the blank line the trailing lookahead needs inside the scanned region
+  let cut = lastValidClose + 2;
+  return text.slice(0, cut).replace(/\n\n( {0,3}<([?%])[^\r]*?\2>[ \t]*(?=\n{2,}))/g, replacer) +
+    text.slice(cut);
+};
+
+/**
+ * String.prototype.repeat polyfill
+ *
+ * @param {string} str
+ * @param {int} count
+ * @returns {string}
+ */
+showdown.helper.repeat = function (str, count) {
+  'use strict';
+  // use built-in method if it's available
+  if (!showdown.helper.isUndefined(String.prototype.repeat)) {
+    return str.repeat(count);
+  }
+  str = '' + str;
+  if (count < 0) {
+    throw new RangeError('repeat count must be non-negative');
+  }
+  if (count === Infinity) {
+    throw new RangeError('repeat count must be less than infinity');
+  }
+  count = Math.floor(count);
+  if (str.length === 0 || count === 0) {
+    return '';
+  }
+  // Ensuring count is a 31-bit integer allows us to heavily optimize the
+  // main part. But anyway, most current (August 2014) browsers can't handle
+  // strings 1 << 28 chars or longer, so:
+  /*jshint bitwise: false*/
+  if (str.length * count >= 1 << 28) {
+    throw new RangeError('repeat count must not overflow maximum string size');
+  }
+  /*jshint bitwise: true*/
+  let maxCount = str.length * count;
+  count = Math.floor(Math.log(count) / Math.log(2));
+  while (count) {
+    str += str;
+    count--;
+  }
+  str += str.substring(0, maxCount - str.length);
+  return str;
+};
+
+/**
+ * String.prototype.padEnd polyfill
+ *
+ * @param {string} str
+ * @param {int} targetLength
+ * @param {string} [padString]
+ * @returns {string}
+ */
+showdown.helper.padEnd = function padEnd (str, targetLength, padString) {
+  'use strict';
+  // eslint-disable-next-line @stylistic/space-infix-ops
+  targetLength = targetLength>>0; //floor if number or convert non-number to 0;
+  padString = String(padString || ' ');
+  if (str.length > targetLength) {
+    return String(str);
+  } else {
+    targetLength = targetLength - str.length;
+    if (targetLength > padString.length) {
+      padString += showdown.helper.repeat(padString, targetLength / padString.length); //append to original to ensure we are longer than needed
+    }
+    return String(str) + padString.slice(0,targetLength);
+  }
+};
+
+/**
+ * @file      helpers/types.js
+ * @summary   Runtime type guards and iteration helper (`isString`, `isNumber`, `isArray`, `forEach`, …).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The `showdown.helper.*` type-checking primitives used throughout the codebase. Load-order safe:
+ * files in src/helpers/ are concatenated alphabetically, so nothing here reads another helper's
+ * state at load time — only inside function bodies (call time).
+ */
+
+/**
+ * Check if var is string
+ * @static
+ * @param {*} a
+ * @returns {boolean}
+ */
+showdown.helper.isString = function (a) {
+  'use strict';
+  return (typeof a === 'string' || a instanceof String);
+};
+
+/**
+ * Check if var is a number
+ * @static
+ * @param {*} a
+ * @returns {boolean}
+ */
+showdown.helper.isNumber = function (a) {
+  return !isNaN(a);
+};
+
+/**
+ * Check if var is a function
+ * @static
+ * @param {*} a
+ * @returns {boolean}
+ */
+showdown.helper.isFunction = function (a) {
+  'use strict';
+  let getType = {};
+  return a && getType.toString.call(a) === '[object Function]';
+};
+
+/**
+ * isArray helper function
+ * @static
+ * @param {*} a
+ * @returns {boolean}
+ */
+showdown.helper.isArray = function (a) {
+  'use strict';
+  let isArray;
+  if (!Array.isArray) {
+    isArray = function (arg) {
+      return Object.prototype.toString.call(arg) === '[object Array]';
+    };
+  } else {
+    isArray = Array.isArray;
+  }
+  return isArray(a);
+};
+
+/**
+ * Check if value is undefined
+ * @static
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is `undefined`, else `false`.
+ */
+showdown.helper.isUndefined = function (value) {
+  'use strict';
+  return typeof value === 'undefined';
+};
+
+/**
+ * Check if value is an object (excluding arrays)
+ * @param {*} value
+ * @returns {boolean}
+ */
+showdown.helper.isObject = function (value) {
+  'use strict';
+  return (
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value !== null
+  );
+};
+
+/**
+ * ForEach helper function
+ * Iterates over Arrays and Objects (own properties only)
+ * @static
+ * @param {*} obj
+ * @param {function} callback Accepts 3 params: 1. value, 2. key, 3. the original array/object
+ */
+showdown.helper.forEach = function (obj, callback) {
+  'use strict';
+  // check if obj is defined
+  if (showdown.helper.isUndefined(obj)) {
+    throw new Error('obj param is required');
   }
 
-  // HTML-escape the visible autolink text (no percent-encoding)
-  function cmEscapeText (txt) {
-    return txt
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+  if (showdown.helper.isUndefined(callback)) {
+    throw new Error('callback param is required');
   }
-});
 
-////
-// makehtml/list.js
-// Copyright (c) 2022 ShowdownJS
-//
-// Transforms MD lists into `<ul>` or `<ol>` html list
-//
-// Markdown supports ordered (numbered) and unordered (bulleted) lists.
-// Unordered lists use asterisks, pluses, and hyphens - interchangably - as list markers
-// Ordered lists use numbers followed by periods.
-//
-// ***Author:***
-// - Estevão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
+  if (!showdown.helper.isFunction(callback)) {
+    throw new Error('callback param must be a function/closure');
+  }
+
+  if (typeof obj.forEach === 'function') {
+    obj.forEach(callback);
+  } else if (showdown.helper.isArray(obj)) {
+    for (let i = 0; i < obj.length; i++) {
+      callback(obj[i], i, obj);
+    }
+  } else if (typeof (obj) === 'object') {
+    for (let prop in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, prop)) {
+        callback(obj[prop], prop, obj);
+      }
+    }
+  } else {
+    throw new Error('obj does not seem to be an array or an iterable object');
+  }
+};
+
+/**
+ * @file      helpers/unhashHTMLSpans.js
+ * @summary   Restores `¨C…C` span placeholders back to their stored HTML, expanding nested placeholders (bounded depth).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The inverse of `hashHTMLSpans`. A `showdown.helper.*` mechanism, not a construct; emits no events.
+ */
 
 
-showdown.subParser('makehtml.list', function (text, options, globals) {
+// Mechanism (not a construct): hash plumbing. Attached as a showdown.helper
+// (no events) rather than registered as a subparser.
+showdown.helper.unhashHTMLSpans = function (text, options, globals) {
   'use strict';
 
-  // Start of list parsing
-  const subListRgx = /^(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
-  const mainListRgx = /(\n\n|^\n?)(( {0,3}([*+-]|\d+[.])[ \t]+)[^\r]+?(¨0|\n{2,}(?=\S)(?![ \t]*(?:[*+-]|\d+[.])[ \t]+)))/gm;
-  const listTypeRgx = /[*+-]/g;
-
-  // CommonMark list parsing is a separate container-block parser, invoked only when
-  // the commonmark flavor selects it. The regex parser below stays the default path.
-  if (options.cmSpec) {
-    return showdown.subParser('makehtml.cmList')(text, options, globals);
+  // Resolve one span placeholder to its stored HTML, expanding any nested placeholders it
+  // contains (bounded depth, mirrors the historical "assume 20 as limit for recurse").
+  function resolveSpan (num) {
+    let repText = globals.gHtmlSpans[num],
+        limit = 0;
+    while (/¨C(\d+)C/.test(repText)) {
+      let n2 = repText.match(/¨C(\d+)C/)[1];
+      repText = repText.replace('¨C' + n2 + 'C', globals.gHtmlSpans[n2]);
+      if (limit === 10) {
+        console.error('maximum nesting of 20 spans reached!!!');
+        break;
+      }
+      ++limit;
+    }
+    return repText;
   }
 
-  let startEvent = new showdown.Event('makehtml.list.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
+  // Single pass over the document (was: one String.replace per span, i.e. O(spans × text) —
+  // quadratic when the input produces many spans, e.g. `'a_'.repeat(n)`).
+  text = text.replace(/¨C(\d+)C/g, function (whole, num) {
+    return resolveSpan(num);
+  });
 
-  // add sentinel to hack around khtml/safari bug:
-  // http://bugs.webkit.org/show_bug.cgi?id=11231
-  text += '¨0';
+  return text;
+};
 
-  if (globals.gListLevel) {
-    text = text.replace(subListRgx, function (wholeMatch, list, m2) {
-      return parseConsecutiveLists(subListRgx, list, (m2.search(listTypeRgx) > -1) ? 'ul' : 'ol', true);
-    });
-  } else {
-    text = text.replace(mainListRgx, function (wholeMatch, m1, list, m3) {
-      return parseConsecutiveLists(mainListRgx, list, (m3.search(listTypeRgx) > -1) ? 'ul' : 'ol', false);
-    });
+/**
+ * @file      helpers/url.js
+ * @summary   URL parsing, base-URL resolution, safeMode scheme guard, ASCII encoding and email obfuscation.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The public surface is `applyBaseUrl`, `isSafeUrl` and `encodeEmailAddress`; `URLUtils`,
+ * `isAbsolutePath` and `safeUrlSchemes` are file-local internals consumed only by
+ * `applyBaseUrl`/`isSafeUrl` here. Load-order safe: the file-local internals used at call time
+ * live in this file; nothing here reads another helper's state at load time.
+ */
+
+/**
+ * Obfuscates an e-mail address by replacing every character with its decimal character
+ * reference, to foil naive address-harvesting spambots.
+ *
+ * Markdown.pl picked between decimal, hexadecimal and raw per character with a per-call RNG.
+ * Showdown encodes every character the same way instead, which keeps conversion output stable
+ * (a converter is expected to be a pure function of its input) and loses nothing: a harvester
+ * that decodes character references reads the address under either scheme, and one that does
+ * not is already defeated by encoding the `@`. Uniform encoding is in fact marginally stronger
+ * than the mix, which deliberately left ~10% of characters as literal text.
+ *
+ * @param {string} mail
+ * @returns {string}
+ */
+showdown.helper.encodeEmailAddress = function (mail) {
+  'use strict';
+  return mail.replace(/./g, function (ch) {
+    return '&#' + ch.charCodeAt(0) + ';';
+  });
+};
+
+/**
+ * Prepends a base URL to relative paths.
+ *
+ * @param {string} baseUrl the base URL to prepend to a relative path
+ * @param {string} url the path to modify, which may be relative
+ * @returns {string} the full URL
+ */
+showdown.helper.applyBaseUrl = function (baseUrl, url) {
+  // Only prepend if given a base URL and the path is not absolute.
+  if (baseUrl && baseUrl !== '' && !isAbsolutePath(url)) {
+    let urlResolve = new URLUtils(url, baseUrl);
+    url = urlResolve.href;
   }
 
-  // strip sentinel
-  text = text.replace(/¨0/, '');
+  return url;
+};
 
-  let afterEvent = new showdown.Event('makehtml.list.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
+/**
+ * Checks if the given path is absolute.
+ *
+ * @param {string} path the path to test for absolution
+ * @returns {boolean} `true` if the given path is absolute, else `false`
+ */
+function isAbsolutePath (path) {
+  // Absolute paths begin with '[protocol:]//' or '#' (anchors)
+  return /(^([a-z]+:)?\/\/)|(^#)/i.test(path);
+}
+
+// URL schemes allowed by safeMode. Relative URLs, fragments (#...) and
+// protocol-relative URLs (//host) carry no scheme and are always allowed.
+const safeUrlSchemes = ['http', 'https', 'ftp', 'ftps', 'mailto', 'tel', 'sms'];
+
+/**
+ * safeMode URL guard: decide whether a link/image destination is safe to emit.
+ * Rejects dangerous schemes (javascript:, vbscript:, data:text/html, ...). The
+ * scheme is resolved after decoding character references and stripping the
+ * characters browsers ignore when parsing a scheme (whitespace and control
+ * chars), so evasions like `java&#115;cript:` or `java\tscript:` are caught.
+ * `data:` is only permitted when opts.allowDataImage is set and the payload is a
+ * `data:image/...` URL (so inline base64 images keep working under safeMode).
+ * @param {string} url
+ * @param {{allowDataImage?: boolean}} [opts]
+ * @returns {boolean}
+ */
+showdown.helper.isSafeUrl = function (url, opts) {
+  'use strict';
+  let allowDataImage = !!(opts && opts.allowDataImage);
+  // resolve character references (numeric + named) that could hide the scheme
+  let decoded = showdown.helper.cmDecodeEntities(String(url));
+  // restore showdown's internal escape placeholders (¨E<code>E) to their chars
+  decoded = showdown.helper.unescapePlaceholders(decoded);
+  // remove whitespace/control chars browsers ignore while resolving the scheme
+  // eslint-disable-next-line no-control-regex -- intentionally stripping ASCII control chars used to obfuscate schemes
+  let stripped = decoded.replace(/[\u0000-\u0020\u00a0]+/g, '');
+  let m = /^([a-zA-Z][a-zA-Z0-9+.-]*):/.exec(stripped);
+  if (!m) {
+    // no scheme: relative path, fragment (#...) or protocol-relative (//host)
+    return true;
+  }
+  let scheme = m[1].toLowerCase();
+  if (scheme === 'data') {
+    return allowDataImage && /^data:image\//i.test(stripped);
+  }
+  return safeUrlSchemes.indexOf(scheme) !== -1;
+};
+
+function URLUtils (url, baseURL) {
+  const pattern2 = /^([^:/?#]+:)?(?:\/\/(?:([^:@/?#]*)(?::([^:@/?#]*))?@)?(([^:/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/;
+
+  let m = String(url)
+    .trim()
+    .match(pattern2);
+  if (!m) {
+    throw new RangeError();
+  }
+  let protocol = m[1] || '';
+  let username = m[2] || '';
+  let password = m[3] || '';
+  let host = m[4] || '';
+  let hostname = m[5] || '';
+  let port = m[6] || '';
+  let pathname = m[7] || '';
+  let search = m[8] || '';
+  let hash = m[9] || '';
+  if (baseURL !== undefined) {
+    let base = new URLUtils(baseURL);
+    let flag = protocol === '' && host === '' && username === '';
+    if (flag && pathname === '' && search === '') {
+      search = base.search;
+    }
+    if (flag && pathname.charAt(0) !== '/') {
+      pathname = (pathname !== '' ? (((base.host !== '' || base.username !== '') && base.pathname === '' ? '/' : '') + base.pathname.slice(0, base.pathname.lastIndexOf('/') + 1) + pathname) : base.pathname);
+    }
+    // dot segments removal
+    let output = [];
+    pathname.replace(/^(\.\.?(\/|$))+/, '')
+      .replace(/\/(\.(\/|$))+/g, '/')
+      .replace(/\/\.\.$/, '/../')
+      .replace(/\/?[^/]*/g, function (p) {
+        if (p === '/..') {
+          output.pop();
+        } else {
+          output.push(p);
+        }
+      });
+    pathname = output.join('').replace(/^\//, pathname.charAt(0) === '/' ? '/' : '');
+    if (flag) {
+      port = base.port;
+      hostname = base.hostname;
+      host = base.host;
+      password = base.password;
+      username = base.username;
+    }
+    if (protocol === '') {
+      protocol = base.protocol;
+    }
+  }
+  //this.origin = protocol + (protocol !== '' || host !== '' ? '//' : '') + host;
+  this.href = protocol + (protocol !== '' || host !== '' ? '//' : '') + (username !== '' ? username + (password !== '' ? ':' + password : '') + '@' : '') + host + pathname + search + hash;
+  this.protocol = protocol;
+  this.username = username;
+  this.password = password;
+  this.host = host;
+  this.hostname = hostname;
+  this.port = port;
+  this.pathname = pathname;
+  this.search = search;
+  this.hash = hash;
+}
+
+/**
+ * @file      event.js
+ * @summary   The `showdown.Event` class and the static dispatch helpers powering the listener event system.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Implements the event object (name, `input`, `output`, `regexp`, `matches`, `attributes`, plus
+ * read-only `_globals`/`_options`/`_converter` context) with validating accessors and fluent
+ * builders, and the static dispatch helpers (`dispatchStart`/`dispatchCapture`/`dispatchHash`/
+ * `dispatchEnd`) that construct subparsers must use to emit `onStart`/`onCapture`/`onHash`/`onEnd`.
+ * This is the contract listener extensions hook into.
+ */
+
+showdown.Event = class {
 
   /**
-   * Process the contents of a single ordered or unordered list, splitting it
-   * into individual list items.
-   * @param {string} listStr
-   * @param {boolean} trimTrailing
-   * @returns {string}
+   * Creates a new showdown Event object
+   * @param {string} name
+   * @param {string} input
+   * @param {{}} [params]
+   * @param {string} params.output
+   * @param {RegExp} params.regexp
+   * @param {{}} params.matches
+   * @param {{}} params.attributes
+   * @param {{}} params.globals
+   * @param {{}} params.options
+   * @param {showdown.Converter} params.converter
    */
-  function processListItems (listStr, trimTrailing) {
-    // The $g_list_level global keeps track of when we're inside a list.
-    // Each time we enter a list, we increment it; when we leave a list,
-    // we decrement. If it's zero, we're not in a list anymore.
-    //
-    // We do this because when we're not inside a list, we want to treat
-    // something like this:
-    //
-    //    I recommend upgrading to version
-    //    8. Oops, now this line is treated
-    //    as a sub-list.
-    //
-    // As a single paragraph, despite the fact that the second line starts
-    // with a digit-period-space sequence.
-    //
-    // Whereas when we're inside a list (or sub-list), that line will be
-    // treated as the start of a sub-list. What a kludge, huh? This is
-    // an aspect of Markdown's syntax that's hard to parse perfectly
-    // without resorting to mind-reading. Perhaps the solution is to
-    // change the syntax rules such that sub-lists must start with a
-    // starting cardinal number; e.g. "1." or "a.".
-    globals.gListLevel++;
-
-    // trim trailing blank lines:
-    listStr = listStr.replace(/\n{2,}$/, '\n');
-
-    // attacklab: add sentinel to emulate \z
-    listStr += '¨0';
-
-    let rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[([xX ])])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0| {0,3}([*+-]|\d+[.])[ \t]+))/gm,
-        isParagraphed = (/\n[ \t]*\n(?!¨0)/.test(listStr));
-
-    // Since version 1.5, nesting sublists requires 4 spaces (or 1 tab) indentation,
-    // which is a syntax breaking change
-    // activating this option reverts to old behavior
-    // This will be removed in version 2.0
-    if (options.disableForced4SpacesIndentedSublists) {
-      rgx = /(\n)?(^ {0,3})([*+-]|\d+[.])[ \t]+((\[([xX ])])?[ \t]*[^\r]+?(\n{1,2}))(?=\n*(¨0|\2([*+-]|\d+[.])[ \t]+))/gm;
+  constructor (name, input, params) {
+    params = params || {};
+    let {output, regexp, matches, attributes, globals, options, converter} = params;
+    if (!showdown.helper.isString(name)) {
+      throw new TypeError('Event.name must be a string but ' + typeof name + ' given');
     }
+    this._name = name.toLowerCase();
+    this.input = input;
+    this.output = output || input;
+    this.regexp = regexp || null;
+    this.matches = matches || {};
+    this.attributes = attributes || {};
+    this._globals = globals || {};
+    this._options = options || {};
+    this._optionsCopy = null;
+    this._converter = converter || undefined;
+  }
 
-    listStr = listStr.replace(rgx, function (wholeMatch, m1, m2, m3, m4, taskbtn, checkedRaw) {
-      let item = showdown.helper.outdent(m4),
-          attributes = {},
-          checked = (checkedRaw && checkedRaw.trim() !== ''),
-          eventName = 'makehtml.list.listItem',
-          captureStartEvent,
-          matches = {
-            _wholeMatch: wholeMatch,
-            listItem: item,
+  /** @returns {string} */
+  get name () {
+    return this._name;
+  }
+
+  /** @returns {string} */
+  get input () {
+    return this._input;
+  }
+
+  /** @param {string} value */
+  set input (value) {
+    if (!showdown.helper.isString(value)) {
+      throw new TypeError('Event.input must be a string but ' + typeof value + ' given');
+    }
+    this._input = value;
+  }
+
+  /** @returns {string} */
+  get output () {
+    return this._output;
+  }
+
+  /** @param {string|null} value */
+  set output (value) {
+    if (!showdown.helper.isString(value) && value !== null) {
+      throw new TypeError('Event.output must be a string but ' + typeof value + ' given');
+    }
+    this._output = value;
+  }
+
+  /** @returns {null|RegExp} */
+  get regexp () {
+    return this._regexp;
+  }
+
+  /** @param {null|RegExp} value */
+  set regexp (value) {
+    if (!(value instanceof RegExp) && value !== null) {
+      throw new TypeError('Event.regexp must be a RegExp object (or null) but ' + typeof value + ' given');
+    }
+    this._regexp = value;
+  }
+
+  /** @returns {{}} */
+  get matches () {
+    return this._matches;
+  }
+
+  /** @param {{}}value */
+  set matches (value) {
+    if (typeof value !== 'object') {
+      throw new TypeError('Event.matches must be an object (or null) but ' + typeof value + ' given');
+    }
+    this._matches = {};
+    for (let prop in value) {
+      if (Object.prototype.hasOwnProperty.call(value, prop)) {
+        let descriptor;
+        if (/^_(.+)/.test(prop)) {
+          descriptor = {
+            enumerable: true,
+            configurable: false,
+            writable: false,
+            value: value[prop]
           };
-
-
-      // Support for github tasklists. GFM requires whitespace after the marker (see
-      // makehtml.list.taskListItem.checkbox), so a bare `[ ]`/`[ ]x` is not a task and is left literal.
-      if (taskbtn && options.tasklists && /^[ \t]*\[[xX ]][ \t]/.test(item)) {
-        // it's a github tasklist and tasklists are enabled
-
-        // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
-        // when `moreStyling` is enabled.
-        if (options.moreStyling) {
-          attributes.classes = ['task-list-item'];
-          attributes.style = 'list-style-type: none;';
-          if (checked) {
-            attributes.classes.push('task-list-item-complete');
-          }
-        }
-        eventName = 'makehtml.list.taskListItem';
-        matches._taskListButton = taskbtn;
-        matches._taskListButtonChecked = checkedRaw;
-      }
-
-
-      captureStartEvent = new showdown.Event(eventName + '.onCapture', item);
-      captureStartEvent
-        .setOutput(null)
-        ._setGlobals(globals)
-        ._setOptions(options)
-        .setRegexp(rgx)
-        .setMatches(matches)
-        .setAttributes(attributes);
-      captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-      // if something was passed as output, it takes precedence
-      // and will be used as output
-      if (captureStartEvent.output && captureStartEvent.output !== '') {
-        item = captureStartEvent.output;
-      } else {
-
-        attributes = captureStartEvent.attributes;
-        item = captureStartEvent.matches.listItem;
-
-        // even if user there's no tasklist, it's fine because the tasklist handler will bail without raising the event
-        if (options.tasklists) {
-          item = showdown.subParser('makehtml.list.taskListItem.checkbox')(item, options, globals);
-        }
-
-        // ISSUE #312
-        // This input: - - - a
-        // causes trouble to the parser, since it interprets it as:
-        // <ul><li><li><li>a</li></li></li></ul>
-        // instead of:
-        // <ul><li>- - a</li></ul>
-        // So, to prevent it, we will put a marker (¨A)in the beginning of the line
-        // Kind of hackish/monkey patching, but seems more effective than overcomplicating the list parser
-        item = item.replace(/^([-*+]|\d\.)[ \t]+[\S\n ]*/g, function (wm2) {
-          return '¨A' + wm2;
-        });
-
-        // SPECIAL CASE: a heading followed by a paragraph of text that is not separated by a double newline
-        // or/nor indented. ex:
-        //
-        // - # foo
-        // bar is great
-        //
-        // While this does now follow the spec per se, not allowing for this might cause confusion since
-        // header blocks don't need double-newlines after
-        if (/^#+.+\n.+/.test(item)) {
-          item = item.replace(/^(#+.+)$/m, '$1\n');
-        }
-
-        // m1 - Leading line or
-        // Has a double return (multi paragraph)
-        if (m1 || (item.search(/\n{2,}/) > -1)) {
-          item = showdown.subParser('makehtml.githubCodeBlock')(item, options, globals);
-          item = showdown.subParser('makehtml.blockquote')(item, options, globals);
-          item = showdown.subParser('makehtml.heading')(item, options, globals);
-          item = showdown.subParser('makehtml.list')(item, options, globals);
-          item = showdown.subParser('makehtml.codeBlock')(item, options, globals);
-          item = showdown.subParser('makehtml.table')(item, options, globals);
-          item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
-          //item = showdown.subParser('makehtml.paragraphs')(item, options, globals);
-
-          // TODO: This is a copy of the paragraph parser
-          // This is a provisory fix for issue #494
-          // For a permanent fix we need to rewrite the paragraph parser, passing the unhashify logic outside
-          // so that we can call the paragraph parser without accidently unashifying previously parsed blocks
-
-          // Strip leading and trailing lines:
-          item = item.replace(/^\n+/g, '');
-          item = item.replace(/\n+$/g, '');
-
-          let grafs = item.split(/\n{2,}/g),
-              grafsOut = [],
-              end = grafs.length; // Wrap <p> tags
-
-          for (let i = 0; i < end; i++) {
-            let str = grafs[i];
-            // if this is an HTML marker, copy it
-            if (str.search(/¨([KG])(\d+)\1/g) >= 0) {
-              grafsOut.push(str);
-
-              // test for presence of characters to prevent empty lines being parsed
-              // as paragraphs (resulting in undesired extra empty paragraphs)
-            } else if (str.search(/\S/) >= 0) {
-              str = showdown.subParser('makehtml.spanGamut')(str, options, globals);
-              str = str.replace(/^([ \t]*)/g, '<p>');
-              str += '</p>';
-              grafsOut.push(str);
-            }
-          }
-          item = grafsOut.join('\n');
-          // Strip leading and trailing lines:
-          item = item.replace(/^\n+/g, '');
-          item = item.replace(/\n+$/g, '');
-
         } else {
-
-          // Recursion for sub-lists:
-          item = showdown.subParser('makehtml.list')(item, options, globals);
-          item = item.replace(/\n$/, ''); // chomp(item)
-          item = showdown.subParser('makehtml.hashHTMLBlocks')(item, options, globals);
-
-          // Colapse double linebreaks
-          item = item.replace(/\n\n+/g, '\n\n');
-
-          if (isParagraphed) {
-            item = showdown.subParser('makehtml.paragraphs')(item, options, globals);
-          } else {
-            item = showdown.subParser('makehtml.spanGamut')(item, options, globals);
-          }
+          descriptor = {
+            enumerable: true,
+            configurable: false,
+            writable: true,
+            value: value[prop]
+          };
         }
-
-        // now we need to remove the marker (¨A)
-        item = item.replace('¨A', '');
-        // we can finally wrap the line in list item tags
-
-        item =  '<li' + showdown.helper._populateAttributes(attributes) + '>' + item + '</li>\n';
-
+        Object.defineProperty(this._matches, prop, descriptor);
       }
-
-      let beforeHashEvent = new showdown.Event(eventName + '.onHash', item);
-      beforeHashEvent
-        .setOutput(item)
-        ._setGlobals(globals)
-        ._setOptions(options);
-      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-      return beforeHashEvent.output;
-    });
-
-    // attacklab: strip sentinel
-    listStr = listStr.replace(/¨0/g, '');
-
-    globals.gListLevel--;
-
-    if (trimTrailing) {
-      listStr = listStr.replace(/\s+$/, '');
     }
+  }
 
-    return listStr;
+  /** @returns {{}} */
+  get attributes () {
+    return this._attributes;
+  }
+
+  /** @param {{}} value */
+  set attributes (value) {
+    if (typeof value !== 'object') {
+      throw new TypeError('Event.attributes must be an object (or null) but ' + typeof value + ' given');
+    }
+    this._attributes = value;
+  }
+
+  /** @param {showdown.Converter} converter */
+  set converter (converter) {
+    this._converter = converter;
+  }
+
+  /** @returns {showdown.Converter} */
+  get converter () {
+    return this._converter;
+  }
+
+  /**
+   * The conversion options, as read-only context.
+   *
+   * `_options` is the converter's own live object, so exposing it directly would let a listener
+   * reconfigure the conversion mid-pipeline. A copy is handed out instead — made on first access
+   * rather than at dispatch time, because the overwhelming majority of events are never inspected
+   * by a listener and copying every one of them measurably slows conversion down. The copy is one
+   * level deep: it guards the option keys themselves, and unlike a deep clone it neither costs a
+   * full traversal nor chokes on function-valued options.
+   *
+   * @returns {{}}
+   */
+  get options () {
+    if (this._optionsCopy === null) {
+      this._optionsCopy = showdown.helper.cloneObject(this._options) || {};
+    }
+    return this._optionsCopy;
+  }
+
+  get globals () {
+    return this._globals;
+  }
+  // FLUID INTERFACE
+
+  /**
+   *
+   * @param {string} value
+   * @returns {showdown.Event}
+   */
+  setInput (value) {
+    this.input = value;
+    return this;
   }
 
   /**
    *
-   * @param {string} list
-   * @param {string} listType
-   * @returns {string|null}
+   * @param {string|null} value
+   * @returns {showdown.Event}
    */
-  function styleStartNumber (list, listType) {
-    // check if ol and starts by a number different than 1
-    if (listType === 'ol') {
-      let res = list.match(/^ *(\d+)\./);
-      if (res && res[1] !== '1') {
-        return res[1];
+  setOutput (value) {
+    this.output = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {RegExp} value
+   * @returns {showdown.Event}
+   */
+  setRegexp (value) {
+    this.regexp = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {{}}value
+   * @returns {showdown.Event}
+   */
+  setMatches (value) {
+    this.matches = value;
+    return this;
+  }
+
+  /**
+   *
+   * @param {{}}value
+   * @returns {showdown.Event}
+   */
+  setAttributes (value) {
+    this.attributes = value;
+    return this;
+  }
+
+  /**
+   * @param {{}} value the converter's live options; listeners only ever see the copy the
+   *   `options` getter hands out
+   * @returns {showdown.Event}
+   */
+  _setOptions (value) {
+    this._options = value || {};
+    this._optionsCopy = null;
+    return this;
+  }
+
+  _setGlobals (value) {
+    this._globals = value;
+    return this;
+  }
+
+  _setConverter (value) {
+    this.converter = value;
+    return this;
+  }
+
+  /**
+   * Legacy: Return the output text
+   * @returns {string}
+   */
+  getText () {
+    return this.output;
+  }
+
+  getMatches () {
+    return this.matches;
+  }
+};
+
+// ---------------------------------------------------------------------------
+// Lifecycle dispatch helpers
+//
+// Shared event ceremony for the makehtml subparsers, the makeMarkdown subparsers
+// and the document-level event sites in converter.js. Each helper builds a
+// showdown.Event with the payload shape mandated by the event contract,
+// dispatches it through the converter and returns the dispatched event so callers
+// can read back the (possibly listener-mutated) output, matches and attributes.
+//
+// The contract (see docs/event-system.md for the full reference, including the
+// makeMarkdown counterpart):
+//   - onStart / onEnd / onHash : input, output (initially === input), options, globals
+//   - onCapture                : output = null, regexp (RegExp|null), matches, attributes
+//   - matches always carries the read-only `_wholeMatch` context key and, for
+//     every construct that has inner content, the main content under `text`;
+//     construct-specific extras use descriptive names (url, title, format, …).
+//
+// makeMarkdown lifecycle events additionally carry the source DOM node under the
+// read-only `matches._node` key (mutating that live node is how a listener rewrites
+// the input on `onStart`); their captures are node-based, so `regexp` and
+// `attributes` are ALWAYS null there (there is no regex match and markdown output
+// has no HTML attributes). The `makeMarkdown.*` namespace is detected from the event
+// name and validated accordingly.
+//
+// dispatchCapture validates the payload cheaply and throws a descriptive Error
+// on a malformed capture (missing matches, absent `_wholeMatch`, or a regexp /
+// attributes value that violates the namespace's shape) so contract violations
+// fail loudly at their source instead of producing a silently broken event.
+// ---------------------------------------------------------------------------
+
+/**
+ * Build, dispatch and return a lifecycle event whose input and output both start
+ * as `text`. Shared by dispatchStart / dispatchEnd / dispatchHash. An optional
+ * `matches` object attaches read-only/mutable context (the makeMarkdown lifecycle
+ * events pass `{_node: node}` so listeners can reach the live DOM node).
+ * @param {string} name
+ * @param {string} text
+ * @param {{}} options
+ * @param {{}} globals
+ * @param {{}} [matches]
+ * @returns {showdown.Event}
+ */
+showdown.Event._dispatchLifecycle = function (name, text, options, globals, matches) {
+  'use strict';
+  let event = new showdown.Event(name, text);
+  event
+    .setOutput(text)
+    ._setGlobals(globals)
+    ._setOptions(options);
+  if (matches) {
+    event.setMatches(matches);
+  }
+  return globals.converter.dispatch(event);
+};
+
+/**
+ * Dispatch a subparser's `onStart` event.
+ * @param {string} name
+ * @param {string} text
+ * @param {{}} options
+ * @param {{}} globals
+ * @param {{}} [matches]
+ * @returns {showdown.Event}
+ */
+showdown.Event.dispatchStart = function (name, text, options, globals, matches) {
+  'use strict';
+  return showdown.Event._dispatchLifecycle(name, text, options, globals, matches);
+};
+
+/**
+ * Dispatch a subparser's `onEnd` event.
+ * @param {string} name
+ * @param {string} text
+ * @param {{}} options
+ * @param {{}} globals
+ * @param {{}} [matches]
+ * @returns {showdown.Event}
+ */
+showdown.Event.dispatchEnd = function (name, text, options, globals, matches) {
+  'use strict';
+  return showdown.Event._dispatchLifecycle(name, text, options, globals, matches);
+};
+
+/**
+ * Dispatch a construct's `onHash` event, carrying the built output that is about
+ * to be hashed/returned.
+ * @param {string} name
+ * @param {string} output
+ * @param {{}} options
+ * @param {{}} globals
+ * @returns {showdown.Event}
+ */
+showdown.Event.dispatchHash = function (name, output, options, globals) {
+  'use strict';
+  return showdown.Event._dispatchLifecycle(name, output, options, globals);
+};
+
+/**
+ * Dispatch a construct's `onCapture` event. Sets the contract payload
+ * (`output: null`, plus the given regexp / matches / attributes) and returns the
+ * dispatched event so the caller can read back matches, attributes and any
+ * output a listener supplied.
+ * @param {string} name
+ * @param {string} input the captured content
+ * @param {{regexp: (RegExp|null), matches: {}, attributes: ({}|undefined)}} params
+ * @param {{}} options
+ * @param {{}} globals
+ * @returns {showdown.Event}
+ */
+showdown.Event.dispatchCapture = function (name, input, params, options, globals) {
+  'use strict';
+  params = params || {};
+  // makeMarkdown captures are node-based: they never carry a regexp or HTML attributes,
+  // so the contract there REQUIRES regexp === null and attributes === null. makehtml
+  // captures keep their shape (regexp is a RegExp or null, attributes is an object).
+  let isMakeMarkdown = /^makemarkdown\./i.test(name);
+  let regexp = (typeof params.regexp === 'undefined') ? null : params.regexp,
+      matches = params.matches,
+      attributes = (typeof params.attributes === 'undefined') ?
+        (isMakeMarkdown ? null : {}) :
+        params.attributes;
+
+  if (isMakeMarkdown) {
+    if (regexp !== null) {
+      throw new Error('Malformed "' + name + '" capture event: makeMarkdown captures are node-based and carry no regexp, so regexp must be null, but ' +
+        (regexp instanceof RegExp ? 'a RegExp' : typeof regexp) + ' given');
+    }
+    if (attributes !== null) {
+      throw new Error('Malformed "' + name + '" capture event: makeMarkdown output has no attributes, so attributes must be null, but ' +
+        typeof attributes + ' given');
+    }
+  } else {
+    if (regexp !== null && !(regexp instanceof RegExp)) {
+      throw new Error('Malformed "' + name + '" capture event: regexp must be a RegExp or null, but ' +
+        typeof regexp + ' given');
+    }
+    if (attributes === null || typeof attributes !== 'object') {
+      throw new Error('Malformed "' + name + '" capture event: attributes must be an object, but ' +
+        typeof attributes + ' given');
+    }
+  }
+  if (matches === null || typeof matches !== 'object') {
+    throw new Error('Malformed "' + name + '" capture event: matches must be an object, but ' +
+      typeof matches + ' given');
+  }
+  if (!Object.prototype.hasOwnProperty.call(matches, '_wholeMatch')) {
+    throw new Error('Malformed "' + name + '" capture event: matches must include a "_wholeMatch" key');
+  }
+
+  let event = new showdown.Event(name, input);
+  event
+    .setOutput(null)
+    ._setGlobals(globals)
+    ._setOptions(options)
+    .setRegexp(regexp)
+    .setMatches(matches)
+    .setAttributes(attributes);
+  return globals.converter.dispatch(event);
+};
+
+/**
+ * @file      makehtml/autolink.js
+ * @summary   Angle-bracket autolinks in the unified inline scan (CommonMark spec §6.5) plus the Showdown `<www...>` extension.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Recognizes an `<uri>`, `<email>` or `<www...>` autolink at the scan cursor and builds the anchor
+ * through the `makehtml.link.angleBrackets.*` capture/hash lifecycle (so listener extensions see the
+ * same event family across flavors). cmSpec recognizes any scheme; the Showdown flavors restrict the
+ * URI form to http/https/ftp. The `<www...>` form applies the GFM www rule (http(s):// prepend +
+ * showdown.helper.validAutolinkHost domain validation) to the explicitly delimited shortcut.
+ *
+ * This is a `makehtml.inline.*` construct subparser called from the single-pass inline scanner in
+ * spanGamut.js with the scan state — (scan, options, globals) — consuming (returning the new cursor)
+ * or declining (returning null); see entity.js for the fuller scan-convention explanation.
+ */
+
+// Sticky regexes anchored at the scan cursor (lastIndex) so the recognizers never slice the tail of
+// the string - keeps the tokenizer linear on `<`-heavy input. Reused across calls; each recognizer
+// sets lastIndex before exec and the parse is not re-entrant within a single string.
+// eslint-disable-next-line no-control-regex -- CommonMark autolinks exclude control chars (\x00-\x20) per spec
+const reAutoUri = /<[A-Za-z][A-Za-z0-9+.-]{1,31}:[^<>\x00-\x20]*>/y;
+// Showdown extension: <www...> angle autolinks (cmark-gfm does not autolink these, but the
+// explicit <> is unambiguous user intent). Single variable class → linear / ReDoS-safe.
+// eslint-disable-next-line no-control-regex -- same control-char exclusion as reAutoUri
+const reAutoWww = /<www\.[^<>\x00-\x20]+>/y;
+const reAutoEmail = /<[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*>/y;
+
+showdown.subParser('makehtml.inline.autolink', function (scan, options, globals) {
+  'use strict';
+
+  // Dispatch the makehtml.link.angleBrackets capture/hash lifecycle for an `<url>` / `<email>` /
+  // `<www...>` autolink (mirroring legacy link.js, which routed every angle-delimited autolink
+  // through this family via writeAnchorTag). Honors a listener's output / attributes / matches.text.
+  // Byte-identical to the hand-built anchor for listener-free conversions: the dispatch helpers
+  // return their input unchanged, and _populateAttributes only escapes a literal `"` (which the
+  // pre-encoded href never contains), so `<a href="HREF">TEXT</a>` is reproduced exactly.
+  function emitAngleAutolink (wholeMatch, rawUrl, href, text) {
+    let attributes = {href: href};
+    let capture = showdown.Event.dispatchCapture('makehtml.link.angleBrackets.onCapture', wholeMatch, {
+      regexp: null,
+      matches: {_wholeMatch: wholeMatch, _url: rawUrl, text: text},
+      attributes: attributes
+    }, options, globals);
+    let otp;
+    if (capture.output && capture.output !== '') {
+      otp = capture.output;
+    } else {
+      attributes = capture.attributes;
+      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + capture.matches.text + '</a>';
+    }
+    let hash = showdown.Event.dispatchHash('makehtml.link.angleBrackets.onHash', otp, options, globals);
+    return showdown.helper._hashHTMLSpan(hash.output, globals);
+  }
+
+  function parseAutolink (str, i) {
+    // Gate 5 (autolinks). Active for every flavor (the blanket `!cmSpec` bail is gone). cmSpec
+    // recognizes any scheme; the Showdown flavors restrict the URI form to http/https/ftp (the
+    // `<www...>` and `<email>` forms below stay active for all flavors). The `&` -> `&amp;` href
+    // escape is unconditional.
+    reAutoUri.lastIndex = i;
+    let uri = reAutoUri.exec(str);
+    if (uri) {
+      let raw = uri[0].slice(1, -1);
+      if (options.cmSpec || /^(?:https?|ftp):/i.test(raw)) {
+        let href = showdown.helper.cmEncodeURI(raw).replace(/&/g, '&amp;');
+        // safeMode: neutralize dangerous autolink schemes but keep the visible text
+        if (options.safeMode && !showdown.helper.isSafeUrl(raw)) { href = ''; }
+        return {html: emitAngleAutolink(uri[0], raw, href, showdown.helper.escapeHTMLEntities(raw)), end: i + uri[0].length};
+      }
+    }
+    reAutoEmail.lastIndex = i;
+    let email = reAutoEmail.exec(str);
+    if (email) {
+      let raw = email[0].slice(1, -1),
+          href, txt;
+      // encodeEmails: entity-encode the address (href and text) when the option is on,
+      // so it works under cmSpec too. Mirrors parseMail in link.js (copied behavior).
+      if (options.encodeEmails) {
+        href = showdown.helper.encodeEmailAddress('mailto:' + raw);
+        txt = showdown.helper.encodeEmailAddress(raw);
+      } else {
+        href = 'mailto:' + showdown.helper.escapeHTMLEntities(raw);
+        txt = showdown.helper.escapeHTMLEntities(raw);
+      }
+      return {html: emitAngleAutolink(email[0], raw, href, txt), end: i + email[0].length};
+    }
+    // Showdown extension: <www...> angle autolink. Applies the GFM www rule (http(s)://
+    // prepend + domain validation) to the explicitly delimited form. Active for all flavors.
+    reAutoWww.lastIndex = i;
+    let www = reAutoWww.exec(str);
+    if (www) {
+      let raw = www[0].slice(1, -1),
+          host = raw.split(/[/?#]/)[0];
+      // GFM www rule: the domain after "www." must contain a period, plus the shared host
+      // validation (>= 2 labels, last two labels have no "_").
+      if (host.slice(4).indexOf('.') !== -1 && showdown.helper.validAutolinkHost(raw, true)) {
+        // noinspection HttpUrlsUsage
+        let full = (options.httpsAutoLinks ? 'https://' : 'http://') + raw,
+            href = showdown.helper.cmEncodeURI(full).replace(/&/g, '&amp;');
+        // safeMode: neutralize dangerous schemes but keep the visible text
+        if (options.safeMode && !showdown.helper.isSafeUrl(full)) { href = ''; }
+        return {html: emitAngleAutolink(www[0], raw, href, showdown.helper.escapeHTMLEntities(raw)), end: i + www[0].length};
       }
     }
     return null;
   }
 
+  let res = parseAutolink(scan.str, scan.pos);
+  if (res) { scan.appendRaw(res.html); return res.end; }
+  // Decline: no autolink at the cursor; the scanner tries raw HTML next, then literal `<`.
+  return null;
+});
+
+/**
+ * @file      makehtml/backslash.js
+ * @summary   Backslash escapes in the unified inline scan (CommonMark spec §2.4).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Recognizes a `\`-escape at the scan cursor: `\`+newline is a hard `<br />`, `\`+`¨D` is an escaped
+ * `$`, and any escapable punctuation becomes an HTML-special literal or a Showdown escape placeholder.
+ *
+ * This is a `makehtml.inline.*` construct subparser called from the single-pass inline scanner in
+ * spanGamut.js with the scan state — (scan, options, globals) — consuming (returning the new cursor)
+ * or declining (returning null); see entity.js for the fuller scan-convention explanation.
+ */
+
+// Backslash-escapable set for the Showdown flavors (vanilla/original): the historic large
+// escape set (the char class the retired encodeBackslashEscapes pass used). CommonMark
+// (cmSpec) uses the wider isAsciiPunct instead (see isEscapable). File-level const; it is only
+// tested (no lastIndex state), so reuse across invocations is safe.
+const reShowdownEscapable = /[!#%'()*+,\-./:;=?@[\]\\^_`{|}~]/;
+
+// Gate 1 (backslash escapes, 2-way). CommonMark escapes all ASCII punctuation; the Showdown
+// flavors escape the historic large set plus the shared HTML-special chars (& < > ") that the
+// `\`-branch entity arm handles. The two sets coincide except for those special chars and `$`
+// (pre-hashed to ¨D before inline parsing), so cmSpec output is byte-identical either way.
+function isEscapable (ch, options) {
+  if (ch === undefined) { return false; }
+  if (options.cmSpec) { return showdown.helper.isAsciiPunct(ch); }
+  return reShowdownEscapable.test(ch) || ch === '&' || ch === '<' || ch === '>' || ch === '"';
+}
+
+// eslint-disable-next-line no-unused-vars -- `globals` is unused here but kept for the makehtml.inline.* (scan, options, globals) calling convention
+showdown.subParser('makehtml.inline.backslash', function (scan, options, globals) {
+  'use strict';
+
+  let str = scan.str,
+      i = scan.pos;
+  let next = str.charAt(i + 1);
+  if (next === '\n') {
+    scan.appendRaw(scan.hashSpan('<br />') + '\n');
+    return i + 2;
+  } else if (next === '¨' && str.charAt(i + 2) === 'D') {
+    // escaped `$` (the converter hashes `$` to the `¨D` placeholder early)
+    scan.appendText('¨D');
+    return i + 3;
+  } else if (isEscapable(next, options)) {
+    // Emit ordinary escaped punctuation as a Showdown escape placeholder (¨E<code>E)
+    // so the later passes (ghMentions, simplifiedAutoLink, emoji, strikethrough,
+    // ellipsis, ...) don't treat the char as markup - e.g. `\@user` must not become a
+    // mention. unescapeSpecialChars restores the literal char at the end of the
+    // pipeline. HTML-special chars stay literal so the render-time escape
+    // (showdown.helper.escapeHTMLEntities) turns them into entities
+    // (&amp; &lt; &gt; &quot;); placeholders would otherwise round-trip to raw `<`/`&`.
+    if (next === '&' || next === '<' || next === '>' || next === '"') {
+      scan.appendText(next);
+    } else {
+      scan.appendText(showdown.helper.escapePlaceholder(next));
+    }
+    return i + 2;
+  }
+  // Decline: the char after `\` is not escapable. The scanner falls through to its literal-`\`
+  // handling — exactly the case the inline `\`-branch used to fall to its trailing appendText('\\').
+  return null;
+});
+
+/**
+ * @file      makehtml/blockGamut.js
+ * @summary   Routes text through every block-level construct in order (headings, HR, lists, code, tables, blockquotes, …).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The block-level recursive dispatcher: it matches nothing itself, only calls the block
+ * constructs in a fixed sequence (with a `skip` argument so a construct can avoid re-invoking
+ * itself) and recurses through them. Contains the cmSpec ordering special-cases. Emits no
+ * events — whole-text hooks are covered by the document-level events.
+ */
+
+// Dispatcher (not a construct): it matches nothing itself, only routes text through the
+// block-level subparsers, so it emits no events (the document-level makehtml.onStart /
+// onPreParse / onEnd cover whole-text hooks).
+showdown.subParser('makehtml.blockGamut', function (text, options, globals, skip) {
+  'use strict';
+
+  skip = skip || false;
+
+  if (skip !== 'makehtml.heading.setext') {
+    text = showdown.subParser('makehtml.heading.setext')(text, options, globals);
+  }
+  if (skip !== 'makehtml.heading.atx') {
+    text = showdown.subParser('makehtml.heading.atx')(text, options, globals);
+  }
+
+  // Do Horizontal Rules:
+  if (skip !== 'makehtml.horizontalRule') {
+    text = showdown.subParser('makehtml.horizontalRule')(text, options, globals);
+  }
+
+  text = showdown.subParser('makehtml.list')(text, options, globals);
+  // In CommonMark container mode the converter-level githubCodeBlock pass only claims
+  // indent-0 fences; list items own their indented fences (renderItem already ran
+  // githubCodeBlock on the de-indented content). This pass picks up genuinely top-level
+  // indented (1-3) fences here, after the list parser has claimed item content and before
+  // codeBlock could mistake their content lines for indented code.
+  if (options.cmSpec) {
+    text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
+  }
+  text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
+  text = showdown.subParser('makehtml.table')(text, options, globals);
+  text = showdown.subParser('makehtml.blockquote')(text, options, globals);
+  // The block quote container can reveal top-level content that the earlier codeBlock pass
+  // never saw (e.g. an indented-code line that followed a `>` line and so was not yet at the
+  // start of a block). Re-run codeBlock in container mode so that revealed indented code is
+  // recognized instead of falling through to a paragraph.
+  if (options.cmSpec) {
+    text = showdown.subParser('makehtml.codeBlock')(text, options, globals);
+  }
+
+  // We already ran _HashHTMLBlocks() before, in Markdown(), but that
+  // was to escape raw HTML in the original Markdown source. This time,
+  // we're escaping the markup we've just created, so that we don't wrap
+  // <p> tags around block-level tags.
+  text = showdown.helper.hashHTMLBlocks(text, options, globals);
+
+  return text;
+});
+
+/**
+ * @file      makehtml/blockquote.js
+ * @summary   Converts `>`-prefixed Markdown blockquotes into `<blockquote>` blocks.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Recognizes email-style blockquote syntax, recursing through `blockGamut` for inner content, and
+ * has a separate cmSpec container parser (`parseCmBlockquotes`); guards against pathological nesting
+ * (bails past depth 25). Emits the `makehtml.blockquote.*` event family.
+ */
+
+
+showdown.subParser('makehtml.blockquote', function (text, options, globals) {
+  'use strict';
+
+  // Pathologically nested block quotes (e.g. `> > > …` thousands deep) recurse once per
+  // level through blockGamut, which exhausts the call stack in the default path and blows
+  // up super-linearly under cmSpec. Refuse to descend past a sane nesting depth; beyond it
+  // the surplus `>` markers simply render as literal text. The deepest nesting in the whole
+  // test corpus is 3, so this bound never affects real documents.
+  const maxNestingDepth = 25;
+  if ((globals.blockquoteDepth || 0) >= maxNestingDepth) {
+    return text;
+  }
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.blockquote.onStart', text, options, globals);
+  text = startEvent.output;
+
+  text = parseBlockquotes(text);
+
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.blockquote.onEnd', text, options, globals);
+  return afterEvent.output;
+
   /**
-   * Check and parse consecutive lists (better fix for issue #142)
-   * @param {RegExp} pattern
-   * @param {string} list
-   * @param {string} listType
-   * @param {boolean} trimTrailing
+   * Render one block quote's already-stripped content into a hashed
+   * `<blockquote>` element, dispatching the capture/hash lifecycle events.
+   * @param {string} bq the block-quote content with markers already removed
+   * @param {string} wholeMatch the original matched text (for the capture event)
+   * @param {RegExp|null} pattern the matching pattern (event metadata only)
    * @returns {string}
    */
-  function parseConsecutiveLists (pattern, list, listType, trimTrailing) {
-    let otp = '';
-    let captureStartEvent = new showdown.Event('makehtml.list.onCapture', list);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
-        _wholeMatch: list,
-        list: list
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-    let attributes = captureStartEvent.attributes;
+  function renderBlockquote (bq, wholeMatch, pattern) {
+    let otp,
+        attributes;
+
+    let captureStartEvent = showdown.Event.dispatchCapture('makehtml.blockquote.onCapture', bq, {
+      regexp: pattern || null,
+      matches: {
+        _wholeMatch: wholeMatch,
+        text: bq
+      },
+      attributes: {}
+    }, options, globals);
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+
+    } else {
+      bq = captureStartEvent.matches.text;
+      bq = showdown.subParser('makehtml.githubCodeBlock')(bq, options, globals);
+      // Run the source-level leaf-block passes on the quote's own (marker-stripped)
+      // content, mirroring the converter pipeline, so an HTML block or a link reference
+      // definition nested inside the block quote is recognized in the quote's context
+      // instead of only at the top level (spec-silent → CommonMark, so this runs for
+      // every flavor).
+      bq = showdown.subParser('makehtml.htmlBlock')(bq, options, globals);
+      bq = showdown.subParser('makehtml.stripLinkDefinitions')(bq, options, globals);
+      globals.blockquoteDepth = (globals.blockquoteDepth || 0) + 1;
+      bq = showdown.subParser('makehtml.blockGamut')(bq, options, globals); // recurse
+      bq = showdown.subParser('makehtml.paragraphs')(bq, options, globals);
+      globals.blockquoteDepth--;
+      bq = bq.replace(/(^|\n)/g, '$1  ');
+      // These leading spaces screw with <pre> content, so we need to fix that:
+      bq = bq.replace(/(\s*<pre>[^\r]+?<\/pre>)/gm, function (wm, m1) {
+        return m1.replace(/^ {2}/mg, '');
+      });
+      attributes = captureStartEvent.attributes;
+      otp = '<blockquote' + showdown.helper._populateAttributes(attributes) + '>\n' +  bq + '\n</blockquote>';
+    }
+
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.blockquote.onHash', otp, options, globals);
+    otp = beforeHashEvent.output;
+    return showdown.helper.hashBlock(otp, options, globals);
+  }
+
+  /**
+   * The one block-quote container scanner for every flavor (based on CommonMark spec
+   * section 5.1). Scans line by line: a block quote begins on a `^ {0,3}>` line (an
+   * optional single space after `>` is stripped) and consumes consecutive `>`-marked
+   * lines plus lazy continuation lines. Two flavor divergences are documented in the
+   * specs and derived here, not forked into a second engine:
+   *
+   *   - **laziness** — CommonMark (`cmSpec`) allows only *paragraph* continuation lines
+   *     to lazily continue (a markerless heading/fence/list/thematic-break ends the
+   *     quote); Original/Showdown use *full* laziness — every markerless non-blank line
+   *     continues the quote (original.md §"Blockquotes" / showdown.md §"Block quotes").
+   *   - **splitting** — a blank line separates two adjacent block quotes when
+   *     `cmSpec || splitAdjacentBlockquotes`; otherwise (Original/Showdown default) a
+   *     blank line that is followed by another `>` block is absorbed, merging them into
+   *     one quote (original.md's email-style merge-across-blank-lines).
+   *
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseBlockquotes (str) {
+    let marker  = /^ {0,3}>/,
+        isBlank = /^[ \t]*$/,
+        lines   = str.split('\n'),
+        out     = [],
+        i       = 0,
+        n       = lines.length,
+        // Original/Showdown use full laziness; CommonMark only paragraph laziness
+        fullLazy = !options.cmSpec,
+        // CommonMark and the vanilla option both split adjacent quotes on a blank line
+        split    = options.cmSpec || options.splitAdjacentBlockquotes;
+
+    // a markerless line that can lazily continue a paragraph (paragraph-laziness only):
+    // non-blank text that does not itself begin a block which would interrupt the paragraph
+    function isLazyParagraph (line) {
+      if (line.trim() === '') { return false; }
+      return !(
+        marker.test(line) ||                                // block quote
+        /^ {0,3}#{1,6}(?:[ \t]|$)/.test(line) ||             // ATX heading
+        /^ {0,3}(?:```|~~~)/.test(line) ||                   // fenced code
+        /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(line) ||// thematic break
+        /^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/.test(line)       // list item
+      );
+    }
+
+    // true if, after peeling nested block-quote/list markers, the innermost block
+    // on this line is an open paragraph - so a following markerless line may lazily
+    // continue it (laziness propagates through container nesting)
+    function isParagraphLine (stripped) {
+      let s = stripped,
+          indentedCode = /^ {4}/.test(stripped),
+          m;
+      while ((m = s.match(/^ {0,3}>[ \t]?/) || s.match(/^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/))) {
+        s = s.slice(m[0].length);
+        indentedCode = false; // leading spaces after a marker are container indent
+      }
+      if (s.trim() === '' || indentedCode) { return false; }
+      return !(
+        /^ {0,3}(?:```|~~~)/.test(s) ||
+        /^ {0,3}#{1,6}(?:[ \t]|$)/.test(s) ||
+        /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(s)
+      );
+    }
+
+    while (i < n) {
+      if (!marker.test(lines[i])) {
+        out.push(lines[i]);
+        i++;
+        continue;
+      }
+      let bqLines = [],
+          prevParagraph = false;
+      while (i < n) {
+        let line = lines[i];
+        if (marker.test(line)) {
+          let stripped = line.replace(/^ {0,3}>[ \t]?/, '');
+          bqLines.push(stripped);
+          prevParagraph = fullLazy ? false : isParagraphLine(stripped);
+          i++;
+        } else if (isBlank.test(line)) {
+          if (split) {
+            break; // a blank line ends the quote
+          }
+          // merge mode: absorb a blank run only when another `>` block follows it
+          let k = i;
+          while (k < n && isBlank.test(lines[k])) { k++; }
+          if (k < n && marker.test(lines[k])) {
+            for (; i < k; i++) { bqLines.push(''); }
+            prevParagraph = false;
+          } else {
+            break;
+          }
+        } else if (fullLazy || (prevParagraph && isLazyParagraph(line))) {
+          // paragraph-laziness only (CommonMark): a setext underline may not be a lazy
+          // continuation line. Escape the leading marker so the recursive setext parser
+          // can't claim it as an underline; encodeBackslashEscapes restores the literal
+          // `=`/`-` downstream. Under full laziness the underline is ordinary quote content.
+          if (!fullLazy && /^ {0,3}(?:=+|-+)[ \t]*$/.test(line)) {
+            line = line.replace(/^( {0,3})([=-])/, '$1\\$2');
+          }
+          bqLines.push(line);
+          prevParagraph = fullLazy ? false : isParagraphLine(line);
+          i++;
+        } else {
+          break; // non-continuing line ends the block quote
+        }
+      }
+      // trailing newline so the recursive block parsers see a complete final line
+      let content = bqLines.join('\n') + '\n';
+      out.push(renderBlockquote(content, content, null));
+    }
+    return out.join('\n');
+  }
+});
+
+/**
+ * @file      makehtml/codeBlock.js
+ * @summary   Converts 4-space/tab-indented Markdown code blocks into `<pre><code>`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Recognizes indented (Markdown/CommonMark) code blocks, entity-encoding their content via
+ * `encodeCode` and hashing the result; uses a sentinel (`¨0`) to emulate end-of-string anchoring.
+ * Emits the `makehtml.codeBlock.*` event family.
+ */
+
+
+showdown.subParser('makehtml.codeBlock', function (text, options, globals) {
+  'use strict';
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.codeBlock.onStart', text, options, globals);
+  text = startEvent.output;
+
+  // sentinel workarounds for lack of \A and \Z, safari\khtml bug
+  text += '¨0';
+
+  let pattern = /(?:\n\n|^)((?:(?: {4}|\t).*\n+)+)(\n* {0,3}[^ \t\n]|(?=¨0))/g;
+  text = text.replace(pattern, function (wholeMatch, m1, m2) {
+    let codeblock = m1,
+        nextChar = m2,
+        end = '\n',
+        otp,
+        attributes = {
+          pre: {},
+          code: {}
+        };
+
+    let captureStartEvent = showdown.Event.dispatchCapture('makehtml.codeBlock.onCapture', codeblock, {
+      regexp: pattern,
+      matches: {
+        _wholeMatch: wholeMatch,
+        text: codeblock
+      },
+      attributes: attributes
+    }, options, globals);
+
     // if something was passed as output, it takes precedence
     // and will be used as output
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       otp = captureStartEvent.output;
     } else {
+      codeblock = captureStartEvent.matches.text;
+      codeblock = showdown.helper.outdent(codeblock);
+      codeblock = showdown.helper.encodeCode(codeblock, options, globals);
+      //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
+      codeblock = codeblock.replace(/^\n+/g, ''); // trim leading newlines
+      codeblock = codeblock.replace(/\n+$/g, ''); // trim trailing newlines
+      attributes = captureStartEvent.attributes;
 
-      // check if we caught 2 or more consecutive lists by mistake
-      // we use the counterRgx, meaning if listType is UL we look for OL and vice versa
-      const olRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?\d+\.[ \t]/gm : /^ {0,3}\d+\.[ \t]/gm;
-      const ulRgx = (options.disableForced4SpacesIndentedSublists) ? /^ ?[*+-][ \t]/gm : /^ {0,3}[*+-][ \t]/gm;
-      let counterRxg = (listType === 'ul') ? olRgx : ulRgx;
+      otp = '<pre><code>';
+      if (!showdown.helper.isUndefined(attributes)) {
+        otp = '<pre' + showdown.helper._populateAttributes(attributes.pre) + '>';
+        otp += '<code' + showdown.helper._populateAttributes(attributes.code) + '>';
+      }
+      if (options.omitExtraWLInCodeBlocks) {
+        end = '';
+      }
+      otp += codeblock + end + '</code></pre>';
+    }
 
-      let attrs = showdown.helper.cloneObject(attributes);
-      if (list.search(counterRxg) !== -1) {
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.codeBlock.onHash', otp, options, globals);
+    otp = beforeHashEvent.output;
+    return showdown.helper.hashBlock(otp, options, globals) + nextChar;
+  });
 
-        (function parseCL (txt) {
-          let pos = txt.search(counterRxg);
-          attrs.start = styleStartNumber(list, listType);
+  // strip sentinel
+  text = text.replace(/¨0/, '');
 
-          if (pos !== -1) {
-            // slice
-            otp += '\n\n<' + listType + showdown.helper._populateAttributes(attrs) + '>\n' + processListItems(txt.slice(0, pos), !!trimTrailing) + '</' + listType + '>\n';
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.codeBlock.onEnd', text, options, globals);
+  return afterEvent.output;
+});
 
-            // invert counterType and listType
-            listType = (listType === 'ul') ? 'ol' : 'ul';
-            counterRxg = (listType === 'ul') ? olRgx : ulRgx;
+/**
+ * @file      makehtml/codeSpan.js
+ * @summary   Converts backtick-delimited inline code into `<code>` spans.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Recognizes backtick code spans, including multi-backtick delimiters and edge-space trimming, and
+ * encodes the interior with `encodeCode` so its characters lose Markdown meaning. Emits the
+ * `makehtml.codeSpan.*` event family.
+ *
+ * This file owns both forms of the construct: the whole-text `makehtml.codeSpan` pass (still used by
+ * table.js) and the `makehtml.inline.codeSpan` scan handler below (called from the single-pass inline
+ * scanner in spanGamut.js; see entity.js for the scan-convention explanation).
+ */
 
-            //recurse
-            parseCL(txt.slice(pos), attrs);
-          } else {
-            otp += '\n\n<' + listType + showdown.helper._populateAttributes(attrs) + '>\n' + processListItems(txt, !!trimTrailing) + '</' + listType + '>\n';
+
+showdown.subParser('makehtml.codeSpan', function (text, options, globals) {
+  'use strict';
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.codeSpan.onStart', text, options, globals);
+
+  text = startEvent.output;
+
+  if (showdown.helper.isUndefined((text))) {
+    text = '';
+  }
+
+  // Cursor scan over the same `parseBacktick` the inline engine uses, rather than a whole-text
+  // regex: the old pattern (`(^|[^\\])(`+)([^\r]*?[^`])\2(?!`)`) backtracked quadratically on a
+  // long unbroken backtick run, which table cells feed it straight from the document (~8s for
+  // 4k backticks in one cell). Routing both forms through one matcher also makes a table cell
+  // and a paragraph render a code span identically.
+  let out = [],
+      last = 0,
+      i = 0,
+      n = text.length,
+      // per-invocation: table.js may run this pass twice over the same lines
+      noCloser = {};
+
+  while (i < n) {
+    let ch = text.charAt(i);
+    if (ch === '\\') {
+      // an escaped character cannot open a span (what the pattern's `[^\\]` lead-in guarded)
+      i += 2;
+      continue;
+    }
+    if (ch !== '`') {
+      i++;
+      continue;
+    }
+    let res = parseBacktick(text, i, noCloser, options, globals);
+    if (res) {
+      out.push(text.slice(last, i), res.html);
+      last = res.end;
+      i = res.end;
+    } else {
+      // no closer for this run length: emit it literally and keep scanning
+      i = skipRun(text, i, '`');
+    }
+  }
+  out.push(text.slice(last));
+  text = out.join('');
+
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.codeSpan.onEnd', text, options, globals);
+  return afterEvent.output;
+});
+
+// advance past a run of identical `ch` characters starting at `i`, returning the run end index
+function skipRun (str, i, ch) {
+  let j = i;
+  while (j < str.length && str.charAt(j) === ch) { j++; }
+  return j;
+}
+
+function parseBacktick (str, i, noCloser, options, globals) {
+  let openEnd = skipRun(str, i, '`'),
+      runLen = openEnd - i,
+      n = str.length,
+      j = openEnd;
+  if (noCloser[runLen]) { return null; }
+  // find a closing run of backticks of exactly runLen (not part of a longer run)
+  while (j < n) {
+    if (str.charAt(j) === '`') {
+      let runStart = j,
+          runEnd = skipRun(str, j, '`');
+      if (runEnd - runStart === runLen) {
+        let raw = str.slice(openEnd, runStart), content;
+        // Gate 3 (code spans). cmSpec: collapse newlines to spaces, then strip exactly one
+        // leading+trailing space (only when the content is not all spaces). Showdown flavors:
+        // strip all leading/trailing spaces & tabs first (on the raw content, before collapsing
+        // newlines), then collapse newlines — mirroring legacy codeSpan.js. Both encode the
+        // interior with encodeCode (which already encodes `"` -> `&quot;` for every flavor).
+        if (options.cmSpec) {
+          content = raw.replace(/\n/g, ' ');
+          if (content.length >= 2 && content.charAt(0) === ' ' && content.charAt(content.length - 1) === ' ' && /[^ ]/.test(content)) {
+            content = content.slice(1, -1);
           }
-        })(list, attributes);
+        } else {
+          content = raw.replace(/^[ \t]*/, '').replace(/[ \t]*$/, '').replace(/\n/g, ' ');
+        }
+        // Event parity (D3): mirror makehtml.codeSpan.* so listeners work identically across
+        // flavors. Byte-identical for listener-free conversions.
+        let wholeMatch = str.slice(i, runEnd);
+        let capture = showdown.Event.dispatchCapture('makehtml.codeSpan.onCapture', content, {
+          regexp: null,
+          matches: {_wholeMatch: wholeMatch, text: content},
+          attributes: {}
+        }, options, globals);
+        let otp;
+        if (capture.output && capture.output !== '') {
+          otp = capture.output;
+        } else {
+          otp = '<code>' + showdown.helper.encodeCode(capture.matches.text, options, globals) + '</code>';
+        }
+        let hash = showdown.Event.dispatchHash('makehtml.codeSpan.onHash', otp, options, globals);
+        return {html: showdown.helper._hashHTMLSpan(hash.output, globals), end: runEnd};
+      }
+      j = runEnd;
+    } else {
+      j++;
+    }
+  }
+  noCloser[runLen] = true; // no closer of this length anywhere after here
+  return null;
+}
 
+// The backtick scan handler for the unified inline scanner in spanGamut.js. Always consumes (the
+// engine's backtick dispatch is unconditional): parseBacktick builds the hashed `<code>` span, or —
+// when no closer exists — the run is emitted as literal text (what the engine's old decline arm did).
+// The no-closer memo lives on scan.memos so future opens of the same run length fail immediately.
+showdown.subParser('makehtml.inline.codeSpan', function (scan, options, globals) {
+  'use strict';
+
+  let str = scan.str,
+      i = scan.pos;
+  let noCloser = scan.memos.backtickNoCloser || (scan.memos.backtickNoCloser = {});
+  let res = parseBacktick(str, i, noCloser, options, globals);
+  if (res) {
+    scan.appendRaw(res.html);
+    return res.end;
+  }
+  let e = skipRun(str, i, '`');
+  scan.appendText(str.slice(i, e));
+  return e;
+});
+
+/**
+ * @file      makehtml/completeHTMLDocument.js
+ * @summary   Wraps the converted HTML in a full document when `completeHTMLDocument` is enabled.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Gated behind the option; pulls title/charset/lang/meta from parsed document metadata
+ * (`globals.metadata.parsed`) to build the `<head>`, then wraps the body in
+ * `<!DOCTYPE>`/`<html>`/`<head>`/`<body>`. A lifecycle-only construct: emits `onStart`/`onEnd` with
+ * no per-match capture.
+ */
+// noinspection HtmlRequiredLangAttribute
+
+
+showdown.subParser('makehtml.completeHTMLDocument', function (text, options, globals) {
+  'use strict';
+
+  if (!options.completeHTMLDocument) {
+    return text;
+  }
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.completeHTMLDocument.onStart', text, options, globals);
+  text = startEvent.output;
+
+  let doctype = 'html',
+      doctypeParsed = '<!DOCTYPE HTML>\n',
+      title = '',
+      charset = '<meta charset="utf-8">\n',
+      lang = '',
+      metadata = '';
+
+  if (typeof globals.metadata.parsed.doctype !== 'undefined') {
+    doctypeParsed = '<!DOCTYPE ' +  globals.metadata.parsed.doctype + '>\n';
+    doctype = globals.metadata.parsed.doctype.toString().toLowerCase();
+    if (doctype === 'html' || doctype === 'html5') {
+      charset = '<meta charset="utf-8">';
+    }
+  }
+
+  for (let meta in globals.metadata.parsed) {
+    if (Object.prototype.hasOwnProperty.call(globals.metadata.parsed, meta)) {
+      switch (meta.toLowerCase()) {
+        case 'doctype':
+          break;
+
+        case 'title':
+          title = '<title>' +  globals.metadata.parsed.title + '</title>\n';
+          break;
+
+        case 'charset':
+          if (doctype === 'html' || doctype === 'html5') {
+            charset = '<meta charset="' + globals.metadata.parsed.charset + '">\n';
+          } else {
+            charset = '<meta name="charset" content="' + globals.metadata.parsed.charset + '">\n';
+          }
+          break;
+
+        case 'language':
+        case 'lang':
+          lang = ' lang="' + globals.metadata.parsed[meta] + '"';
+          metadata += '<meta name="' + meta + '" content="' + globals.metadata.parsed[meta] + '">\n';
+          break;
+
+        default:
+          metadata += '<meta name="' + meta + '" content="' + globals.metadata.parsed[meta] + '">\n';
+      }
+    }
+  }
+
+  text = doctypeParsed + '<html' + lang + '>\n<head>\n' + title + charset + metadata + '</head>\n<body>\n' + text.trim() + '\n</body>\n</html>';
+
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.completeHTMLDocument.onEnd', text, options, globals);
+  return afterEvent.output;
+});
+
+/**
+ * @file      makehtml/decodeEntities.js
+ * @summary   Resolves HTML named/decimal/hex character references to their characters, per CommonMark; gated by `decodeEntities`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Diverges from Showdown's default (which preserves entities verbatim), so it is gated behind the
+ * `decodeEntities` option (enabled by the `commonmark` flavor). It runs late — after inline parsing
+ * and while code spans/blocks are still hashed — so decoded characters are not re-parsed as Markdown
+ * and entities inside code stay escaped. Registered as a subparser for flavor-gating but deliberately
+ * emits no events.
+ */
+
+// Deliberate exception to the "spec-chapter chapter ⇒ construct with events" rule: this pass
+// decodes character references to bare characters, so per-entity capture events would be noise.
+// It stays a registered subparser (flavor-gated conversion logic) but emits NO events.
+showdown.subParser('makehtml.decodeEntities', function (text, options, globals) {
+  'use strict';
+
+  if (!options.decodeEntities) {
+    return text;
+  }
+
+  // Same character-reference classifier as showdown.helper.cmDecodeEntities, but with the
+  // HTML-re-escaping output policy: candidates that survived encodeAmpsAndAngles (which already
+  // escaped bare ampersands and `&name`/`&name?;` non-references) are decoded and then re-escaped
+  // (escapeHTMLEntities) so a decoded char (e.g. `&lt;` -> `<`) stays a literal in the HTML output
+  // rather than being read as markup; an invalid reference has its `&` rewritten to `&amp;`.
+  return showdown.helper.decodeCharacterReferences(text, true);
+});
+
+/**
+ * @file      makehtml/disallowedHtmlTags.js
+ * @summary   Neutralizes dangerous raw-HTML tags by escaping their leading `<` (GFM tagfilter, spec §6.11).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Runs late over near-final output, gated by `disallowRawHTML`/`safeMode`, filtering a blacklist
+ * (`script`, `style`, `iframe`, `title`, `textarea`, `xmp`, `noembed`, `noframes`, `plaintext`). In
+ * `safeMode` it also strips inline `on*=` handlers as defense-in-depth (not a full sanitizer). Emits
+ * one `onCapture`/`onHash` per neutralized tag; a listener can whitelist a tag by setting `output`.
+ *
+ * The `safeMode` sanitizers match per real `<…>` tag only. Text that was already entity-escaped
+ * upstream (a malformed tag such as `<a/href=…>`, which the inline engine does not recognize as
+ * HTML, arrives here as inert `&lt;…&gt;`) passes through verbatim: matching it would strip
+ * characters out of the middle of the inert text and corrupt it.
+ */
+
+
+showdown.subParser('makehtml.disallowedHtmlTags', function (text, options, globals) {
+  'use strict';
+  if (!options.disallowRawHTML && !options.safeMode) {
+    return text;
+  }
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.disallowedHtmlTags.onStart', text, options, globals);
+  text = startEvent.output;
+
+  // Run over the (near final) output: Showdown never generates these tags from Markdown
+  // and code blocks/spans already entity-escape `<`, so only genuine raw-HTML passthrough
+  // is touched. Both opening and closing forms are filtered, case-insensitively.
+  //
+  // Per-tag capture: `matches.text` is the matched tag opening (`<script`, `</iframe`, …). A
+  // listener may rewrite it or, by setting `output` to the original tag, whitelist that tag
+  // (i.e. leave it unescaped). Default output neutralizes the tag by escaping its leading `<`.
+  const tagFilterRgx = /<(\/?(?:title|textarea|style|xmp|iframe|noembed|noframes|script|plaintext))/gi;
+  text = text.replace(tagFilterRgx, function (wholeMatch) {
+    let otp;
+    let captureStartEvent = showdown.Event.dispatchCapture('makehtml.disallowedHtmlTags.onCapture', wholeMatch, {
+      regexp: tagFilterRgx,
+      matches: {
+        _wholeMatch: wholeMatch,
+        text: wholeMatch
+      },
+      attributes: {}
+    }, options, globals);
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '&lt;' + captureStartEvent.matches.text.replace(/^</, '');
+    }
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.disallowedHtmlTags.onHash', otp, options, globals);
+    return beforeHashEvent.output;
+  });
+
+  if (options.safeMode) {
+    // Sanitize the attributes of GENUINE surviving raw-HTML tags — real `<tag …>` with literal
+    // angle brackets. A malformed tag the inline parser could not recognize as HTML (e.g.
+    // `<img/onerror=…>`, `<a/href=…>`) has already been entity-escaped to inert `&lt;…&gt;`
+    // text upstream (the unified inline scan's makehtml.inline.rawHtml construct), so it carries no literal `<…>` and MUST NOT be
+    // matched here: matching it would strip characters out of the escaped text and leave
+    // unbalanced output. Both sanitizers therefore operate per real tag body, so escaped text
+    // is left untouched (already inert). The tag body is `(?:"[^"]*"|'[^']*'|[^>])*` (quote-aware)
+    // so a `>` inside a quoted attribute value does not truncate the tag early.
+    text = text.replace(/<[a-zA-Z][a-zA-Z0-9:-]*\b(?:"[^"]*"|'[^']*'|[^>])*>/g, function (tag) {
+      // Strip inline event-handler attributes (onclick, onerror, onload, ...). Showdown's own
+      // generated attributes are never `on*`, so this only affects raw-HTML passthrough. The
+      // separator before the handler may be whitespace, `/`, or the closing quote of the previous
+      // attribute — browsers accept all of these (`<img/onerror>`, `<img\tonerror>`,
+      // `<a href="x"onmouseover=y>`). A whitespace/`/` separator is dropped; a quote separator is
+      // preserved so the previous attribute stays terminated.
+      tag = tag.replace(
+        /(["'\s/])on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+)/gi,
+        function (whole, sep) { return (sep === '"' || sep === '\'') ? sep : ''; }
+      );
+      // Neutralize dangerous URL schemes (javascript:, vbscript:, data:text/html, ...) in the
+      // URL-bearing attributes — Showdown's own scheme allowlist only covers the links/images it
+      // generates, not raw HTML the author embedded. This covers EVERY surviving tag (not just
+      // `<a>`/`<area>`) so it also catches e.g. `<input formaction="javascript:...">` (`<input>` is
+      // intentionally not escaped, to keep tasklist checkboxes). The attribute separator is
+      // `["'\s/]` (not just `\s`) because browsers accept `/` and quote-adjacent attributes
+      // (`<a/href=…>`, `<a id="x"href=…>`); the separator is preserved.
+      tag = tag.replace(
+        /(["'\s/](?:href|xlink:href|formaction|action)\s*=\s*)("[^"]*"|'[^']*'|[^\s"'>]+)/gi,
+        function (whole, pre, val) {
+          let unquoted = val.replace(/^(["'])([\s\S]*)\1$/, '$2');
+          return showdown.helper.isSafeUrl(unquoted) ? whole : pre + '""';
+        }
+      );
+      return tag;
+    });
+    // Additional dangerous tags Showdown never emits from Markdown (svg/math/form/
+    // media/embedding/document-metadata). Escaping the leading `<` renders them inert. Runs
+    // AFTER the attribute sanitizers above so an `on*`/dangerous-scheme attribute on one of these
+    // tags (e.g. `<svg onload=…>`) is stripped while the tag is still a real `<…>` (the escape
+    // then neutralizes the element itself).
+    text = text.replace(
+      /<(\/?(?:svg|math|form|object|embed|base|link|meta|applet|frame|frameset|button|select|option|audio|video|source|track|template|portal))(?=[\s/>])/gi,
+      '&lt;$1'
+    );
+  }
+
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.disallowedHtmlTags.onEnd', text, options, globals);
+  return afterEvent.output;
+});
+
+/**
+ * @file      makehtml/ellipsis.js
+ * @summary   Replaces literal `...` with the ellipsis character `…` when the `ellipsis` option is on.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A scan-native per-match transform. The construct is recognized directly by the single-pass inline
+ * scan in spanGamut.js — there is no whole-text pass form. It emits capture/hash per occurrence
+ * (`makehtml.ellipsis.onCapture` / `.onHash`); the onStart/onEnd lifecycle is retired per the
+ * event-contract amendment (the inline-pass lifecycle belongs to spanGamut, which owns
+ * `makehtml.spanGamut.onStart/onEnd`). Because the scan consumes `...` before link/image bracket
+ * resolution, the substitution now applies inside resolving link/image labels for every flavor
+ * (the former cmSpec literal-label behavior was a pipeline artifact of running after link hashing,
+ * not a rule).
+ */
+
+// The scan handler for the unified inline scanner in spanGamut.js. Recognizes a literal `...` at the
+// scan cursor (capture/hash per occurrence; no onStart/onEnd — the inline-pass lifecycle belongs to
+// spanGamut). On a match it appends the substituted output RAW so a listener that produced markup
+// flows to the later passes; the default `…` contains no HTML-special chars, so raw vs escaped is
+// byte-identical. Declines (returns null) on a lone `.` or `..`, letting the scanner's plain-text run
+// take it.
+showdown.subParser('makehtml.inline.ellipsis', function (scan, options, globals) {
+  'use strict';
+
+  let str = scan.str,
+      i = scan.pos;
+  if (str.charAt(i) !== '.' || str.charAt(i + 1) !== '.' || str.charAt(i + 2) !== '.') {
+    return null;
+  }
+
+  const wholeMatch = '...';
+  let otp;
+  let captureStartEvent = showdown.Event.dispatchCapture('makehtml.ellipsis.onCapture', wholeMatch, {
+    regexp: null,
+    matches: {
+      _wholeMatch: wholeMatch,
+      text: wholeMatch
+    },
+    attributes: {}
+  }, options, globals);
+  // if something was passed as output, it takes precedence and will be used as output
+  if (captureStartEvent.output && captureStartEvent.output !== '') {
+    otp = captureStartEvent.output;
+  } else {
+    // honor a listener that rewrote matches.text: the ellipsis substitution is applied
+    // to the (possibly edited) captured text, so the default `...` still yields `…`.
+    otp = captureStartEvent.matches.text.replace(/\.\.\./g, '…');
+  }
+
+  let beforeHashEvent = showdown.Event.dispatchHash('makehtml.ellipsis.onHash', otp, options, globals);
+  scan.appendRaw(beforeHashEvent.output);
+  return i + 3;
+});
+
+/**
+ * @file      makehtml/emoji.js
+ * @summary   Replaces `:code:` emoji shortcodes with their emoji glyphs (or images), gated by the `emoji` option.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Matches `:shortcode:` and looks it up in `showdown.helper.emojis`, leaving unknown codes
+ * untouched. See https://github.com/showdownjs/showdown/wiki/Emojis for the supported set. Emits the
+ * `makehtml.emoji.*` capture/hash events.
+ *
+ * Scan-native: emoji is recognized directly by the single-pass inline scan in spanGamut.js — there is
+ * no whole-text pass form any more, and the onStart/onEnd lifecycle is retired per the event-contract
+ * amendment (the inline-pass lifecycle belongs to spanGamut, which owns `makehtml.spanGamut.onStart/
+ * onEnd`). The construct emits only capture/hash per substituted shortcode. Because the scan resolves
+ * `:name:` before link/image bracket resolution and before emphasis/strikethrough pairing, the
+ * substitution now applies inside resolving link/image labels for every flavor (the former cmSpec
+ * literal-label behavior was a pipeline artifact of running after link hashing, not a rule).
+ */
+
+
+// Recognize a known `:name:` emoji shortcode at `i` (called only when options.emoji). Matches
+// the retired makehtml.emoji pass's `:(\S+?):` semantics (shortest run of non-whitespace between two
+// colons) and only fires for a code registered in showdown.helper.emojis, so non-emoji `:...:`
+// is left to normal parsing. Returns {text, name, end} or null.
+function consumeEmoji (str, i) {
+  let close = str.indexOf(':', i + 1);
+  if (close <= i + 1) { return null; }
+  let name = str.slice(i + 1, close);
+  if (/\s/.test(name)) { return null; }
+  if (!Object.prototype.hasOwnProperty.call(showdown.helper.emojis, name)) { return null; }
+  return {text: str.slice(i, close + 1), name: name, end: close + 1};
+}
+
+// The index one past the `:…:` span the whole-text pass's `/:(\S+?):/g` regex would match starting
+// at the colon `i` (i.e. its lastIndex after that match), or -1 if the regex would find no match
+// there. `\S+?` needs at least one non-whitespace char, so a colon immediately after `i` is part of
+// the NAME rather than a closer (this is why `::smile:` matches as one invalid `:…:` with code
+// `:smile`, shadowing the inner `:smile:`); a whitespace before any closing colon makes the regex
+// fail at `i`. Used only by the scan-native substitution below, to reproduce the regex's shadowing.
+function emojiRegexClose (str, i) {
+  let n = str.length;
+  for (let k = i + 1; k < n; k++) {
+    let c = str.charAt(k);
+    if (/\s/.test(c)) { return -1; }         // `\S+?` cannot cross whitespace
+    if (c === ':' && k >= i + 2) { return k + 1; } // name is str[i+1..k-1] (length >= 1)
+  }
+  return -1;
+}
+
+// The scan-native substitution flow: mirror the (retired) whole-text pass's per-match handling.
+// matches.text is the emoji CODE; a listener's output takes precedence, otherwise the code is looked
+// up in showdown.helper.emojis (honoring a listener that rewrote matches.text). regexp is null: this
+// is a scan-native construct, with no whole-text regex driving it (as with ellipsis/strikethrough).
+function substituteEmoji (scan, options, globals, e) {
+  let otp;
+  let captureStartEvent = showdown.Event.dispatchCapture('makehtml.emoji.onCapture', e.name, {
+    regexp: null,
+    matches: {
+      _wholeMatch: e.text,
+      text: e.name
+    },
+    attributes: {}
+  }, options, globals);
+  if (captureStartEvent.output && captureStartEvent.output !== '') {
+    otp = captureStartEvent.output;
+  } else {
+    otp = showdown.helper.emojis[captureStartEvent.matches.text];
+  }
+
+  let beforeHashEvent = showdown.Event.dispatchHash('makehtml.emoji.onHash', otp, options, globals);
+  otp = beforeHashEvent.output;
+
+  // Image-based emoji (e.g. :octocat:) render as an <img> tag. Hash it so the later
+  // encodeAmpsAndAngles pass doesn't turn its `<`/`>` into entities — the same protection the
+  // retired whole-text pass applied via _hashHTMLSpan. Unicode emoji contain no HTML-special
+  // chars, so appending them raw is byte-identical to appending them as escaped text.
+  if (/^\s*</.test(otp)) {
+    scan.appendRaw(scan.hashSpan(otp));
+  } else {
+    scan.appendRaw(otp);
+  }
+  return e.end;
+}
+
+// The `:` scan handler for the unified inline scanner in spanGamut.js (scan-state convention — see
+// entity.js). It performs the emoji SUBSTITUTION inline: on a known `:name:` it appends the glyph (or
+// hash-protected image) and returns the new cursor; otherwise it declines (returns null) and the
+// engine falls through to its plain-text run, so `_`/`*` inside an emoji name never reach the
+// emphasis stack while a non-emoji `:...:` still parses normally.
+//
+// It reproduces the retired whole-text pass's global-regex left-to-right SHADOWING so output stays
+// byte-identical. That pass used a single global `/:(\S+?):/g`; once it consumed a `:…:` span (valid
+// OR invalid) its lastIndex skipped past it, so a valid emoji NESTED inside an already-consumed span
+// was never re-matched (e.g. `::smile::` -> the regex matches the invalid `::smile:` and leaves the
+// inner `:smile:` literal). scan._emojiShadowEnd is a raw-index high-water mark of that lastIndex
+// (colons are never added/removed/reordered by the surrounding inline processing, so raw indices
+// track the serialized-text shadowing faithfully).
+showdown.subParser('makehtml.inline.emoji', function (scan, options, globals) {
+  'use strict';
+
+  let e = consumeEmoji(scan.str, scan.pos);
+
+  let i = scan.pos,
+      shadowEnd = scan._emojiShadowEnd || 0;
+
+  // an unshadowed known emoji: substitute and advance the shadow boundary past it
+  if (e && i >= shadowEnd) {
+    scan._emojiShadowEnd = e.end;
+    return substituteEmoji(scan, options, globals, e);
+  }
+
+  // No unshadowed emoji here. If this `:` opens a `:…:` span the regex would have consumed (valid
+  // shadowed, or an invalid code), advance the shadow boundary so a valid emoji nested inside it is
+  // not re-substituted. Then decline: the scanner's plain-text run / emphasis processes the `:` and
+  // its interior, so e.g. the `_` in an invalid `:not_a_code:` still becomes emphasis — exactly as the
+  // pass allowed, since it ran AFTER emphasis on the serialized text.
+  if (i >= shadowEnd) {
+    let close = emojiRegexClose(scan.str, i);
+    if (close !== -1) { scan._emojiShadowEnd = close; }
+  }
+  return null;
+});
+
+/**
+ * @file      makehtml/emphasis.js
+ * @summary   Emphasis and strong emphasis (`*`/`_` runs) in the unified inline scan (CommonMark spec §6.2).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * One file owns both em and strong: a single delimiter-run algorithm (the shared
+ * showdown.helper.DelimiterStack engine) decides em vs strong at pairing time, so there is one
+ * recognizer for the delimiter runs and one builder for the wrapped span. Two entries, two
+ * conventions:
+ *   - `makehtml.inline.emphasis` (scan-state convention — (scan, options, globals)): the single-pass
+ *     scanner's `*`/`_` handler (see entity.js for the scan convention). It consumes the whole `*`
+ *     or `_` delimiter run at scan.pos and pushes it onto the delimiter stack, returning the new
+ *     cursor. It never declines — a delimiter run is always consumed onto the stack, where the
+ *     emphasis algorithm later resolves (or discards) it.
+ *   - `makehtml.inline.emphasis.build` (aux-builder convention, signature
+ *     (scan, options, globals, tagOpen, tagClose, opener, closer)): NOT dispatched by the scanner's
+ *     character loop. It is the `buildWrapped` callback the engine's processEmphasis wrapper
+ *     (spanGamut.js) invokes at pairing time, once per matched opener/closer pair, to render and
+ *     hash the `<em>`/`<strong>` span. `tagOpen`/`tagClose` are the chosen tags (`<em>`/`<strong>`
+ *     per the delimiter algorithm's em-vs-strong decision); `opener`/`closer` are the delimiter
+ *     nodes bounding the enclosed content (`opener.next` .. `closer`).
+ *
+ * Event parity (D3): the builder fires the separate makehtml.emphasis.* / makehtml.strong.* families
+ * (a `<em>` span dispatches makehtml.emphasis.*, a `<strong>` span makehtml.strong.*), honoring a
+ * listener's output / matches.text / attributes. Listener-free conversions are byte-identical.
+ */
+
+// eslint-disable-next-line no-unused-vars -- `globals` is unused here but kept for the makehtml.inline.* (scan, options, globals) calling convention
+showdown.subParser('makehtml.inline.emphasis', function (scan, options, globals) {
+  'use strict';
+  let str = scan.str,
+      len = str.length,
+      start = scan.pos,
+      ch = str.charAt(start),
+      i = start;
+  while (i < len && str.charAt(i) === ch) { ++i; }
+  // resolveSentinels = true: this path runs after the converter's `$`/`¨` -> `¨D`/`¨T`
+  // swap, so flanking must see the real adjacent character (the engine undoes the swap
+  // for the lookaround only).
+  // Gate 4 (intraword underscore). Under the Showdown flavors (unless
+  // literalMidWordUnderscores), `_` uses the looser `*` open/close flanking rule so
+  // `un_frigging_believable` emphasizes; cmSpec keeps the CommonMark `_` flanking rule.
+  // placeholderAsWord (Showdown flavors only): a delimiter touching a `¨E<code>E` escape
+  // placeholder flanks as if against a word char, so `word_\_x\__` -> `word<em>_x_</em>`
+  // (legacy regex emphasis saw the placeholder as ordinary word characters).
+  scan.list.pushDelim(str, start, i, ch, true, !options.cmSpec && !options.literalMidWordUnderscores, !options.cmSpec);
+  return i;
+});
+
+// The `buildWrapped` callback for the shared delimiter-stack engine, invoked by the engine's
+// processEmphasis wrapper (spanGamut.js) at emphasis-pairing time — not by the scanner's character
+// loop. It renders the enclosed nodes and returns the final (hashed) wrapped span. This path
+// differs from the retired emphasisAndStrong's only in how the wrapped span is rendered: the inner
+// nodes are HTML-escaped via scan.renderNodes, the GFM-inline-links pass + emoji/strikethrough
+// run on them (because the wrapped span is hashed below, the span-gamut extras never see
+// it), and the wrap node is raw.
+showdown.subParser('makehtml.inline.emphasis.build', function (scan, options, globals, tagOpen, tagClose, opener, closer) {
+  'use strict';
+  // Strikethrough pairing (place c): resolve tilde-run nodes inside this emphasis span into `<del>`,
+  // on the span's inner node range, BEFORE the nodes are rendered below. This builder runs at
+  // emphasis-pairing time (after the inner emphasis is already resolved), which is exactly when the
+  // retired whole-text pass used to strike the rendered inner — so `**~~x~~**` still strikes through.
+  // applyGfm is true (an emphasis span finalizes its inner like the top level: the GFM overlay is
+  // applied; the `<del>` is hashed, so it is a no-op inside it). Emoji is scan-native, already
+  // substituted inline, so the pairing pass no longer takes an applyEmoji arg.
+  if (options.strikethrough) {
+    showdown.subParser('makehtml.inline.strikethrough.pair')(scan, options, globals, opener.next, closer, true);
+  }
+  let inner = scan.renderNodes(opener.next, closer);
+  inner = scan.applyGfmInlineLinks(inner);
+  // Emoji, strikethrough (place c, above) and ellipsis are all scan-native — the `:name:`/`~~`/`...`
+  // inside the span are already resolved by the scan (emoji substituted inline, before this builder
+  // renders the inner nodes), so none are re-applied here.
+  inner = showdown.subParser('makehtml.hardLineBreaks')(inner, options, globals);
+  // Event parity (D3): fire the separate makehtml.emphasis.* / makehtml.strong.* families
+  // (`<em>` -> emphasis, `<strong>` -> strong), honoring a listener's output / matches.text /
+  // attributes. Byte-identical for listener-free conversions.
+  let isStrong = (tagOpen === '<strong>'),
+      tagName = isStrong ? 'strong' : 'em',
+      evtName = isStrong ? 'makehtml.strong' : 'makehtml.emphasis',
+      marker = opener.cc.repeat(isStrong ? 2 : 1),
+      wholeMatch = marker + inner + marker,
+      attributes = {},
+      capture = showdown.Event.dispatchCapture(evtName + '.onCapture', inner, {
+        regexp: null,
+        matches: {_wholeMatch: wholeMatch, text: inner},
+        attributes: attributes
+      }, options, globals);
+  let otp;
+  if (capture.output && capture.output !== '') {
+    otp = capture.output;
+  } else {
+    attributes = capture.attributes;
+    otp = '<' + tagName + showdown.helper._populateAttributes(attributes) + '>' + capture.matches.text + '</' + tagName + '>';
+  }
+  let hash = showdown.Event.dispatchHash(evtName + '.onHash', otp, options, globals);
+  return scan.hashSpan(hash.output);
+});
+
+/**
+ * @file      makehtml/entity.js
+ * @summary   HTML entity / numeric character references in the unified inline scan (CommonMark spec §2.5).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Recognizes a named entity (`&copy;`), a decimal (`&#35;`) or a hexadecimal (`&#xHH;`) numeric
+ * character reference at the scan cursor. cmSpec decodes references to their literal character; the
+ * Showdown flavors decode only when decodeEntities is on, otherwise they keep a valid reference
+ * verbatim.
+ *
+ * This is a `makehtml.inline.*` construct subparser: it is called from the single-pass inline
+ * scanner in spanGamut.js with the scan state — (scan, options, globals) instead of the usual
+ * (text, options, globals) — because a text->text pass cannot express the cross-construct
+ * precedence the unified scan resolves. `scan` bundles the string (`scan.str`), the cursor
+ * (`scan.pos`, set by the scanner immediately before dispatch) and the output-node appenders
+ * (`scan.appendText` / `scan.appendRaw`). A construct either consumes — appending its output and
+ * returning the new cursor index — or declines by returning `null`, letting the scanner fall
+ * through to its literal handling.
+ */
+
+// Sticky entity recognizer, anchored at the scan cursor (lastIndex) so it never slices the tail of
+// the string — keeps the tokenizer linear on `&`-heavy input. lastIndex is set before every exec,
+// so reuse across invocations is safe (file-level const, same pattern as the regexes in
+// src/helpers/delimiterStack.js).
+const reEntity = /&(?:#[0-9]{1,7}|#[xX][0-9a-fA-F]{1,6}|[a-zA-Z][a-zA-Z0-9]*);/y;
+
+// eslint-disable-next-line no-unused-vars -- `globals` is unused here but kept for the makehtml.inline.* (scan, options, globals) calling convention
+showdown.subParser('makehtml.inline.entity', function (scan, options, globals) {
+  'use strict';
+
+  let str = scan.str,
+      i = scan.pos;
+  reEntity.lastIndex = i;
+  let m = reEntity.exec(str);
+  if (m) {
+    // Gate 2 (entity/numeric refs). cmSpec decodes character references to their literal
+    // character (unconditionally, as it always has); the Showdown flavors decode only when
+    // decodeEntities is on, otherwise they keep a valid reference verbatim. Emit the verbatim
+    // reference raw so render-time escaping does not turn `&` into `&amp;`; the later
+    // encodeAmpsAndAngles pass leaves a valid entity reference intact. The `|| options.cmSpec`
+    // keeps this gate strictly `!cmSpec`-conditioned (cmSpec output is byte-identical).
+    if (options.cmSpec || options.decodeEntities) {
+      let decoded = showdown.helper.cmDecodeEntities(m[0]);
+      if (decoded !== m[0]) { scan.appendText(decoded); return i + m[0].length; }
+    } else {
+      scan.appendRaw(m[0]); return i + m[0].length;
+    }
+  }
+  // Decline: no entity match, or a cmSpec-decode that produced an identical string (decoded ===
+  // m[0]). In both cases the scanner falls through to its literal-`&` handling — exactly the cases
+  // the inline `&`-branch used to fall to its trailing appendText('&').
+  return null;
+});
+
+/**
+ * @file      makehtml/footnotes.js
+ * @summary   GFM footnotes: collects `[^id]: body` definitions and renders `[^id]` references into a `<section class="footnotes">`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Runs in two phases (selected by the `phase` argument): 'strip' (before `stripLinkDefinitions`)
+ * collects definitions into `globals` and replaces referenced markers with hashed numbered `<sup>`
+ * spans; 'build' (after `paragraphs`) renders the footnote section and appends it to the document.
+ * Emits lifecycle `onStart`/`onEnd` plus per-item `makehtml.footnotes.definition.*` and
+ * `makehtml.footnotes.reference.*` events.
+ */
+showdown.subParser('makehtml.footnotes', function (text, options, globals, phase) {
+  'use strict';
+
+  if (!options.footnotes) {
+    return text;
+  }
+
+  // Lifecycle events (fired for each phase the converter invokes). onStart lets a
+  // listener rewrite the input before footnote processing; onEnd lets it post-process
+  // the result. The per-definition and per-reference capture/hash events are emitted
+  // inside collectDefinitions / replaceReferences (makehtml.footnotes.definition.* and
+  // makehtml.footnotes.reference.*).
+  text = showdown.Event.dispatchStart('makehtml.footnotes.onStart', text, options, globals).output;
+
+  let result;
+  if (phase === 'strip') {
+    text = collectDefinitions(text);
+    result = replaceReferences(text);
+  } else if (phase === 'build') {
+    result = buildSection(text);
+  } else {
+    result = text;
+  }
+
+  return showdown.Event.dispatchEnd('makehtml.footnotes.onEnd', result, options, globals).output;
+
+  // ---- phase 1a: collect (and remove) `[^label]: body` definitions ----------
+
+  function collectDefinitions (str) {
+    globals.gFootnotes = globals.gFootnotes || {};
+    str += '¨0';
+    let n = str.length,
+        out = '',
+        i = 0;
+    while (i < n) {
+      // `i` is always at a line start here; a footnote definition may begin at any line
+      // (it can interrupt a paragraph), so we try one at every line.
+      let def = tryParseDefinition(str, i);
+      if (def) {
+        let norm = showdown.helper.cmNormalizeLabel(def.rawLabel);
+        if (norm !== '' && showdown.helper.isUndefined(globals.gFootnotes[norm])) {
+          // per-definition capture: the footnote body is the main content (`text`, mutable +
+          // honored - it is later rendered via a nested conversion). The (normalized and raw)
+          // label is read-only context; a line scanner, so regexp is null. A definition
+          // renders no inline output, so onHash carries the empty removed-from-text output
+          // (default: the definition is stripped from the document).
+          let wholeMatch = str.slice(i, def.end);
+          let captureStartEvent = showdown.Event.dispatchCapture('makehtml.footnotes.definition.onCapture', def.body, {
+            regexp: null,
+            matches: {
+              _wholeMatch: wholeMatch,
+              _label: norm,
+              _rawLabel: def.rawLabel,
+              text: def.body
+            },
+            attributes: {}
+          }, options, globals);
+          globals.gFootnotes[norm] = { bodyRaw: captureStartEvent.matches.text, rawLabel: def.rawLabel };
+          out += showdown.Event.dispatchHash('makehtml.footnotes.definition.onHash', '', options, globals).output;
+        }
+        i = def.end;
+        continue;
+      }
+      let nl = str.indexOf('\n', i);
+      if (nl === -1) {
+        out += str.slice(i);
+        break;
+      }
+      out += str.slice(i, nl + 1);
+      i = nl + 1;
+    }
+    return out.replace(/¨0/, '');
+  }
+
+  /**
+   * Try to parse a single footnote definition starting at `start` (a line start).
+   * The body is the same-line remainder plus continuation lines indented by at
+   * least 4 spaces (with that 4-space base removed), up to a less-indented line.
+   * @returns {{rawLabel: string, body: string, end: number}|null}
+   */
+  function tryParseDefinition (str, start) {
+    let n = str.length,
+        j = start,
+        sp = 0;
+    while (j < n && str.charAt(j) === ' ' && sp < 3) { j++; sp++; }
+    if (str.charAt(j) !== '[' || str.charAt(j + 1) !== '^') { return null; }
+    j += 2;
+
+    let label = '';
+    while (j < n) {
+      let c = str.charAt(j);
+      if (c === '\\' && j + 1 < n) { label += c + str.charAt(j + 1); j += 2; continue; }
+      if (c === ']') { break; }
+      // a footnote label may not contain whitespace or a nested '['
+      if (c === '[' || /\s/.test(c)) { return null; }
+      label += c;
+      j++;
+    }
+    if (str.charAt(j) !== ']' || label === '' || str.charAt(j + 1) !== ':') { return null; }
+    j += 2;
+
+    let nl = str.indexOf('\n', j),
+        firstEnd = (nl === -1) ? n : nl,
+        firstLine = str.slice(j, firstEnd).replace(/^[ \t]+/, '').replace(/¨0$/, ''),
+        bodyLines = [];
+    if (firstLine !== '') { bodyLines.push(firstLine); }
+    let k = (nl === -1) ? n : nl + 1;
+
+    while (k < n) {
+      let lineNl = str.indexOf('\n', k),
+          lineEnd = (lineNl === -1) ? n : lineNl,
+          line = str.slice(k, lineEnd);
+      if (line.slice(0, 2) === '¨0') { break; }
+      if (/^[ \t]*$/.test(line)) {
+        bodyLines.push('');
+        k = (lineNl === -1) ? n : lineNl + 1;
+        continue;
+      }
+      if (/^ {4}/.test(line)) {
+        bodyLines.push(line.slice(4));
+        k = (lineNl === -1) ? n : lineNl + 1;
       } else {
-        attrs.start = styleStartNumber(list, listType);
-        otp = '\n\n<' + listType + showdown.helper._populateAttributes(attrs) + '>\n' + processListItems(list, !!trimTrailing) + '</' + listType + '>\n';
+        break;
       }
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.list.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    return beforeHashEvent.output;
+    while (bodyLines.length && bodyLines[bodyLines.length - 1] === '') { bodyLines.pop(); }
+    return { rawLabel: label, body: bodyLines.join('\n'), end: k };
+  }
+
+  // ---- phase 1b: replace `[^label]` references with hashed <sup> spans -------
+
+  // Replace inline code spans with `¨FN<n>¨` placeholders so a `[^id]` inside them stays
+  // literal. Linear scan (ReDoS-safe): a code span is a back-tick run closed by a run of the
+  // same length. Unbalanced runs are left as text. Worst case is sub-quadratic because runs
+  // that stay unmatched must have distinct lengths (equal-length runs pair up).
+  function hashInlineCodeSpans (str, store) {
+    let pieces = [], textStart = 0, i = 0, n = str.length;
+    while (i < n) {
+      if (str.charAt(i) !== '`') { i++; continue; }
+      let j = i;
+      while (j < n && str.charAt(j) === '`') { j++; }
+      let len = j - i, k = j, close = -1;
+      while (k < n) {
+        if (str.charAt(k) === '`') {
+          let m = k;
+          while (m < n && str.charAt(m) === '`') { m++; }
+          if (m - k === len) { close = m; break; }
+          k = m;
+        } else {
+          k++;
+        }
+      }
+      if (close !== -1) {
+        pieces.push(str.substring(textStart, i));
+        store.push(str.substring(i, close));
+        pieces.push('¨FN' + (store.length - 1) + '¨');
+        textStart = close;
+        i = close;
+      } else {
+        // opening run with no matching closer: leave it as literal text
+        i = j;
+      }
+    }
+    pieces.push(str.substring(textStart));
+    return pieces.join('');
+  }
+
+  function replaceReferences (str, raw) {
+    globals.gFootnoteOrder = globals.gFootnoteOrder || [];
+    globals.gFootnoteRefs = globals.gFootnoteRefs || {};
+
+    // Protect inline code spans so a `[^id]` inside back-ticks stays literal. A linear scan
+    // (not a backtracking regex) keeps this safe on long back-tick runs in attacker input.
+    // Fenced/indented code is already hashed before this pass.
+    let spans = [];
+    str = hashInlineCodeSpans(str, spans);
+
+    // a footnote label may not contain whitespace, so `[^a b]` is not a reference.
+    // `[` is excluded from the label too: it can never appear in a valid label, and
+    // excluding it stops the scan from running past the label start of the *next*
+    // `[^...` (which would otherwise backtrack quadratically on inputs like `[^`.repeat(n)).
+    const footnoteRefRgx = /\[\^([^\s\][]+)]/g;
+    str = str.replace(footnoteRefRgx, function (whole, rawLabel, offset, full) {
+      // an escaped reference (`\[^id]`, an odd number of leading back-slashes) is literal
+      let bs = 0, p = offset - 1;
+      while (p >= 0 && full.charAt(p) === '\\') { bs++; p--; }
+      if (bs % 2 === 1) {
+        return whole;
+      }
+      let norm = showdown.helper.cmNormalizeLabel(rawLabel),
+          fn = globals.gFootnotes[norm];
+      if (showdown.helper.isUndefined(fn)) {
+        return whole;
+      }
+      let ref = globals.gFootnoteRefs[norm];
+      if (showdown.helper.isUndefined(ref)) {
+        globals.gFootnoteOrder.push(norm);
+        ref = globals.gFootnoteRefs[norm] = {
+          number: globals.gFootnoteOrder.length,
+          encId: showdown.helper.cmEncodeURI(fn.rawLabel),
+          occurrences: 0
+        };
+      }
+      ref.occurrences++;
+      let idSuffix = (ref.occurrences === 1) ? '' : '-' + ref.occurrences,
+          sup = '<sup class="footnote-ref"><a href="#fn-' + ref.encId +
+            '" id="fnref-' + ref.encId + idSuffix + '" data-footnote-ref>' + ref.number + '</a></sup>';
+
+      // per-reference capture: a footnote reference renders as a generated `<sup>` anchor and
+      // has no re-parseable inner content, so (like horizontalRule) it carries no `text` key -
+      // only the read-only label/number context. A listener can override `output` to replace
+      // the whole marker. `attributes` are a no-op placeholder (the sup markup is fixed).
+      let otp;
+      let captureStartEvent = showdown.Event.dispatchCapture('makehtml.footnotes.reference.onCapture', whole, {
+        regexp: footnoteRefRgx,
+        matches: {
+          _wholeMatch: whole,
+          _label: norm,
+          _rawLabel: rawLabel,
+          _number: ref.number
+        },
+        attributes: {}
+      }, options, globals);
+      if (captureStartEvent.output && captureStartEvent.output !== '') {
+        otp = captureStartEvent.output;
+      } else {
+        otp = sup;
+      }
+      otp = showdown.Event.dispatchHash('makehtml.footnotes.reference.onHash', otp, options, globals).output;
+
+      // `raw` (footnote bodies): emit the markup inline so the nested conversion keeps it;
+      // otherwise (main text) hash it so the inline parser leaves it alone.
+      return raw ? otp : showdown.helper._hashHTMLSpan(otp, globals);
+    });
+
+    // restore the protected code spans
+    str = str.replace(/¨FN(\d+)¨/g, function (whole, n) { return spans[n]; });
+    return str;
+  }
+
+  // ---- phase 2: render the referenced footnotes into a <section> ------------
+
+  function buildSection (str) {
+    let order = globals.gFootnoteOrder;
+    if (!order || order.length === 0) {
+      return str;
+    }
+    let items = '';
+    for (let idx = 0; idx < order.length; idx++) {
+      let norm = order[idx],
+          fn = globals.gFootnotes[norm],
+          ref = globals.gFootnoteRefs[norm],
+          body = renderBody(fn.bodyRaw);
+      body = insertBackrefs(body, buildBackrefs(ref));
+      items += '<li id="fn-' + ref.encId + '">\n' + body + '\n</li>\n';
+    }
+    return str + '\n<section class="footnotes" data-footnotes>\n<ol>\n' + items + '</ol>\n</section>\n';
+  }
+
+  function renderBody (bodyRaw) {
+    // Resolve any footnote references nested inside this body, continuing the document's
+    // numbering (this may append further footnotes to the order, which buildSection's
+    // loop then renders). They are emitted as raw <sup> markup so the nested conversion
+    // preserves them.
+    let body = replaceReferences(bodyRaw, true);
+    // Render the (multi-block) body to complete HTML via a nested conversion. This runs
+    // the full block pipeline (indented-code framing, fenced code, block quotes,
+    // paragraphs) and leaves no hash placeholders behind, which matters because the
+    // section is appended after the main paragraphs pass.
+    return globals.converter.makeHtml(body).replace(/\n+$/, '');
+  }
+
+  function buildBackrefs (ref) {
+    let parts = [];
+    for (let j = 1; j <= ref.occurrences; j++) {
+      let id = 'fnref-' + ref.encId + (j === 1 ? '' : '-' + j),
+          idx = ref.number + (j === 1 ? '' : '-' + j),
+          inner = (j === 1) ? '↩' : '↩<sup class="footnote-ref">' + j + '</sup>';
+      parts.push('<a href="#' + id + '" class="footnote-backref" data-footnote-backref data-footnote-backref-idx="' +
+        idx + '" aria-label="Back to reference ' + idx + '">' + inner + '</a>');
+    }
+    return parts.join(' ');
+  }
+
+  function insertBackrefs (body, backrefs) {
+    if (/<\/p>\s*$/.test(body)) {
+      return body.replace(/<\/p>\s*$/, ' ' + backrefs + '</p>');
+    }
+    return body + '\n' + backrefs;
   }
 });
 
 /**
- * Parse metadata at the top of the document
+ * @file      makehtml/ghMentions.js
+ * @summary   GFM `@mention` linking inside the unified inline scan, gated by the `ghMentions` option.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The `@` handler for the single-pass inline scanner in spanGamut.js — the scan-state convention
+ * (scan, options, globals), consuming (returning the new cursor) or declining (returning null); see
+ * entity.js for the fuller explanation. It links `@username` via `options.ghMentionsLink`, emitting
+ * the anchor through the shared GFM anchor machinery (showdown.helper.writeAnchorTag) so listener
+ * extensions see the same `makehtml.link.reference.*` events as ordinary links.
+ *
+ * This used to be a POST-SCAN text pass that ran on the serialized inline output (and on emphasis
+ * inner content); it now resolves the mention DURING the scan. Moving before emphasis/bracket
+ * resolution changed three behaviors, all ruled intentional:
+ *   - Mentions NEVER link inside a bracket construct — while any `[`/`![` opener is live on the
+ *     bracket stack the handler declines, so `[ @user](x)` keeps `@user` literal in the label rather
+ *     than nesting an `<a>` in the link. A mention in a bracket that never resolves (`text [ @user]`)
+ *     is therefore left literal too (the old pass linkified the serialized `[ @user]`); accepted.
+ *   - A mention links inside an underline region (`__@user__` -> `<u><a>@user</a></u>`), consistent
+ *     with how emphasis inner content already linked; the old pass saw `>@` there and skipped it.
+ *   - The whole username is captured before emphasis runs, so `@user_name_here` links as one mention
+ *     everywhere; the old pass ran after intraword `_` emphasis had split `_name_` out of it.
+ *
+ * The `(^|\s)` fragment anchor of the old pass becomes a scan-state boundary test: legal only at the
+ * fragment start (scan.pos === 0), after a raw whitespace char, or when the node-list tail is a
+ * pending emphasis DELIMITER node — the last case reproduces the old pass's fragment-^ match on
+ * emphasis inner content (`*@user*`). A finished raw/hashed or plain-text tail is NOT a boundary
+ * (the pass saw a placeholder/word letter there, so `[x](y)@user` and `a@user` did not match). The
+ * old pass's `(\\)?` escape arm has no scan analogue: `\@` is turned into a `¨E<code>E` escape
+ * placeholder by the backslash handler before this ever runs, so the `@` never reaches here.
+ *
+ * Two registrations:
+ *   - `makehtml.inline.ghMentions` — the `@` scan handler above (the primary form).
+ *   - `makehtml.inline.ghMentions.linkify` — an INTERNAL text-convention helper (text, options,
+ *     globals) -> text used only to link mentions inside a RESOLVED wrapper span's already-rendered
+ *     inner content, where the scan cannot: a strikethrough `<del>` is resolved at pairing time
+ *     (strikethrough.js's buildDel) from `tilde`-typed nodes, not the `delim` nodes the boundary rule
+ *     keys on, so its inner mentions are linked here instead. Emphasis/underline need no such call —
+ *     an `*`/`_` run is a pending `delim` (the boundary rule links `*@user*` during the scan) and an
+ *     underline region re-scans its inner from the fragment start; only strikethrough's node shape
+ *     forces resolution-time linking. The helper is the historic post-scan pass body verbatim (same
+ *     `(^|\s)` boundary regex on rendered inner), so a resolved `<del>` links exactly as before.
+ */
+
+showdown.subParser('makehtml.inline.ghMentions', function (scan, options, globals) {
+  'use strict';
+
+  let str = scan.str,
+      pos = scan.pos;
+
+  // Mentions never link inside a bracket construct: while any `[`/`![` opener is live on the bracket
+  // stack, decline so the `@username` stays literal in the (image alt / link) label.
+  if (scan.brackets) { return null; }
+
+  let prev = pos > 0 ? str.charAt(pos - 1) : '',
+      prevWs = pos > 0 && /\s/.test(prev),
+      tail = scan.list.tail,
+      tailIsDelim = !!tail && tail.type === 'delim';
+  // BOUNDARY: fragment start, a whitespace char, or a pending emphasis delimiter run (the emphasis
+  // inner-content case). Otherwise decline (a finished raw/hashed or plain-text tail is not a boundary).
+  if (pos !== 0 && !prevWs && !tailIsDelim) { return null; }
+
+  // Username: `@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*)` anchored at the cursor (sticky), same match set
+  // as the historic pass — the boundary is handled above rather than in a capture group.
+  let reUser = /@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*)/yi;
+  reUser.lastIndex = pos;
+  let m = reUser.exec(str);
+  if (!m) { return null; }
+  let username = m[1],
+      mentions = m[0]; // `@` + username
+
+  // check if options.ghMentionsLink is a string
+  // TODO Validation should be done at initialization not at runtime
+  if (!showdown.helper.isString(options.ghMentionsLink)) {
+    throw new Error('ghMentionsLink option must be a string');
+  }
+  // Gate 6: cmSpec pins the CommonMark href policy (CM_GFM_ANCHOR_URL_POLICY — safeMode,
+  // cmNormalizeURL and the quote/angle attribute escape all skipped); the Showdown flavors reuse
+  // the legacy link.js policy (LEGACY_ANCHOR_URL_POLICY) so these anchors stay byte-identical to
+  // the non-cmSpec path. Matches the engine's former anchorUrlPolicy selection.
+  let policy = options.cmSpec ? showdown.helper.CM_GFM_ANCHOR_URL_POLICY : showdown.helper.LEGACY_ANCHOR_URL_POLICY;
+  let url = options.ghMentionsLink.replace(/\{u}/g, username);
+  // wholeMatch mirrors the old pass's group 0 (`st + mentions`) so a listener reading `_wholeMatch`
+  // sees the same value: `st` is the whitespace boundary char when the boundary was whitespace, else ''.
+  let st = prevWs ? prev : '';
+  // writeAnchorTag returns an already-hashed ¨C<n>C placeholder; append it raw (final, no re-escape).
+  let anchor = showdown.helper.writeAnchorTag('reference', reUser, st + mentions, mentions, null, url, undefined, undefined, options, globals, policy);
+  scan.appendRaw(anchor);
+  return pos + mentions.length;
+});
+
+// INTERNAL helper — links mentions in a resolved wrapper span's already-rendered inner content (see
+// the file docblock). Called only by strikethrough.js's buildDel (a `<del>` is resolved from
+// `tilde` nodes at pairing time, so the `delim`-keyed scan boundary never fired inside it); emphasis
+// and underline link their inner during the scan and never call this. It is the historic post-scan
+// ghMentions pass verbatim — the same `(^|\s)` fragment-boundary regex over the rendered inner string
+// — so a resolved `<del>` links exactly as it did before ghMentions moved into the scan. Real links /
+// images / code spans in the inner are already hashed, so they are protected from the regex.
+showdown.subParser('makehtml.inline.ghMentions.linkify', function (text, options, globals) {
+  'use strict';
+
+  if (!options.ghMentions) {
+    return text;
+  }
+  // Gate 6 (see the scan handler): cmSpec pins the CommonMark href policy; the Showdown flavors reuse
+  // the legacy link.js policy so these anchors stay byte-identical to the non-cmSpec path.
+  let policy = options.cmSpec ? showdown.helper.CM_GFM_ANCHOR_URL_POLICY : showdown.helper.LEGACY_ANCHOR_URL_POLICY;
+  let ghMentionsRegex = /(^|\s)(\\)?(@([a-z\d]+(?:[a-z\d._-]+?[a-z\d]+)*))/gi;
+  return text.replace(ghMentionsRegex, function (wholeMatch, st, escape, mentions, username) {
+    // bail if the mentions was escaped
+    if (escape === '\\') {
+      return st + mentions;
+    }
+    // check if options.ghMentionsLink is a string
+    // TODO Validation should be done at initialization not at runtime
+    if (!showdown.helper.isString(options.ghMentionsLink)) {
+      throw new Error('ghMentionsLink option must be a string');
+    }
+    let url = options.ghMentionsLink.replace(/\{u}/g, username);
+    return st + showdown.helper.writeAnchorTag('reference', ghMentionsRegex, wholeMatch, mentions, null, url, undefined, undefined, options, globals, policy);
+  });
+});
+
+/**
+ * @file      makehtml/githubCodeBlock.js
+ * @summary   Converts GFM fenced code blocks (``` / ~~~) into `<pre><code>`, escaping their contents before HTML hashing.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Gated by `ghCodeBlocks`; handles info strings/language classes, and a `topLevelOnly` argument
+ * restricts opening fences to indent 0 in cmSpec container mode (so list/blockquote items own their
+ * own indented fences). Emits the `makehtml.githubCodeBlock.*` event family.
+ */
+
+
+showdown.subParser('makehtml.githubCodeBlock', function (text, options, globals, topLevelOnly) {
+  'use strict';
+
+  // early exit if option is not enabled
+  if (!options.ghCodeBlocks) {
+    return text;
+  }
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.githubCodeBlock.onStart', text, options, globals);
+  text = startEvent.output + '¨0';
+
+  // In CommonMark container mode the converter-level pass restricts the *opening* fence to
+  // indent 0; indent 1-3 opening fences are owned by the container parsers (a list item's /
+  // block quote's own fence) or handled by a later blockGamut pass for true top-level ones.
+  // This stops an item's indented opening/closing fence from being mistaken for a new
+  // top-level opening fence. The closing fence keeps its 0-3 indent allowance either way.
+  const open = topLevelOnly ? '' : ' {0,3}';
+  //const accentRegex = /(?:^|\n) {0,3}(```+|~~~+) *([^\n\t`~]*)\n([\s\S]*?)(?:(\n {0,3}\1[`~]*)|¨0)/g;
+  // The info string is the rest of the opening line. CommonMark forbids backticks only in a
+  // *backtick* fence's info string (a tilde fence may contain backticks and tildes); that
+  // restriction is enforced in parse() since it needs to know the fence type. The `(?!`)` /
+  // `(?!~)` lookaheads keep the opening fence maximal: without them the now-permissive info
+  // class lets the delimiter backtrack (e.g. `~~~~~~` splitting into a `~~~` fence + `~~~`
+  // info), inventing a spurious shorter fence.
+  const fence = '(```+(?!`)|~~~+(?!~))';
+  const closedBlockRegex   = new RegExp('^' + open + fence + ' *([^\\n]*)\\n([\\s\\S]*?)\\n {0,3}\\1[`~]*', 'gm');
+  const unclosedBlockRegex = new RegExp('^' + open + fence + ' *([^\\n]*)\\n([\\s\\S]*?)¨0', 'gm');
+  const emptyBlockRegex    = new RegExp('^' + open + fence + ' *([^\\n]*)\\n {0,3}\\1[`~]*', 'gm');
+
+  text = text.replace(closedBlockRegex, function (wholeMatch, delim, language, codeblock) {
+    return parse(closedBlockRegex, wholeMatch, delim, language, codeblock);
+  });
+
+  text = text.replace(emptyBlockRegex, function (wholeMatch, delim, language) {
+    return parse(emptyBlockRegex, wholeMatch, delim, language, '');
+  });
+
+  // In topLevelOnly mode, skip the unclosed (run-to-EOF) pass: a genuine indent-0 opener
+  // pairs via the closed/empty passes above, whereas a lone indent-0 *closing* fence of an
+  // indent 1-3 top-level block would otherwise be mistaken for an opener and swallow the
+  // rest of the document. Such an indented top-level fence (and any truly unclosed one) is
+  // handled by the 0-3 blockGamut pass that runs after the container parsers.
+  if (!topLevelOnly) {
+    text = text.replace(unclosedBlockRegex, function (wholeMatch, delim, language, codeblock) {
+      return parse(unclosedBlockRegex, wholeMatch, delim, language, codeblock);
+    });
+  }
+
+  // attacklab: strip sentinel
+  text = text.replace(/¨0/, '');
+
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.githubCodeBlock.onEnd', text, options, globals);
+  return afterEvent.output;
+
+
+  function parse (pattern, wholeMatch, delim, language, codeblock) {
+    // CommonMark: a backtick info string may not contain backticks (tilde fences may). When it
+    // does, this is not a code block, so leave the text for inline/paragraph parsing.
+    if (delim.charAt(0) === '`' && language.indexOf('`') !== -1) {
+      return wholeMatch;
+    }
+    let end = (options.omitExtraWLInCodeBlocks) ? '' : '\n',
+        otp,
+        attributes = {
+          pre: {},
+          code: {},
+        };
+
+    let captureStartEvent = showdown.Event.dispatchCapture('makehtml.githubCodeBlock.onCapture', codeblock, {
+      regexp: pattern,
+      matches: {
+        _wholeMatch: wholeMatch,
+        text: codeblock,
+        infostring: language
+      },
+      attributes: attributes
+    }, options, globals);
+
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+
+    } else {
+
+      // First parse the github code block
+      let infostring = captureStartEvent.matches.infostring;
+      let lang = infostring.trim().split(' ')[0];
+      // CommonMark resolves backslash escapes of ASCII punctuation in the info string
+      if (options.decodeEntities) {
+        lang = lang.replace(/\\([!-/:-@[-`{-~])/g, '$1');
+      }
+      // The language ends up inside the code element's `class` attribute, so escape the
+      // characters that could break out of it. Otherwise an info string such as
+      // `js"onmouseover="alert(1)` would close the attribute and inject an event handler (XSS).
+      // `&` is intentionally left alone: the later decodeEntities pass resolves real entities
+      // (e.g. `&ouml;`) for the class and re-escapes any that decode to `"`/`<`/`>`, so these
+      // replacements survive it while a literal quote is neutralized in both modes.
+      lang = lang
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+      codeblock = captureStartEvent.matches.text;
+      codeblock = showdown.helper.encodeCode(codeblock, options, globals);
+      //codeblock = showdown.subParser('makehtml.detab')(codeblock, options, globals);
+      codeblock = codeblock
+        .replace(/^\n+/g, '')  // trim leading newlines
+        .replace(/\n+$/g, ''); // trim trailing whitespace
+
+      attributes = captureStartEvent.attributes;
+      otp = '<pre><code>';
+      if (!showdown.helper.isUndefined(attributes)) {
+        otp = '<pre' + showdown.helper._populateAttributes(attributes.pre) + '>';
+
+        // if the language has spaces followed by some other chars, according to the spec we should just ignore everything
+        // after the first space
+        if (infostring) {
+          if (!attributes.code) {
+            attributes.code = {};
+          }
+          if (!attributes.code.classes) {
+            attributes.code.classes = [];
+          }
+
+          if (attributes.code.classes) {
+            if (showdown.helper.isString(attributes.code.classes)) {
+              attributes.code.classes += ' ' + lang + ' language-' + lang;
+            } else if (showdown.helper.isArray(attributes.code.classes)) {
+              attributes.code.classes.push(lang);
+              attributes.code.classes.push('language-' + lang);
+            }
+          }
+        }
+
+        otp += '<code' + showdown.helper._populateAttributes(attributes.code) + '>';
+      }
+      if (options.omitExtraWLInCodeBlocks) {
+        end = '';
+      }
+      otp += codeblock + end + '</code></pre>';
+    }
+
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.githubCodeBlock.onHash', otp, options, globals);
+    otp = beforeHashEvent.output;
+    otp = showdown.helper.hashBlock(otp, options, globals);
+
+    // Since GHCodeblocks can be false positives, we need to
+    // store the primitive text and the parsed text in a global var,
+    // and then return a token
+    return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: otp}) - 1) + 'G\n\n';
+  }
+
+
+});
+
+/**
+ * @file      makehtml/hardLineBreaks.js
+ * @summary   Converts hard line breaks (trailing double-space or backslash-newline) into `<br />`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Supports the vanilla (`  \n`) and GFM `simpleLineBreaks` styles plus `\`+newline. A break has no
+ * inner content, so its per-break capture events carry only `_wholeMatch`; `attributes` apply to the
+ * emitted `<br>`. Emits the `makehtml.hardLineBreaks.*` event family.
+ *
+ * This file owns both forms of the construct: the whole-text `makehtml.hardLineBreaks` pass above and
+ * the `makehtml.inline.hardBreak` scan handler below (called from the single-pass inline scanner in
+ * spanGamut.js; see entity.js for the scan-convention explanation).
+ */
+
+showdown.subParser('makehtml.hardLineBreaks', function (text, options, globals) {
+  'use strict';
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.hardLineBreaks.onStart', text, options, globals);
+  text = startEvent.output;
+
+  // Do hard breaks
+  if (options.simpleLineBreaks) {
+    // GFM style hard breaks
+    // only add line breaks if the text does not contain a block (special case for lists).
+    // ¨K = a generated/hashed block; ¨M = a markdown="1"-processed block (early restore);
+    // ¨R = a raw HTML block (late restore). The ¨R sniff is newline-agnostic so it matches
+    // both the cmSpec single-newline and the legacy double-newline wrapper.
+    if (!/\n\n¨K/.test(text) && !/\n\n¨M/.test(text) && !/\n¨R\d+R\n/.test(text)) {
+      text = text.replace(/\n+/gm, function (wholeMatch) { return parseBreak(/\n+/gm, wholeMatch); });
+    }
+  } else {
+    // Vanilla hard breaks
+    text = text.replace(/  +\n/g, function (wholeMatch) { return parseBreak(/  +\n/g, wholeMatch); });
+  }
+  text = text.replace(/\\\n/g, function (wholeMatch) { return parseBreak(/\\\n/g, wholeMatch); });
+
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.hardLineBreaks.onEnd', text, options, globals);
+  return afterEvent.output;
+
+  /**
+   * Render one hard break. A break has no inner content (like a horizontal rule), so `matches`
+   * carries only the read-only `_wholeMatch` context - no `text` key. `attributes` are applied
+   * to the emitted `<br>`, so a listener can tag/style individual breaks; a listener may also
+   * override `output` entirely. The trailing newline that separated the source lines is kept.
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @returns {string}
+   */
+  function parseBreak (pattern, wholeMatch) {
+    let otp;
+    let captureStartEvent = showdown.Event.dispatchCapture('makehtml.hardLineBreaks.onCapture', wholeMatch, {
+      regexp: pattern,
+      matches: {
+        _wholeMatch: wholeMatch
+      },
+      attributes: {}
+    }, options, globals);
+
+    // if something was passed as output, it takes precedence and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '<br' + showdown.helper._populateAttributes(captureStartEvent.attributes) + ' />';
+    }
+
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.hardLineBreaks.onHash', otp, options, globals);
+    return beforeHashEvent.output + '\n';
+  }
+
+});
+
+// The `\n` scan handler for the unified inline scanner in spanGamut.js. Always consumes (the engine's
+// `\n` dispatch is unconditional): a text tail with two+ trailing spaces or a trailing `\` becomes a
+// hashed `<br />` (hashed so the later encodeAmpsAndAngles pass leaves it intact), otherwise the
+// trailing spaces are trimmed and a literal newline is emitted. Reads/mutates the output list tail
+// via scan.list; see entity.js for the scan-convention explanation.
+// eslint-disable-next-line no-unused-vars -- `options`/`globals` are unused here but kept for the makehtml.inline.* (scan, options, globals) calling convention
+showdown.subParser('makehtml.inline.hardBreak', function (scan, options, globals) {
+  'use strict';
+
+  let stack = scan.list,
+      i = scan.pos;
+  // hard line break: two+ trailing spaces or a backslash before the newline.
+  // The <br /> is hashed so the later encodeAmpsAndAngles pass leaves it intact.
+  let n = stack.tail;
+  if (n && n.type === 'text' && !n.raw && / {2,}$/.test(n.literal)) {
+    n.literal = n.literal.replace(/ +$/, '');
+    scan.appendRaw(scan.hashSpan('<br />') + '\n');
+  } else if (n && n.type === 'text' && !n.raw && /\\$/.test(n.literal)) {
+    n.literal = n.literal.slice(0, -1);
+    scan.appendRaw(scan.hashSpan('<br />') + '\n');
+  } else {
+    if (n && n.type === 'text' && !n.raw) { n.literal = n.literal.replace(/ +$/, ''); }
+    scan.appendText('\n');
+  }
+  return i + 1;
+});
+
+/**
+ * @file      makehtml/heading.js
+ * @summary   Converts ATX (`#`) and Setext (`===`/`---`) headings into `<h1>`–`<h6>`, generating id attributes.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * An IIFE registering the heading subparser; a shared `parseHeader` handles both styles, namespacing
+ * events per style (`.atx`/`.setext`), each with its own lifecycle and capture. The heading-id
+ * generator emits the capture-only `makehtml.heading.id.onCapture` hook so listeners can supply
+ * custom slugs. The setext regex is the documented ReDoS-sensitive spot.
+ */
+(function () {
+
+  // Unicode whitespace class used by the trimEnd polyfill. Built via string concatenation (rather
+  // than a regex literal) so the single class definition lives in one place; ESLint cannot statically
+  // flag `no-control-regex` on a computed RegExp pattern. File-local to heading.js (its trimEnd is
+  // the sole user).
+  const CM_WS = '\\x09\\x0A\\x0B\\x0C\\x0D\\x20\\xA0\\u1680\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200A\\u202F\\u205F\\u3000\\u2028\\u2029\\uFEFF';
+  const CM_WS_END = new RegExp('[' + CM_WS + ']+$');
+
+  /**
+   * Polyfill method for trimEnd. File-local to heading.js (its setext HR/prepend checks are the
+   * sole callers).
+   * @param {string} text
+   * @returns {string}
+   */
+  function trimEnd (text) {
+    return (!String.prototype.trimEnd) ? text.replace(CM_WS_END, '') : text.trimEnd();
+  }
+
+  /**
+   *
+   * @param {string} subEvtName Heading style ('atx' or 'setext'), used to namespace the dispatched events
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @param {string} headingText
+   * @param {string} headingLevel
+   * @param {string} headingId
+   * @param {{}} options
+   * @param {{}} globals
+   * @returns {string}
+   */
+  function parseHeader (subEvtName, pattern, wholeMatch, headingText, headingLevel, headingId, options, globals) {
+    let otp,
+        captureStartEvent = showdown.Event.dispatchCapture('makehtml.heading.' + subEvtName + '.onCapture', headingText, {
+          regexp: pattern,
+          matches: {
+            _wholeMatch: wholeMatch,
+            text: headingText
+          },
+          attributes: {
+            id: headingId
+          }
+        }, options, globals);
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+
+    } else {
+      headingText = captureStartEvent.matches.text;
+      let spanGamut = showdown.subParser('makehtml.spanGamut')(headingText, options, globals),
+          attributes = captureStartEvent.attributes;
+      otp = '<h' + headingLevel + showdown.helper._populateAttributes(attributes) + '>' + spanGamut + '</h' + headingLevel + '>';
+    }
+
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.heading.' + subEvtName + '.onHash', otp, options, globals);
+    otp = beforeHashEvent.output;
+
+    return showdown.helper.hashBlock(otp, options, globals);
+  }
+
+
+  // Normalize the `headerIds` option into {enabled, prefix, raw}. Accepts `false`
+  // (no ids), an object `{prefix, raw}`, or `true`/undefined (github ids, no prefix).
+  function resolveHeaderIds (opt) {
+    if (opt === false) {
+      return { enabled: false, prefix: '', raw: false };
+    }
+    if (showdown.helper.isObject(opt)) {
+      return {
+        enabled: true,
+        prefix: showdown.helper.isString(opt.prefix) ? opt.prefix : '',
+        raw: !!opt.raw
+      };
+    }
+    // true / null / undefined / anything else: default github ids, no prefix
+    return { enabled: true, prefix: '', raw: false };
+  }
+
+  // Generate a heading's `id` attribute from its text. A mechanism, not a construct, so it
+  // is a showdown.helper rather than a registered subparser — but it keeps one event:
+  // `makehtml.heading.id.onCapture`, whose `matches.text` is the generated id (mutable and
+  // honored, so a listener can implement custom slug generation). It returns an id string
+  // (or null when the headerIds option disables ids), not HTML, so there is no lifecycle or
+  // onHash phase. File-local to heading.js (its atx/setext passes are the only callers).
+  function headingId (m, options, globals) {
+    let title;
+
+    let cfg = resolveHeaderIds(options.headerIds);
+    // when ids are disabled the caller omits the attribute entirely
+    if (!cfg.enabled) {
+      return null;
+    }
+
+    // Prefix id to prevent causing inadvertent pre-existing style matches.
+    title = cfg.prefix + m;
+
+    if (cfg.raw) {
+      // minimal sanitization: only spaces, ', ", > and < become dashes (the prefix is
+      // included, so it gets the same treatment). WARNING: may produce malformed ids.
+      title = title
+        // a space or an internal line break (multi-line setext heading text) becomes a
+        // dash — per-char so a run of spaces still yields a run of dashes. ATX ids never
+        // contain a newline (the m-flag `.+` capture never crosses lines).
+        .replace(/[ \r\n]/g, '-')
+        // replace previously escaped chars (&, ¨ and $)
+        .replace(/&amp;/g, '&');
+      // the sentinels must be restored in the inverse order of the producer (`¨D` before
+      // `¨T`), or a literal `¨D` in the heading text collapses into a `$`
+      title = showdown.helper.restoreDollarsAndTremas(title)
+        // replace ", ', > and <
+        .replace(/["'><]/g, '-')
+        .toLowerCase();
+    } else {
+      // default: GitHub-compatible ids (spaces become dashes, non-alphanumeric chars
+      // are stripped). Borrowed from github's redcarpet so results are similar.
+      title = title
+        // a space or an internal line break (multi-line setext heading text) becomes a
+        // dash — per-char so a run of spaces still yields a run of dashes. ATX ids never
+        // contain a newline (the m-flag `.+` capture never crosses lines).
+        .replace(/[ \r\n]/g, '-')
+        // replace previously escaped chars (&, ¨ and $)
+        .replace(/&amp;/g, '')
+        .replace(/¨T/g, '')
+        .replace(/¨D/g, '')
+        // replace rest of the chars (&~$ are repeated as they might have been escaped)
+        .replace(/[&+$,/:;=?@"#{}|^¨¿？：~[\]`、゠＝…‥『』〝〟「」\\*()｛｝（）［］【】%.。，¡!！'<>]/g, '')
+        .toLowerCase();
+    }
+
+    // capture hook: the generated id is exposed under matches.text (mutable + honored), so a
+    // listener can supply a custom slug. The heading text is read-only context. No regexp and
+    // no attributes apply (an id is a bare string, not an HTML fragment). Deduplication runs
+    // after the hook so a listener-supplied slug is still made unique within the document.
+    let captureEvent = showdown.Event.dispatchCapture('makehtml.heading.id.onCapture', title, {
+      regexp: null,
+      matches: {
+        _wholeMatch: m,
+        _headingText: m,
+        text: title
+      },
+      attributes: {}
+    }, options, globals);
+    title = captureEvent.matches.text;
+
+    if (globals.hashLinkCounts[title]) {
+      title = title + '-' + (globals.hashLinkCounts[title]++);
+    } else {
+      globals.hashLinkCounts[title] = 1;
+    }
+    return title;
+  }
+
+  showdown.subParser('makehtml.heading.setext', function (text, options, globals) {
+
+    let startEvent = showdown.Event.dispatchStart('makehtml.heading.setext.onStart', text, options, globals);
+    text = startEvent.output;
+
+    // NOTE: the first line is `[^ \t\n].*` (single leading non-space + rest) rather
+    // than `[^ \t\n]+.*`. The latter has two overlapping greedy quantifiers that can
+    // consume the same characters, causing O(n^2) backtracking on a long line with no
+    // trailing underline (a DoS via any long whitespace-free input). The two forms
+    // match the same set of lines and capture the same substring.
+    const setextRegexH1 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}=+[ \t]*)$/gm,
+        setextRegexH2 = /^( {0,3}([^ \t\n].*\n)(.+\n)?(.+\n)?)( {0,3}(-+)[ \t]*)$/gm;
+
+    // CommonMark: a setext heading's text is a paragraph, so the line(s) before the
+    // underline may not begin another kind of block. Since setext runs before the
+    // list/block-quote parsers in blockGamut, a `-` underline would otherwise steal
+    // list-item lines (e.g. `- foo\n-`). When commonmarkLists is enabled, skip the
+    // match if the heading text starts a list item or block quote; the container
+    // parsers then handle those lines (and any genuine underline inside an item).
+    function cmSkipSetext (headingText) {
+      let first = headingText.split('\n')[0];
+      return /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(first) ||
+             /^ {0,3}>/.test(first) ||
+             // a fenced-code opener is a leaf block, not setext paragraph text. In container
+             // mode the converter-level fence pass leaves indent 1-3 fences for the block
+             // parsers, so they can reach setext here; let the fence (and any container
+             // marker below it) be claimed by the block/container parsers instead.
+             /^ {0,3}(?:```|~~~)/.test(first);
+    }
+
+    // H1 (`=` underline) and H2 (`-` underline) run the identical callback; only the
+    // resulting heading level differs (H2 is one deeper). One closure, parameterized by
+    // level, drives both passes. Note both pass `setextRegexH2` as the event regexp — a
+    // long-standing quirk preserved here (the pattern is only surfaced in the capture event).
+    function setextReplacer (level) {
+      return function (wholeMatch, headingText, line1, line2, line3, line4) {
+        if (options.cmSpec && cmSkipSetext(headingText)) { return wholeMatch; }
+        return parseSetextHeading(setextRegexH2, level, wholeMatch, headingText, line1, line2, line3, line4);
+      };
+    }
+
+    text = text.replace(setextRegexH1, setextReplacer(options.headerLevelStart));
+    text = text.replace(setextRegexH2, setextReplacer(options.headerLevelStart + 1));
+
+    let afterEvent = showdown.Event.dispatchEnd('makehtml.heading.setext.onEnd', text, options, globals);
+
+    return showdown.helper.hashHTMLBlocks(afterEvent.output, options, globals);
+
+
+    // The greedy 3-line capture (setextRegexH1/H2) over-matches: an underline can appear
+    // directly under lines that are really a *different* block (a thematic break, a list
+    // item, a block quote, or a leaf/container block), which the underline would wrongly
+    // pull into "heading text". `parseSetextHeading` re-litigates those false positives.
+    //
+    // The two false-positive classes are disjoint by line-count and handled by one arm each:
+    //   - a one-line capture  -> resolveOneLinerFalsePositive (HR edge / one-liner list /
+    //                            one-liner block quote, each delegated to its own subparser)
+    //   - a multi-line capture -> resolveMultilineFalsePositive (HR in line1/line2, then a
+    //                            blockGamut reparse with ¨K/¨R sniffing)
+    //
+    // The list/block-quote delegations below are the `!cmSpec` half of the SAME question
+    // that `cmSkipSetext` (above) answers on the `cmSpec` path: "is this underline stealing
+    // a container's lines?". cmSpec skips the match up front and lets the container parsers
+    // claim the lines; the legacy path lets the underline match, then hands the stolen lines
+    // back to the container subparsers here. Merging the two is documented as a later step.
+    function parseSetextHeading (pattern, headingLevel, wholeMatch, headingText, line1, line2, line3, line4) {
+
+      const hrCheckRgx = /^ {0,3}[-_*]([-_*] ?){2,}$/;
+      let count = headingText.trim().split('\n').length,
+          prepend = '';
+
+      if (count === 1) {
+        let oneLiner = resolveOneLinerFalsePositive(line1, line4);
+        // a non-null result means line1 was really an HR/list/block quote — return it verbatim
+        if (oneLiner !== null) {
+          return oneLiner;
+        }
+      } else {
+        let resolved = resolveMultilineFalsePositive(headingText, line1, line2, line3);
+        prepend = resolved.prepend;
+        headingText = resolved.headingText;
+      }
+
+      // trim stuff
+      headingText = headingText.trim();
+
+      // let's check if heading is empty
+      // after looking for blocks, heading text might be empty which is a false positive
+      if (!headingText) {
+        return prepend + line4;
+      }
+
+      // after this, we're pretty sure it's a heading so let's proceed
+      // (the id helper returns null when the headerIds option disables ids)
+      let id = headingId(headingText, options, globals);
+      return prepend + parseHeader('setext', pattern, wholeMatch, headingText, headingLevel, id, options, globals);
+
+
+      // One-line capture. Returns a finished replacement string when `line1` is really a
+      // thematic break, a one-liner list item, or a one-liner block quote that the greedy
+      // capture mis-swallowed; returns null when it is genuine heading text.
+      function resolveOneLinerFalsePositive (line1, line4) {
+        let prepend;
+
+        // thematic-break edge case (`- - -`): let the horizontalRule parser confirm it
+        if (trimEnd(line1).match(hrCheckRgx)) {
+          prepend = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
+          if (prepend !== line1) {
+            return prepend.trim() + '\n' + line4;
+          }
+        }
+
+        // one-liner unordered list (`- foo` above an `=` underline): delegate to the list parser
+        if (line1.match(/^ {0,3}[-*+][ \t]/)) {
+          if (line4.trim().match(/^=+/)) {
+            line1 += line4;
+          }
+          prepend = showdown.subParser('makehtml.list')(line1, options, globals);
+          if (prepend !== line1) {
+            return prepend.trim() + '\n' + line4;
+          }
+        }
+
+        // one-liner block quote (`> foo`): delegate to the block-quote parser
+        if (line1.match(/^ {0,3}>[ \t]?[^ \t]/)) {
+          if (line4.trim().match(/^=+/)) {
+            line1 += line4;
+          }
+          prepend = showdown.subParser('makehtml.blockquote')(line1, options, globals);
+          if (prepend !== line1) {
+            return prepend.trim() + '\n' + line4;
+          }
+        }
+
+        // no edge case: proceed as a real heading
+        return null;
+      }
+
+      // Multi-line capture. Peels any block(s) that precede the true heading text out into
+      // `prepend`, returning the (possibly reduced) heading text alongside. Never short-
+      // circuits — always falls through to the common heading tail above.
+      function resolveMultilineFalsePositive (headingText, line1, line2, line3) {
+        let prepend = '',
+            nPrepend;
+
+        // first we must take care of the edge cases of:
+        // case1: |  case2:
+        // ---    |  ---
+        // foo    |  foo
+        // ---    |  bar
+        //        |  ---
+        //
+        if (trimEnd(line1).match(hrCheckRgx)) {
+          nPrepend  = showdown.subParser('makehtml.horizontalRule')(line1, options, globals);
+          if (nPrepend !== line1) {
+            line1 = '';
+            // we add the parsed block to prepend
+            prepend = nPrepend.trim();
+            // and remove the line from the headingText, so it doesn't appear repeated
+            headingText = line2 + ((line3) ? line3 : '');
+          }
+        }
+
+        // now we take care of these cases:
+        // case1: |  case2:
+        // foo    |  foo
+        // ***    |  ***
+        // ---    |  bar
+        //        |  ---
+        //
+        if (trimEnd(line2).match(hrCheckRgx)) {
+          // This case sucks, because the first line could be anything!!!
+          // first let's make sure it's a hr
+          nPrepend  = showdown.subParser('makehtml.horizontalRule')(line2, options, globals);
+          if (nPrepend !== line2) {
+            line2 = nPrepend;
+            // it is, so now we must parse line1 also
+            if (line1) {
+              line1 = showdown.subParser('makehtml.blockGamut')(line1, options, globals);
+              line1 = showdown.subParser('makehtml.paragraphs')(line1, options, globals);
+              line1 = line1.trim() + '\n';
+              prepend = line1;
+              // and clear line1
+              line1 = '';
+            }
+            // we add the parsed blocks to prepend
+            prepend += line2.trim() + '\n';
+            line2 = '';
+            // and remove the lines from the headingText, so it doesn't appear repeated
+            headingText = (line3) ? line3 : '';
+          }
+        }
+
+        // all edge cases should be treated now: reparse the assembled text and let any
+        // block(s) found before the underline win (they take precedence over the heading)
+        let multilineText = line1 + line2 + ((line3) ? line3 : '');
+
+        nPrepend = showdown.subParser('makehtml.blockGamut')(multilineText, options, globals, 'makehtml.heading.setext');
+        if (nPrepend !== multilineText) {
+          // we found one or more blocks, so we need to reparse (blocks should take precendence though)
+          nPrepend = trimEnd(nPrepend);
+          // let's check if the last line is a parsed block
+          let newLines = nPrepend.trim().split('\n');
+          let nLastLine = newLines.pop().toString();
+
+          if (/^¨(?:K\d+K|R\d+R|M\d+M)$/.test(nLastLine) || /^\s*$/gm.test(nLastLine)) {
+            // everything before --- or === is a block (¨K hashed / ¨R raw HTML / ¨M markdown="1"
+            // block) or empty line, so it's a false positive
+            prepend += nPrepend + '\n\n';
+            headingText = '';
+          } else {
+            // the last line is something else... so let's look at the line before that
+            let toHeading = nLastLine;
+            nLastLine = newLines.pop().toString();
+            if (/^¨(?:K\d+K|R\d+R|M\d+M)$/.test(nLastLine) === false && /^\s*$/gm.test(nLastLine) === false) {
+              toHeading = nLastLine + '\n' + toHeading;
+            }
+            headingText = toHeading;
+            prepend = newLines.join('\n').trim();
+          }
+        }
+
+        return { prepend: prepend, headingText: headingText };
+      }
+    }
+
+
+  });
+
+  // Strip a trailing ATX closing sequence — `[ \t]*#*[ \t]*` — from a heading's text, computed
+  // right-to-left in linear time (a regex `/[ \t]*#*[ \t]*$/` would itself backtrack quadratically
+  // while searching for the match position). If the whole text is strippable (e.g. `# ###`), the
+  // legacy lazy regex kept the first character, so we do the same.
+  function stripAtxClosingSequence (str) {
+    let end = str.length;
+    while (end > 0 && (str.charAt(end - 1) === ' ' || str.charAt(end - 1) === '\t')) { end--; }
+    while (end > 0 && str.charAt(end - 1) === '#') { end--; }
+    while (end > 0 && (str.charAt(end - 1) === ' ' || str.charAt(end - 1) === '\t')) { end--; }
+    let stripped = str.slice(0, end);
+    return stripped === '' ? str.charAt(0) : stripped;
+  }
+
+  showdown.subParser('makehtml.heading.atx', function (text, options, globals) {
+
+    let startEvent = showdown.Event.dispatchStart('makehtml.heading.atx.onStart', text, options, globals);
+    text = startEvent.output;
+
+    // The default variant captures the heading text greedily (`(.+)$`) and strips the optional
+    // trailing closing-hash sequence (of ANY length, per CommonMark) in code below. The old
+    // `(.+?)[ \t]*#*[ \t]*$` form backtracked quadratically on a line of many `#` followed by
+    // text (e.g. `'#'.repeat(n) + ' h'`), because the lazy text capture re-scanned the `#` run
+    // at every position. The cmSpec variant already can't backtrack that way (its `[ \t]+`
+    // after the opening hashes fails fast on a pure/`#`-prefixed line), so it is left unchanged.
+    // cmSpec (CommonMark) requires a space between the opening `#`s and the heading text; the
+    // legacy path does not.
+    const atxRegex = (options.cmSpec) ? /^ {0,3}(#{1,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*$/gm : /^ {0,3}(#{1,6})[ \t]*(.+)$/gm;
+    const stripClosing = !options.cmSpec;
+    text = text.replace(atxRegex, function (wholeMatch, m1, m2) {
+      let headingText = stripClosing ? stripAtxClosingSequence(m2) : m2,
+          headingLevel = options.headerLevelStart - 1 + m1.length,
+          // the id helper returns null when the headerIds option disables ids
+          id = headingId(headingText, options, globals);
+      return parseHeader('atx', atxRegex, wholeMatch, headingText, headingLevel, id, options, globals);
+    });
+
+    let afterEvent = showdown.Event.dispatchEnd('makehtml.heading.atx.onEnd', text, options, globals);
+
+    return showdown.helper.hashHTMLBlocks(afterEvent.output, options, globals);
+
+  });
+
+})();
+
+/**
+ * @file      makehtml/horizontalRule.js
+ * @summary   Converts thematic breaks (`---`, `***`, `___`, 3+ markers) into `<hr />`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Recognizes the several spacing variants; in cmSpec mode it defers indented dash runs that are
+ * really setext underlines inside list items. A rule has no inner content, so its capture events
+ * carry no `text`. Emits the `makehtml.horizontalRule.*` event family.
+ */
+showdown.subParser('makehtml.horizontalRule', function (text, options, globals) {
+  'use strict';
+  let startEvent = showdown.Event.dispatchStart('makehtml.horizontalRule.onStart', text, options, globals);
+  text = startEvent.output;
+
+
+  // CommonMark: an *indented* line of consecutive dashes that directly follows a
+  // non-blank line is a setext underline inside a list item (e.g. `- Bar\n  ---`),
+  // not a thematic break. When commonmarkLists is on, leave it for the list/setext
+  // parsers. An unindented `---` after a list item is still a real thematic break
+  // (it ends the list), and a spaced form like `- - -` is never an underline.
+  function isSetextUnderlineDash (wholeMatch, args) {
+    if (!options.cmSpec || !/^ +-+[ \t]*$/.test(wholeMatch)) { return false; }
+    return precededByNonBlank(args[args.length - 1], args[args.length - 2]);
+  }
+
+  // parses: --- and - - -
+  const rgx1 = /^ {0,2}( ?-){3,}[ \t]*$/gm;
+  text = text.replace(rgx1, function (wholeMatch) {
+    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
+    return parse(rgx1, wholeMatch);
+  });
+  // parses: -\t-\t-
+  const rgx2 = /^ {0,3}-(\t?-){2,}[ \t]*$/gm;
+  text = text.replace(rgx2, function (wholeMatch) {
+    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
+    return parse(rgx2, wholeMatch);
+  });
+
+  const rgx3 = /^ {0,2}( ?\*){3,}[ \t]*$/gm;
+  text = text.replace(rgx3, function (wholeMatch) {
+    return parse(rgx3, wholeMatch);
+  });
+  const rgx4 = /^ {0,3}\*(\t?\*){2,}[ \t]*$/gm;
+  text = text.replace(rgx4, function (wholeMatch) {
+    return parse(rgx4, wholeMatch);
+  });
+
+
+  const rgx5 = /^ {0,2}( ?_){3,}[ \t]*$/gm;
+  text = text.replace(rgx5, function (wholeMatch) {
+    return parse(rgx5, wholeMatch);
+  });
+  const rgx6 = /^ {0,3}_(\t?_){2,}[ \t]*$/gm;
+  text = text.replace(rgx6, function (wholeMatch) {
+    return parse(rgx6, wholeMatch);
+  });
+
+  // super weird horizontal rule
+
+  const rgx7 = /^ {0,3}(- *){2,}-[ \t]*$/gm;
+  text = text.replace(rgx7, function (wholeMatch) {
+    if (isSetextUnderlineDash(wholeMatch, arguments)) { return wholeMatch; }
+    return parse(rgx7, wholeMatch);
+  });
+  const rgx8 = /^ {0,3}(\* *){2,}\*[ \t]*$/gm;
+  text = text.replace(rgx8, function (wholeMatch) {
+    return parse(rgx8, wholeMatch);
+  });
+  const rgx9 = /^ {0,3}(_ *){2,}_[ \t]*$/gm;
+  text = text.replace(rgx9, function (wholeMatch) {
+    return parse(rgx9, wholeMatch);
+  });
+
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.horizontalRule.onEnd', text, options, globals);
+  return afterEvent.output;
+
+  /**
+   * Whether the line preceding the match at `offset` is non-blank.
+   * @param {string} str
+   * @param {number} offset start index of the matched line (a line start)
+   * @returns {boolean}
+   */
+  function precededByNonBlank (str, offset) {
+    if (offset === 0) { return false; }
+    let end = offset - 1, // index of the newline ending the previous line
+        start = str.lastIndexOf('\n', end - 1) + 1;
+    return str.slice(start, end).trim() !== '';
+  }
+
+  /**
+   *
+   * @param {RegExp} pattern
+   * @param {string} wholeMatch
+   * @returns {string}
+   */
+  function parse (pattern, wholeMatch) {
+    let otp;
+    // a horizontal rule has no inner content, so matches carries only the read-only
+    // `_wholeMatch` context (no `text` key) - see the event contract.
+    let captureStartEvent = showdown.Event.dispatchCapture('makehtml.horizontalRule.onCapture', wholeMatch, {
+      regexp: pattern,
+      matches: {
+        _wholeMatch: wholeMatch
+      },
+      attributes: {}
+    }, options, globals);
+
+    // if something was passed as output, it takes precedence
+    // and will be used as output
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      otp = captureStartEvent.output;
+    } else {
+      otp = '<hr' + showdown.helper._populateAttributes(captureStartEvent.attributes) + ' />';
+    }
+
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.horizontalRule.onHash', otp, options, globals);
+    otp = beforeHashEvent.output;
+    otp = showdown.helper.hashBlock(otp, options, globals);
+    return otp;
+  }
+
+});
+
+/**
+ * @file      makehtml/htmlBlock.js
+ * @summary   Recognizes raw HTML blocks in the Markdown source and shields them from Markdown parsing.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The subparser that owns HTML-block *syntax* (specs: original.md / showdown.md "HTML blocks",
+ * CommonMark §4.6). Two recognition strategies are gated on the one documented divergence, but both
+ * feed the SAME role-based placeholder stores and both run at the same point in the pipeline (this
+ * subparser runs before githubCodeBlock for every flavor — U-8c):
+ *  - `cmSpec` — CommonMark's seven typed HTML blocks (line-based scanner); each block is raw source,
+ *    stored verbatim under a `¨R` placeholder (`gHtmlRawBlocks`), restored late so its entities are
+ *    not decoded.
+ *  - otherwise — Original/Showdown's balanced-tag model plus the `markdown="1"` attribute and the
+ *    standalone HR / comment / processor-instruction cases. Raw (non-markdown) blocks go to `¨R`
+ *    (`gHtmlRawBlocks`, late / entity-verbatim restore, exactly like `cmSpec`); `markdown="1"`
+ *    blocks — whose stored content is GENERATED HTML (their interior parsed as markdown), not raw
+ *    source — go to `¨M` (`gHtmlMdBlocks`, early restore in `paragraphs`).
+ *
+ * Placeholder stores, unified by ROLE across both strategies:
+ *  - `¨R` / `gHtmlRawBlocks` — raw source blocks; restored LATE (after decodeEntities) so entities
+ *    stay verbatim.
+ *  - `¨M` / `gHtmlMdBlocks` — `markdown="1"`-processed blocks; generated HTML, restored EARLY in
+ *    `paragraphs`.
+ *  - `¨K` / `gHtmlBlocks` — NOT written here. It is the store for block-level markup the block
+ *    parsers *GENERATE*, owned by the `showdown.helper.hashHTMLBlocks`/`hashBlock` mechanism (see
+ *    below), restored early in `paragraphs`.
+ *
+ * The complementary MECHANISM — hashing the block-level markup the block parsers *generate* (to keep
+ * `paragraphs` from wrapping it in `<p>`) — is `showdown.helper.hashHTMLBlocks`, a plain helper with
+ * no source-recognition role and no events; it (and `hashBlock`) own the `¨K`/`gHtmlBlocks` store.
+ *
+ * Emits the `makehtml.htmlBlock.*` event family: `onStart`/`onEnd` lifecycle plus, per recognized
+ * block, `onCapture` (`matches.text` = the raw block source; a listener may rewrite it or set
+ * `output` to replace/suppress the block) and `onHash`.
+ */
+showdown.subParser('makehtml.htmlBlock', function (text, options, globals) {
+  'use strict';
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.htmlBlock.onStart', text, options, globals);
+  text = startEvent.output;
+
+  if (options.backslashEscapesHTMLTags) {
+    // encode backslash escaped HTML tags
+    text = text.replace(/\\<(\/?[^>]+?)>/g, function (wm, inside) {
+      return '&lt;' + inside + '&gt;';
+    });
+  }
+
+  if (options.cmSpec) {
+    text = parseCmHTMLBlocks(text);
+  } else {
+    text = hashLegacyHTMLBlocks(text);
+  }
+
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.htmlBlock.onEnd', text, options, globals);
+  return afterEvent.output;
+
+  /**
+   * Dispatch the per-block capture/hash lifecycle for one recognized source block and return
+   * what should replace it in the text (a placeholder, or a listener-provided override).
+   * @param {string} rawBlock the raw HTML block source (the capture's `matches.text`)
+   * @param {function(string): string} buildPlaceholder given the (possibly listener-rewritten)
+   *        raw block, returns the placeholder that stores it
+   * @param {boolean} [processed] true when the stored content is generated (markdown-attribute
+   *        blocks) rather than the raw block, so a `matches.text` rewrite is not re-applied
+   * @param {string} [processedPlaceholder] the placeholder to use when `processed` and no rewrite
+   * @returns {string}
+   */
+  function captureBlock (rawBlock, buildPlaceholder, processed, processedPlaceholder) {
+    let captureEvent = showdown.Event.dispatchCapture('makehtml.htmlBlock.onCapture', rawBlock, {
+      regexp: null,
+      matches: {
+        _wholeMatch: rawBlock,
+        text: rawBlock
+      },
+      attributes: {}
+    }, options, globals);
+
+    let otp;
+    // a listener may replace or suppress the whole block via output precedence
+    if (captureEvent.output && captureEvent.output !== '') {
+      otp = captureEvent.output;
+    } else if (processed) {
+      otp = processedPlaceholder;
+    } else {
+      // honor a listener that rewrote the raw block text
+      otp = buildPlaceholder(captureEvent.matches.text);
+    }
+
+    let hashEvent = showdown.Event.dispatchHash('makehtml.htmlBlock.onHash', otp, options, globals);
+    return hashEvent.output;
+  }
+
+  /**
+   * Store a raw HTML block under a `¨R` placeholder (`gHtmlRawBlocks`); restored LATE (after
+   * decodeEntities) so the verbatim source keeps its entities undecoded.
+   *
+   * NOTE: double-newline wrapper, unlike `parseCmHTMLBlocks`' single-newline `\n¨R…R\n`. The
+   * legacy scanner replaces matches INLINE inside a larger string, so — exactly as the old `¨K`
+   * did — it must inject blank lines on both sides to make the placeholder its own block for
+   * `paragraphs` (without them, trailing inline text on the block's line would not be `<p>`-
+   * wrapped). `parseCmHTMLBlocks` gets that isolation for free from its line-scanner join, so it
+   * can use a single newline; the two `¨R` shapes coexist because every reader (`paragraphs`
+   * skip, `hardLineBreaks`/`heading` sniffs, the converter restore) matches `¨R\d+R` regardless
+   * of surrounding newlines.
+   * @param {string} content
+   * @returns {string}
+   */
+  function hashR (content) {
+    return '\n\n¨R' + (globals.gHtmlRawBlocks.push(content) - 1) + 'R\n\n';
+  }
+
+  /**
+   * Store a `markdown="1"`-processed block under a `¨M` placeholder (`gHtmlMdBlocks`). Its stored
+   * content is GENERATED HTML (its interior parsed as markdown), so it restores EARLY in
+   * `paragraphs` (double-newline wrapper), like the generated `¨K` markup does. Distinct from the
+   * metadata subparser's bare `¨M` sentinel, which runs (and fully self-cleans) before this
+   * subparser, so the two never coexist.
+   * @param {string} content
+   * @returns {string}
+   */
+  function hashM (content) {
+    return '\n\n¨M' + (globals.gHtmlMdBlocks.push(content) - 1) + 'M\n\n';
+  }
+
+  /**
+   * Original/Showdown HTML-block recognition: balanced open/close tag matching over a fixed set
+   * of block-level tag names, the `markdown="1"` attribute, and the standalone HR / comment /
+   * processor-instruction cases. Blocks are split by ROLE across `gHtmlRawBlocks` (`¨R`, raw
+   * source, late/entity-verbatim restore) and `gHtmlMdBlocks` (`¨M`, `markdown="1"`-processed,
+   * generated HTML, early restore). It never writes the generated-markup `¨K`/`gHtmlBlocks` store.
+   * @param {string} str
+   * @returns {string}
+   */
+  function hashLegacyHTMLBlocks (str) {
+    // Fence-awareness. This scanner runs BEFORE githubCodeBlock (the one block-stage order for
+    // every flavor — U-8c), so literal ``` / ~~~ fenced regions are still present in `str`; protect
+    // every region githubCodeBlock would claim behind a `¨F` placeholder so the balanced-tag scan
+    // below cannot mis-claim block tags that live inside a fence body. Only active when ghCodeBlocks
+    // is on — with the option off, fences are not code and are scanned as HTML. The protected
+    // regions are restored to their literal source at the end of this function (in the returned text
+    // and in any raw-block store entry a balanced-tag block absorbed them into), so the later
+    // githubCodeBlock pass converts them exactly.
+    let fenceStore = [];
+    if (options.ghCodeBlocks) {
+      str = protectFences(str);
+    }
+
+    let blockTags = [
+          'pre', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'table', 'dl', 'ol',
+          'ul', 'script', 'noscript', 'form', 'fieldset', 'iframe', 'math', 'style', 'section',
+          'header', 'footer', 'nav', 'article', 'aside', 'address', 'audio', 'canvas', 'figure',
+          'hgroup', 'output', 'video', 'details', 'p'
+        ],
+        repFunc = function (wholeMatch, match, left, right) {
+          let markdownAttr = left.search(/\bmarkdown\b/) !== -1;
+          // an element marked as markdown has its contents parsed as markdown
+          if (markdownAttr) {
+            // markdown="1": stored content is generated HTML -> `¨M` (early restore). Restore any
+            // protected fence in the interior first so the nested makeHtml sees the real fenced
+            // source (githubCodeBlock has not run yet).
+            let inner = fenceStore.length ? restoreFences(match) : match;
+            let txt = left + globals.converter.makeHtml(inner) + right;
+            return captureBlock(wholeMatch, hashM, true, hashM(txt));
+          }
+          // raw (non-markdown) balanced block: verbatim source -> `¨R` (late, entity-verbatim).
+          return captureBlock(wholeMatch, hashR, false, null);
+        };
+
+    // hash HTML Blocks
+    for (let i = 0; i < blockTags.length; ++i) {
+      let opTagPos,
+          rgx1     = new RegExp('^ {0,3}(<' + blockTags[i] + '\\b[^>]*>)', 'im'),
+          patLeft  = '<' + blockTags[i] + '\\b[^>]*>',
+          patRight = '</' + blockTags[i] + '>',
+          closeRe  = new RegExp(patRight, 'im');
+      // 1. Look for the first position of the first opening HTML tag in the text
+      while ((opTagPos = showdown.helper.regexIndexOf(str, rgx1)) !== -1) {
+        //2. Split the text in that position
+        let subTexts = showdown.helper.splitAtIndex(str, opTagPos);
+        // Absent-close-tag guard (ReDoS). replaceRecursiveRegExp -> rgxFindMatchPos restarts its
+        // scan once per unbalanced opener, so a run of openers with no matching closer ahead is
+        // O(n^2) (e.g. `'<div>\n'.repeat(n)` cost ~12s at scale). If no closing tag follows the
+        // opener no balanced block can form, so skip the recursive scan — its result would be the
+        // text unchanged, which is exactly the `break` below, so this is byte-identical.
+        if (!closeRe.test(subTexts[1])) {
+          break;
+        }
+        //3. Match recursively
+        let newSubText1 = showdown.helper.replaceRecursiveRegExp(subTexts[1], repFunc, patLeft, patRight, 'im');
+        // prevent an infinite loop
+        if (newSubText1 === subTexts[1]) {
+          break;
+        }
+        str = subTexts[0].concat(newSubText1);
+      }
+    }
+    // HR SPECIAL CASE
+    str = str.replace(/(\n {0,3}(<(hr)\b([^<>])*?\/?>)[ \t]*(?=\n{2,}))/g, hashHrOrPi);
+
+    // Special case for standalone HTML comments
+    // A comment is terminated by either `-->` or `--!>` (the HTML "comment end
+    // bang" state). Matching only `-->` lets content an author believes is
+    // commented-out leak through to the browser as live HTML (js/bad-tag-filter).
+    str = showdown.helper.replaceRecursiveRegExp(str, function (txt) {
+      return captureBlock(txt, hashR, false, null);
+    }, '^ {0,3}<!--', '--!?>', 'gm');
+
+    // PHP and ASP-style processor instructions (<?...?> and <%...%>)
+    str = showdown.helper.replaceProcessorInstructions(str, hashHrOrPi);
+
+    // Restore the protected fenced-code regions to their literal source, both in the returned
+    // text and in any raw-block store entry a balanced-tag block absorbed a fence into (only
+    // entries added by this pass can contain a `¨F` marker). The subsequent githubCodeBlock pass
+    // then converts them exactly.
+    if (fenceStore.length) {
+      str = restoreFences(str);
+      // Restore any fence a balanced-tag block absorbed: raw blocks land in `¨R`/gHtmlRawBlocks (a
+      // `markdown="1"` interior already had its fences restored before its nested makeHtml, so
+      // gHtmlMdBlocks holds no `¨F`).
+      let fenceScanStore = globals.gHtmlRawBlocks;
+      for (let j = 0; j < fenceScanStore.length; ++j) {
+        if (typeof fenceScanStore[j] === 'string' && fenceScanStore[j].indexOf('¨F') !== -1) {
+          fenceScanStore[j] = restoreFences(fenceScanStore[j]);
+        }
+      }
+    }
+
+    return str;
+
+    // wraps the (cleaned) standalone-element text in the capture/hash lifecycle before hashing
+    function hashHrOrPi (wholeMatch, m1) {
+      let blockText = m1;
+      blockText = blockText.replace(/\n\n/g, '\n');
+      blockText = blockText.replace(/^\n/, '');
+      blockText = blockText.replace(/\n+$/g, '');
+      // standalone HR / processor-instruction is raw HTML -> `¨R` (late, entity-verbatim)
+      return captureBlock(wholeMatch, hashR, true, hashR(blockText));
+    }
+
+    // Replace each githubCodeBlock-claimable fenced region with a `¨F<n>F` placeholder (line
+    // based, linear). Fence recognition mirrors githubCodeBlock for the SAME options: an opening
+    // fence is 3+ backticks/tildes at indent 0-3; a backtick fence whose info string carries a
+    // backtick is NOT a code block (githubCodeBlock rejects it) and is left for the HTML scan; a
+    // tilde fence's info may contain anything. The region runs through the first line that closes
+    // the fence (same char, >= opening length, nothing but trailing whitespace) inclusive, or to
+    // EOF for an unclosed fence — matching githubCodeBlock's closed/empty/unclosed passes.
+    function protectFences (s) {
+      // fast path / true no-op guarantee: no fence delimiter present
+      if (s.indexOf('```') === -1 && s.indexOf('~~~') === -1) {
+        return s;
+      }
+      let lines = s.split('\n'),
+          out = [],
+          i = 0;
+      while (i < lines.length) {
+        let m = /^ {0,3}(`{3,}|~{3,})(.*)$/.exec(lines[i]);
+        if (m && !(m[1].charAt(0) === '`' && m[2].indexOf('`') !== -1)) {
+          let ch = m[1].charAt(0),
+              closeRe = new RegExp('^ {0,3}[' + ch + ']{' + m[1].length + ',}[ \\t]*$'),
+              region = [lines[i]];
+          i++;
+          while (i < lines.length) {
+            region.push(lines[i]);
+            if (closeRe.test(lines[i])) { i++; break; }
+            i++;
+          }
+          out.push('¨F' + (fenceStore.push(region.join('\n')) - 1) + 'F');
+          continue;
+        }
+        out.push(lines[i]);
+        i++;
+      }
+      return out.join('\n');
+    }
+
+    // Restore every `¨F<n>F` placeholder produced by protectFences to its literal fenced source.
+    function restoreFences (s) {
+      return s.replace(/¨F(\d+)F/g, function (wholeMatch, n) {
+        return fenceStore[Number(n)];
+      });
+    }
+  }
+
+  /**
+   * CommonMark HTML blocks (spec section 4.6): a line-based scanner implementing the
+   * 7 block types, each with its own start and end condition. Block content is hashed
+   * verbatim (not parsed as Markdown) under a `¨R` placeholder. Types 1-6 may interrupt
+   * a paragraph; type 7 may only start at a block boundary (document start or after a
+   * blank line).
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseCmHTMLBlocks (str) {
+    const blockNames = 'address|article|aside|base|basefont|blockquote|body|caption|' +
+      'center|col|colgroup|dd|details|dialog|dir|div|dl|dt|fieldset|figcaption|figure|' +
+      'footer|form|frame|frameset|h1|h2|h3|h4|h5|h6|head|header|hr|html|iframe|legend|' +
+      'li|link|main|menu|menuitem|nav|noframes|ol|optgroup|option|p|param|section|' +
+      'summary|table|tbody|td|tfoot|th|thead|title|tr|track|ul';
+
+    let type1Start = /^ {0,3}<(?:script|pre|style|textarea)(?:[ \t>]|$)/i,
+        type1End   = /<\/(?:script|pre|style|textarea)>/i,
+        type2Start = /^ {0,3}<!--/,
+        // Deliberate deviation from CommonMark (which recognizes only `-->`): `--!>` — the
+        // HTML "comment end bang" state — also terminates a comment, matching what browsers
+        // do with the output. Recognizing only `-->` lets content the parser believes is
+        // commented out leak through as live HTML (js/bad-tag-filter). Documented in
+        // specs/showdown.md and specs/comparison.md.
+        type2End   = /--!?>/,
+        type3Start = /^ {0,3}<\?/,
+        type3End   = /\?>/,
+        type4Start = /^ {0,3}<![A-Za-z]/,
+        type4End   = />/,
+        type5Start = /^ {0,3}<!\[CDATA\[/,
+        type5End   = /]]>/,
+        type6Start = new RegExp('^ {0,3}</?(?:' + blockNames + ')(?:[ \\t/>]|$)', 'i'),
+        type7Start = new RegExp('^ {0,3}(?:' + showdown.helper.regexes.cmOpenTagSource + '|' +
+                      showdown.helper.regexes.cmCloseTagSource + ')[ \\t]*$'),
+        isBlank    = /^[ \t]*$/;
+
+    function startType (line, prevBlank) {
+      if (type1Start.test(line)) { return 1; }
+      if (type2Start.test(line)) { return 2; }
+      if (type3Start.test(line)) { return 3; }
+      if (type5Start.test(line)) { return 5; }
+      if (type4Start.test(line)) { return 4; }
+      if (type6Start.test(line)) { return 6; }
+      // type 7 cannot interrupt a paragraph
+      if (prevBlank && type7Start.test(line)) { return 7; }
+      return 0;
+    }
+
+    // a fenced-code opener (mirrors githubCodeBlock: an info string carries no backtick,
+    // tilde or tab). A fenced code block takes precedence over an HTML block start, so its
+    // interior lines must not be scanned for HTML block starts.
+    let fenceOpen = /^ {0,3}(```+|~~~+) *[^`~\t]*$/;
+
+    let lines = str.split('\n'),
+        out = [],
+        i = 0,
+        prevBlank = true; // document start behaves like "after a blank line"
+
+    while (i < lines.length) {
+      let type = startType(lines[i], prevBlank);
+      if (type === 0) {
+        let fence = lines[i].match(fenceOpen);
+        if (fence) {
+          // consume the whole fenced region verbatim (closing fence inclusive, or EOF) so
+          // an HTML-block-like line inside the fence cannot open an HTML block. The fence
+          // itself is hashed later by githubCodeBlock.
+          let closeRe = new RegExp('^ {0,3}[' + fence[1][0] + ']{' + fence[1].length + ',}[ \\t]*$');
+          out.push(lines[i]);
+          i++;
+          while (i < lines.length) {
+            out.push(lines[i]);
+            if (closeRe.test(lines[i])) { i++; break; }
+            i++;
+          }
+          prevBlank = false;
+          continue;
+        }
+        out.push(lines[i]);
+        prevBlank = isBlank.test(lines[i]);
+        i++;
+        continue;
+      }
+
+      let blockLines = [];
+      if (type >= 1 && type <= 5) {
+        // ends on (and includes) the line matching the end condition; may be the
+        // start line itself
+        let endRe = [null, type1End, type2End, type3End, type4End, type5End][type];
+        while (i < lines.length) {
+          let l = lines[i];
+          blockLines.push(l);
+          i++;
+          if (endRe.test(l)) { break; }
+        }
+      } else {
+        // types 6 and 7 end before the first following blank line (or at EOF)
+        while (i < lines.length && !isBlank.test(lines[i])) {
+          blockLines.push(lines[i]);
+          i++;
+        }
+      }
+
+      // wrap the placeholder in blank lines so later block parsing treats it as its own
+      // block. A CommonMark HTML block is raw verbatim source: its content (including any
+      // entities) must NOT be decoded, so it gets a distinct `¨R` marker and a separate
+      // store, restored late (after decodeEntities) rather than unhashed in paragraphs like
+      // generated `¨K`/`¨G` blocks (which legitimately decode).
+      let raw = blockLines.join('\n');
+      out.push(captureBlock(raw, function (content) {
+        return '\n¨R' + (globals.gHtmlRawBlocks.push(content) - 1) + 'R\n';
+      }, false, null));
+      prevBlank = false;
+    }
+
+    return out.join('\n');
+  }
+});
+
+/**
+ * @file      makehtml/image.js
+ * @summary   Markdown images (`![..](..)` + reference forms) in the unified inline scan (CommonMark spec §6.4).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A markdown image `![..]` is recognized by the shared bracket scan in link.js — the `![` push and
+ * the `]` close-bracket resolution are common to links and images. This file owns only what an image
+ * renders as: the `<img>` builder.
+ *
+ * `makehtml.inline.image.build` is an aux-builder entry (like emphasis's `.build`): it is NOT
+ * dispatched by the scanner's character loop. link.js invokes it at close-bracket time for a `![`
+ * opener, with the scan state plus the resolved pieces —
+ * (scan, options, globals, innerHTML, dest, title, width, height, variant, wholeMatch, rawLabel).
+ * It renders and hashes the `<img>` span and returns the placeholder. It fires the
+ * `makehtml.image.<variant>.*` (variant `inline`/`reference`) capture family, so listener extensions
+ * work identically across flavors; listener-free conversions are byte-identical.
+ */
+
+/* jshint esnext: false, esversion: 9 */
+
+// Resolve Markdown backslash escapes (`\*`, `\_`, …) into placeholder escapes so those characters
+// lose their Markdown meaning. A character-level encoding pass (mechanism, not a construct; emits no
+// events). Uses a hand-optimized replace chain that sidesteps the slow `RegExp` constructor. File-local
+// to image.js — the non-cmSpec alt-text builder below is its sole caller.
+function encodeBackslashEscapes (text) {
+  'use strict';
+
+  text = text
+    .replace(/\\(\\)/g, showdown.helper.escapeCharactersCallback)
+    .replace(/\\([!#%'()*+,\-./:;=?@[\]\\^_`{|}~])/g, showdown.helper.escapeCharactersCallback)
+    .replace(/\\¨D/g, '¨D') // escape $ (which was already escaped as ¨D) (charcode is 36)
+    .replace(/\\&/g, '&amp;') // escape &
+    .replace(/\\"/g, '&quot;') // escaping "
+    .replace(/\\</g, '&lt;') // escaping <
+    .replace(/\\>/g, '&gt;'); // escaping >
+
+  return text;
+}
+
+showdown.subParser('makehtml.inline.image.build', function (scan, options, globals, innerHTML, dest, title, width, height, variant, wholeMatch, rawLabel) {
+  'use strict';
+
+  let alt;
+  if (options.cmSpec) {
+    // CommonMark: alt text is the plain-text rendering of the label (markup stripped); the
+    // inner spans are hashed, so restore them before flattening.
+    alt = showdown.helper.unhashHTMLSpans(innerHTML, options, globals)
+      .replace(/<img\b[^>]*?\salt="([^"]*)"[^>]*?\/?>/g, '$1')
+      .replace(/<[^>]*>/g, '');
+  } else {
+    // Showdown flavors (legacy image.js parity): the alt is the RAW label text with inline
+    // markup left literal — emphasis/links inside `![...]` are NOT processed into the alt, so
+    // e.g. `![a_b_c]` keeps its underscores instead of emphasizing them away. Mirrors
+    // image.js's non-cmSpec altText handling exactly (backslash escapes resolved to
+    // placeholders, then `"` and `* _ : ~` escaped), the whole `<img>` being hashed below.
+    alt = encodeBackslashEscapes(rawLabel)
+      .replace(/"/g, '&quot;')
+      .replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+  }
+  // safeMode: neutralize dangerous URL schemes; data:image/* stays allowed
+  let src = (options.safeMode && !showdown.helper.isSafeUrl(dest, {allowDataImage: true})) ? '' : scan.normalizeDest(dest);
+  let attributes = {src: src, alt: alt};
+  scan.buildTitleAttr(attributes, title);
+  // width/height gating copied from writeImageTag in image.js (parseImgDimensions)
+  if (options.parseImgDimensions) {
+    if (width)  { attributes.width  = (width  === '*') ? 'auto' : width; }
+    if (height) { attributes.height = (height === '*') ? 'auto' : height; }
+  }
+
+  let capture = showdown.Event.dispatchCapture('makehtml.image.' + variant + '.onCapture', wholeMatch, {
+    regexp: null,
+    matches: {_wholeMatch: wholeMatch, _url: dest, _title: title, _width: width, _height: height, text: alt},
+    attributes: attributes
+  }, options, globals);
+
+  let otp;
+  if (capture.output && capture.output !== '') {
+    otp = capture.output;
+  } else {
+    attributes = capture.attributes;
+    // honor a listener that rewrote the alt text via matches.text
+    if (capture.matches.text !== alt) { attributes.alt = capture.matches.text; }
+    otp = '<img' + showdown.helper._populateAttributes(attributes) + ' />';
+  }
+  let hash = showdown.Event.dispatchHash('makehtml.image.' + variant + '.onHash', otp, options, globals);
+  return scan.hashSpan(hash.output);
+});
+
+/**
+ * @file      makehtml/link.js
+ * @summary   Markdown links (`[..](..)` + reference forms) in the unified inline scan (CommonMark spec §6.3–6.5).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * This file owns the shared bracket machinery: the `]` close-bracket resolution and the `<a>`
+ * builder. The bracket PUSHES (`[`, `![`) stay in the inline engine (spanGamut.js) — it records each
+ * open bracket on the scan.brackets stack; this file resolves the matching `]`. A `![` opener builds
+ * an image instead (image.js owns what an image renders as), invoked from here at close-bracket
+ * time.
+ *
+ * This is a `makehtml.inline.*` construct subparser (scan-state convention — (scan, options,
+ * globals) instead of (text, options, globals); see entity.js for the scan convention). The scanner
+ * sets scan.pos to the `]` and dispatches `makehtml.inline.link`; it ALWAYS returns a cursor index
+ * (mirroring the resolution's every-path return), so the scanner never stalls on a `]`. The scan
+ * state carries everything the resolution needs: the string (scan.str), the entry index (scan.pos),
+ * the bracket stack head (scan.brackets, read AND written), emphasis resolution
+ * (scan.processEmphasis), node rendering (scan.renderNodes), node-list surgery (scan.list.removeFrom
+ * / scan.appendRaw / scan.list.pruneDelimiters) and the shared link services (scan.normalizeDest,
+ * scan.buildTitleAttr, scan.hashSpan).
+ */
+
+/* jshint esnext: false, esversion: 9 */
+
+// Sticky regex anchored at the scan cursor (lastIndex) so it never slices the tail of the
+// string - keeps the tokenizer linear on `<`-heavy input. Reused across calls; it sets
+// lastIndex before exec and the parse is not re-entrant within a single string.
+// Showdown flavors only (see the `!cmSpec` gate at its call site in the resolution below): a
+// `data:...;base64,` inline-image destination may be split across newlines. Legacy image.js
+// matched base64 image URLs with a char class that allowed `\n` and then stripped all whitespace
+// out of the URL, so a payload wrapped across lines still resolves to one `src`.
+// cmScanDestination stops at the first newline (CommonMark forbids newlines in destinations), so
+// the Showdown flavors scan the base64 body with this recognizer instead and strip the embedded
+// whitespace. Sticky + anchored at the scan cursor; a single greedy class is linear / ReDoS-safe.
+const reInlineBase64Dest = /<?(data:[^\s<>]+?\/[^\s<>]+?;base64,[A-Za-z\d+/=\n]+)>?/y;
+
+showdown.subParser('makehtml.inline.link', function (scan, options, globals) {
+  'use strict';
+
+  let s = scan.str,
+      idx = scan.pos;
+
+  let opener = scan.brackets;
+  if (opener === null) { scan.appendText(']'); return idx + 1; }
+  if (!opener.active) { scan.brackets = opener.prev; scan.appendText(']'); return idx + 1; }
+
+  // try to parse the destination/title or a reference that follows the `]`
+  // variant mirrors link.js/image.js: `inline` for `[..](..)`, `reference` for the
+  // reference-style forms (full/collapsed/shortcut) - drives the capture event name.
+  let dest = null, title = null, width = null, height = null, matched = false, endIdx = idx + 1,
+      variant = 'inline';
+
+  if (s.charAt(idx + 1) === '(') {
+    let j = idx + 2, n2 = s.length, isWs = function (c) { return c === ' ' || c === '\t' || c === '\n'; };
+    while (j < n2 && isWs(s.charAt(j))) { j++; }
+    let d = null;
+    // Showdown flavors (legacy image.js base64 parity): a `data:...;base64,` destination may
+    // be split across newlines. cmScanDestination stops at the first newline, so scan the
+    // base64 body here (newlines tolerated) and strip the embedded whitespace, the way legacy's
+    // base64 image regex did. cmSpec keeps CommonMark's strict scan (no newlines in a URL).
+    if (!options.cmSpec) {
+      reInlineBase64Dest.lastIndex = j;
+      let b64 = reInlineBase64Dest.exec(s);
+      if (b64) { d = {url: b64[1].replace(/\s/g, ''), end: j + b64[0].length}; }
+    }
+    if (!d) { d = showdown.helper.cmScanDestination(s, j); }
+    if (d) {
+      j = d.end;
+      // parseImgDimensions (Showdown extension, not CommonMark): an optional
+      // ` =WxH` between destination and title. The `=WxH` is always consumed here so
+      // it never leaks into the output; buildImage only renders it when the option is
+      // on. Regex fragment copied from the inline image regex in image.js.
+      let dimStart = j;
+      while (dimStart < n2 && isWs(s.charAt(dimStart))) { dimStart++; }
+      if (dimStart > j && s.charAt(dimStart) === '=') {
+        let dim = /^=([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4})/.exec(s.slice(dimStart));
+        if (dim) {
+          width = dim[1];
+          height = dim[2];
+          j = dimStart + dim[0].length;
+        }
+      }
+      let hadWs = false;
+      while (j < n2 && isWs(s.charAt(j))) { hadWs = true; j++; }
+      let tc = s.charAt(j), t = null;
+      if (hadWs && (tc === '"' || tc === '\'' || tc === '(')) {
+        t = showdown.helper.cmScanTitle(s, j);
+        if (t) { j = t.end; }
+      }
+      while (j < n2 && isWs(s.charAt(j))) { j++; }
+      if (s.charAt(j) === ')') {
+        dest = d.url;
+        title = t ? t.title : null;
+        matched = true;
+        endIdx = j + 1;
+      }
+    }
+  }
+
+  if (!matched) {
+    // reference: full [label], collapsed [] or shortcut. Use the RAW source label
+    // (backslash escapes intact) - CommonMark matches labels by case-fold +
+    // whitespace only, so `[foo\!]` must not match a `[foo!]` definition.
+    variant = 'reference';
+    let labelText = s.slice(opener.sourceStart, idx),
+        refKey = null,
+        bracketPos = idx + 1;
+    // Gate B (reference-with-space). The Showdown flavors honor Original-Markdown's
+    // space-tolerant references — `[an example] [id]` — allowing optional whitespace (a
+    // space/tab run and at most one newline) between the `]` that closes the link text and
+    // the `[` that opens the label. cmSpec keeps CommonMark's strict no-space rule (a space
+    // there makes the first `[..]` a shortcut reference). Only the position of the `[` moves;
+    // the whitespace itself is not part of the label.
+    if (!options.cmSpec) {
+      let k = idx + 1, sawNewline = false;
+      while (k < s.length) {
+        let c = s.charAt(k);
+        if (c === ' ' || c === '\t') {
+          k++;
+        } else if (c === '\n' && !sawNewline) {
+          sawNewline = true;
+          k++;
+        } else {
+          break;
+        }
+      }
+      if (s.charAt(k) === '[') { bracketPos = k; }
+    }
+    if (s.charAt(bracketPos) === '[') {
+      let close = findRefClose(s, bracketPos + 1);
+      if (close !== -1) {
+        let inner = s.slice(bracketPos + 1, close);
+        refKey = inner.trim() === '' ? labelText : inner;
+        endIdx = close + 1;
+      }
+    } else {
+      refKey = labelText; // shortcut
+      endIdx = idx + 1;
+    }
+    if (refKey !== null) {
+      let key = showdown.helper.cmNormalizeLabel(refKey);
+      if (key !== '' && !showdown.helper.isUndefined(globals.gUrls[key])) {
+        dest = globals.gUrls[key];
+        title = globals.gTitles[key];
+        // parseImgDimensions: reference-style dimensions stored by stripLinkDefinitions
+        if (globals.gDimensions[key]) {
+          width = globals.gDimensions[key].width;
+          height = globals.gDimensions[key].height;
+        }
+        matched = true;
+      }
+    }
+  }
+
+  if (!matched) { scan.brackets = opener.prev; scan.appendText(']'); return idx + 1; }
+
+  // process emphasis on the delimiters inside the brackets
+  scan.processEmphasis(opener.prevDelim);
+
+  // Strikethrough pairing (place b): resolve tilde-run nodes inside the resolving label into `<del>`,
+  // AFTER emphasis, scoped to the label's node range. This is what makes label strikethrough work for
+  // ALL flavors (per the ruling) — a cmSpec link label now strikes too. applyGfm is false (a link
+  // cannot nest a link, so its inner is never linkified). Emoji is scan-native, already substituted
+  // inline inside the label for every flavor, so the pairing pass no longer takes an applyEmoji arg.
+  if (options.strikethrough) {
+    showdown.subParser('makehtml.inline.strikethrough.pair')(scan, options, globals, opener.node.next, null, false);
+  }
+
+  // collect and render the inner nodes
+  let innerHTML = scan.renderNodes(opener.node.next, null),
+      wholeMatch = s.slice(opener.matchStart, endIdx);
+
+  let otpHTML;
+  if (opener.image) {
+    otpHTML = showdown.subParser('makehtml.inline.image.build')(scan, options, globals, innerHTML, dest, title, width, height, variant, wholeMatch, s.slice(opener.sourceStart, idx));
+  } else {
+    otpHTML = buildLink(innerHTML, dest, title, variant, wholeMatch);
+  }
+
+  // drop the opener node and everything after it, append the built span
+  scan.list.removeFrom(opener.node);
+  scan.appendRaw(otpHTML);
+  // remove any emphasis delimiters that belonged to the consumed range
+  scan.list.pruneDelimiters(opener.prevDelim);
+
+  if (!opener.image) {
+    // a link cannot be nested in another link
+    for (let b = opener.prev; b !== null; b = b.prev) {
+      if (!b.image) { b.active = false; }
+    }
+  }
+  scan.brackets = opener.prev;
+  return endIdx;
+
+  // Real CommonMark links (`[..](..)` + reference forms). This dispatches the same
+  // event family the retired standalone link.js did — `makehtml.link.<variant>.*` (variant
+  // `inline`/`reference`) — so listener extensions work identically across flavors. The
+  // rendered output for listener-free conversions is unchanged: the attribute strings are
+  // rebuilt from the same values via _populateAttributes.
+  function buildLink (innerHTML, dest, title, variant, wholeMatch) {
+    // safeMode: neutralize dangerous URL schemes (javascript:, vbscript:, data:, ...)
+    let href = (options.safeMode && !showdown.helper.isSafeUrl(dest)) ? '' : scan.normalizeDest(dest);
+    // Emoji, strikethrough and ellipsis are all scan-native — the `:name:`/`~~`/`...` in the link
+    // label are already resolved by the scan (emoji substituted inline for every flavor, strikethrough
+    // via place (b) above, ellipsis inline), so none are re-applied here. Substituting emoji inside a
+    // resolving label now happens for every flavor, including cmSpec (previously the whole-text pass
+    // was re-applied here only off cmSpec); this is the ruled label-class parity change. The GFM link
+    // passes (applyGfmInlineLinks) are deliberately NOT run on link text — a link cannot be nested
+    // inside another link.
+    innerHTML = showdown.subParser('makehtml.hardLineBreaks')(innerHTML, options, globals);
+    let attributes = {href: href};
+    scan.buildTitleAttr(attributes, title);
+
+    let capture = showdown.Event.dispatchCapture('makehtml.link.' + variant + '.onCapture', wholeMatch, {
+      regexp: null,
+      matches: {_wholeMatch: wholeMatch, _url: dest, _title: title, text: innerHTML},
+      attributes: attributes
+    }, options, globals);
+
+    let otp;
+    if (capture.output && capture.output !== '') {
+      otp = capture.output;
+    } else {
+      attributes = capture.attributes;
+      otp = '<a' + showdown.helper._populateAttributes(attributes) + '>' + capture.matches.text + '</a>';
+    }
+    let hash = showdown.Event.dispatchHash('makehtml.link.' + variant + '.onHash', otp, options, globals);
+    return scan.hashSpan(hash.output);
+  }
+});
+
+// find the closing `]` of a reference label, honoring backslash escapes
+function findRefClose (str, j) {
+  let n = str.length;
+  while (j < n) {
+    let c = str.charAt(j);
+    if (c === '\\' && j + 1 < n) { j += 2; continue; }
+    if (c === ']') { return j; }
+    if (c === '[') { return -1; }
+    j++;
+  }
+  return -1;
+}
+
+/**
+ * @file      makehtml/list.js
+ * @summary   The container-block list parser converting Markdown lists into `<ul>`/`<ol>`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * One line-based scanner (based on the CommonMark spec §5.2/5.3) for every flavor. A change of
+ * marker type starts a new list; ordered lists keep their start number and delimiter; loose/tight
+ * is decided per list; items nest by indentation. The flavor divergences are derived, not forked:
+ * bullet-char interchangeability (`*`/`+`/`-` are one list unless `cmSpec`) and the sub-list
+ * nesting threshold (CommonMark's content indent under `cmSpec`; otherwise an absolute four-space
+ * indent, or any extra indent when `disableForced4SpacesIndentedSublists` is set). Delegates
+ * task-list checkboxes to `makehtml.list.taskListItem.checkbox` and emits the `makehtml.list.*`
+ * family including `.listItem` and `.taskListItem`.
+ */
+
+
+showdown.subParser('makehtml.list', function (text, options, globals) {
+  'use strict';
+
+  // Pathologically nested lists (e.g. `- - - …` thousands deep, or a single line of repeated
+  // `- ` markers) recurse once per level through renderItem → blockGamut → makehtml.list. Refuse
+  // to descend past a sane nesting depth (mirrors the block-quote guard); beyond it the surplus
+  // markers simply render as literal text. The deepest nesting in the whole test corpus is far
+  // below this bound, so it never affects real documents.
+  const maxNestingDepth = 25;
+  if ((globals.listDepth || 0) >= maxNestingDepth) {
+    return text;
+  }
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.list.onStart', text, options, globals);
+  text = startEvent.output;
+
+  text = parseList(text);
+
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.list.onEnd', text, options, globals);
+  return afterEvent.output;
+
+  /** @param {string} line @returns {number} count of leading spaces */
+  function leadingSpaces (line) {
+    let m = line.match(/^ */);
+    return m[0].length;
+  }
+
+  // Leading indentation width in columns, counting a tab as advancing to the next 4-column
+  // tab stop (spec: "tabs are equivalent to four spaces where indentation matters"). Used by
+  // the vanilla continuation/nesting thresholds so tab-indented continuations are gathered.
+  function leadingWidth (line) {
+    let m = line.match(/^[ \t]*/)[0],
+        col = 0;
+    for (let k = 0; k < m.length; ++k) {
+      col += (m[k] === '\t') ? (4 - col % 4) : 1;
+    }
+    return col;
+  }
+
+  /** @param {string} line @returns {boolean} */
+  function isBlank (line) {
+    return /^[ \t]*$/.test(line);
+  }
+
+  // a markerless line that can lazily continue an open paragraph: non-blank text
+  // that does not itself begin an interrupting block
+  function isLazyParagraph (line) {
+    if (isBlank(line)) { return false; }
+    return !(
+      /^ {0,3}>/.test(line) ||                               // block quote
+      /^ {0,3}#{1,6}(?:[ \t]|$)/.test(line) ||               // ATX heading
+      /^ {0,3}(?:```|~~~)/.test(line) ||                     // fenced code
+      /^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(line) ||  // thematic break
+      /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(line)   // list item
+    );
+  }
+
+  // Escape a leading block marker (block quote, ATX heading, fenced code, thematic break /
+  // setext underline) on a line that is being kept as a lazy paragraph continuation, so
+  // blockGamut renders it as literal paragraph text instead of starting a new block.
+  // encodeBackslashEscapes restores the literal character downstream. Plain text (and inline
+  // constructs like `*em*`) is returned unchanged — only genuine block openers are escaped.
+  function escapeLazyMarker (line) {
+    if (/^ {0,3}>/.test(line)) { return line.replace(/^( {0,3})>/, '$1\\>'); }
+    if (/^ {0,3}#{1,6}(?:[ \t]|$)/.test(line)) { return line.replace(/^( {0,3})#/, '$1\\#'); }
+    if (/^ {0,3}(?:```|~~~)/.test(line)) { return line.replace(/^( {0,3})([`~])/, '$1\\$2'); }
+    if (/^ {0,3}([-*_])[ \t]*(?:\1[ \t]*){2,}$/.test(line)) { return line.replace(/^( {0,3})([-*_])/, '$1\\$2'); }
+    if (/^ {0,3}[-=]+[ \t]*$/.test(line)) { return line.replace(/^( {0,3})([-=])/, '$1\\$2'); }
+    return line;
+  }
+
+  // A bare marker with nothing after it — not even a space (`-`, `*`, `1.`). Vanilla/original
+  // require whitespace after the marker, so this is paragraph text, not an empty list item
+  // (a marker followed by a space, `- `, IS an empty item). CommonMark keeps the empty-item form.
+  function isBareMarker (line) {
+    return /^ {0,3}(?:[-+*]|\d{1,9}[.)])$/.test(line);
+  }
+
+  // A line begins with a list marker at any indentation. matchMarker's `^ {0,3}` anchor only
+  // recognizes markers indented 0-3 spaces, so a four-space (or deeper) sub-list marker is
+  // invisible to it; the vanilla nesting decision (gatherItem) needs this broader test to see it.
+  function looksLikeMarker (line) {
+    return /^[ \t]*(?:[-+*]|\d{1,9}[.)])(?:[ \t]|$)/.test(line);
+  }
+
+  // Whether a line that begins with a list marker nests inside item `m` (only the non-cmSpec
+  // path calls this — CommonMark nests purely by content indent). The default is the legacy
+  // absolute four-space rule (equivalently: a marker legacy's `^ {0,3}` anchor would NOT have
+  // matched at this level), with a leading tab counting as four columns. With
+  // disableForced4SpacesIndentedSublists any extra indent past the marker nests (Original-Markdown).
+  function marksNest (line, m) {
+    if (options.disableForced4SpacesIndentedSublists) {
+      return leadingSpaces(line) > m.markerIndent;
+    }
+    return /^ {0,3}\t/.test(line) || leadingSpaces(line) >= 4;
+  }
+
+  // Whether a non-blank line continues item `m` after a run of blank lines: a nested sub-list
+  // marker (the nesting threshold) or a content-column continuation (the content indent).
+  function continuesItem (line, m) {
+    if (!options.cmSpec) {
+      if (looksLikeMarker(line)) {
+        return marksNest(line, m);
+      }
+      // vanilla continuation belongs at the minimal content column (one-space gap past the
+      // marker), tab-aware — legacy re-based every item line with a single outdent, so a
+      // multi-space or tab-indented marker still gathers its continuation
+      return leadingWidth(line) >= m.markerIndent + m.markerWidth + 1;
+    }
+    return leadingSpaces(line) >= m.contentIndent;
+  }
+
+  /**
+   * Match a list-item marker at the start of a line.
+   * @param {string} line
+   * @returns {{type:string, bullet:(string|null), delim:(string|null),
+   *   num:(number|null), markerIndent:number, contentIndent:number,
+   *   firstContent:string}|null}
+   */
+  function matchMarker (line) {
+    let m = line.match(/^( {0,3})([-+*]|\d{1,9}[.)])( *)([\s\S]*)$/);
+    if (!m) { return null; }
+    let indent = m[1].length,
+        markerTxt = m[2],
+        spaces = m[3].length,
+        rest = m[4];
+    // the marker must be followed by at least one space (or end the line); `-one`
+    // is a paragraph, not a list
+    if (rest !== '' && spaces === 0) { return null; }
+
+    let k = markerTxt.length,
+        type = /[-+*]/.test(markerTxt) ? 'ul' : 'ol',
+        contentIndent,
+        firstContent;
+    if (rest === '') {
+      contentIndent = indent + k + 1;
+      firstContent = '';
+    } else if (spaces >= 5) {
+      // 5+ spaces: one space is the marker gap, the rest is indented code
+      contentIndent = indent + k + 1;
+      firstContent = new Array(spaces).join(' ') + rest;
+    } else {
+      contentIndent = indent + k + spaces;
+      firstContent = rest;
+    }
+    return {
+      type: type,
+      bullet: type === 'ul' ? markerTxt : null,
+      delim: type === 'ol' ? markerTxt.slice(-1) : null,
+      num: type === 'ol' ? parseInt(markerTxt, 10) : null,
+      markerIndent: indent,
+      markerWidth: k,
+      contentIndent: contentIndent,
+      firstContent: firstContent
+    };
+  }
+
+  /**
+   * Gather one list item starting at line index `i`. Consumes the marker line and
+   * subsequent lines that belong to the item, plus lazy paragraph continuations.
+   * Blank lines that are followed by more item content are kept (internal); trailing
+   * blank lines are left for the caller.
+   *
+   * Two independent thresholds decide membership:
+   *   - a **non-marker** line (plain text) belongs at the *content column*
+   *     (`leadingSpaces >= contentIndent`) and is sliced by contentIndent — this is the
+   *     hanging/lazy continuation rule CommonMark and the legacy flavors share;
+   *   - a line that begins with a **list marker** is a nesting decision. Under `cmSpec`
+   *     it nests by content indent like any other line; otherwise `marksNest` gates it
+   *     (absolute four-space / option) and, because the nested marker must stay
+   *     recognizable to matchMarker's `^ {0,3}` anchor at the next parse level, it is
+   *     re-based with outdent semantics (a fixed <=4-space / one-tab strip) rather than
+   *     the variable contentIndent slice.
+   *
+   * @returns {{content:string[], end:number, blanksFollow:number, internalBlank:boolean}}
+   */
+  function gatherItem (lines, i, m) {
+    let n = lines.length,
+        w = m.contentIndent,
+        content = [m.firstContent],
+        internalBlank = false;
+    i++;
+    // a list item may begin with at most one blank line: an empty marker followed
+    // by a blank line is an empty item; later indented content is not part of it
+    if (m.firstContent === '' && i < n && isBlank(lines[i])) {
+      let j = i;
+      while (j < n && isBlank(lines[j])) { j++; }
+      return {content: [''], end: i, blanksFollow: j - i, internalBlank: false};
+    }
+    while (i < n) {
+      let line = lines[i];
+      if (isBlank(line)) {
+        // look ahead: blanks are internal only if the item continues afterwards
+        let j = i;
+        while (j < n && isBlank(lines[j])) { j++; }
+        if (j < n && !isBlank(lines[j]) && continuesItem(lines[j], m)) {
+          for (let b = i; b < j; ++b) { content.push(''); }
+          if (content.some(function (c) { return c.trim() !== ''; })) { internalBlank = true; }
+          i = j;
+          continue;
+        }
+        return {content: content, end: i, blanksFollow: j - i, internalBlank: internalBlank};
+      }
+      if (options.cmSpec) {
+        // CommonMark: nesting and continuation are both decided by the content indent
+        if (leadingSpaces(line) >= w) {
+          content.push(line.slice(w));
+          i++;
+        } else if (isLazyParagraph(line) && lastIsParagraph(content)) {
+          content.push(line);
+          i++;
+        } else {
+          return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
+        }
+      } else if (looksLikeMarker(line)) {
+        // a sub-list marker: nest it (outdent-sliced) or end the item so the outer
+        // collector picks the marker up as a sibling
+        if (marksNest(line, m)) {
+          content.push(showdown.helper.outdent(line));
+          i++;
+        } else {
+          return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
+        }
+      } else if (leadingWidth(line) >= m.markerIndent + m.markerWidth + 1) {
+        // vanilla non-marker continuation: belongs at the minimal content column (tab-aware),
+        // re-based with a single outdent (the legacy slice), so multi-space markers and tab
+        // indentation keep their continuation lines instead of dropping them into code
+        content.push(showdown.helper.outdent(line));
+        i++;
+      } else if (lastIsParagraph(content)) {
+        // full laziness (vanilla/original, mirroring makehtml.blockquote): any non-blank,
+        // non-marker line continues the item's open paragraph — even one that looks like a
+        // block opener (`>`, `#`, fence, thematic break), which is escaped to stay inline.
+        // (CommonMark uses paragraph-only laziness — the cmSpec branch above.)
+        content.push(escapeLazyMarker(line));
+        i++;
+      } else {
+        return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
+      }
+    }
+    return {content: content, end: i, blanksFollow: 0, internalBlank: internalBlank};
+  }
+
+  // Whether an item's content has a blank line separating two of its *top-level*
+  // blocks (which makes the list loose). A blank line inside a nested list/block
+  // quote does not count - it makes the nested list loose, not this one. We track
+  // the content-indent of the deepest open nested container and ignore lines (and
+  // blanks) inside it.
+  function itemLoose (content) {
+    let containerIndent = -1, // content indent of the open nested container (-1 = none)
+        topBlockSeen = false,
+        blank = false;
+    for (let li = 0; li < content.length; ++li) {
+      let line = content[li];
+      if (line.trim() === '') { blank = true; continue; }
+      let ind = leadingSpaces(line);
+      if (containerIndent >= 0 && ind >= containerIndent) {
+        continue; // inside the nested container - not a top-level line of this item
+      }
+      if (blank && topBlockSeen) { return true; } // blank between two top-level blocks
+      blank = false;
+      topBlockSeen = true;
+      let mk = matchMarker(line);
+      if (mk) {
+        containerIndent = mk.contentIndent;
+      } else if (/^ {0,3}>/.test(line)) {
+        containerIndent = ind + 1;
+      } else {
+        containerIndent = -1; // a plain top-level block (paragraph / indented code)
+        // a fenced code block is a single block: skip its interior (including blank
+        // lines) so blanks inside the fence are not counted as separators between two
+        // top-level blocks (which would wrongly make the list loose)
+        let fence = line.match(/^ {0,3}(```+|~~~+)/);
+        if (fence) {
+          let closeRe = new RegExp('^ {0,3}[' + fence[1][0] + ']{' + fence[1].length + ',}[ \\t]*$');
+          while (li + 1 < content.length && !closeRe.test(content[li + 1])) { li++; }
+          if (li + 1 < content.length) { li++; } // consume the closing fence line
+        }
+      }
+    }
+    return false;
+  }
+
+  // whether the last content line is an open paragraph (so a lazy continuation line
+  // may be appended). Nested block-quote / list markers are peeled first, so lazy
+  // continuation propagates through container nesting (e.g. `1. > Blockquote`
+  // followed by a markerless line continues the inner block quote's paragraph).
+  // Under vanilla a leading list marker on the first content line is a literal collision
+  // (`- - a`), never a nested container, so it is not peeled — the line stays open paragraph
+  // text and a lazy continuation attaches to it.
+  function lastIsParagraph (content) {
+    let last = content[content.length - 1];
+    if (last === undefined) { return false; }
+    let s = last,
+        indentedCode = /^ {4}/.test(last),
+        listMarkerRe = /^ {0,3}(?:[-+*]|\d{1,9}[.)])[ \t]/,
+        m;
+    while ((m = s.match(/^ {0,3}>[ \t]?/) || (options.cmSpec && s.match(listMarkerRe)))) {
+      s = s.slice(m[0].length);
+      indentedCode = false;
+    }
+    if (s.trim() === '' || indentedCode) { return false; }
+    // A CommonMark ATX heading may be empty (`#` alone); the legacy flavors require heading
+    // text, so a bare `#` there is ordinary paragraph text that a lazy line can continue.
+    let headingRe = options.cmSpec ? /^ {0,3}#{1,6}(?:[ \t]|$)/ : /^ {0,3}#{1,6}[ \t]/;
+    return !(
+      /^ {0,3}(?:```|~~~)/.test(s) ||
+      headingRe.test(s)
+    );
+  }
+
+  /**
+   * Render one list item's content into `<li>…</li>`. In a tight list the item's
+   * direct paragraphs are not wrapped in `<p>`; in a loose list they are. Nested
+   * blocks (sub-lists, block quotes, code) are produced by blockGamut.
+   */
+  function renderItem (content, loose) {
+    // trailing newline so the recursive block parsers (esp. indented code, which
+    // requires each line to end in \n) see a complete final line
+    let str = content.join('\n') + '\n';
+    // drop the empty leading line that an empty marker (`-` with content on the next
+    // line) contributes, so an indented-code first block sees a clean block start
+    // (codeBlock keys off `^`/a preceding blank line) instead of a lone leading newline
+    str = str.replace(/^\n+/, '');
+
+    // The item's raw source — the payload for the per-item capture event below (matches
+    // makehtml.list, which emits the item's raw markdown).
+    let rawItem = content.join('\n');
+
+    // GFM task detection on the (leading-newline-stripped) raw line: it selects the event
+    // name and the <li> attributes. The marker must be followed by whitespace (see
+    // makehtml.list.taskListItem.checkbox); a bare `[ ]` is not a task.
+    let taskMatch = options.tasklists ? /^[ \t]*\[([xX ])](?=[ \t])/.exec(str) : null,
+        checked = !!taskMatch && taskMatch[1].trim() !== '',
+        eventName = taskMatch ? 'makehtml.list.taskListItem' : 'makehtml.list.listItem',
+        attributes = {},
+        matches = { _wholeMatch: rawItem, text: rawItem };
+
+    if (taskMatch) {
+      matches._taskListButton = '[' + taskMatch[1] + ']';
+      matches._taskListButtonChecked = taskMatch[1];
+      // Bare `<li>` per the GFM spec; the legacy bullet styling/classes are only added
+      // when `moreStyling` is enabled.
+      if (options.moreStyling) {
+        attributes.classes = ['task-list-item'];
+        attributes.style = 'list-style-type: none;';
+        if (checked) {
+          attributes.classes.push('task-list-item-complete');
+        }
+      }
+    }
+
+    let captureStartEvent = showdown.Event.dispatchCapture(eventName + '.onCapture', rawItem, {
+      regexp: null,
+      matches: matches,
+      attributes: attributes
+    }, options, globals);
+
+    let rendered;
+    // A listener may pass output, which takes precedence and is used verbatim as the item
+    // markup (mirrors makehtml.list); otherwise we render the (possibly edited) item.
+    if (captureStartEvent.output && captureStartEvent.output !== '') {
+      rendered = captureStartEvent.output;
+    } else {
+      attributes = captureStartEvent.attributes;
+      let liAttrs = showdown.helper._populateAttributes(attributes);
+
+      // honor a listener that rewrote the item's raw markdown via matches.text
+      if (captureStartEvent.matches.text !== rawItem) {
+        str = (captureStartEvent.matches.text + '\n').replace(/^\n+/, '');
+      }
+
+      // Marker collision on the item's own first line (e.g. `- - a`, `1. 2. 3.`): under
+      // vanilla/original a sub-list nests only when indented, so a marker sitting in the
+      // item's inline text is literal — but the recursive list scan below would re-list it.
+      // Escape its leading marker (the bullet char, or an ordered marker's delimiter) so the
+      // scan skips it; encodeBackslashEscapes restores the literal marker downstream. This is
+      // the same escape makehtml.blockquote uses for a lazily-continued setext underline, and
+      // it replaces the legacy ¨A sentinel. A genuine nested sub-list is always on a later
+      // (outdented) line — never firstContent — so `content[0]` distinguishes the two.
+      if (!options.cmSpec && /^ {0,3}(?:[-+*]|\d{1,9}[.)])(?=[ \t]|$)/.test(content[0])) {
+        str = str.replace(/^( {0,3})(?:([-+*])|(\d{1,9})([.)]))/, function (wm, sp, bullet, num, delim) {
+          return bullet ? (sp + '\\' + bullet) : (sp + num + '\\' + delim);
+        });
+      }
+
+      // Vanilla special case: an ATX heading on the item's first line directly followed by
+      // more text (no blank line) — e.g. `- # foo` then `  bar`. A heading block doesn't need a
+      // trailing blank line, so split them into two blocks (the following text becomes its own
+      // paragraph). CommonMark already treats the heading as a single-line block, so this is
+      // only needed for the legacy flavors' rendering.
+      if (!options.cmSpec && /^ {0,3}#{1,6}[ \t].*\n.+/.test(str)) {
+        str = str.replace(/^( {0,3}#{1,6}[ \t].*)$/m, '$1\n');
+      }
+
+      // Legacy multi-block detection, measured on the source (before block parsing): an item
+      // whose content is split by a blank line into two or more blocks wraps its direct
+      // paragraphs in <p> even in a tight list (the `item has a blank line` half of the legacy
+      // rule; the heading split above can introduce that blank line). Measured here so the
+      // blank lines the block parsers generate around hashed blocks are not miscounted.
+      let vanillaMultiBlock = !options.cmSpec && /\n[ \t]*\n/.test(str);
+
+      // Render the checkbox on the raw line, before any block/span parsing, so the
+      // injected <input> flows through blockGamut/spanGamut just like any other inline HTML.
+      if (taskMatch) {
+        str = showdown.subParser('makehtml.list.taskListItem.checkbox')(str, options, globals);
+      }
+      str = showdown.subParser('makehtml.githubCodeBlock')(str, options, globals);
+      globals.listDepth = (globals.listDepth || 0) + 1;
+      str = showdown.subParser('makehtml.blockGamut')(str, options, globals);
+      globals.listDepth--;
+      str = str.replace(/^\n+/, '').replace(/\n+$/, '');
+
+      let grafs = str.split(/\n{2,}/g),
+          out = [];
+      // In a loose list every direct paragraph is wrapped in <p>. In a tight list CommonMark
+      // leaves them bare, but the legacy flavors additionally wrap the paragraphs of a
+      // multi-block item (one whose source is split by a blank line) — so e.g. a heading
+      // followed by a paragraph in a tight item still emits <p> around the text.
+      let wrapParagraphs = loose || vanillaMultiBlock;
+      for (let gi = 0; gi < grafs.length; ++gi) {
+        let g = grafs[gi];
+        if (/¨([KG])(\d+)\1/.test(g)) {
+          out.push(g);
+        } else if (/\S/.test(g)) {
+          g = showdown.subParser('makehtml.spanGamut')(g, options, globals);
+          if (wrapParagraphs) {
+            g = g.replace(/^[ \t]*/, '<p>') + '</p>';
+          }
+          out.push(g);
+        }
+      }
+      let body = out.join('\n');
+
+      // an empty item is always `<li></li>`, regardless of loose/tight
+      if (body.trim() === '') {
+        rendered = '<li' + liAttrs + '></li>\n';
+      } else {
+        // CommonMark serialization: a loose item opens/closes on its own lines; a tight
+        // item opens on a new line only when its content begins with a block child, and
+        // closes on a new line only when its content ends with a block child (so trailing
+        // inline text hugs `</li>`).
+        let open = (loose || /^¨[KG]\d+[KG]/.test(body)) ? '<li' + liAttrs + '>\n' : '<li' + liAttrs + '>',
+            close = (loose || /¨[KG]\d+[KG]\s*$/.test(body)) ? '\n</li>\n' : '</li>\n';
+        rendered = open + body + close;
+      }
+    }
+
+    let beforeHashEvent = showdown.Event.dispatchHash(eventName + '.onHash', rendered, options, globals);
+    return beforeHashEvent.output;
+  }
+
+  // a line that is open paragraph text (so a following list marker would have to
+  // "interrupt a paragraph" - which empty items and non-1 ordered lists may not do)
+  function isParaText (line) {
+    if (isBlank(line) || /¨[A-Za-z]?\d+[A-Za-z]/.test(line)) { return false; }
+    return isLazyParagraph(line) || matchMarker(line) !== null;
+  }
+
+  /**
+   * List parsing. Scans line by line, leaving non-list lines untouched and converting each
+   * run of list items of the same type into a hashed list.
+   * @param {string} str
+   * @returns {string}
+   */
+  function parseList (str) {
+    let lines = str.split('\n'),
+        out = [],
+        i = 0,
+        n = lines.length,
+        prevParagraph = false;
+
+    while (i < n) {
+      let m = matchMarker(lines[i]);
+      // vanilla/original: a bare marker with nothing after it is paragraph text, not a list
+      if (!m || (!options.cmSpec && isBareMarker(lines[i]))) {
+        out.push(lines[i]);
+        prevParagraph = m ? true : isParaText(lines[i]);
+        i++;
+        continue;
+      }
+
+      // a list item may interrupt a paragraph only if it is non-empty and (for
+      // ordered lists) starts with 1; otherwise the marker line is paragraph text
+      if (prevParagraph && (m.firstContent.trim() === '' || (m.type === 'ol' && m.num !== 1))) {
+        out.push(lines[i]);
+        prevParagraph = true;
+        i++;
+        continue;
+      }
+
+      // collect a run of items that form a single list
+      let type = m.type,
+          bullet = m.bullet,
+          delim = m.delim,
+          startNum = m.num,
+          listStart = i,
+          items = [],
+          loose = false;
+
+      while (i < n) {
+        let mm = matchMarker(lines[i]);
+        if (!mm || mm.type !== type) { break; }
+        // a bare marker (nothing after it) doesn't extend a vanilla/original list either
+        if (!options.cmSpec && isBareMarker(lines[i])) { break; }
+        // Bullet-char interchangeability: vanilla/original treat `*`/`+`/`-` as one list, so
+        // only CommonMark splits a `ul` on a bullet-char change. (The marker-TYPE split above
+        // is unconditional for every flavor; ordered lists always split on delimiter change.)
+        if (options.cmSpec && type === 'ul' && mm.bullet !== bullet) { break; }
+        if (type === 'ol' && mm.delim !== delim) { break; }
+
+        let item = gatherItem(lines, i, mm);
+        if (itemLoose(item.content)) { loose = true; }
+        items.push(item.content);
+        i = item.end;
+
+        if (item.blanksFollow > 0) {
+          let j = i + item.blanksFollow,
+              next = (j < n) ? matchMarker(lines[j]) : null,
+              // a following item continues the same list when its marker matches: same type,
+              // and (for ul) the same bullet char only under cmSpec, else any bullet; (for ol)
+              // the same delimiter
+              sameMarker = next && next.type === type && ((type === 'ul') ?
+                (options.cmSpec ? next.bullet === bullet : true) :
+                (next.delim === delim)),
+              continues = sameMarker;
+          if (continues) {
+            loose = true; // blank line between items
+            i = j;
+            continue;
+          }
+          break; // blanks end the list (left in place for the outer loop)
+        }
+      }
+
+      // the raw source of this whole list block — payload for the list-level capture event
+      let rawList = lines.slice(listStart, i).join('\n');
+      let listCapture = showdown.Event.dispatchCapture('makehtml.list.onCapture', rawList, {
+        regexp: null,
+        matches: { _wholeMatch: rawList, text: rawList },
+        attributes: {}
+      }, options, globals);
+
+      let otp;
+      // a listener may pass output, which takes precedence over rendering the items
+      if (listCapture.output && listCapture.output !== '') {
+        otp = listCapture.output;
+      } else {
+        let attrs = listCapture.attributes || {};
+        if (type === 'ol' && startNum !== 1) {
+          attrs.start = startNum;
+        }
+        let body = '';
+        for (let k = 0; k < items.length; ++k) {
+          body += renderItem(items[k], loose);
+        }
+        otp = '\n\n<' + type + showdown.helper._populateAttributes(attrs) + '>\n' + body + '</' + type + '>\n';
+      }
+
+      let listHash = showdown.Event.dispatchHash('makehtml.list.onHash', otp, options, globals);
+      otp = listHash.output;
+
+      out.push(showdown.helper.hashBlock(otp, options, globals));
+      prevParagraph = false;
+    }
+
+    return out.join('\n');
+  }
+});
+
+/**
+ * @file      makehtml/metadata.js
+ * @summary   Parses a document front-matter metadata block at the top of the document, gated by `metadata`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Extracts the metadata block, records its parsed key/values into `globals.metadata` (consumed by
+ * `completeHTMLDocument`) and exposes the format tag and body. Emits the `makehtml.metadata.*`
+ * event family.
  */
 showdown.subParser('makehtml.metadata', function (text, options, globals) {
   'use strict';
@@ -11716,12 +10608,7 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
     return text;
   }
 
-  let startEvent = new showdown.Event('makehtml.metadata.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
+  let startEvent = showdown.Event.dispatchStart('makehtml.metadata.onStart', text, options, globals);
   text = startEvent.output;
 
   /**
@@ -11733,22 +10620,20 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
    */
   function parseMetadataContents (pattern, wholeMatch, format, content) {
     let otp;
-    let captureStartEvent = new showdown.Event('makehtml.metadata.onCapture', content);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
+    // the metadata block's body is the main captured content (`text`); the format tag
+    // (`yaml`, `toml`, …) is a descriptive extra.
+    let captureStartEvent = showdown.Event.dispatchCapture('makehtml.metadata.onCapture', content, {
+      regexp: pattern,
+      matches: {
         _wholeMatch: wholeMatch,
         format: format,
-        content: content
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+        text: content
+      },
+      attributes: {}
+    }, options, globals);
 
     format = captureStartEvent.matches.format;
-    content = captureStartEvent.matches.content;
+    content = captureStartEvent.matches.text;
 
     // if something was passed as output, it will be used as output
     if (captureStartEvent.output && captureStartEvent.output !== '') {
@@ -11764,23 +10649,15 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
     // escape chars significant in html element and attribute contexts so metadata
     // values/keys can't break out of <title>, <meta ...> or the doctype when
     // completeHTMLDocument concatenates them into the document head
-    content = showdown.helper.escapeHTMLEntities(content)
-    // Restore dollar signs and tremas
-      .replace(/¨D/g, '$$')
-      .replace(/¨T/g, '¨')
-      // replace multiple spaces
+    // restore dollar signs and tremas, then collapse the indent that yaml wrapping adds
+    content = showdown.helper.restoreDollarsAndTremas(showdown.helper.escapeHTMLEntities(content))
       .replace(/\n {4}/g, ' ');
 
     content.replace(/^([\S ]+): +([\s\S]+?)$/gm, function (wm, key, value) {
       globals.metadata.parsed[key] = value;
       return '';
     });
-    let beforeHashEvent = new showdown.Event('makehtml.metadata.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.metadata.onHash', otp, options, globals);
     otp = beforeHashEvent.output;
     if (!otp) {
       otp = '¨M';
@@ -11797,30 +10674,327 @@ showdown.subParser('makehtml.metadata', function (text, options, globals) {
   // 2. Metadata with YAML delimiters
   const rgx2 = /^\s*---+\s*(\S*?)\n([\s\S]+?)\n---+\s*\n/;
   text = text.replace(rgx2, function (wholeMatch, format, content) {
-    return parseMetadataContents(rgx1, wholeMatch, format, content);
+    return parseMetadataContents(rgx2, wholeMatch, format, content);
   });
   text = text.replace(/¨M/g, '');
-  let afterEvent = new showdown.Event('makehtml.metadata.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.metadata.onEnd', text, options, globals);
   return afterEvent.output;
 });
 
 /**
+ * @file      makehtml/nakedUrl.js
+ * @summary   GFM naked-URL / naked-mail autolinking (the `simplifiedAutoLink` option).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
  *
+ * Two entries, two conventions:
+ *   - `makehtml.inline.nakedUrl` (scan-state convention — (scan, options, globals)): the single-pass
+ *     scanner's atomic-token recognizer, consuming a bare `http(s)://` / `ftp://` / `www.` run so the
+ *     `_`/`*` inside it never become emphasis delimiters (see entity.js for the scan convention). It
+ *     consumes (returns the new cursor) or declines (returns null).
+ *   - `makehtml.inline.nakedUrl.linkify` (text convention — (text, options, globals) -> text): the
+ *     POST-SCAN pass that turns those runs (and `xmpp:`/`mailto:`/bare addresses) into `<a>` anchors.
+ *     Like ghMentions.js it runs on the serialized inline output (and emphasis inner content), where
+ *     real links / images / code spans are already hashed, so it uses the ordinary text convention.
+ */
+
+// Recognize a naked URL at `i` (called only when options.simplifiedAutoLink, always a Showdown
+// flavor — cmSpec/gfm skip this recognizer). Consumes the maximal `http(s)://` / `ftp://` /
+// `www.` run, stopping at whitespace, angle/quote chars and the hash sentinel `¨` so an adjacent
+// hash placeholder is never absorbed. `&` is deliberately KEPT in the run (legacy's naked-URL
+// regex included it) so a query string like `?a=1&b=2` stays one atomic node with a literal `&`;
+// splitting on `&` here would let the `&` be entity-escaped to `&amp;` before the post-pass
+// re-links it. Trailing emphasis markers `_ * ~` are trimmed back off (and left for the scanner)
+// so a URL wrapped in emphasis — `__https://x__` — still emphasizes; every other
+// trailing-punctuation / GFM trim stays in the simplifiedAutoLink post-pass. The run is a single
+// negated-class quantifier (linear / ReDoS-safe). Returns {text, end} or null.
+function consumeNakedUrl (str, i) {
+  if (!/^(?:https?:\/\/|ftp:\/\/|www\.)/i.test(str.slice(i, i + 8))) { return null; }
+  let n = str.length, j = i;
+  while (j < n && !/[\s\\`<>![\]"'´¨]/.test(str.charAt(j))) { j++; }
+  while (j > i) {
+    let c = str.charAt(j - 1);
+    if (c === '_' || c === '*' || c === '~') { j--; } else { break; }
+  }
+  if (j <= i) { return null; }
+  return {text: str.slice(i, j), end: j};
+}
+
+/**
+ * Encode a bare email address into `{mail, url}` (a `mailto:` href), applying the entity
+ * obfuscation of `encodeEmails` when enabled. File-local to nakedUrl.js (its sole caller).
+ * @param {string} mail
+ * @param {{}} options
+ * @returns {{mail: string, url: string}}
+ */
+function parseMail (mail, options) {
+  let url = 'mailto:';
+  mail = showdown.helper.unescapePlaceholders(mail);
+  if (options.encodeEmails) {
+    url = showdown.helper.encodeEmailAddress(url + mail);
+    mail = showdown.helper.encodeEmailAddress(mail);
+  } else {
+    url = url + mail;
+  }
+  return {
+    mail: mail,
+    url: url
+  };
+}
+
+/**
+ * The naked-URL trailing-punctuation trim: walk the captured URL from the back, moving trailing
+ * `_*~,;:.!?` and unbalanced `)`/`]` into a suffix that is emitted after the link. Returns the
+ * trimmed url and the accumulated suffix. File-local to nakedUrl.js (its sole caller); the
+ * GFM-specific trimming layered on top stays in the linkify pass below.
+ * @param {string} url
+ * @returns {{url: string, suffix: string}}
+ */
+function trimUrlPunctuation (url) {
+  const len = url.length;
+  let suffix = '';
+
+  // Bracket counts of the *remaining* url, tallied once up front and decremented as chars are
+  // chopped: counting them per chopped char (url.match(/\(/g) and friends) rescanned the whole
+  // string every iteration, which is O(n^2) on a long trailing `)))...` run.
+  let counts = {'(': 0, ')': 0, '[': 0, ']': 0};
+  for (let i = 0; i < len; ++i) {
+    let c = url.charAt(i);
+    if (Object.prototype.hasOwnProperty.call(counts, c)) {
+      counts[c]++;
+    }
+  }
+
+  function chop (char) {
+    url = url.slice(0, -1);
+    // prepend to the suffix — the order matters, later passes read suffix.charAt(0)
+    suffix = char + suffix;
+    if (Object.prototype.hasOwnProperty.call(counts, char)) {
+      counts[char]--;
+    }
+  }
+
+  for (let i = len - 1; i >= 0; --i) {
+    let char = url.charAt(i);
+    if (/[_*~,;:.!?]/.test(char)) {
+      // it's a punctuation char so we remove it from the url
+      chop(char);
+    } else if (/[)\]]/.test(char)) {
+      // it's a parenthesis so we need to check for "balance" (kinda)
+      let opPar = char === ')' ? counts['('] : counts['['],
+          clPar = char === ')' ? counts[')'] : counts[']'];
+      if (opPar < clPar) {
+        // there are more closing Parenthesis than opening so chop it!!!!!
+        chop(char);
+      } else {
+        // it's (kinda) balanced so our work is done
+        break;
+      }
+    } else {
+      // it's not a punctuation or a parenthesis so our work is done
+      break;
+    }
+  }
+  return {url: url, suffix: suffix};
+}
+
+/**
+ * GFM extended email autolink domain validation: the domain must have at least two labels, must not
+ * end in `-` or `_`, and its last two labels must not contain `_`. File-local to nakedUrl.js (the
+ * naked-mail and xmpp/mailto post-passes are its only callers).
+ * @param {string} addr
+ * @returns {boolean}
+ */
+function validMailAddr (addr) {
+  let at = addr.lastIndexOf('@');
+  if (at < 1) { return false; }
+  let domain = addr.slice(at + 1),
+      labels = domain.split('.');
+  if (labels.length < 2) { return false; }
+  if (/[-_]$/.test(domain)) { return false; }
+  return !/_/.test(labels.slice(-2).join('.'));
+}
+
+// The `h`/`w`/`f` scan handler for the unified inline scanner in spanGamut.js. Consumes a bare URL
+// run as one atomic node (emitted RAW, not HTML-escaped: the legacy simplifiedAutoLink pass ran on
+// unescaped text, so `&` and non-ASCII chars stayed literal in the captured URL; if the post-pass
+// does not actually link it, the trailing encodeAmpsAndAngles pass encodes any bare `&` — matching
+// the legacy result either way). Declines (returns null) when there is no URL run at the cursor.
+// eslint-disable-next-line no-unused-vars -- `options`/`globals` are unused here but kept for the makehtml.inline.* (scan, options, globals) calling convention
+showdown.subParser('makehtml.inline.nakedUrl', function (scan, options, globals) {
+  'use strict';
+
+  let u = consumeNakedUrl(scan.str, scan.pos);
+  if (u) { scan.appendRaw(u.text); return u.end; }
+  return null;
+});
+
+showdown.subParser('makehtml.inline.nakedUrl.linkify', function (text, options, globals) {
+  'use strict';
+
+  // The GFM ghMentions / simplifiedAutoLink post-passes emit their anchors through the shared
+  // GFM anchor machinery (showdown.helper.writeAnchorTag) plus the file-local parseMail, same
+  // pattern as link.js. Gate 6: cmSpec pins the CommonMark href policy (CM_GFM_ANCHOR_URL_POLICY —
+  // safeMode, cmNormalizeURL and the quote/angle attribute escape all skipped); the Showdown
+  // flavors reuse the legacy link.js policy (LEGACY_ANCHOR_URL_POLICY) so these anchors stay
+  // byte-identical to the non-cmSpec path. Matches the engine's former anchorUrlPolicy selection.
+  let policy = options.cmSpec ? showdown.helper.CM_GFM_ANCHOR_URL_POLICY : showdown.helper.LEGACY_ANCHOR_URL_POLICY;
+  function writeAnchorTag (subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase) {
+    return showdown.helper.writeAnchorTag(subEvtName, pattern, wholeMatch, text, linkId, url, title, emptyCase,
+      options, globals, policy);
+  }
+
+  // 8. Handle naked links (if option is enabled)
+  if (options.simplifiedAutoLink) {
+    // 8.1. Check for naked URLs
+    // we also include leading markdown magic chars [_*~] for cases like __https://www.google.com/foobar__
+    // An explicit scheme (http/https/ftp) does not require the host to contain a dot;
+    // a `www.` shortcut does (and is domain-validated below).
+    // The body classes exclude the hash sentinel `¨` so an adjacent hash placeholder
+    // (e.g. `¨C0C` for a hashed span) is never absorbed into the href and percent-encoded
+    // into `%C2%A8...` — the placeholder must survive intact to be unhashed later.
+    // cmSpec/gfm: an explicit scheme (http/https/ftp) links any non-empty host (no dot or
+    // leading-char constraint); a `www.` shortcut is dot-and-leading-char validated. The
+    // Showdown flavors (legacy simplifiedAutoLink, link.js) apply the SAME host constraint to
+    // scheme URLs as to `www.` ones — the host must not start with `.`/`-` and must contain a
+    // `.` — so `http:///a`, `http://-a.b.co` and `http://3628126748` stay plain text and
+    // `http://.www.foo.bar/` links only its `www.foo.bar/` tail. Gated so cmSpec is byte-identical.
+    let nakedUrlRegex = options.cmSpec ?
+      /([_*~]*?)((?:https?|ftp):\/\/[^\s<>"'`´¨]+|www\.[^\s<>"'`´.¨-][^\s<>"'`´¨]*?\.[a-z\d.]+[^\s<>"'¨]*)\1/gi :
+      /([_*~]*?)((?:(?:https?|ftp):\/\/|www\.)[^\s<>"'`´.¨-][^\s<>"'`´¨]*?\.[a-z\d.]+[^\s<>"'¨]*)\1/gi;
+    text = text.replace(nakedUrlRegex, function (wholeMatch, leadingMDChars, url, offset, fullText) {
+      let isWww = /^www\./i.test(url);
+      // GFM boundary rule: a "www." autolink (unlike a scheme URL) is not recognized when
+      // preceded by "<". By this pass "<" has been escaped to "&lt;", so a www match sitting
+      // right after it (e.g. the interior of a malformed <www.x.com foo> the angle recognizer
+      // could not consume) is left untouched — matching cmark-gfm, which links <https://x bim>
+      // but not <www.x bim>.
+      let urlStart = offset + leadingMDChars.length;
+      if (isWww && fullText.substring(urlStart - 4, urlStart) === '&lt;') { return wholeMatch; }
+      // trim trailing punctuation / unbalanced brackets off the URL into a suffix (shared
+      // with link.js); the GFM-specific trimming below is layered on top.
+      let trimmed = trimUrlPunctuation(url);
+      url = trimmed.url;
+      let suffix = trimmed.suffix;
+
+      // GFM: a trailing ";" that completes an entity-reference-like "&name" is excluded
+      // from the link, so move the whole "&name;" into the suffix.
+      if (suffix.charAt(0) === ';') {
+        let entity = url.match(/&(?:amp;)?[a-z\d]+$/i);
+        if (entity) {
+          url = url.slice(0, -entity[0].length);
+          suffix = entity[0] + suffix;
+        }
+      }
+
+      // GFM: "<" terminates the link. By this pass it has already been escaped to "&lt;"
+      // (and ">" to "&gt;"), so split there and keep the remainder as plain text.
+      let ltMatch = url.match(/&(?:lt|gt);/);
+      if (ltMatch) {
+        let at = url.indexOf(ltMatch[0]);
+        suffix = url.slice(at) + suffix;
+        url = url.slice(0, at);
+      }
+
+      // GFM: the last two labels of the host may not contain "_"; otherwise it is not a
+      // valid autolink.
+      if (!showdown.helper.validAutolinkHost(url, isWww)) {
+        return wholeMatch;
+      }
+
+      // we copy the treated url to the text variable
+      let txt = url;
+      // finally, if it's a www shortcut, we prepend http(s)
+      // noinspection HttpUrlsUsage
+      url = isWww ? (options.httpsAutoLinks ? 'https://' : 'http://') + url : url;
+      // GFM/cmSpec: percent-encode non-ASCII characters in the href (the display text keeps
+      // the literal characters). The Showdown flavors (legacy simplifiedAutoLink) leave the
+      // href's non-ASCII characters literal, so this is gated to cmSpec to stay byte-identical
+      // to the legacy path.
+      if (options.cmSpec) {
+        // eslint-disable-next-line no-control-regex -- \x00-\x7F is the ASCII range
+        url = url.replace(/[^\x00-\x7F]+/g, function (s) { return encodeURI(s); });
+      }
+
+      // url part is done so let's take care of text now
+      // we need to escape the text (because of links such as www.example.com/foo__bar__baz)
+      txt = txt.replace(showdown.helper.regexes.asteriskDashTildeAndColon, showdown.helper.escapeCharactersCallback);
+
+      // and return the link tag, with the leadingMDChars and  suffix. The leadingMDChars are added at the end too because
+      // we consumed those characters in the regexp
+      return leadingMDChars +
+        writeAnchorTag ('autoLink', nakedUrlRegex, wholeMatch, txt, null, url) +
+        suffix +
+        leadingMDChars;
+    });
+
+    // 8.2. Check for naked mail (GFM extended email autolink).
+    let localPart = '[A-Za-z\\d._+-]+',
+        domainPart = '[A-Za-z\\d_-]+(?:\\.[A-Za-z\\d_-]+)*';
+
+    // A scheme is only recognised when it is not part of a preceding word (so `mmmmailto:`
+    // does not count) — any non-alphanumeric character (including `/`) is a valid boundary.
+    let schemeBoundary = '(^|[^A-Za-z\\d])';
+
+    // 8.2.1. `xmpp:` addresses keep their scheme and an optional `/resource`.
+    let xmppMailRegex = new RegExp(schemeBoundary + '(xmpp:)(' + localPart + '@' + domainPart + ')(\\/[A-Za-z\\d._-]*)?', 'gi');
+    text = text.replace(xmppMailRegex, function (wholeMatch, lead, scheme, addr, resource) {
+      resource = resource || '';
+      let trail = '',
+          body = resource || addr;
+      while (/[.,;:!?]$/.test(body)) {
+        trail = body.slice(-1) + trail;
+        body = body.slice(0, -1);
+      }
+      if (resource) { resource = body; } else { addr = body; }
+      if (!validMailAddr(addr)) { return wholeMatch; }
+      let target = 'xmpp:' + addr + resource;
+      return lead + writeAnchorTag ('autoLink', xmppMailRegex, wholeMatch, target, null, target) + trail;
+    });
+
+    // 8.2.2. `mailto:` addresses keep their scheme but never carry a path.
+    let mailtoRegex = new RegExp(schemeBoundary + '(mailto:)(' + localPart + '@' + domainPart + ')', 'gi');
+    text = text.replace(mailtoRegex, function (wholeMatch, lead, scheme, addr) {
+      let trail = '';
+      while (/[.,;:!?]$/.test(addr)) {
+        trail = addr.slice(-1) + trail;
+        addr = addr.slice(0, -1);
+      }
+      if (!validMailAddr(addr)) { return wholeMatch; }
+      let target = 'mailto:' + addr;
+      return lead + writeAnchorTag ('autoLink', mailtoRegex, wholeMatch, target, null, target) + trail;
+    });
+
+    // 8.2.3. Bare addresses become mailto: links. The address must be preceded by the
+    // string start or a character that cannot be part of the local-part (this also keeps
+    // us out of hash placeholders like the `¨E43E` produced for an escaped char).
+    let nakedMailRegex = new RegExp('(^|[^A-Za-z\\d._+\\-\\u00a8])(' + localPart + '@' + domainPart + ')', 'g');
+    text = text.replace(nakedMailRegex, function (wholeMatch, lead, addr) {
+      if (!validMailAddr(addr)) { return wholeMatch; }
+      const m = parseMail(addr, options);
+      return lead + writeAnchorTag ('autoLink', nakedMailRegex, wholeMatch, m.mail, null, m.url);
+    });
+  }
+  return text;
+});
+
+/**
+ * @file      makehtml/paragraphs.js
+ * @summary   Wraps blank-line-separated blocks of text in `<p>` tags and restores hashed HTML/code placeholders.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Splits on `\n{2,}`, passes non-hash grafs through `spanGamut` and re-emits hashed HTML block/span
+ * placeholders untouched. Emits one `onCapture`/`onHash` per paragraph with `regexp: null` (a legal
+ * value — paragraphs are found by split, not regex); `matches.text` is mutable and honored, and
+ * `attributes` apply to the `<p>`.
  */
 showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makehtml.paragraphs.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
+  let startEvent = showdown.Event.dispatchStart('makehtml.paragraphs.onStart', text, options, globals);
   text = startEvent.output;
 
   // Strip leading and trailing lines:
@@ -11833,18 +11007,37 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
 
   for (let i = 0; i < end; i++) {
     let str = grafs[i];
-    // if this is an HTML marker, copy it (¨R = a raw CommonMark HTML block, deferred past
-    // decodeEntities and restored later - it must not be <p>-wrapped or unhashed here)
-    if (str.search(/¨([KGR])(\d+)\1/g) >= 0) {
+    // if this is an HTML marker, copy it verbatim (do not <p>-wrap): ¨K/¨G/¨M restore below,
+    // in this pass; ¨R = a raw HTML block deferred past decodeEntities and restored later.
+    // (¨K = generated block markup; ¨M = a markdown="1"-processed HTML block.)
+    if (str.search(/¨([KGRM])(\d+)\1/g) >= 0) {
       grafsOut.push(str);
 
     // test for presence of characters to prevent empty lines being parsed
     // as paragraphs (resulting in undesired extra empty paragraphs)
     } else if (str.search(/\S/) >= 0) {
-      str = showdown.subParser('makehtml.spanGamut')(str, options, globals);
-      str = str.replace(/^([ \t]*)/g, '<p>');
-      str += '</p>';
-      grafsOut.push(str);
+      // per-paragraph capture: the graf's Markdown is the main content (`text`, mutable +
+      // honored); `attributes` are applied to the generated `<p>`. A line-based split, so
+      // regexp is null (a legal value per the event contract). A listener may override output.
+      let otp;
+      let captureStartEvent = showdown.Event.dispatchCapture('makehtml.paragraphs.onCapture', str, {
+        regexp: null,
+        matches: {
+          _wholeMatch: str,
+          text: str
+        },
+        attributes: {}
+      }, options, globals);
+      if (captureStartEvent.output && captureStartEvent.output !== '') {
+        otp = captureStartEvent.output;
+      } else {
+        let graf = showdown.subParser('makehtml.spanGamut')(captureStartEvent.matches.text, options, globals);
+        graf = graf.replace(/^([ \t]*)/g, '<p' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>');
+        graf += '</p>';
+        otp = graf;
+      }
+      let beforeHashEvent = showdown.Event.dispatchHash('makehtml.paragraphs.onHash', otp, options, globals);
+      grafsOut.push(beforeHashEvent.output);
     }
   }
 
@@ -11856,24 +11049,32 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
         codeFlag = false;
     // if this is a marker for an html block...
     let blockMatch;
-    while ((blockMatch = /¨([KG])(\d+)\1/.exec(grafsOutIt)) !== null) {
+    // Restores the three early-restore stores: ¨K (generated block markup, hashHTMLBlocks/
+    // hashBlock), ¨G (githubCodeBlock code) and ¨M (markdown="1"-processed HTML blocks, htmlBlock).
+    // ¨R (raw source blocks) is deliberately NOT restored here — it is deferred past decodeEntities
+    // and restored late in the converter so its entities stay verbatim.
+    while ((blockMatch = /¨([KGM])(\d+)\1/.exec(grafsOutIt)) !== null) {
       let delim = blockMatch[1],
           num   = blockMatch[2];
 
       if (delim === 'K') {
         blockText = globals.gHtmlBlocks[num];
+      } else if (delim === 'M') {
+        // a markdown="1"-processed HTML block; restored early here like ¨K, but from its own
+        // gHtmlMdBlocks store.
+        blockText = globals.gHtmlMdBlocks[num];
       } else {
         // we need to check if ghBlock is a false positive
         if (codeFlag) {
           // use encoded version of all text
-          blockText = showdown.subParser('makehtml.encodeCode')(globals.ghCodeBlocks[num].text, options, globals);
+          blockText = showdown.helper.encodeCode(globals.ghCodeBlocks[num].text, options, globals);
         } else {
           blockText = globals.ghCodeBlocks[num].codeblock;
         }
       }
       blockText = blockText.replace(/\$/g, '$$$$'); // Escape any dollar signs
 
-      grafsOutIt = grafsOutIt.replace(/(\n\n)?¨([KG])\d+\2(\n\n)?/, blockText);
+      grafsOutIt = grafsOutIt.replace(/(\n\n)?¨([KGM])\d+\2(\n\n)?/, blockText);
       // Check if grafsOutIt is a pre->code
       if (/^<pre\b[^>]*>\s*<code\b[^>]*>/.test(grafsOutIt)) {
         codeFlag = true;
@@ -11886,321 +11087,1155 @@ showdown.subParser('makehtml.paragraphs', function (text, options, globals) {
   text = text.replace(/^\n+/g, '');
   text = text.replace(/\n+$/g, '');
 
-  let afterEvent = new showdown.Event('makehtml.paragraphs.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.paragraphs.onEnd', text, options, globals);
   return afterEvent.output;
 });
 
 /**
- * Run extension
+ * @file      makehtml/rawHtml.js
+ * @summary   Raw inline HTML in the unified inline scan (CommonMark spec §6.6) plus the Showdown-only whole-`<a>` swallow.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Two `makehtml.inline.*` construct subparsers triggered by `<` in the single-pass inline scanner
+ * (spanGamut.js), both hashing the matched HTML to a `¨C<n>C` span placeholder so later passes leave
+ * it intact:
+ *   - `makehtml.inline.rawHtml.wholeAnchor` — Showdown flavors only: swallow a whole raw
+ *     `<a ...>...</a>` atomically so the simplifiedAutoLink post-pass cannot re-link its inner text.
+ *   - `makehtml.inline.rawHtml` — recognize a single CommonMark inline HTML tag/comment/PI/decl/CDATA.
+ *
+ * Both follow the scan-state convention — (scan, options, globals) — consuming (returning the new
+ * cursor) or declining (returning null); see entity.js for the fuller scan-convention explanation.
  */
-showdown.subParser('makehtml.runExtension', function (ext, text, options, globals) {
+
+// Showdown flavors only (see the `!cmSpec` gate inside the handler): a whole raw inline
+// `<a ...>...</a>` is consumed atomically so its inner text is never re-linked by the
+// simplifiedAutoLink naked-URL post-pass (mirrors the "hash the whole <a>" step legacy
+// link.js ran before naked links). Sticky + anchored at the scan cursor; a single
+// `[\s\S]*` (linear backtrack to the last `</a>`) keeps it ReDoS-safe. cmSpec keeps the
+// CommonMark behavior (open/close tags recognized separately, inner content parsed).
+const reWholeAnchor = /<a\s[^>]*>[\s\S]*<\/a>/y;
+
+// The inline raw-HTML recognizer, built from the shared CommonMark HTML-tag source. This read of
+// showdown.helper.regexes.cmHTMLTagSource happens at LOAD time (file-level const): cmHTMLTagSource
+// is defined in a src/helpers file (helpers/regexes.js), and helpers load before subParsers in the
+// concat ORDER, so a load-time read from a subParsers file is safe. Sticky + anchored at the scan
+// cursor so it never slices the tail of the string.
+const reRawHtml = new RegExp('(?:' + showdown.helper.regexes.cmHTMLTagSource + ')', 'y');
+
+// Productions whose content class matches newlines and which only end at a required terminator:
+// the sticky regex above scans to end-of-input before failing whenever the terminator is missing,
+// and the engine dispatches at EVERY `<`, so an opener run costs one full scan each — O(n^2)
+// (`'<!DOCTYPE x '.repeat(8000)` took ~3.2s). None of the other productions can match at these
+// prefixes (an open tag needs `<` + letter, a close tag `</`, and `-`/`[` are not letters), so
+// when the terminator is absent the whole attempt is skipped. Same reasoning as the whole-anchor
+// guard above: a production that cannot close cannot match.
+//
+// NOTE `scan.str` is the current block's text, not the document, so "no terminator ahead" is
+// scoped to this block — which is exactly the scope the match would have had.
+const rawHtmlEndings = [
+  {prefix: '<![CDATA[', memo: 'cdata',       ends: [']]>']},
+  {prefix: '<?',        memo: 'pi',          ends: ['?>']},
+  {prefix: '<!',        memo: 'declaration', ends: ['>'], letterAfter: true}
+];
+
+/**
+ * Length of the HTML comment starting at `i`, or -1 if there is none.
+ *
+ * Recognizes exactly the language of the `cmHTMLComment` production in helpers/regexes.js —
+ * including the `<!-->`/`<!--->` literals and Showdown's deliberate `--!>` terminator — but as a
+ * cursor scan, and so is used in place of that alternative. A terminator-presence guard cannot
+ * cover this production: its content loop consumes dashes in threes, so it steps over a `-->`
+ * whose preceding dash run is the wrong length and then runs on to end-of-input
+ * (`'z <!--a---> '.repeat(8000)` took ~900ms, quadratic, with a terminator present throughout).
+ *
+ * The grammar is deterministic with at most four characters of lookahead, so the walk from a
+ * given cursor is fixed. `failed` caches the cursors already known to run out of input, which is
+ * what keeps a RUN of openers linear: two walks that meet at the same cursor have the same fate,
+ * so a later opener stops as soon as it merges into an earlier failed walk. Without it each
+ * opener would still pay a full scan — the scan is linear, the run of them was not.
+ *
+ * Equivalence with the regex verified by differential fuzzing over ~36M positions.
+ *
+ * Note the dash-run parity is CommonMark's actual comment language (content may not end in `-`),
+ * verified against the reference implementation — it must be preserved exactly, not "simplified"
+ * to a lazy `[\s\S]*?` scan, which would wrongly accept `<!--a--->`.
+ */
+function scanHTMLComment (str, i, failed) {
+  'use strict';
+  let n = str.length;
+  if (str.charAt(i) !== '<' || str.charAt(i + 1) !== '!' ||
+      str.charAt(i + 2) !== '-' || str.charAt(i + 3) !== '-') { return -1; }
+  // the two literal forms have no content section at all
+  if (str.charAt(i + 4) === '>') { return 5; }
+  if (str.charAt(i + 4) === '-' && str.charAt(i + 5) === '>') { return 6; }
+
+  let j = i + 4,
+      path = [];
+  while (j < n) {
+    if (failed[j] === 1) { break; }
+    path.push(j);
+    if (str.charAt(j) !== '-') { j++; continue; }
+    if (j + 1 >= n) { break; }
+    if (str.charAt(j + 1) !== '-') { j += 2; continue; }
+    // at `--`: either a terminator, or content that consumes the pair plus what follows
+    if (j + 2 >= n) { break; }
+    let c2 = str.charAt(j + 2);
+    if (c2 === '>') { return j + 3 - i; }
+    if (c2 !== '!') { j += 3; continue; }
+    if (j + 3 >= n) { break; }
+    if (str.charAt(j + 3) === '>') { return j + 4 - i; }
+    j += 4;
+  }
+  // no terminator reachable from any cursor on this walk
+  for (let p = 0; p < path.length; ++p) { failed[path[p]] = 1; }
+  return -1;
+}
+
+/**
+ * True when the production that could start at `i` has no terminator ahead of it, so the regex
+ * attempt is guaranteed to fail. Terminator positions are found once per production per scan and
+ * memoized on `scan.memos` (fresh per scan object, and `scan.str` never changes under it).
+ */
+function cannotClose (scan, str, i) {
+  'use strict';
+  let memo = scan.memos.rawHtmlEnds || (scan.memos.rawHtmlEnds = {});
+  for (let k = 0; k < rawHtmlEndings.length; ++k) {
+    let e = rawHtmlEndings[k];
+    if (str.slice(i, i + e.prefix.length) !== e.prefix) { continue; }
+    if (e.letterAfter && !/[A-Za-z]/.test(str.charAt(i + e.prefix.length))) { continue; }
+    if (memo[e.memo] === undefined) {
+      let last = -1;
+      for (let t = 0; t < e.ends.length; ++t) {
+        last = Math.max(last, str.lastIndexOf(e.ends[t]));
+      }
+      memo[e.memo] = last;
+    }
+    return memo[e.memo] < i;
+  }
+  return false;
+}
+
+// eslint-disable-next-line no-unused-vars -- `globals` is unused here (scan.hashSpan closes over it) but kept for the makehtml.inline.* (scan, options, globals) calling convention
+showdown.subParser('makehtml.inline.rawHtml.wholeAnchor', function (scan, options, globals) {
   'use strict';
 
-  if (ext.filter) {
-    text = ext.filter(text, globals.converter, options);
-
-  } else if (ext.regex) {
-    // TODO remove this when old extension loading mechanism is deprecated
-    let re = ext.regex;
-    if (!(re instanceof RegExp)) {
-      re = new RegExp(re, 'g');
+  let str = scan.str,
+      i = scan.pos;
+  // Showdown flavors: swallow a whole raw `<a ...>...</a>` as one hashed span so the
+  // simplifiedAutoLink post-pass cannot re-link the anchor's inner text (double-link).
+  // cmSpec keeps CommonMark's per-tag recognition.
+  if (!options.cmSpec && (str.charAt(i + 1) === 'a' || str.charAt(i + 1) === 'A')) {
+    // Lazily-computed position of the LAST `</a>` (case-insensitive) in the string, memoized on
+    // scan.memos across the scan; -2 = not yet computed, -1 = none. The whole-anchor swallow below
+    // can only match when a `</a>` lies ahead of the cursor, so this guard caps its cost on
+    // `</a>`-free input (each failed regex attempt would otherwise scan to EOF -> O(n^2) on
+    // `'<a '.repeat(n)`).
+    if (scan.memos.lastAnchorClose === undefined) { scan.memos.lastAnchorClose = -2; }
+    if (scan.memos.lastAnchorClose === -2) { scan.memos.lastAnchorClose = str.toLowerCase().lastIndexOf('</a>'); }
+    if (scan.memos.lastAnchorClose > i) {
+      reWholeAnchor.lastIndex = i;
+      let a = reWholeAnchor.exec(str);
+      if (a) { scan.appendRaw(scan.hashSpan(a[0])); return i + a[0].length; }
     }
-    text = text.replace(re, ext.replace);
   }
+  // Decline: cmSpec, not an `<a`, no `</a>` ahead, or no whole-anchor match at the cursor.
+  return null;
+});
 
-  return text;
+showdown.subParser('makehtml.inline.rawHtml', function (scan, options, globals) {
+  'use strict';
+
+  // Active for every flavor (the blanket `!cmSpec` bail is gone) so inline raw-HTML
+  // recognition works under the Showdown flavors too.
+  let str = scan.str,
+      i = scan.pos;
+
+  // A comment is the one production the terminator guard cannot cover, so it gets the scanner;
+  // nothing else in the grammar can match at a `<!--` prefix, hence the unconditional return.
+  if (str.charAt(i + 2) === '-' && str.slice(i, i + 4) === '<!--') {
+    let failed = scan.memos.commentFail || (scan.memos.commentFail = new Uint8Array(str.length));
+    let len = scanHTMLComment(str, i, failed);
+    if (len === -1) { return null; }
+    scan.appendRaw(showdown.helper._hashHTMLSpan(str.substr(i, len), globals));
+    return i + len;
+  }
+  if (cannotClose(scan, str, i)) { return null; }
+
+  // `reRawHtml` is shared and sticky, so `lastIndex` is stale after the early returns above —
+  // harmless only because it is assigned here before every use.
+  reRawHtml.lastIndex = i;
+  let m = reRawHtml.exec(str);
+  if (m === null) { return null; }
+  scan.appendRaw(showdown.helper._hashHTMLSpan(m[0], globals));
+  return i + m[0].length;
 });
 
 /**
- * These are all the transformations that occur *within* block-level
- * tags like paragraphs, headers, and list items.
+ * @file      makehtml/spanGamut.js
+ * @summary   The unified inline engine (the span gamut): pipeline + single-pass CommonMark inline scan.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The inline layer for every flavor. It runs a short pipeline — `underline`, then a single-pass
+ * scan, then the Showdown-only extras (emoji, strikethrough) and the final
+ * hashing/encoding passes. The scan resolves code spans, backslash escapes, character references,
+ * autolinks, raw HTML, links, images and emphasis together on one delimiter stack, so the
+ * cross-construct precedence rules CommonMark requires — a link cannot contain a link; code spans /
+ * autolinks / raw HTML bind before links; emphasis interleaves with link brackets — are
+ * expressible. The documented vanilla/original vs CommonMark divergences are option gates inside
+ * the scan. Built on the `DelimiterStack` engine folded into this file below — the doubly-linked
+ * node list + delimiter stack + processEmphasis machinery — since the unified scan is now its sole
+ * consumer.
+ *
+ * spanGamut was previously taxonomized as an event-less dispatcher; it is now the inline engine and
+ * owns the inline-pass lifecycle, emitting the `makehtml.spanGamut` onStart/onEnd events. The
+ * links, images, code spans and emphasis/strong spans it builds emit their own `makehtml.link.*` /
+ * `makehtml.image.*` / `makehtml.codeSpan.*` / `makehtml.emphasis.*` / `makehtml.strong.*` capture
+ * families, so listener extensions behave identically across flavors.
  */
+
+/* jshint esnext: false, esversion: 9 */
+
+// ---- DelimiterStack: the engine's node-list / delimiter machinery ----------------
+//
+// The doubly-linked node list + CommonMark emphasis delimiter stack + flanking computation +
+// processEmphasis (spec §6.2). This used to be a shared `showdown.helper.DelimiterStack` when two
+// inline paths (the legacy emphasisAndStrong pass and the CommonMark cmInline pass) both drove it;
+// it was folded in here as an engine-internal constructor once the unified scan below became its
+// sole creator. Not registered on `showdown.helper`; the scan calls `new DelimiterStack()` directly.
+// The construct handlers under `makehtml.inline.*` touch a live instance through `scan.list` at call
+// time, so nothing outside this file needs to name the constructor.
+//
+// The flanking character classifiers it leans on: `isPunct`/`isWhitespace` are file-locals below
+// (this file is their only consumer); `showdown.helper.isAsciiPunct` stays in helpers/commonmark.js
+// (backslash.js also uses it) and is read at call time inside the methods.
+
+// A backslash-escaped punctuation char can reach the flanking classifier as the `¨E<code>E`
+// placeholder; the classifier must treat a side that abuts one as a word character (see pushDelim's
+// `placeholderAsWord`). Sticky so the after-side test can anchor at the scan cursor without
+// slicing the string.
+const cmEscapePlaceholder = /¨E\d+E/y;
+
+// ---- flanking character classifiers (file-local; spanGamut is their sole consumer) ----------
+// `cmAsciiPunct` is NOT redeclared here: the authoritative copy lives in helpers/commonmark.js
+// (kept there for showdown.helper.isAsciiPunct) and, because the sources concatenate into one
+// shared scope, is read directly at call time by isPunct below.
+
+/**
+ * CommonMark "punctuation": ASCII punctuation plus the Unicode P (punctuation) and
+ * S (symbol) general categories.
+ * @param {string|undefined} ch
+ * @returns {boolean}
+ */
+function isPunct (ch) {
+  return ch !== undefined && (cmAsciiPunct.test(ch) || /[\p{P}\p{S}]/u.test(ch));
+}
+
+/**
+ * CommonMark "whitespace" for the flanking rules: undefined (string edge), any JS
+ * `\s` whitespace, or any Unicode Z (separator) character.
+ * @param {string|undefined} ch
+ * @returns {boolean}
+ */
+function isWhitespace (ch) {
+  return ch === undefined || /\s/.test(ch) || /\p{Z}/u.test(ch);
+}
+
+// ---- encodeAmpsAndAngles (file-local; the span-gamut epilogue is its sole caller) -----------
+// A character-level encoding pass (not a construct): encodes stray `&`, `<`, `>`, `"` to HTML
+// entities, leaving real entity references intact. Emits no events.
+
+/**
+ * Encodes stray `&`, `<`, `>`, `"` to HTML entities (leaving real entity references intact).
+ * @param {string} text
+ * @returns {string}
+ */
+function encodeAmpsAndAngles (text) {
+  'use strict';
+
+  // Ampersand-encoding based entirely on Nat Irons's Amputator MT plugin:
+  // http://bumppo.net/projects/amputator/
+  text = text.replace(/&(?!#?[xX]?(?:[\da-fA-F]+|\w+);)/g, '&amp;');
+
+  // Encode naked <'s
+  text = text.replace(/<(?![a-z/?$!])/gi, '&lt;');
+
+  // Encode <
+  text = text.replace(/</g, '&lt;');
+
+  // Encode >
+  text = text.replace(/>/g, '&gt;');
+
+  // encode "
+  text = text.replace(/"/g, '&quot;');
+
+  return text;
+}
+
+/**
+ * A doubly-linked list of inline nodes plus the CommonMark emphasis delimiter stack.
+ * The unified inline scan builds one of these, feeds it text / delimiter runs, runs
+ * `processEmphasis`, then renders the surviving nodes.
+ * @constructor
+ */
+function DelimiterStack () {
+  this.head = null;
+  this.tail = null;
+  this.delimiters = null; // top of the emphasis delimiter stack
+}
+
+DelimiterStack.prototype = {
+
+  /**
+   * Append an already-built node to the tail of the list.
+   * @param {{}} node
+   * @returns {{}} the appended node
+   */
+  appendNode: function (node) {
+    node.prev = this.tail;
+    node.next = null;
+    node.raw = node.raw || false;
+    if (this.tail) { this.tail.next = node; } else { this.head = node; }
+    this.tail = node;
+    return node;
+  },
+
+  /**
+   * Append a text node.
+   * @param {string} literal
+   * @returns {{}}
+   */
+  appendText: function (literal) {
+    return this.appendNode({type: 'text', literal: literal});
+  },
+
+  /**
+   * Append already-final HTML that must not be escaped at render time.
+   * @param {string} html
+   * @returns {{}}
+   */
+  appendRaw: function (html) {
+    return this.appendNode({type: 'text', literal: html, raw: true});
+  },
+
+  /**
+   * Tokenize a run of `*`/`_` delimiters (`str.slice(start, i)`), compute its flanking
+   * (canOpen/canClose) and push it onto both the node list and the delimiter stack.
+   * When `resolveSentinels` is set, `$`/`¨` hidden behind the `¨D`/`¨T` sentinels are
+   * resolved before the flanking lookaround reads the adjacent characters (the scan runs
+   * after the converter's sentinel swap).
+   * @param {string} str
+   * @param {number} start index of the first delimiter char
+   * @param {number} i index just past the last delimiter char
+   * @param {string} ch the delimiter character (`*` or `_`)
+   * @param {boolean} [resolveSentinels]
+   * @param {boolean} [starRuleForUnderscore] when set, an `_` run uses the looser `*`
+   *   open/close flanking rule (Showdown intraword emphasis) instead of the CommonMark `_`
+   *   rule. The scan passes this for the Showdown flavors; the cmSpec paths never do.
+   * @param {boolean} [placeholderAsWord] when set, a side whose adjacent text is a
+   *   backslash-escape placeholder (`¨E<code>E`) is classified as a word character rather than
+   *   whitespace/punctuation, so emphasis opens/closes against an escaped delimiter the way the
+   *   legacy regex path did (e.g. `word_\_x\__` -> `word<em>_x_</em>`). The scan passes this for
+   *   the Showdown flavors; the cmSpec paths leave it unset.
+   * @returns {{}} the appended delimiter node
+   */
+  pushDelim: function (str, start, i, ch, resolveSentinels, starRuleForUnderscore, placeholderAsWord) {
+    let len = str.length,
+        run = str.slice(start, i),
+        before = (start === 0) ? undefined : str.charAt(start - 1),
+        after = (i >= len) ? undefined : str.charAt(i);
+    if (resolveSentinels) {
+      // `$` and `¨` are swapped for the two-char placeholders `¨D`/`¨T` before inline
+      // parsing (see converter.js) and only restored at the end. Resolve them here so
+      // flanking sees the real adjacent character rather than the placeholder's
+      // trailing/leading letter (e.g. the `D` of `¨D` would otherwise read as a letter).
+      if ((before === 'D' || before === 'T') && str.charAt(start - 2) === '¨') {
+        before = (before === 'D') ? '$' : '¨';
+      }
+      if (after === '¨' && (str.charAt(i + 1) === 'D' || str.charAt(i + 1) === 'T')) {
+        after = (str.charAt(i + 1) === 'D') ? '$' : '¨';
+      }
+    }
+    if (placeholderAsWord) {
+      // A backslash-escaped punctuation char (`\_`, `\*`, ...) is a literal that the legacy regex
+      // emphasis treated as an ordinary word character (it ran after the `\X` -> `¨E<code>E`
+      // escape swap and saw the placeholder's letters/digits). The scan still holds the raw `\X`
+      // at this point, so the leading `\` (before the after-side char) or the escaped char itself
+      // (on the before-side) would classify the touching side as punctuation and suppress
+      // flanking. Treat a side that abuts such an escape — or, defensively, an already-substituted
+      // `¨E<code>E` placeholder — as a word char before the whitespace/punctuation tests read it.
+      cmEscapePlaceholder.lastIndex = i;
+      if ((after === '\\' && showdown.helper.isAsciiPunct(str.charAt(i + 1))) || cmEscapePlaceholder.test(str)) {
+        after = 'a';
+      }
+      if ((showdown.helper.isAsciiPunct(before) && str.charAt(start - 2) === '\\') ||
+          (start > 0 && /¨E\d+E$/.test(str.slice(Math.max(0, start - 12), start)))) {
+        before = 'a';
+      }
+    }
+    let beforeWs = isWhitespace(before),
+        afterWs = isWhitespace(after),
+        beforePt = isPunct(before),
+        afterPt = isPunct(after),
+        leftFlanking = !afterWs && (!afterPt || beforeWs || beforePt),
+        rightFlanking = !beforeWs && (!beforePt || afterWs || afterPt),
+        canOpen, canClose;
+    if (ch === '_' && !starRuleForUnderscore) {
+      canOpen = leftFlanking && (!rightFlanking || beforePt);
+      canClose = rightFlanking && (!leftFlanking || afterPt);
+    } else {
+      // `*` always uses this rule; `_` uses it too when starRuleForUnderscore is set (the
+      // Showdown intraword-emphasis flavor gate).
+      canOpen = leftFlanking;
+      canClose = rightFlanking;
+    }
+    let node = this.appendNode({type: 'delim', cc: ch, literal: run, numdelims: run.length, origdelims: run.length, canOpen: canOpen, canClose: canClose});
+    node.delimPrev = this.delimiters;
+    node.delimNext = null;
+    if (this.delimiters) { this.delimiters.delimNext = node; }
+    this.delimiters = node;
+    return node;
+  },
+
+  /**
+   * Unlink a delimiter node from the delimiter stack (the node stays in the text list).
+   * @param {{}} d
+   */
+  removeDelimiter: function (d) {
+    if (d.delimPrev) { d.delimPrev.delimNext = d.delimNext; }
+    if (d.delimNext) { d.delimNext.delimPrev = d.delimPrev; } else { this.delimiters = d.delimPrev; }
+  },
+
+  /**
+   * Splice `newNode` into the text list immediately after `node`.
+   * @param {{}} node
+   * @param {{}} newNode
+   */
+  insertAfter: function (node, newNode) {
+    newNode.prev = node;
+    newNode.next = node.next;
+    if (node.next) { node.next.prev = newNode; } else { this.tail = newNode; }
+    node.next = newNode;
+  },
+
+  /**
+   * Drop every delimiter at or above `bottom` from the stack (after a bracket span
+   * has consumed the nodes they pointed at).
+   * @param {{}|null} bottom
+   */
+  pruneDelimiters: function (bottom) {
+    let d = this.delimiters;
+    while (d !== null && d !== bottom) {
+      let p = d.delimPrev;
+      this.removeDelimiter(d);
+      d = p;
+    }
+  },
+
+  /**
+   * Truncate the text list, dropping `node` and everything after it.
+   * @param {{}} node
+   */
+  removeFrom: function (node) {
+    this.tail = node.prev;
+    if (this.tail) { this.tail.next = null; } else { this.head = null; }
+  },
+
+  /**
+   * Concatenate the rendered output of nodes `[from .. to)`.
+   * @param {{}|null} from
+   * @param {{}|null} to
+   * @param {function({}):string} renderNode
+   * @returns {string}
+   */
+  renderRange: function (from, to, renderNode) {
+    let out = '';
+    for (let n = from; n !== null && n !== to; n = n.next) { out += renderNode(n); }
+    return out;
+  },
+
+  /**
+   * Concatenate the rendered output of the whole list.
+   * @param {function({}):string} renderNode
+   * @returns {string}
+   */
+  renderList: function (renderNode) {
+    return this.renderRange(this.head, null, renderNode);
+  },
+
+  /**
+   * The CommonMark `process_emphasis` reference algorithm (spec §6.2). Walks the
+   * delimiter stack from `stackBottom` (exclusive; `null` = the whole stack), pairing
+   * openers with closers and wrapping the enclosed nodes.
+   *
+   * The scan injects its two hooks:
+   *  - `buildWrapped(tagOpen, tagClose, opener, closer)` renders the enclosed nodes and
+   *    returns the final (usually hashed) wrapped literal — this is where the scan runs its
+   *    GFM-inline-links pass + emoji/strikethrough over the inner content.
+   *  - `rawWrap` marks the spliced-in wrap node as raw (the scan renders raw nodes verbatim).
+   * @param {{}|null} stackBottom
+   * @param {function(string, string, {}, {}):string} buildWrapped
+   * @param {boolean} [rawWrap]
+   */
+  processEmphasis: function (stackBottom, buildWrapped, rawWrap) {
+    let openersBottom = {
+      '_': [stackBottom, stackBottom, stackBottom],
+      '*': [stackBottom, stackBottom, stackBottom]
+    };
+
+    // start from the bottom-most delimiter above stackBottom
+    let closer = this.delimiters;
+    while (closer !== null && closer.delimPrev !== null && closer.delimPrev !== stackBottom) {
+      closer = closer.delimPrev;
+    }
+    if (closer === stackBottom) { closer = (stackBottom === null) ? closer : stackBottom.delimNext; }
+
+    while (closer !== null) {
+      if (!closer.canClose) { closer = closer.delimNext; continue; }
+      let opener = closer.delimPrev,
+          openerFound = false,
+          oddMatch;
+      while (opener !== null && opener !== stackBottom && opener !== openersBottom[closer.cc][closer.origdelims % 3]) {
+        oddMatch = (closer.canOpen || opener.canClose) &&
+                   (closer.origdelims % 3 !== 0) &&
+                   ((opener.origdelims + closer.origdelims) % 3 === 0);
+        if (opener.cc === closer.cc && opener.canOpen && !oddMatch) { openerFound = true; break; }
+        opener = opener.delimPrev;
+      }
+      let oldCloser = closer;
+
+      if (openerFound) {
+        let use = (opener.numdelims >= 2 && closer.numdelims >= 2) ? 2 : 1,
+            tagOpen = (use === 2) ? '<strong>' : '<em>',
+            tagClose = (use === 2) ? '</strong>' : '</em>';
+
+        // trim consumed delimiters from the opener (end) and closer (start) literals
+        opener.literal = opener.literal.slice(0, opener.literal.length - use);
+        opener.numdelims -= use;
+        closer.literal = closer.literal.slice(use);
+        closer.numdelims -= use;
+
+        let wrapped = buildWrapped(tagOpen, tagClose, opener, closer);
+
+        // remove inner nodes and their delimiters from the lists
+        let n2 = opener.next;
+        while (n2 !== null && n2 !== closer) {
+          let nx = n2.next;
+          if (n2.type === 'delim') { this.removeDelimiter(n2); }
+          n2 = nx;
+        }
+        // splice in a single text node holding the wrapped result
+        let wrapNode = {type: 'text', literal: wrapped, raw: !!rawWrap};
+        this.insertAfter(opener, wrapNode);
+        wrapNode.next = closer;
+        closer.prev = wrapNode;
+
+        if (opener.numdelims === 0) { opener.literal = ''; this.removeDelimiter(opener); }
+        if (closer.numdelims === 0) {
+          closer.literal = '';
+          let tmp = closer.delimNext;
+          this.removeDelimiter(closer);
+          closer = tmp;
+        }
+      } else {
+        openersBottom[oldCloser.cc][oldCloser.origdelims % 3] = oldCloser.delimPrev;
+        if (!oldCloser.canOpen) { this.removeDelimiter(oldCloser); }
+        closer = oldCloser.delimNext;
+      }
+    }
+  }
+};
+
+// The inline engine (the span gamut): a short pipeline wrapped around a single-pass CommonMark
+// inline scan. It owns the inline-pass lifecycle (makehtml.spanGamut onStart/onEnd) — it is no
+// longer the event-less dispatcher it once was.
 showdown.subParser('makehtml.spanGamut', function (text, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makehtml.spanGamut.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
+  // Underline (option) is scan-native: the scan hands each `_` run to the underline handler FIRST
+  // (before emphasis) so it either claims a `__`/`___` region as `<u>` — rendering the inner via a
+  // nested sub-scan — or consumes the run as inert literal text, never letting `_` reach the emphasis
+  // stack (reproducing the retired whole-text pass's "escape every remaining `_`" rule, without
+  // escaping the underscores inside protected constructs the pass used to corrupt). `*` is unaffected.
+  const underlineOn = !!options.underline;
+
+  // Scan triggers for the atomic-token recognizers (consumeEmoji / naked URL). Kept as
+  // locals so the tokenizer's hot loop only tests them when the relevant option is enabled.
+  // autoLink is `!cmSpec`-gated: under cmSpec/gfm the CommonMark flanking rules already leave
+  // URL underscores intact, so the Showdown-only recognizer is unnecessary there and skipping
+  // it keeps cmSpec output byte-identical by construction.
+  // Emoji (option) is scan-native: the scan performs the `:name:` SUBSTITUTION inline for every
+  // flavor, before link/image bracket resolution and emphasis/strikethrough pairing (so it applies
+  // inside resolving labels and spans too). Not `!cmSpec`-gated — like ellipsis/strikethrough the
+  // substitution is flavor-independent (the retired whole-text pass handled cmSpec post-scan).
+  const emojiOn = !!options.emoji,
+      autoLinkOn = !options.cmSpec && !!options.simplifiedAutoLink,
+      // Ellipsis (option) is scan-native: the scan consumes `...` -> `…` inline for every flavor,
+      // before link/image bracket resolution (so it applies inside resolving labels too). Unlike
+      // emoji/autolink this is NOT `!cmSpec`-gated — the ellipsis substitution is flavor-independent.
+      ellipsisOn = !!options.ellipsis,
+      // Strikethrough (option) is scan-native: the scan consumes `~` runs as delimiter-like nodes and
+      // a pairing pass (run AFTER emphasis resolution, see strikethrough.js) reproduces the historical
+      // whole-text regex. Not `!cmSpec`-gated — like ellipsis it is flavor-independent (strikethrough
+      // is off by default under cmSpec, but when enabled it pairs the same way, which is what lets the
+      // label-range pairing in link.js apply for every flavor).
+      strikethroughOn = !!options.strikethrough,
+      // ghMentions (option) is scan-native: the scan hands each `@` to the ghMentions handler, which
+      // links `@username` inline (before emphasis/bracket resolution) or declines to plain text. See
+      // ghMentions.js for the boundary/bracket rules. There is no post-scan mention pass any more.
+      ghMentionsOn = !!options.ghMentions;
+
+  let startEvent = showdown.Event.dispatchStart('makehtml.spanGamut.onStart', text, options, globals);
   text = startEvent.output;
 
-  if (options.cmSpec) {
-    // underline runs BEFORE cmInline (mirroring the legacy order, where underline runs
-    // before emphasisAndStrong): it claims `__`/`___` as `<u>` and escapes any remaining
-    // `_`, so cmInline doesn't consume those underscores as emphasis. cmInline then hashes
-    // the raw `<u>` tags as CommonMark raw HTML and leaves the escaped `_` placeholders be.
-    text = showdown.subParser('makehtml.underline')(text, options, globals);
+  text = parseCmInline(text);
 
-    // Unified CommonMark inline parser: code spans, backslash escapes, entities,
-    // autolinks, raw HTML, links, images and emphasis resolved together on one
-    // delimiter stack (replaces the sequential codeSpan/link/image/emphasis passes
-    // and the raw-HTML hashing below). The remaining Showdown-only extras (emoji,
-    // strikethrough, ellipsis) and the final encodeAmpsAndAngles/hardLineBreaks run
-    // after, on the non-hashed text.
-    text = showdown.subParser('makehtml.cmInline')(text, options, globals);
+  // simplifiedAutoLink (GFM extension) is applied to the serialized inline output and to emphasis
+  // inner content (see parseCmInline) so naked URLs / mail inside emphasis are linked too. Real
+  // links, images and code spans are hashed by parseCmInline, so they are protected from this
+  // regex. The pass lives in its own construct subparser (nakedUrl.js) and emits its anchors
+  // through the shared showdown.helper.* GFM anchor machinery, same as link.js. (ghMentions is now
+  // scan-native — resolved during parseCmInline — so it is no longer part of this overlay.)
+  text = applyGfmInlineLinks(text);
 
-    text = showdown.subParser('makehtml.emoji')(text, options, globals);
-    text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
-    text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
-
-    // hash the raw HTML these extras produce (e.g. strikethrough's `<del>`, image-based
-    // emoji's `<img>`) before encodeAmpsAndAngles, otherwise their `<`/`>` get escaped to
-    // `&lt;`/`&gt;`. Mirrors the legacy branch, which hashes spans before encoding.
-    text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
-
-    text = showdown.subParser('makehtml.encodeAmpsAndAngles')(text, options, globals);
-    text = showdown.subParser('makehtml.hardLineBreaks')(text, options, globals);
-
-    let cmAfterEvent = new showdown.Event('makehtml.spanGamut.onEnd', text);
-    cmAfterEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    cmAfterEvent = globals.converter.dispatch(cmAfterEvent);
-    return cmAfterEvent.output;
-  }
-
-  text = showdown.subParser('makehtml.codeSpan')(text, options, globals);
-  text = showdown.subParser('makehtml.escapeSpecialCharsWithinTagAttributes')(text, options, globals);
-  text = showdown.subParser('makehtml.encodeBackslashEscapes')(text, options, globals);
-
-  // Process link and image tags. Images must come first,
-  // because ![foo][f] looks like a link.
-  text = showdown.subParser('makehtml.image')(text, options, globals);
-  text = showdown.subParser('makehtml.link')(text, options, globals);
-
-  if (options.cmSpec) {
-    // CommonMark inline raw HTML: recognize well-formed tags/comments/PIs/
-    // declarations/CDATA and hash them now - after backslash escapes and link/image
-    // destinations are resolved, but before emphasis - so that markup characters
-    // inside a tag (e.g. `<a href="**">`) are not parsed as emphasis. Malformed
-    // `<…>` is left for encodeAmpsAndAngles to escape. Fresh regex per call (this
-    // subparser runs re-entrantly).
-    text = text.replace(new RegExp(showdown.helper.regexes.cmHTMLTagSource, 'g'), function (wm) {
-      // Backslash escapes are not processed inside raw HTML, so restore any escape
-      // placeholders that encodeBackslashEscapes produced back to literal `\<char>`.
-      wm = wm.replace(/¨E(\d+)E/g, function (m, code) {
-        return '\\' + String.fromCharCode(parseInt(code, 10));
-      });
-      return showdown.helper._hashHTMLSpan(wm, globals);
-    });
-  }
-
-  text = showdown.subParser('makehtml.emoji')(text, options, globals);
-  text = showdown.subParser('makehtml.underline')(text, options, globals);
-  text = showdown.subParser('makehtml.emphasisAndStrong')(text, options, globals);
-  text = showdown.subParser('makehtml.strikethrough')(text, options, globals);
-  text = showdown.subParser('makehtml.ellipsis')(text, options, globals);
-
-  // we need to hash HTML tags inside spans
-  text = showdown.subParser('makehtml.hashHTMLSpans')(text, options, globals);
-
-  // now we encode amps and angles
-  text = showdown.subParser('makehtml.encodeAmpsAndAngles')(text, options, globals);
-
-  text = showdown.subParser('makehtml.hardLineBreaks')(text, options, globals);
-
-  let afterEvent = new showdown.Event('makehtml.spanGamut.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-showdown.subParser('makehtml.strikethrough', function (text, options, globals) {
-  'use strict';
-  if (!options.strikethrough) {
+  function applyGfmInlineLinks (text) {
+    // Handle naked links / mail (if option is enabled)
+    text = showdown.subParser('makehtml.inline.nakedUrl.linkify')(text, options, globals);
     return text;
   }
 
-  let startEvent = new showdown.Event('makehtml.strikethrough.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.spanGamut.onEnd', text, options, globals);
+  text = afterEvent.output;
 
-  // GFM strikethrough: a run of one or two tildes, matched in length, with flanking
-  // (the run must hug non-whitespace on the inside) and rejecting runs of three or more.
-  // Group 1 captures the character before the opening run (or the string start) so it can
-  // be restored; group 3 is the struck-through content.
-  const strikethroughRegex = /(^|[^~])(~{1,2})(?=[^\s~])([\s\S]*?[^\s~])\2(?!~)/g;
-  text = text.replace(strikethroughRegex, function (wholeMatch, prefix, run, txt) {
+  // Emoji and strikethrough are scan-native now (resolved during parseCmInline — emoji is substituted
+  // inline, strikethrough by the pairing pass; see the scan-end call below), so there are no whole-text
+  // emoji / strikethrough passes here any more.
 
-    let otp;
-    let captureStartEvent = new showdown.Event('makehtml.strikethrough.onCapture', txt);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(strikethroughRegex)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        strikethrough: txt
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      otp = '<del' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' +
-            showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
-            '</del>';
+  // ---- serialized-text tail: a three-pass epilogue (F7 audit: all three live, none removable) -------
+  //
+  // 1. hashHTMLSpans — kept for the EVENT CONTRACT, not for the fixtures. Every HTML span the scan's own
+  //    constructs emit is already hashed in-scan via scan.hashSpan (link / image / codeSpan / rawHtml /
+  //    autolink, plus the extras: strikethrough's `<del>`, image-emoji's `<img>`, underline's `<u>`,
+  //    emphasis / strong), and nakedUrl.linkify hashes its anchors inside writeAnchorTag — so NO fixture
+  //    reaches here carrying raw `<tag>…</tag>` (removing this pass is byte-identical across every fixture
+  //    and both byte-identity docs). Its sole remaining feeder is LISTENER OUTPUT: a listener on
+  //    makehtml.spanGamut.onEnd (dispatched just above) may append raw HTML to `text`, which must be
+  //    hash-protected here before encodeAmpsAndAngles escapes its `<`/`>`/`&`. That event surface is not
+  //    exercised by the fixtures, so the pass stays to honor the contract.
+  text = showdown.helper.hashHTMLSpans(text, options, globals);
+
+  // 2. encodeAmpsAndAngles — live. Text nodes were already entity-escaped at render time (renderNode
+  //    runs escapeHTMLEntities on every non-raw node), so this acts on RAW-node content: the nakedUrl
+  //    scan recognizer appends a bare URL run verbatim (with a literal `&`), and when nakedUrl.linkify
+  //    declines to link it that `&` must be encoded to `&amp;` here (this also covers bare `&`/`<`/`>`
+  //    in listener output).
+  text = encodeAmpsAndAngles(text, options, globals);
+
+  // 3. hardLineBreaks (trailing pass) — live and fixture-exercised. The in-scan hardBreak handler only
+  //    emits `<br />` for `  \n` / `\\\n`; the GFM `simpleLineBreaks` option turns every remaining soft
+  //    `\n` into `<br />`, which only this trailing pass does (the simpleLineBreaks fixtures depend on it).
+  text = showdown.subParser('makehtml.hardLineBreaks')(text, options, globals);
+
+  return text;
+
+  // ---- shared character helpers ------------------------------------------------
+
+  function hashSpan (html) {
+    return showdown.helper._hashHTMLSpan(html, globals);
+  }
+
+  // resolve backslash escapes of ASCII punctuation to the literal character
+  function resolveBackslash (str) {
+    return str.replace(/\\([!-/:-@[-`{-~])/g, '$1');
+  }
+
+  // ---- main parse --------------------------------------------------------------
+
+  function parseCmInline (str) {
+    // The doubly-linked node list + emphasis delimiter stack live on the engine's DelimiterStack
+    // (folded into this file above); the bracket (link/image) stack is specific to this
+    // unified parser and lives on scan.brackets (the backtick no-closer memo lives on scan.memos).
+    let stack = new DelimiterStack();
+
+    function appendText (literal) {
+      return stack.appendText(literal);
+    }
+    // append already-final HTML that must not be escaped at render time
+    function appendRaw (html) {
+      return stack.appendRaw(html);
+    }
+    // Run a FRESH nested inline scan over `sliceStr` and return its rendered HTML. Engine
+    // primitive for constructs (e.g. underline) that resolve a syntactic region and then need
+    // its inner Markdown scanned in isolation. The nested scan gets its own node list, delimiter
+    // stack, bracket stack and memos; it runs the same scan CORE only — no pipeline extras, no
+    // GFM overlay, no lifecycle events — so it terminates (the slice is strictly shorter than the
+    // region that produced it) and stays free of the outer pass's side effects.
+    function subParse (sliceStr) {
+      return parseCmInline(sliceStr);
+    }
+    // render one node: raw nodes emit verbatim, text nodes are HTML-escaped
+    function renderNode (n) {
+      return n.raw ? n.literal : showdown.helper.escapeHTMLEntities(n.literal);
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.strikethrough.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    // restore the character that preceded the opening run
-    return prefix + beforeHashEvent.output;
-  });
+    // The scan state handed to every `makehtml.inline.*` construct subparser. These are the
+    // single-pass scanner's internals — one string, one cursor, one output node list — bundled
+    // so each construct can live in its own file (the calling convention of the
+    // `makehtml.inline.*` namespace: (scan, options, globals) instead of (text, options, globals),
+    // because a text->text pass cannot express cross-construct precedence). A construct either
+    // consumes — appends its output and returns the new cursor index — or declines by returning
+    // null, and the scanner falls through.
+    let scan = {
+      str: str,
+      pos: 0,
+      appendText: appendText,
+      appendRaw: appendRaw,
+      subParse: subParse,   // run a fresh nested inline scan over a slice, returning rendered HTML
+      hashSpan: hashSpan,   // hash a finished HTML span to a ¨C<n>C placeholder
+      list: stack,          // the output node list (constructs may inspect/adjust the tail, e.g. hard breaks trimming trailing spaces)
+      memos: {},
+      renderNodes: renderNodes,               // render nodes [from..to) via the engine's renderNode
+      processEmphasis: processEmphasis,       // resolve emphasis above a stack bottom (delimiter algorithm)
+      applyGfmInlineLinks: applyGfmInlineLinks, // the post-scan GFM overlay (naked URL/mail linkify)
+      normalizeDest: normalizeDest,           // shared link/image destination normalization (safeMode-independent part)
+      buildTitleAttr: buildTitleAttr,         // shared title attribute builder
+      brackets: null                          // head of the open [ / ![ bracket stack (link/image)
+    };
 
-  let afterEvent = new showdown.Event('makehtml.strikethrough.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
+    const len = str.length;
+    let i = 0;
+    while (i < len) {
+      let ch = str.charAt(i);
+
+      if (ch === '\n') {
+        scan.pos = i;
+        i = showdown.subParser('makehtml.inline.hardBreak')(scan, options, globals);
+        continue;
+      }
+
+      if (ch === '\\') {
+        scan.pos = i;
+        let e = showdown.subParser('makehtml.inline.backslash')(scan, options, globals);
+        if (e !== null) { i = e; continue; }
+        appendText('\\');
+        i++;
+        continue;
+      }
+
+      if (ch === '`') {
+        scan.pos = i;
+        i = showdown.subParser('makehtml.inline.codeSpan')(scan, options, globals);
+        continue;
+      }
+
+      if (ch === '<') {
+        // Ordered `<` dispatch (spec-fixed try order): the Showdown whole-`<a>` swallow first
+        // (so an anchor's inner text is never re-linked), then autolinks, then a single raw-HTML
+        // tag; on decline of all three the `<` is literal text.
+        scan.pos = i;
+        let e = showdown.subParser('makehtml.inline.rawHtml.wholeAnchor')(scan, options, globals);
+        if (e === null) { e = showdown.subParser('makehtml.inline.autolink')(scan, options, globals); }
+        if (e === null) { e = showdown.subParser('makehtml.inline.rawHtml')(scan, options, globals); }
+        if (e !== null) { i = e; continue; }
+        appendText('<');
+        i++;
+        continue;
+      }
+
+      if (ch === '&') {
+        scan.pos = i;
+        let e = showdown.subParser('makehtml.inline.entity')(scan, options, globals);
+        if (e !== null) { i = e; continue; }
+        appendText('&');
+        i++;
+        continue;
+      }
+
+      if (ch === '!' && str.charAt(i + 1) === '[') {
+        let node = appendText('![');
+        pushBracket(node, true, i + 2, i);
+        i += 2;
+        continue;
+      }
+      if (ch === '[') {
+        let node = appendText('[');
+        pushBracket(node, false, i + 1, i);
+        i++;
+        continue;
+      }
+      if (ch === ']') {
+        scan.pos = i;
+        i = showdown.subParser('makehtml.inline.link')(scan, options, globals);
+        continue;
+      }
+
+      // Underline (option): an `_` run is handed to the underline handler FIRST — it either claims a
+      // `__`/`___` region as `<u>` (rendering the inner via a nested sub-scan) or consumes the run as
+      // inert literal text, never falling through to emphasis (reproducing the retired pass's "escape
+      // every remaining `_`" rule). `*` is unaffected and always reaches the emphasis handler.
+      if (ch === '_' && underlineOn) {
+        scan.pos = i;
+        i = showdown.subParser('makehtml.inline.underline')(scan, options, globals);
+        continue;
+      }
+
+      if (ch === '*' || ch === '_') {
+        scan.pos = i;
+        i = showdown.subParser('makehtml.inline.emphasis')(scan, options, globals);
+        continue;
+      }
+
+      // Emoji shortcodes (option): substitute a known `:name:` inline (so the `_`/`*` inside an
+      // emoji name, e.g. `:couplekiss_man_woman:`, never become emphasis delimiters). Because this
+      // resolves before bracket/emphasis/strikethrough pairing, emoji inside resolving labels and
+      // spans is substituted too. `:name:` inside a code span is already protected (backticks are
+      // consumed above before we reach here).
+      if (emojiOn && ch === ':') {
+        scan.pos = i;
+        let e = showdown.subParser('makehtml.inline.emoji')(scan, options, globals);
+        if (e !== null) { i = e; continue; }
+      }
+
+      // Ellipsis (option): consume a literal `...` at the cursor as the ellipsis character `…`
+      // (or a listener's output) before the plain-text run swallows the dots.
+      if (ellipsisOn && ch === '.') {
+        scan.pos = i;
+        let e = showdown.subParser('makehtml.inline.ellipsis')(scan, options, globals);
+        if (e !== null) { i = e; continue; }
+      }
+
+      // Strikethrough (option, staged): consume the whole `~` run at the cursor as a delimiter-like
+      // node (always consumes, never declines — like the `*`/`_` emphasis handler); the pairing pass
+      // resolves runs into `<del>` after emphasis, at scan end and in link.js's label resolution.
+      if (strikethroughOn && ch === '~') {
+        scan.pos = i;
+        i = showdown.subParser('makehtml.inline.strikethrough')(scan, options, globals);
+        continue;
+      }
+
+      // ghMentions (option): resolve an `@username` mention at the cursor. The handler applies the
+      // boundary rule (fragment start / whitespace / pending emphasis delimiter, and never inside an
+      // open bracket) and declines otherwise, falling through to plain text.
+      if (ghMentionsOn && ch === '@') {
+        scan.pos = i;
+        let e = showdown.subParser('makehtml.inline.ghMentions')(scan, options, globals);
+        if (e !== null) { i = e; continue; }
+      }
+
+      // Naked URLs (simplifiedAutoLink option): consume the URL body as one atomic text node
+      // so `_`/`*` inside it (e.g. `http://foo.com/a_b` or `.../#**x**`) never become emphasis
+      // delimiters and no emphasis hash placeholder can be spliced into the href. The
+      // simplifiedAutoLink post-pass then builds the anchor from the intact URL text. Trailing
+      // emphasis markers are left for the scanner so `__https://x__` still emphasizes.
+      if (autoLinkOn && (ch === 'h' || ch === 'H' || ch === 'w' || ch === 'W' || ch === 'f' || ch === 'F')) {
+        scan.pos = i;
+        let e = showdown.subParser('makehtml.inline.nakedUrl')(scan, options, globals);
+        if (e !== null) { i = e; continue; }
+      }
+
+      // plain text run up to the next significant char (or a scan trigger for the option-gated
+      // emoji / naked-URL recognizers above, so a trigger in mid-run hands control back).
+      let start = i;
+      while (i < len) {
+        let c = str.charAt(i);
+        if ('\n\\`<&![]*_'.indexOf(c) !== -1) { break; }
+        if (i > start) {
+          if (emojiOn && c === ':') { break; }
+          if (ellipsisOn && c === '.') { break; }
+          if (strikethroughOn && c === '~') { break; }
+          if (ghMentionsOn && c === '@') { break; }
+          if (autoLinkOn && (c === 'h' || c === 'H' || c === 'w' || c === 'W' || c === 'f' || c === 'F')) { break; }
+        }
+        ++i;
+      }
+      if (i === start) {
+        appendText(str.charAt(i)); i++;
+      } else {
+        appendText(str.slice(start, i));
+      }
+    }
+
+    processEmphasis(null);
+
+    // Strikethrough pairing (place a): resolve the surviving top-level tilde-run nodes into `<del>`
+    // AFTER emphasis, mirroring the whole-text pass that ran on the serialized output. applyGfm is
+    // true here — a top-level `<del>` is finalized like an emphasis span (the GFM overlay had already
+    // run on the serialized text before the strikethrough pass wrapped it). Emoji is scan-native,
+    // already substituted inline, so there is no applyEmoji arg.
+    if (strikethroughOn) {
+      showdown.subParser('makehtml.inline.strikethrough.pair')(scan, options, globals, stack.head, null, true);
+    }
+
+    // render the node list
+    return stack.renderList(renderNode);
+
+    // ---- bracket stack ---------------------------------------------------------
+
+    function pushBracket (node, image, sourceStart, matchStart) {
+      scan.brackets = {
+        node: node,
+        prev: scan.brackets,
+        prevDelim: stack.delimiters,
+        image: image,
+        active: true,
+        matchStart: matchStart, // index in `str` of the opening `[` / `![`
+        sourceStart: sourceStart // index in `str` where the label text begins
+      };
+    }
+
+    // ---- rendering helpers -----------------------------------------------------
+
+    // concatenate the rendered HTML of nodes [from .. to)
+    function renderNodes (from, to) {
+      return stack.renderRange(from, to, renderNode);
+    }
+
+    function normalizeDest (dest) {
+      dest = resolveBackslash(dest);
+      dest = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, dest);
+      return showdown.helper.cmNormalizeURL(dest);
+    }
+    function buildTitleAttr (attributes, title) {
+      if (title !== null && title !== undefined) {
+        attributes.title = showdown.helper.cmEscapeTitle(resolveBackslash(title));
+      }
+    }
+
+    // ---- emphasis (CommonMark reference algorithm) -----------------------------
+    // Runs on the shared delimiter-stack engine. This path differs from
+    // emphasisAndStrong's only in how the wrapped span is rendered: the inner nodes are
+    // HTML-escaped, the GFM-inline-links pass + emoji/strikethrough run on them
+    // (because the wrapped span is hashed below, the span-gamut extras never see it), and
+    // the wrap node is raw.
+
+    function processEmphasis (stackBottom) {
+      stack.processEmphasis(stackBottom, function (tagOpen, tagClose, opener, closer) {
+        return showdown.subParser('makehtml.inline.emphasis.build')(scan, options, globals, tagOpen, tagClose, opener, closer);
+      }, true);
+    }
+  }
 });
 
 /**
- * Strips link definitions from text, stores the URLs and titles in
- * hash references.
- * Link defs are in the form: ^[id]: url "optional title"
+ * @file      makehtml/strikethrough.js
+ * @summary   Converts GFM `~`/`~~` strikethrough runs into `<del>`, gated by `strikethrough`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Scan-native: strikethrough is recognized directly by the single-pass inline scan in spanGamut.js —
+ * there is no whole-text pass form any more, and the onStart/onEnd lifecycle is retired per the
+ * event-contract amendment (the inline-pass lifecycle belongs to spanGamut, which owns
+ * `makehtml.spanGamut.onStart/onEnd`). The construct emits only capture/hash per resolved run
+ * (`makehtml.strikethrough.onCapture` / `.onHash`).
+ *
+ * Two registrations:
+ *   - `makehtml.inline.strikethrough` — the `~` scan handler that consumes a tilde run into a
+ *     delimiter-like node on the scan's node list;
+ *   - `makehtml.inline.strikethrough.pair` — the pairing pass that reproduces the historical
+ *     whole-text regex on the SURVIVING tilde-run nodes, run AFTER emphasis resolution so emphasis
+ *     wins a crossed `~`/`*` boundary exactly as the serialized pass did (the tildes swallowed inside
+ *     a resolved emphasis span are no longer on the list). Because the scan resolves runs before
+ *     link/image bracket resolution, strikethrough now applies inside resolving link/image labels for
+ *     every flavor (the former cmSpec literal-label behavior was a pipeline artifact of running after
+ *     link hashing, not a rule).
+ */
+
+// The `~` scan handler for the unified inline scanner in spanGamut.js (scan-state convention — see
+// entity.js). It consumes the whole tilde run at scan.pos and appends it as a DELIMITER-LIKE node
+// (`tilde: true`, `tlen`) on the node list, returning the new cursor. It never declines: like the
+// `*`/`_` emphasis handler, a tilde run is always consumed, to be paired (or left literal) later by
+// the pairing pass below. The node renders as its literal tildes when it stays unpaired.
+// eslint-disable-next-line no-unused-vars -- `options`/`globals` unused but kept for the makehtml.inline.* (scan, options, globals) convention
+showdown.subParser('makehtml.inline.strikethrough', function (scan, options, globals) {
+  'use strict';
+  let str = scan.str,
+      len = str.length,
+      start = scan.pos,
+      i = start;
+  while (i < len && str.charAt(i) === '~') { ++i; }
+  scan.list.appendNode({type: 'text', literal: str.slice(start, i), tilde: true, tlen: i - start});
+  return i;
+});
+
+// The pairing pass for the scan-native strikethrough (aux-builder convention, signature
+// (scan, options, globals, fromNode, toNode, applyGfm)). NOT dispatched by the scanner's
+// character loop — it is invoked AFTER emphasis resolution at the three places the retired serialized
+// pass's effects were visible: (a) at scan end, on the whole list (spanGamut.js); (b) inside a
+// resolving emphasis span, on its inner node range (emphasis.js's build, so `**~~x~~**` still
+// strikes); and (c) in link.js's close-bracket resolution, scoped to the resolving label's node
+// range (so a label strikes for every flavor). Because it runs after processEmphasis, a tilde run
+// swallowed by an emphasis span is no longer in the list and is skipped at scan end — so a crossed
+// `~`/`*` boundary lets emphasis win, exactly like the serialized regex (which never saw the tildes
+// hashed inside a resolved emphasis span).
+//
+// It reproduces the historical whole-text strikethrough regex on the surviving tilde-run nodes in
+// [fromNode, toNode): walk them left to right; an opener is a run of length 1 or 2 whose following
+// content starts non-space-non-tilde; its closer is the NEAREST later surviving run of the SAME
+// length whose preceding content ends non-space-non-tilde (lazy leftmost, like the /g regex —
+// after a pair, scanning continues past the closer). The `(^|[^~])` / `\2(?!~)` guards are inherent
+// (a tilde node consumes the whole run, so runs are never adjacent). Runs of 3+ tildes are neither
+// opener nor closer (length never matches 1/2) and render literal. Adjacency reads the neighbor
+// NODES' edge char (a hashed placeholder reads as `¨`/alnum, i.e. non-space-non-tilde, matching how
+// the regex saw placeholder chars; see the raw-literal note on `flank` below). On a pair the inner
+// nodes are rendered, the same capture/hash event flow the old pass used runs, and the consumed range
+// is spliced to one raw node holding scan.hashSpan of the `<del>`. When `applyGfm` is set, buildDel
+// also links `@mentions` in the resolved inner via the `makehtml.inline.ghMentions.linkify` helper
+// (see ghMentions.js) — a `<del>` is resolved from `tilde` nodes, so the scan's mention boundary
+// never fired inside it, and this restores `~~@user~~` -> `<del><a>@user</a></del>`.
+showdown.subParser('makehtml.inline.strikethrough.pair', function (scan, options, globals, fromNode, toNode, applyGfm) {
+  'use strict';
+
+  // the regex's `[^\s~]` inner-flank test. The neighbor NODES are never tilde runs (a tilde run
+  // node consumes the whole run, so runs are never adjacent) and text nodes never contain `~` (the
+  // scan breaks its plain-text runs at `~`), so a raw-literal edge char decides flanking exactly as
+  // the escaped serialized form the regex saw would (HTML-escaping neither adds nor removes edge
+  // whitespace, and preserves non-space-ness), without paying for a render per lookup.
+  function flank (ch) { return ch !== '' && ch !== '~' && !/\s/.test(ch); }
+  function edgeChar (n, atEnd) {
+    let l = n.literal;
+    return (l && l.length) ? l.charAt(atEnd ? l.length - 1 : 0) : '';
+  }
+
+  // Single forward pass over the range: collect the tilde-run nodes and, for each, the flanking
+  // chars of its surviving neighbors — `before` (last non-empty edge char to its left, for the
+  // closer test) and `after` (first non-empty edge char to its right, for the opener test). These
+  // read the ORIGINAL adjacent content; a later del splice only rewires boundary pointers, never a
+  // content node's literal, so the precomputed chars stay valid through pairing (which lets the
+  // resolution stay linear instead of re-deriving adjacency per candidate).
+  let nodes = [];
+  for (let n = fromNode; n !== null && n !== toNode; n = n.next) { nodes.push(n); }
+  let tnodes = [];
+  let prevChar = '';
+  for (let p = 0; p < nodes.length; p++) {
+    let n = nodes[p];
+    if (n.tilde) { tnodes.push({node: n, tlen: n.tlen, before: prevChar, after: ''}); }
+    let e = edgeChar(n, true);
+    if (e !== '') { prevChar = e; }
+  }
+  let k = tnodes.length;
+  if (k < 2) { return; }
+  // fill `after` with a backward sweep over the same nodes
+  let nextChar = '', ti = k - 1;
+  for (let p = nodes.length - 1; p >= 0 && ti >= 0; p--) {
+    let n = nodes[p];
+    if (n === tnodes[ti].node) { tnodes[ti].after = nextChar; ti--; }
+    let e = edgeChar(n, false);
+    if (e !== '') { nextChar = e; }
+  }
+
+  // Nearest same-length valid closer at or after each index, per run length (1 and 2). A valid
+  // closer is a length-1/2 run whose preceding content ends non-space-non-tilde.
+  let nc1 = new Array(k + 1), nc2 = new Array(k + 1);
+  nc1[k] = -1; nc2[k] = -1;
+  for (let p = k - 1; p >= 0; p--) {
+    let t = tnodes[p], closes = flank(t.before);
+    nc1[p] = (closes && t.tlen === 1) ? p : nc1[p + 1];
+    nc2[p] = (closes && t.tlen === 2) ? p : nc2[p + 1];
+  }
+
+  // Lazy leftmost pairing: for each valid opener take the nearest same-length valid closer after it,
+  // then continue past the closer (mirroring the /g regex). Runs of 3+ are neither opener nor closer.
+  let i = 0;
+  while (i < k) {
+    let op = tnodes[i];
+    if ((op.tlen === 1 || op.tlen === 2) && flank(op.after)) {
+      let j = (op.tlen === 1) ? nc1[i + 1] : nc2[i + 1];
+      if (j !== -1) { buildDel(op.node, tnodes[j].node); i = j + 1; continue; }
+    }
+    i++;
+  }
+
+  function buildDel (opener, closer) {
+    let inner = scan.renderNodes(opener.next, closer);
+    // Mirror where the serialized pass ran relative to the GFM overlay: it had already run on the
+    // text by the time the strikethrough pass wrapped it. Since this <del> is hashed below (hidden
+    // from that later pass), re-apply it on the inner here — gated to the caller's context (a <del>
+    // inside a link must not linkify). ghMentions is scan-native now, but a `<del>` is resolved from
+    // `tilde` nodes at pairing time, so the scan's `delim`-keyed boundary never linked mentions inside
+    // it (unlike emphasis/underline, which link their inner during the scan); link them here on the
+    // resolved inner via the ghMentions inner-content helper, so `~~@user~~` -> `<del><a>@user</a></del>`
+    // exactly as before. Order matches the historic overlay (ghMentions then naked URL/mail). Emoji is
+    // scan-native: `:name:` inside the tilde run was substituted inline before this pairing pass
+    // rendered the inner nodes, so it needs no re-apply here. hardLineBreaks always applies (below,
+    // via the capture flow).
+    if (applyGfm) {
+      inner = showdown.subParser('makehtml.inline.ghMentions.linkify')(inner, options, globals);
+      inner = scan.applyGfmInlineLinks(inner);
+    }
+
+    let marker = '~'.repeat(opener.tlen),
+        wholeMatch = marker + inner + marker,
+        otp;
+    let capture = showdown.Event.dispatchCapture('makehtml.strikethrough.onCapture', inner, {
+      regexp: null,
+      matches: {_wholeMatch: wholeMatch, text: inner},
+      attributes: {}
+    }, options, globals);
+    if (capture.output && capture.output !== '') {
+      otp = capture.output;
+    } else {
+      otp = '<del' + showdown.helper._populateAttributes(capture.attributes) + '>' +
+            showdown.subParser('makehtml.hardLineBreaks')(capture.matches.text, options, globals) +
+            '</del>';
+    }
+    let hash = showdown.Event.dispatchHash('makehtml.strikethrough.onHash', otp, options, globals);
+    let hashed = scan.hashSpan(hash.output);
+
+    // splice [opener .. closer] -> one raw node holding the hashed <del> (drop inner delimiters
+    // from the stack, mirroring processEmphasis's inner cleanup)
+    for (let n = opener.next; n !== null && n !== closer; n = n.next) {
+      if (n.type === 'delim') { scan.list.removeDelimiter(n); }
+    }
+    let wrapNode = {type: 'text', literal: hashed, raw: true, prev: opener.prev, next: closer.next};
+    if (opener.prev) { opener.prev.next = wrapNode; } else { scan.list.head = wrapNode; }
+    if (closer.next) { closer.next.prev = wrapNode; } else { scan.list.tail = wrapNode; }
+  }
+});
+
+/**
+ * @file      makehtml/stripLinkDefinitions.js
+ * @summary   Removes `[id]: url "title"` link-reference definitions and stores them (with optional dimensions) in `globals`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * One line-reference-definition scanner for every flavor (the CommonMark block scanner). Case-folds
+ * link ids, supports multi-line and base64 data-URL destinations and `=WxH` dimensions. The only
+ * flavor divergence is documented and gated: entity references in the URL and title are decoded only
+ * when `decodeEntities` is on (the `commonmark`/`gfm` presets); everything else — label normalization,
+ * percent-encoding, title escaping, first-definition-wins and no-paragraph-interruption — follows
+ * CommonMark for all flavors (spec-silent → CommonMark). A definition renders no inline content, so
+ * its capture events carry no `text` key — only descriptive fields (`linkId`, `url`, `title`, `width`,
+ * `height`). Emits the `makehtml.stripLinkDefinitions.*` event family.
  */
 showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, globals) {
   'use strict';
 
-  const regex     = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?([^>\s]+)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n+|(?=¨0))/gm,
-      base64Regex = /^ {0,3}\[([^\]]+)]:[ \t]*\n?[ \t]*<?(data:.+?\/.+?;base64,[A-Za-z\d+/=\n]+?)>?(?: =([*\d]+[A-Za-z%]{0,4})x([*\d]+[A-Za-z%]{0,4}))?[ \t]*\n?[ \t]*(?:(\n*)["|'(](.+?)["|')][ \t]*)?(?:\n\n|(?=¨0)|(?=\n\[))/gm;
-
-  let startEvent = new showdown.Event('makehtml.stripLinkDefinitions.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
+  let startEvent = showdown.Event.dispatchStart('makehtml.stripLinkDefinitions.onStart', text, options, globals);
   text = startEvent.output;
 
   // attacklab: sentinel workarounds for lack of \A and \Z, safari\khtml bug
   text += '¨0';
 
-  let replaceFunc = function (wholeMatch, linkId, url, width, height, blankLines, title) {
-
-    // Link IDs are case-insensitive
-    linkId = showdown.helper.caseFold(linkId);
-
-    let captureStartEvent = new showdown.Event('makehtml.stripLinkDefinitions.onCapture', wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(regex)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        linkId: linkId,
-        url: url,
-        width: width,
-        height: height,
-        blankLines: blankLines,
-        title: title
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-
-    let otp;
-    // if something was passed as output, it takes precedence and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      // a listener may have normalized the captured groups
-      linkId     = captureStartEvent.matches.linkId;
-      url        = captureStartEvent.matches.url;
-      width      = captureStartEvent.matches.width;
-      height     = captureStartEvent.matches.height;
-      blankLines = captureStartEvent.matches.blankLines;
-      title      = captureStartEvent.matches.title;
-
-      if (url.match(/^data:.+?\/.+?;base64,/)) {
-        // remove newlines
-        globals.gUrls[linkId] = url.replace(/\s/g, '');
-      } else {
-        url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
-
-        globals.gUrls[linkId] = showdown.subParser('makehtml.encodeAmpsAndAngles')(url, options, globals);
-      }
-
-      if (blankLines) {
-        // Oops, found blank lines, so it's not a title.
-        // Put back the parenthetical statement we stole.
-        otp = blankLines + title;
-
-      } else {
-        if (title) {
-          globals.gTitles[linkId] = title.replace(/["']/g, '&quot;');
-        }
-        if (options.parseImgDimensions && width && height) {
-          globals.gDimensions[linkId] = {
-            width:  width,
-            height: height
-          };
-        }
-        // Completely remove the definition from the text
-        otp = '';
-      }
-    }
-
-    let beforeHashEvent = new showdown.Event('makehtml.stripLinkDefinitions.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    return beforeHashEvent.output;
-  };
-
-  if (options.cmSpec) {
-    text = parseCmLinkDefinitions(text);
-  } else {
-    // first we try to find base64 link references
-    text = text.replace(base64Regex, replaceFunc);
-
-    text = text.replace(regex, replaceFunc);
-  }
+  text = parseCmLinkDefinitions(text);
 
   // attacklab: strip sentinel
   text = text.replace(/¨0/, '');
 
-  let afterEvent = new showdown.Event('makehtml.stripLinkDefinitions.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.stripLinkDefinitions.onEnd', text, options, globals);
   return afterEvent.output;
 
   /**
    * CommonMark link reference definition parsing. Scans block by block: a
    * definition may appear at the start of the document, after a blank line, or
    * immediately after another definition. Supports multi-line definitions,
-   * `<...>` (and empty `<>`) destinations, multi-line titles, backslash escapes
-   * and first-definition-wins for duplicate labels.
+   * `<...>` (and empty `<>`) destinations, multi-line (base64) destinations,
+   * multi-line titles, backslash escapes and first-definition-wins for duplicate
+   * labels.
    * @param {string} str text with the trailing `¨0` sentinel
    * @returns {string}
    */
@@ -12213,7 +12248,9 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
       if (atBlockStart) {
         let def = tryParseCmDefinition(str, i);
         if (def) {
-          commitDefinition(def);
+          // a listener may override the (normally empty) rendered output; otherwise the
+          // definition is stored and removed from the text
+          out += commitDefinition(def);
           i = def.end;
           atBlockStart = true; // consecutive definitions are allowed
           continue;
@@ -12240,40 +12277,56 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
 
   /**
    * Store a parsed definition, honoring first-definition-wins, and dispatch the
-   * capture event so listener extensions still observe link-definition captures.
-   * @param {{linkId: string, url: string, title: (string|null), wholeMatch: string}} def
+   * capture/hash lifecycle so listener extensions still observe (and may override)
+   * link-definition captures. Returns the rendered output — normally the empty
+   * string (a definition is stored, not emitted), or a listener-provided override.
+   * @param {{linkId: string, url: string, title: (string|null), width: (string|null), height: (string|null), wholeMatch: string}} def
+   * @returns {string}
    */
   function commitDefinition (def) {
-    let captureStartEvent = new showdown.Event('makehtml.stripLinkDefinitions.onCapture', def.wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(null)
-      .setMatches({
+    let captureEvent = showdown.Event.dispatchCapture('makehtml.stripLinkDefinitions.onCapture', def.wholeMatch, {
+      regexp: null,
+      matches: {
         _wholeMatch: def.wholeMatch,
         linkId: def.linkId,
         url: def.url,
-        title: def.title
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-    let linkId = captureStartEvent.matches.linkId,
-        url = captureStartEvent.matches.url,
-        title = captureStartEvent.matches.title;
+        title: def.title,
+        width: def.width,
+        height: def.height
+      },
+      attributes: {}
+    }, options, globals);
 
-    // first definition wins
-    if (showdown.helper.isUndefined(globals.gUrls[linkId])) {
-      globals.gUrls[linkId] = url;
-      if (title !== null && !showdown.helper.isUndefined(title)) {
-        globals.gTitles[linkId] = title;
+    let otp;
+    // if a listener passed output, it takes precedence and is emitted verbatim
+    if (captureEvent.output && captureEvent.output !== '') {
+      otp = captureEvent.output;
+    } else {
+      // a listener may have normalized the captured groups
+      let linkId = captureEvent.matches.linkId,
+          url    = captureEvent.matches.url,
+          title  = captureEvent.matches.title,
+          width  = captureEvent.matches.width,
+          height = captureEvent.matches.height;
+
+      // first definition wins
+      if (showdown.helper.isUndefined(globals.gUrls[linkId])) {
+        globals.gUrls[linkId] = url;
+        if (title !== null && !showdown.helper.isUndefined(title)) {
+          globals.gTitles[linkId] = title;
+        }
+        // parseImgDimensions: store reference-style dimensions (consumed by the image
+        // builder). The `=WxH` grammar is always parsed, but only stored when the option is on.
+        if (options.parseImgDimensions && width && height) {
+          globals.gDimensions[linkId] = { width: width, height: height };
+        }
       }
-      // parseImgDimensions: store reference-style dimensions (gating copied from the
-      // legacy stripLinkDefinitions replaceFunc); consumed by cmInline's image builder
-      if (options.parseImgDimensions && def.width && def.height) {
-        globals.gDimensions[linkId] = { width: def.width, height: def.height };
-      }
+      // a definition is stored, never rendered inline
+      otp = '';
     }
+
+    let hashEvent = showdown.Event.dispatchHash('makehtml.stripLinkDefinitions.onHash', otp, options, globals);
+    return hashEvent.output;
   }
 
   /**
@@ -12282,7 +12335,7 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
    * past the consumed text) or `null` if there is no definition here.
    * @param {string} str
    * @param {number} start
-   * @returns {{linkId: string, url: string, title: (string|null), wholeMatch: string, end: number}|null}
+   * @returns {{linkId: string, url: string, title: (string|null), width: (string|null), height: (string|null), wholeMatch: string, end: number}|null}
    */
   function tryParseCmDefinition (str, start) {
     let n = str.length,
@@ -12322,10 +12375,25 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
     let afterDest = dest.end,
         url = dest.url;
 
+    // Multi-line base64 data URLs (issue #429): a bare `data:...;base64,` destination may
+    // wrap across several lines. cmScanDestination stops at the first newline, so fold in
+    // the following pure-base64 continuation lines (kept for all flavors). The trailing
+    // `.replace(/\s/g, '')` below strips any residual whitespace.
+    if (!dest.angle && /^data:[^/]+\/[^;]+;base64,[A-Za-z\d+/=]*$/.test(url)) {
+      while (str.charAt(afterDest) === '\n') {
+        let lineEnd = str.indexOf('\n', afterDest + 1);
+        if (lineEnd === -1) { lineEnd = n; }
+        let contLine = str.slice(afterDest + 1, lineEnd);
+        if (!/^[A-Za-z\d+/=]+$/.test(contLine)) { break; }
+        url += contLine;
+        afterDest = lineEnd;
+      }
+    }
+
     // parseImgDimensions (Showdown extension, not CommonMark): an optional ` =WxH`
     // between the destination and the title. Always consumed here; only stored as
-    // dimensions when the option is on (see commitDefinition). Regex fragment copied
-    // from the inline image regex in image.js.
+    // dimensions when the option is on (see commitDefinition). Regex fragment mirrors
+    // the inline image regex in image.js.
     let width = null, height = null;
     let dimPos = afterDest;
     while (dimPos < n && /[ \t]/.test(str.charAt(dimPos))) { dimPos++; }
@@ -12369,12 +12437,13 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
     let linkId = showdown.helper.cmNormalizeLabel(label);
     if (linkId === '') { return null; }
 
-    if (url.match(/^data:.+?\/.+?;base64,/)) {
+    if (url.match(/^data:[^/]+\/[^;]+;base64,/)) {
       url = url.replace(/\s/g, '');
     } else {
-      url = showdown.helper.cmNormalizeURL(showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url));
+      url = showdown.helper.applyBaseUrl(options.relativePathBaseUrl, url);
+      url = normalizeDefinitionURL(url);
     }
-    if (title !== null) { title = showdown.helper.cmEscapeTitle(title); }
+    if (title !== null) { title = escapeDefinitionTitle(title); }
 
     return {
       linkId: linkId,
@@ -12386,7 +12455,59 @@ showdown.subParser('makehtml.stripLinkDefinitions', function (text, options, glo
       end: end
     };
   }
+
+  /**
+   * Normalize a link-definition destination. Percent-encoding, backslash-escape
+   * resolution and residual-`&` guarding are CommonMark behavior for every flavor
+   * (spec-silent → CommonMark); decoding character references is the one documented
+   * divergence, gated on `decodeEntities` (on in the `commonmark`/`gfm` presets).
+   * @param {string} url the destination with `relativePathBaseUrl` already applied
+   * @returns {string}
+   */
+  function normalizeDefinitionURL (url) {
+    if (options.decodeEntities) {
+      return showdown.helper.cmNormalizeURL(url);
+    }
+    // cmNormalizeURL without step 3 (the entity-decode): restore backslash-escape
+    // placeholders, resolve raw backslash escapes, percent-encode, guard bare `&`.
+    url = showdown.helper.unescapePlaceholders(url);
+    url = url.replace(/\\([!-/:-@[-`{-~])/g, '$1');
+    url = showdown.helper.cmEncodeURI(url);
+    return url.replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;');
+  }
+
+  /**
+   * Escape a link-definition title for use in a `title="..."` attribute. Guarding
+   * the residual `&` and escaping `<`, `>`, `"` is CommonMark behavior for every
+   * flavor; decoding character references is gated on `decodeEntities`.
+   * @param {string} title
+   * @returns {string}
+   */
+  function escapeDefinitionTitle (title) {
+    if (options.decodeEntities) {
+      return showdown.helper.cmEscapeTitle(title);
+    }
+    // cmEscapeTitle without the entity-decode step
+    return title
+      .replace(/&(?![a-zA-Z#0-9]+;)/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
 });
+
+/**
+ * @file      makehtml/table.js
+ * @summary   Converts GFM pipe tables into `<table>`, gated by `tables`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Recognizes header + delimiter + body rows, breaking the table at the first line that starts
+ * another block construct (returning the tail for reprocessing) and handling alignment and escaped
+ * pipes. The header regex is written to avoid quadratic backtracking (ReDoS). Emits `makehtml.table.*`
+ * plus `.header`/`.cell` captures.
+ */
 
 showdown.subParser('makehtml.table', function (text, options, globals) {
   'use strict';
@@ -12398,12 +12519,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
   //
   // parser starts here
   //
-  let startEvent = new showdown.Event('makehtml.table.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
+  let startEvent = showdown.Event.dispatchStart('makehtml.table.onStart', text, options, globals);
   text = startEvent.output;
 
   // GFM §4.10: a table is broken at the first line that begins another
@@ -12436,12 +12552,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
     return parse(singeColTblRgx, table);
   });
 
-  let afterEvent = new showdown.Event('makehtml.table.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.table.onEnd', text, options, globals);
   return afterEvent.output;
 
 
@@ -12486,25 +12597,21 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
     let cells = tab.rawCells;
 
     let otp;
-    let captureStartEvent = new showdown.Event('makehtml.table.onCapture', wholeMatch);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
+    let captureStartEvent = showdown.Event.dispatchCapture('makehtml.table.onCapture', wholeMatch, {
+      regexp: pattern,
+      matches: {
         _wholeMatch: wholeMatch,
-        table: wholeMatch
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+        text: wholeMatch
+      },
+      attributes: {}
+    }, options, globals);
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       // user provided an otp, so we use it
       otp = captureStartEvent.output;
     } else {
-      // user changed matches.table, so we need to generate headers, styles, and cells again
-      if (captureStartEvent.matches.table !== wholeMatch) {
-        tab = preParse(captureStartEvent.matches.table);
+      // user changed matches.text, so we need to generate headers, styles, and cells again
+      if (captureStartEvent.matches.text !== wholeMatch) {
+        tab = preParse(captureStartEvent.matches.text);
         // user passed a malformed table, so we bail
         if (!tab) {
           return wholeMatch;
@@ -12518,12 +12625,7 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
       otp = buildTableOtp(parsedTab.headers, parsedTab.cells, attributes);
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.table.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.table.onHash', otp, options, globals);
     otp = beforeHashEvent.output;
     return otp;
   }
@@ -12627,30 +12729,21 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
 
     for (let i = 0; i < colCount; ++i) {
       let header;
-      let captureStartEvent = new showdown.Event('makehtml.table.header.onCapture', rawHeaders[i]);
-      captureStartEvent
-        .setOutput(null)
-        ._setGlobals(globals)
-        ._setOptions(options)
-        .setRegexp(null)
-        .setMatches({
+      let captureStartEvent = showdown.Event.dispatchCapture('makehtml.table.header.onCapture', rawHeaders[i], {
+        regexp: null,
+        matches: {
           _wholeMatch: rawHeaders[i],
-          header: rawHeaders[i]
-        })
-        .setAttributes(styles[i]);
-      captureStartEvent = globals.converter.dispatch(captureStartEvent);
+          text: rawHeaders[i]
+        },
+        attributes: styles[i]
+      }, options, globals);
       if (captureStartEvent.output && captureStartEvent.output !== '') {
         // user provided an otp, so we use it
         header = captureStartEvent.output;
       } else {
-        header = parseHeader(captureStartEvent.matches.header, styles[i]);
+        header = parseHeader(captureStartEvent.matches.text, styles[i]);
       }
-      let beforeHashEvent = new showdown.Event('makehtml.table.header.onHash', header);
-      beforeHashEvent
-        .setOutput(header)
-        ._setGlobals(globals)
-        ._setOptions(options);
-      beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+      let beforeHashEvent = showdown.Event.dispatchHash('makehtml.table.header.onHash', header, options, globals);
       header = beforeHashEvent.output;
 
       headers.push(header);
@@ -12669,31 +12762,22 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
         }
 
 
-        let captureStartEvent = new showdown.Event('makehtml.table.cell.onCapture', cell);
-        captureStartEvent
-          .setOutput(null)
-          ._setGlobals(globals)
-          ._setOptions(options)
-          .setRegexp(null)
-          .setMatches({
+        let captureStartEvent = showdown.Event.dispatchCapture('makehtml.table.cell.onCapture', cell, {
+          regexp: null,
+          matches: {
             _wholeMatch: cell,
-            cell: cell
-          })
-          .setAttributes(attributes);
-        captureStartEvent = globals.converter.dispatch(captureStartEvent);
+            text: cell
+          },
+          attributes: attributes
+        }, options, globals);
         if (captureStartEvent.output && captureStartEvent.output !== '') {
           // user provided an otp, so we use it
           cell = captureStartEvent.output;
         } else {
           attributes = captureStartEvent.attributes;
-          cell = parseCell(captureStartEvent.matches.cell, attributes);
+          cell = parseCell(captureStartEvent.matches.text, attributes);
         }
-        let beforeHashEvent = new showdown.Event('makehtml.table.cell.onHash', cell);
-        beforeHashEvent
-          .setOutput(cell)
-          ._setGlobals(globals)
-          ._setOptions(options);
-        beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+        let beforeHashEvent = showdown.Event.dispatchHash('makehtml.table.cell.onHash', cell, options, globals);
         cell = beforeHashEvent.output;
 
         row.push(cell);
@@ -12754,31 +12838,19 @@ showdown.subParser('makehtml.table', function (text, options, globals) {
   }
 });
 
-////
-// makehtml/taskListItem.js
-// Copyright (c) 2024 ShowdownJS
-//
-// GFM task-list item renderer, shared by both list parsers.
-//
-// Given the raw text of a single list item, it matches a leading `[ ]`/`[x]`
-// marker plus the rest of that line and renders the marker as a disabled
-// `<input type="checkbox">`, leaving the line's text in place for the caller to
-// parse further. It runs at the same (raw, pre-parse) stage in both
-// `makehtml.list` (the default regex parser) and `makehtml.cmList` (the
-// commonmark container-block parser), so the events below always expose the
-// task item's raw source line on either path.
-//
-// Events (nested under the `makehtml.list.taskListItem` namespace that the default
-// list parser already uses for its item-level events):
-//   makehtml.list.taskListItem.checkbox.onCapture - fired on a matched task line.
-//     `input` and `_wholeMatch` are the full source line (`[ ] foo *bar*`);
-//     `attributes` are the checkbox attributes. Returning output overrides the line.
-//   makehtml.list.taskListItem.checkbox.onHash    - fired with the rendered line
-//     (`<input ...> foo *bar*`) before it is handed back to the caller.
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
+/**
+ * @file      makehtml/taskListItem.js
+ * @summary   Renders a GFM task-list marker (`[ ]`/`[x]`) as a disabled `<input type="checkbox">`, shared by both list parsers.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Given a raw list-item line, matches the leading marker and renders the checkbox, leaving the label
+ * text for the caller to parse; gated by `tasklists`. Because `makehtml.list` (one engine for
+ * every flavor) delegates here, a single listener covers task lists in every flavor. Emits lifecycle
+ * `onStart`/`onEnd` plus `makehtml.list.taskListItem.checkbox.onCapture`/`onHash` — where `input`
+ * and `_wholeMatch` are the full source line and `attributes` are the checkbox attributes.
+ */
 
 
 showdown.subParser('makehtml.list.taskListItem.checkbox', function (text, options, globals) {
@@ -12788,6 +12860,11 @@ showdown.subParser('makehtml.list.taskListItem.checkbox', function (text, option
     return text;
   }
 
+  // Registered subparser ⇒ it emits the lifecycle events (onStart/onEnd) in addition to the
+  // per-checkbox onCapture/onHash below.
+  let startEvent = showdown.Event.dispatchStart('makehtml.list.taskListItem.checkbox.onStart', text, options, globals);
+  text = startEvent.output;
+
   // Match the marker and the remainder of its (first) line. The text is captured so
   // the events expose the full line, not just the checkbox; everything after the line
   // is left untouched for the caller's block/span parsing.
@@ -12795,7 +12872,7 @@ showdown.subParser('makehtml.list.taskListItem.checkbox', function (text, option
   // Per GFM the marker must be followed by at least one space/tab to be a task: a bare
   // `[ ]` (nothing after) or `[ ]x` (no whitespace) is left literal, matching cmark-gfm.
   const taskItemRgx = /^([ \t]*)\[([xX ])](?=[ \t])([^\n]*)/;
-  return text.replace(taskItemRgx, function (wm, prefix, checkedRaw, lineText) {
+  text = text.replace(taskItemRgx, function (wm, prefix, checkedRaw, lineText) {
     let checked = checkedRaw.trim() !== '';
 
     // GFM spec output is a bare `<input disabled type="checkbox">` (checked items add a
@@ -12812,311 +12889,286 @@ showdown.subParser('makehtml.list.taskListItem.checkbox', function (text, option
         { checked: true, disabled: true, type: 'checkbox' } :
         { disabled: true, type: 'checkbox' });
 
-    let captureStartEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onCapture', wm);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(taskItemRgx)
-      .setMatches({
+    // the task line's text (everything after the checkbox) is the main captured content
+    // (`text`, mutable + honored below); the checkbox markers are read-only context.
+    let captureStartEvent = showdown.Event.dispatchCapture('makehtml.list.taskListItem.checkbox.onCapture', wm, {
+      regexp: taskItemRgx,
+      matches: {
         _wholeMatch: wm,
         _taskListButton: prefix + '[' + checkedRaw + ']',
         _taskListButtonChecked: checkedRaw,
-        _taskListItemText: lineText
-      })
-      .setAttributes(attributes);
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
+        text: lineText
+      },
+      attributes: attributes
+    }, options, globals);
 
     let otp;
     if (captureStartEvent.output && captureStartEvent.output !== '') {
       otp = captureStartEvent.output;
     } else {
       attributes = captureStartEvent.attributes;
-      let txt = captureStartEvent.matches._taskListItemText;
+      let txt = captureStartEvent.matches.text;
       otp = prefix + '<input' + showdown.helper._populateAttributes(attributes) + '>' + txt;
     }
 
-    let beforeHashEvent = new showdown.Event('makehtml.list.taskListItem.checkbox.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
+    let beforeHashEvent = showdown.Event.dispatchHash('makehtml.list.taskListItem.checkbox.onHash', otp, options, globals);
     return beforeHashEvent.output;
   });
-});
 
-showdown.subParser('makehtml.underline', function (text, options, globals) {
-  'use strict';
-
-  if (!options.underline) {
-    return text;
-  }
-
-  let startEvent = new showdown.Event('makehtml.underline.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  // Resolve an escaped underscore (`\_`) to the escape placeholder (¨E95E, charcode of
-  // `_`), consuming the backslash, so it is neither underlined nor left with a stray `\`.
-  // Needed because under cmSpec underline runs before backslash escapes are resolved; a
-  // no-op in the legacy path, where `\_` is already a placeholder before this runs.
-  text = text.replace(/\\_/g, '¨E95E');
-
-  if (options.literalMidWordUnderscores) {
-
-    const rgx1 = /\b___(\S[\s\S]*?)___\b/g;
-    text = text.replace(rgx1, function (wm, txt) {
-      return parse(rgx1, wm, txt);
-    });
-
-    const rgx2 = /\b__(\S[\s\S]*?)__\b/g;
-    text = text.replace(rgx2, function (wm, txt) {
-      return parse(rgx2, wm, txt);
-    });
-  } else {
-
-    const rgx3 = /___(\S[\s\S]*?)___/g;
-    text = text.replace(rgx3, function (wm, txt) {
-      if (!(/\S$/.test(txt))) {
-        return wm;
-      }
-      return parse(rgx3, wm, txt);
-    });
-
-    const rgx4 = /__(\S[\s\S]*?)__/g;
-    text = text.replace(rgx4, function (wm, txt) {
-      if (!(/\S$/.test(txt))) {
-        return wm;
-      }
-      return parse(rgx4, wm, txt);
-    });
-  }
-
-  // escape remaining underscores to prevent them being parsed by italic and bold
-  text = text.replace(/(_)/g, showdown.helper.escapeCharactersCallback);
-
-  let afterEvent = new showdown.Event('makehtml.underline.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
+  let afterEvent = showdown.Event.dispatchEnd('makehtml.list.taskListItem.checkbox.onEnd', text, options, globals);
   return afterEvent.output;
-
-
-  function parse (pattern, wholeMatch, txt) {
-    let otp;
-    let captureStartEvent = new showdown.Event('makehtml.underline.onCapture', txt);
-    captureStartEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setRegexp(pattern)
-      .setMatches({
-        _wholeMatch: wholeMatch,
-        strikethrough: txt
-      })
-      .setAttributes({});
-    captureStartEvent = globals.converter.dispatch(captureStartEvent);
-    // if something was passed as output, it takes precedence
-    // and will be used as output
-    if (captureStartEvent.output && captureStartEvent.output !== '') {
-      otp = captureStartEvent.output;
-    } else {
-      otp = '<u' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' +
-        showdown.subParser('makehtml.hardLineBreaks')(txt, options, globals) +
-        '</u>';
-    }
-    let beforeHashEvent = new showdown.Event('makehtml.underline.onHash', otp);
-    beforeHashEvent
-      .setOutput(otp)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    beforeHashEvent = globals.converter.dispatch(beforeHashEvent);
-    return beforeHashEvent.output;
-  }
-
-
 });
 
 /**
- * Swap back in all the special characters we've hidden.
+ * @file      makehtml/underline.js
+ * @summary   Converts `__`/`___` runs into `<u>` when the `underline` option is enabled.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Scan-native: underline is recognized directly by the single-pass inline scan in spanGamut.js —
+ * there is no whole-text pass form any more, and the onStart/onEnd lifecycle is retired per the
+ * event-contract amendment (the inline-pass lifecycle belongs to spanGamut, which owns
+ * `makehtml.spanGamut.onStart/onEnd`). The construct emits only capture/hash per claimed `__`/`___`
+ * region (`makehtml.underline.onCapture` / `.onHash`) and honors `literalMidWordUnderscores`.
+ *
+ * Moving off the whole-text pass sharpens two behaviors, both intended:
+ *   - a boundary-crossing construct (a code span, autolink, raw-HTML tag, `*`-emphasis or an
+ *     underscore run that opens inside `__..__` and closes outside) now yields well-formed output —
+ *     the pass used to inject a bare `</u>` that a later construct could swallow, producing crossed
+ *     or nested markup;
+ *   - underscores inside a protected construct are no longer escaped. The old pass rewrote every `_`
+ *     in the document before the scan, corrupting `_`-bearing emoji shortcodes, naked URLs, @mentions
+ *     and code-span backslashes; the scan resolves those constructs before the `_` handler runs, so
+ *     they survive intact.
  */
-showdown.subParser('makehtml.unescapeSpecialChars', function (text, options, globals) {
-  'use strict';
-  let startEvent = new showdown.Event('makehtml.unescapeSpecialChars.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
 
-  text = text.replace(/¨E(\d+)E/g, function (wholeMatch, m1) {
-    let charCodeToReplace = parseInt(m1);
-    return String.fromCharCode(charCodeToReplace);
-  });
-
-  let afterEvent = new showdown.Event('makehtml.unescapeSpecialChars.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
-});
-
-////
-// makehtml/unhashHTMLSpans.js
-// Copyright (c) 2018 ShowdownJS
+// ---- scan-native underline ---------------------------------------------------------------------
 //
-// Unhash HTML spans
-//
-// ***Author:***
-// - Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
-////
+// The retired whole-text pass resolved underline as two SEQUENTIAL regex sweeps over the whole text:
+// first the triple-underscore pattern, then the double-underscore pattern (each honoring
+// `literalMidWordUnderscores`). Reproducing that faithfully from a single left-to-right cursor is
+// subtle, because the second sweep re-examines regions the first sweep MATCHED-BUT-REJECTED (content
+// not ending in `\S`) while NOT re-examining inside regions the first sweep CLAIMED. A naive
+// per-cursor "try the sticky regex; on non-claim skip the run" would diverge (e.g. `__a __b__ c__`,
+// where the double sweep's `lastIndex` skips past a rejected `__a __` so the inner `__b__` is never
+// claimed). So the claim SET for a given string is computed once (cached on `scan.memos`) by
+// replaying the two sweeps exactly, and the handler just looks up whether a claim opens at the
+// cursor. Inner content is scanned by a nested `scan.subParse`, which re-runs this same machinery on
+// the slice — so a `__x__` nested inside a claimed `___..___` is re-discovered there, matching the
+// second sweep's ability to claim inside the first sweep's `<u>...</u>` content.
 
+// Blank a claimed span with same-length filler that contains no `_` and whose edges are non-word
+// (mirroring the opaque `<u>...</u>` the sequential pass left in place, whose `<`/`>` edges are
+// non-word so an adjacent `\b`/flanking test in the second sweep decides identically). Used only for
+// claim computation, never rendered.
+function underlineBlank (n) {
+  return new Array(n + 1).join('.');
+}
 
-showdown.subParser('makehtml.unhashHTMLSpans', function (text, options, globals) {
-  'use strict';
-  let startEvent = new showdown.Event('makehtml.unhashHTMLSpans.onStart', text);
-  startEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  startEvent = globals.converter.dispatch(startEvent);
-  text = startEvent.output;
-
-  // Resolve one span placeholder to its stored HTML, expanding any nested placeholders it
-  // contains (bounded depth, mirrors the historical "assume 20 as limit for recurse").
-  function resolveSpan (num) {
-    let repText = globals.gHtmlSpans[num],
-        limit = 0;
-    while (/¨C(\d+)C/.test(repText)) {
-      let n2 = repText.match(/¨C(\d+)C/)[1];
-      repText = repText.replace('¨C' + n2 + 'C', globals.gHtmlSpans[n2]);
-      if (limit === 10) {
-        console.error('maximum nesting of 20 spans reached!!!');
-        break;
-      }
-      ++limit;
+// One regex sweep of the whole (masked/working) string, mirroring the pass's `String.replace(rgx, …)`:
+// on a CLAIM record {start, innerStart, innerEnd, end} (indices into the ORIGINAL string, which the
+// masked string is length-identical to) and blank the span so the next sweep can't re-match inside;
+// on a normal-mode REJECT (`/\S$/` fails) leave the span intact for the next sweep, exactly as the
+// pass's callback returned the whole match unchanged. `markerLen` is 3 (triple) or 2 (double).
+function underlineRunPass (work, rgx, markerLen, literal, claims) {
+  return work.replace(rgx, function (wm, inner, offset) {
+    if (!literal && !(/\S$/.test(inner))) {
+      return wm;
     }
-    return repText;
+    claims.push({
+      start: offset,
+      innerStart: offset + markerLen,
+      innerEnd: offset + wm.length - markerLen,
+      end: offset + wm.length
+    });
+    return underlineBlank(wm.length);
+  });
+}
+
+// Compute the full ordered claim set for `masked` (the string with escaped `\_` already neutralized),
+// replaying the triple sweep then the double sweep. The `\b` literal-mode prechecks live in the
+// regexes themselves.
+function computeUnderlineClaims (masked, literal) {
+  let claims = [],
+      p1 = literal ? /\b___(\S[\s\S]*?)___\b/g : /___(\S[\s\S]*?)___/g,
+      p2 = literal ? /\b__(\S[\s\S]*?)__\b/g : /__(\S[\s\S]*?)__/g,
+      work = underlineRunPass(masked, p1, 3, literal, claims);
+  underlineRunPass(work, p2, 2, literal, claims);
+  return claims;
+}
+
+// The claim (if any) that OPENS at the scan cursor, keyed on `scan.memos` so the sweeps run once per
+// (sub)scan. The masked string swaps each escaped underscore `\_` for the length-preserving,
+// edge-equivalent filler `¨E` so it can neither open nor close a claim and cursor indices still map
+// 1:1 into the original string (the real `\_` is resolved by the scan's backslash handler at render).
+function underlineClaimAt (scan, options) {
+  let memos = scan.memos;
+  if (!memos.underlineClaims) {
+    let masked = scan.str.replace(/\\_/g, '¨E'),
+        claims = computeUnderlineClaims(masked, !!options.literalMidWordUnderscores),
+        byStart = {};
+    for (let k = 0; k < claims.length; ++k) { byStart[claims[k].start] = claims[k]; }
+    memos.underlineClaims = byStart;
+  }
+  return Object.prototype.hasOwnProperty.call(memos.underlineClaims, scan.pos) ?
+    memos.underlineClaims[scan.pos] :
+    null;
+}
+
+// The `_` scan handler for the unified inline scanner in spanGamut.js (scan-state convention — see
+// entity.js). It never declines: on a claim it appends the hashed `<u>` span (inner rendered by a
+// nested sub-scan) and returns the cursor past the claim; otherwise it consumes the whole `_` run as
+// inert literal text (so an unmatched or single `_` is never handed to emphasis, reproducing the
+// pass's rule 3). Fires the `makehtml.underline.*` capture/hash events with the RAW inner slice as
+// `matches.text`, honoring a listener's output / rewritten text / attributes.
+showdown.subParser('makehtml.inline.underline', function (scan, options, globals) {
+  'use strict';
+
+  let str = scan.str,
+      i = scan.pos,
+      claim = underlineClaimAt(scan, options);
+
+  if (!claim) {
+    let j = i;
+    while (j < str.length && str.charAt(j) === '_') { ++j; }
+    scan.appendText(str.slice(i, j));
+    return j;
   }
 
-  // Single pass over the document (was: one String.replace per span, i.e. O(spans × text) —
-  // quadratic when the input produces many spans, e.g. `'a_'.repeat(n)`).
-  text = text.replace(/¨C(\d+)C/g, function (whole, num) {
-    return resolveSpan(num);
-  });
+  let rawInner = str.slice(claim.innerStart, claim.innerEnd),
+      otp;
+  let captureStartEvent = showdown.Event.dispatchCapture('makehtml.underline.onCapture', rawInner, {
+    regexp: null,
+    matches: {
+      _wholeMatch: str.slice(claim.start, claim.end),
+      text: rawInner
+    },
+    attributes: {}
+  }, options, globals);
+  // a listener-supplied output takes precedence and is used verbatim; otherwise build the `<u>`
+  // with the inner content rendered by a nested sub-scan (then hard-line-broken, matching the pass).
+  if (captureStartEvent.output && captureStartEvent.output !== '') {
+    otp = captureStartEvent.output;
+  } else {
+    otp = '<u' + showdown.helper._populateAttributes(captureStartEvent.attributes) + '>' +
+      showdown.subParser('makehtml.hardLineBreaks')(scan.subParse(captureStartEvent.matches.text), options, globals) +
+      '</u>';
+  }
 
-  let afterEvent = new showdown.Event('makehtml.unhashHTMLSpans.onEnd', text);
-  afterEvent
-    .setOutput(text)
-    ._setGlobals(globals)
-    ._setOptions(options);
-  afterEvent = globals.converter.dispatch(afterEvent);
-  return afterEvent.output;
+  let beforeHashEvent = showdown.Event.dispatchHash('makehtml.underline.onHash', otp, options, globals);
+  scan.appendRaw(scan.hashSpan(beforeHashEvent.output));
+  return claim.end;
 });
 
+/**
+ * @file      makemarkdown/blockquote.js
+ * @summary   Renders a `<blockquote>` element back into `>`-prefixed Markdown.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown): recurses into the blockquote's children and
+ * prefixes each rendered line with `>`. Emits `makeMarkdown.blockquote.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.blockquote', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.blockquote.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.blockquote.onStart', input, options, globals, {_node: node});
+
+  // render child content
+  let text = '';
+  if (node.hasChildNodes()) {
+    const children = node.childNodes,
+        childrenLength = children.length;
+    for (let i = 0; i < childrenLength; ++i) {
+      text += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+    }
+  }
+  text = text.trim();
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.blockquote.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: text},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
-    result = (function () {
-      var txt = '';
-      if (node.hasChildNodes()) {
-        var children = node.childNodes,
-            childrenLength = children.length;
-
-        for (var i = 0; i < childrenLength; ++i) {
-          var innerTxt = showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-
-          if (innerTxt === '') {
-            continue;
-          }
-          txt += innerTxt;
-        }
-      }
-      // cleanup
-      txt = txt.trim();
-      txt = '> ' + txt.split('\n').join('\n> ');
-      return txt;
-    })();
+    text = captureEvent.matches.text;
+    result = '> ' + text.split('\n').join('\n> ');
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.blockquote.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.blockquote.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/break.js
+ * @summary   Renders a `<br>` element as a hard line break.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.break.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.break', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.break.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.break.onStart', input, options, globals, {_node: node});
+
+  // a hard break has no inner content, so its capture carries no `text` key
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.break.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
     result = '  \n';
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.break.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.break.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/codeBlock.js
+ * @summary   Renders a `<pre><code>` block back to a fenced code block, or raw HTML when `ghCodeBlocks` is off.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown): pulls the stashed code from `globals.preList`
+ * and re-escapes special chars when emitting raw HTML. Emits `makeMarkdown.codeBlock.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.codeBlock', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.codeBlock.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.codeBlock.onStart', input, options, globals, {_node: node});
+
+  let lang = node.getAttribute('language'),
+      num  = node.getAttribute('precodenum'),
+      code = globals.preList[num];
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.codeBlock.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: code, language: lang},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
-    let lang = node.getAttribute('language'),
-        num  = node.getAttribute('precodenum'),
-        code = globals.preList[num];
+    code = captureEvent.matches.text;
+    lang = captureEvent.matches.language;
     if (options.ghCodeBlocks) {
       result = '```' + lang + '\n' + code + '\n```';
     } else {
@@ -13128,32 +13180,38 @@ showdown.subParser('makeMarkdown.codeBlock', function (node, options, globals) {
     }
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.codeBlock.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.codeBlock.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/codeSpan.js
+ * @summary   Renders a `<code>` inline element back to a backtick code span.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown): chooses a fence longer than any interior
+ * backtick run. Emits `makeMarkdown.codeSpan.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.codeSpan', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.codeSpan.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.codeSpan.onStart', input, options, globals, {_node: node});
+
+  let code = showdown.helper.unescapeHTMLEntities(node.innerHTML);
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.codeSpan.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: code},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
-    let code = showdown.helper.unescapeHTMLEntities(node.innerHTML);
+    code = captureEvent.matches.text;
     // pick a backtick fence longer than the longest run of backticks inside the content
     let backtickRuns = code.match(/`+/g),
         longestRun = 0;
@@ -13169,55 +13227,78 @@ showdown.subParser('makeMarkdown.codeSpan', function (node, options, globals) {
     result = fence + pad + code + pad + fence;
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.codeSpan.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.codeSpan.onEnd', result, options, globals, {_node: node}).output;
 });
 
-showdown.subParser('makeMarkdown.emphasis', function (node, options, globals) {
+/**
+ * @file      makemarkdown/emphasis.js
+ * @summary   Renders `<em>`/`<i>` back to `*`-delimited emphasis, and defines the shared wrap-marker factory.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Defines the `makeMarkdownWrapMarkerSubParser`
+ * factory shared by the four "wrap rendered children in a marker" inline constructs (emphasis, strong,
+ * strikethrough, underline) and registers the emphasis (`*`) variant. Emits `onStart`/`onCapture`/`onEnd`.
+ */
+
+// Shared implementation for the four "wrap the rendered children in a marker" inline
+// constructs — emphasis (`*`), strong (`**`), strikethrough (`~~`) and underline (`__`).
+// They are identical apart from the wrap marker and their event family, so they collapse
+// onto one parametrized factory. It is declared here because emphasis.js is concatenated
+// before its three siblings (strikethrough/strong/underline), which register through it.
+// Each construct keeps its own subparser registration and full three-phase event family
+// (onStart -> onCapture -> onEnd); the marker is exposed on the capture event as the
+// read-only `_marker` context key and the rendered child markdown under the mutable,
+// honored `text` key.
+function makeMarkdownWrapMarkerSubParser (name, marker) {
   'use strict';
+  return function (node, options, globals) {
+    let input = node.outerHTML;
+    showdown.Event.dispatchStart('makeMarkdown.' + name + '.onStart', input, options, globals, {_node: node});
 
-  let startEvent = new showdown.Event('makeMarkdown.emphasis.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
-
-  let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
-  } else {
-    result = (function () {
-      let txt = '';
-      if (node.hasChildNodes()) {
-        txt += '*';
-        let children = node.childNodes,
-            childrenLength = children.length;
-        for (let i = 0; i < childrenLength; ++i) {
-          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-        }
-        txt += '*';
+    // an empty element produces no output at all (the markers are only emitted when the
+    // element has children — mirrors the pre-factory behavior)
+    let hasChildren = node.hasChildNodes(),
+        text = '';
+    if (hasChildren) {
+      let children = node.childNodes,
+          childrenLength = children.length;
+      for (let i = 0; i < childrenLength; ++i) {
+        text += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
       }
-      return txt;
-    })();
-  }
+    }
 
-  let endEvent = new showdown.Event('makeMarkdown.emphasis.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
-});
+    let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.' + name + '.onCapture', input, {
+      regexp: null,
+      matches: {_wholeMatch: input, _node: node, _marker: marker, text: text},
+      attributes: null
+    }, options, globals);
+
+    let result;
+    if (captureEvent.output && captureEvent.output !== '') {
+      result = captureEvent.output;
+    } else {
+      text = captureEvent.matches.text;
+      result = hasChildren ? marker + text + marker : '';
+    }
+
+    return showdown.Event.dispatchEnd('makeMarkdown.' + name + '.onEnd', result, options, globals, {_node: node}).output;
+  };
+}
+
+showdown.subParser('makeMarkdown.emphasis', makeMarkdownWrapMarkerSubParser('emphasis', '*'));
+
+/**
+ * @file      makemarkdown/footnotes.js
+ * @summary   Reverses GFM footnotes: a `<sup class="footnote-ref">` becomes `[^id]` and a `<section class="footnotes">` becomes `[^id]: body` definitions.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown), gated by the `footnotes` option in
+ * `makeMarkdown.node`, mirroring makeHtml. Emits `makeMarkdown.footnotes.onStart`/`onCapture`/`onEnd`.
+ */
 
 // Reverse direction (HTML -> Markdown) for GFM footnotes. Handles the two shapes the
 // forward parser (and GitHub) produce:
@@ -13228,39 +13309,35 @@ showdown.subParser('makeMarkdown.emphasis', function (node, options, globals) {
 showdown.subParser('makeMarkdown.footnotes', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.footnotes.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.footnotes.onStart', input, options, globals, {_node: node});
+
+  let text = (function () {
+    let tagName = node.tagName.toLowerCase();
+
+    if (tagName === 'sup') {
+      return renderReference(node);
+    }
+    if (tagName === 'section') {
+      return renderSection(node);
+    }
+    return '';
+  })();
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.footnotes.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: text},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
-    result = (function () {
-      let tagName = node.tagName.toLowerCase();
-
-      if (tagName === 'sup') {
-        return renderReference(node);
-      }
-      if (tagName === 'section') {
-        return renderSection(node);
-      }
-      return '';
-    })();
+    result = captureEvent.matches.text;
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.footnotes.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.footnotes.onEnd', result, options, globals, {_node: node}).output;
 
   // the label lives in the `#fn-<label>` href (percent-encoded by makeHtml); recover it
   function decodeLabel (s) {
@@ -13313,91 +13390,116 @@ showdown.subParser('makeMarkdown.footnotes', function (node, options, globals) {
   }
 });
 
+/**
+ * @file      makemarkdown/header.js
+ * @summary   Renders `<h1>`–`<h6>` back to ATX (`#`) headings using the passed heading level.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.header.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.header', function (node, options, globals, headerLevel) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.header.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.header.onStart', input, options, globals, {_node: node});
 
-  let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
-  } else {
-    result = (function () {
-      let headerMark = new Array(headerLevel + 1).join('#'),
-          txt = '';
-
-      if (node.hasChildNodes()) {
-        txt = headerMark + ' ';
-        let children = node.childNodes,
-            childrenLength = children.length;
-
-        for (let i = 0; i < childrenLength; ++i) {
-          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-        }
-      }
-      return txt;
-    })();
+  // render the header's inner content (the `#` marker is assembled below from `level`)
+  let hasChildren = node.hasChildNodes(),
+      text = '';
+  if (hasChildren) {
+    let children = node.childNodes,
+        childrenLength = children.length;
+    for (let i = 0; i < childrenLength; ++i) {
+      text += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+    }
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.header.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.header.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: text, level: headerLevel},
+    attributes: null
+  }, options, globals);
+
+  let result;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
+  } else {
+    text = captureEvent.matches.text;
+    let level = captureEvent.matches.level;
+    result = hasChildren ? new Array(level + 1).join('#') + ' ' + text : '';
+  }
+
+  return showdown.Event.dispatchEnd('makeMarkdown.header.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/hr.js
+ * @summary   Renders `<hr>` back to a `---` thematic break.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.hr.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.hr', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.hr.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.hr.onStart', input, options, globals, {_node: node});
+
+  // a horizontal rule has no inner content, so its capture carries no `text` key
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.hr.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
     result = '---';
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.hr.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.hr.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/image.js
+ * @summary   Renders `<img>` back to Markdown image syntax `![alt](src)`, reversing emoji images to `:code:` when `emoji` is on.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.image.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.image', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.image.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.image.onStart', input, options, globals, {_node: node});
+
+  // descriptive pieces exposed on the capture event (all mutable and honored by the
+  // standard `![alt](url "title")` rendering below)
+  let src   = node.hasAttribute('src') ? node.getAttribute('src') : '',
+      alt   = node.getAttribute('alt') || '',
+      title = node.hasAttribute('title') ? node.getAttribute('title') : null;
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.image.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: alt, url: src, title: title},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
+    alt = captureEvent.matches.text;
+    src = captureEvent.matches.url;
+    title = captureEvent.matches.title;
     result = (function () {
       let txt = '';
 
@@ -13406,9 +13508,9 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
       // through to normal image handling, so a disabled feature degrades to plain image markdown.
       if (options.emoji && node.hasAttribute('src')) {
         let emojiImages = showdown.helper.emojiReverse().images,
-            src = node.getAttribute('src');
-        if (Object.prototype.hasOwnProperty.call(emojiImages, src)) {
-          return ':' + emojiImages[src] + ':';
+            emojiSrc = node.getAttribute('src');
+        if (Object.prototype.hasOwnProperty.call(emojiImages, emojiSrc)) {
+          return ':' + emojiImages[emojiSrc] + ':';
         }
       }
 
@@ -13421,8 +13523,8 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
           return node.outerHTML;
         }
 
-        txt += '![' + showdown.helper.escapeMarkdownText(node.getAttribute('alt') || '') + '](';
-        txt += '<' + showdown.helper.escapeMarkdownDestination(node.getAttribute('src')) + '>';
+        txt += '![' + showdown.helper.escapeMarkdownText(alt) + '](';
+        txt += '<' + showdown.helper.escapeMarkdownDestination(src) + '>';
         if (hasDimensions) {
           let width = node.getAttribute('width');
           let height = node.getAttribute('height');
@@ -13430,7 +13532,7 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
         }
 
         if (node.hasAttribute('title')) {
-          txt += ' "' + showdown.helper.escapeMarkdownTitle(node.getAttribute('title')) + '"';
+          txt += ' "' + showdown.helper.escapeMarkdownTitle(title) + '"';
         }
         txt += ')';
       }
@@ -13438,60 +13540,60 @@ showdown.subParser('makeMarkdown.image', function (node, options, globals) {
     })();
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.image.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.image.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/input.js
+ * @summary   Renders a checkbox `<input>` back to a `[ ]`/`[x]` task marker (inside a list item, when `tasklists` is on).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown): only emits the marker inside a list item with
+ * following content and when `tasklists` is on; otherwise emits the raw `<input>` so it round-trips.
+ * Emits `makeMarkdown.input.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.input', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.input.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.input.onStart', input, options, globals, {_node: node});
+
+  // A checkbox input maps to a `[ ]`/`[x]` task marker only when the `tasklists` option is
+  // enabled, the checkbox lives inside a list item, AND it is followed by some content.
+  // The list-item context matters: in Markdown a `[ ]`/`[x]` marker is only a task when it
+  // leads a list item, so a naked checkbox (top level, or inside a `<p>`/`<div>`) would
+  // degrade into meaningless literal bracket text that no longer round-trips back to a
+  // checkbox. The following-content check matters for the same reason: a bare
+  // `<li><input type="checkbox"></li>` has no task text, and `- [ ]` on its own does not
+  // round-trip to a checkbox, so it is kept as the raw `<input>` instead. Detection
+  // deliberately keys on the `<li>` ancestry rather than the `task-list-item` class (which
+  // `makeHtml` only emits under `moreStyling`), so checkboxes in hand-written or unstyled
+  // list HTML are still recognised. Anything that fails these checks passes through as raw
+  // HTML. A `checked` attribute (any value, including empty) marks it done; its absence open.
+  let isTask = node.getAttribute('type') === 'checkbox' && options.tasklists &&
+        isInsideListItem(node) && hasFollowingContent(node),
+      checked = node.getAttribute('checked') !== null;
+
+  // this construct renders a task marker rather than inner content, so its capture carries no
+  // `text` key; the checked state is exposed (and honored) under `checked`
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.input.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, checked: checked},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
+  } else if (!isTask) {
+    result = node.outerHTML;
   } else {
-    result = (function () {
-      // A checkbox input maps to a `[ ]`/`[x]` task marker only when the `tasklists` option
-      // is enabled, the checkbox lives inside a list item, AND it is followed by some content.
-      // The list-item context matters: in Markdown a `[ ]`/`[x]` marker is only a task when it
-      // leads a list item, so a naked checkbox (top level, or inside a `<p>`/`<div>`) would
-      // degrade into meaningless literal bracket text that no longer round-trips back to a
-      // checkbox. The following-content check matters for the same reason: a bare
-      // `<li><input type="checkbox"></li>` has no task text, and `- [ ]` on its own does not
-      // round-trip to a checkbox, so it is kept as the raw `<input>` instead. Detection
-      // deliberately keys on the `<li>` ancestry rather than the `task-list-item` class (which
-      // `makeHtml` only emits under `moreStyling`), so checkboxes in hand-written or unstyled
-      // list HTML are still recognised. Anything that fails these checks passes through as raw
-      // HTML. A `checked` attribute (any value, including empty) marks it done; its absence open.
-      if (node.getAttribute('type') !== 'checkbox' || !options.tasklists ||
-          !isInsideListItem(node) || !hasFollowingContent(node)) {
-        return node.outerHTML;
-      }
-      return (node.getAttribute('checked') !== null) ? '[x]' : '[ ]';
-    })();
+    result = captureEvent.matches.checked ? '[x]' : '[ ]';
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.input.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.input.onEnd', result, options, globals, {_node: node}).output;
 
   // Walks up the ancestor chain looking for an enclosing `<li>` (covers both tight
   // `<li><input>` items and loose `<li><p><input>` ones).
@@ -13524,35 +13626,55 @@ showdown.subParser('makeMarkdown.input', function (node, options, globals) {
   }
 });
 
+/**
+ * @file      makemarkdown/links.js
+ * @summary   Renders an `<a>` anchor back to a Markdown link, converting children and reading `href`/`title`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.links.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.links', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.links.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.links.onStart', input, options, globals, {_node: node});
+
+  // render the link text (children) and gather the descriptive pieces
+  let hasChildren = node.hasChildNodes(),
+      innerTxt = '';
+  if (hasChildren) {
+    let children = node.childNodes,
+        childrenLength = children.length;
+    for (let i = 0; i < childrenLength; ++i) {
+      innerTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+    }
+  }
+  let href  = node.hasAttribute('href') ? node.getAttribute('href') : '',
+      title = node.hasAttribute('title') ? node.getAttribute('title') : null;
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.links.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: innerTxt, url: href, title: title},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
+    innerTxt = captureEvent.matches.text;
+    href = captureEvent.matches.url;
+    title = captureEvent.matches.title;
     result = (function () {
-      let txt = '';
-      if (!node.hasChildNodes()) {
-        return txt;
+      if (!hasChildren) {
+        return '';
       }
-      let children = node.childNodes,
-          childrenLength = children.length;
 
       // anchors without an href (e.g. named anchors) lose their link semantics but keep their text
       if (!node.hasAttribute('href')) {
-        for (let n = 0; n < childrenLength; ++n) {
-          txt += showdown.subParser('makeMarkdown.node')(children[n], options, globals);
-        }
-        return txt;
+        return innerTxt;
       }
 
       // special case for mentions
@@ -13562,17 +13684,8 @@ showdown.subParser('makeMarkdown.links', function (node, options, globals) {
       // otherwise is ignored
       let classes = node.getAttribute('class');
       if (options.ghMentions && /(?:^| )user-mention\b/.test(classes)) {
-        for (let ii = 0; ii < childrenLength; ++ii) {
-          txt += showdown.subParser('makeMarkdown.node')(children[ii], options, globals);
-        }
-        return txt;
+        return innerTxt;
       }
-
-      let innerTxt = '';
-      for (let i = 0; i < childrenLength; ++i) {
-        innerTxt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-      }
-      let href = node.getAttribute('href');
 
       // autolink: when the link text is identical to the href and there's no title,
       // emit the compact <href> form instead of [href](<href>)
@@ -13580,157 +13693,180 @@ showdown.subParser('makeMarkdown.links', function (node, options, globals) {
         return '<' + showdown.helper.escapeMarkdownDestination(href) + '>';
       }
 
-      txt = '[' + innerTxt + '](<' + showdown.helper.escapeMarkdownDestination(href) + '>';
+      let txt = '[' + innerTxt + '](<' + showdown.helper.escapeMarkdownDestination(href) + '>';
       if (node.hasAttribute('title')) {
-        txt += ' "' + showdown.helper.escapeMarkdownTitle(node.getAttribute('title')) + '"';
+        txt += ' "' + showdown.helper.escapeMarkdownTitle(title) + '"';
       }
       txt += ')';
       return txt;
     })();
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.links.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.links.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/list.js
+ * @summary   Renders `<ul>`/`<ol>` back to Markdown lists, tracking the ordered `start` number and item `type`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown): passes a list `type` down to its items.
+ * Emits `makeMarkdown.list.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.list', function (node, options, globals, type) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.list.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.list.onStart', input, options, globals, {_node: node});
 
-  let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
-  } else {
-    result = (function () {
-      let txt = '';
-      if (!node.hasChildNodes()) {
-        return '';
-      }
-      let listItems       = node.childNodes,
-          listItemsLenght = listItems.length,
-          listNum = node.getAttribute('start') || 1;
+  // assemble the list body (bullet + rendered item, per <li>)
+  let text = '';
+  if (node.hasChildNodes()) {
+    let listItems      = node.childNodes,
+        listItemsLength = listItems.length,
+        listNum = node.getAttribute('start') || 1;
 
-      for (let i = 0; i < listItemsLenght; ++i) {
-        if (typeof listItems[i].tagName === 'undefined' || listItems[i].tagName.toLowerCase() !== 'li') {
-          continue;
-        }
-
-        // define the bullet to use in list
-        let bullet;
-        if (type === 'ol') {
-          bullet = listNum.toString() + '. ';
-        } else {
-          bullet = '- ';
-        }
-
-        // parse list item
-        txt += bullet + showdown.subParser('makeMarkdown.listItem')(listItems[i], options, globals);
-        ++listNum;
+    for (let i = 0; i < listItemsLength; ++i) {
+      if (typeof listItems[i].tagName === 'undefined' || listItems[i].tagName.toLowerCase() !== 'li') {
+        continue;
       }
 
-      return txt.trim();
-    })();
+      // define the bullet to use in list
+      let bullet;
+      if (type === 'ol') {
+        bullet = listNum.toString() + '. ';
+      } else {
+        bullet = '- ';
+      }
+
+      // parse list item
+      text += bullet + showdown.subParser('makeMarkdown.listItem')(listItems[i], options, globals);
+      ++listNum;
+    }
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.list.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  // the list kind is read-only context (`_ordered`/`_listType`); the assembled body is the
+  // mutable, honored `text`
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.list.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, _ordered: type === 'ol', _listType: type, text: text},
+    attributes: null
+  }, options, globals);
+
+  let result;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
+  } else {
+    result = captureEvent.matches.text.trim();
+  }
+
+  return showdown.Event.dispatchEnd('makeMarkdown.list.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/listItem.js
+ * @summary   Renders a single `<li>` back to a Markdown list item, indenting nested lists onto their own lines.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.listItem.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.listItem', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.listItem.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.listItem.onStart', input, options, globals, {_node: node});
+
+  let text = (function () {
+    let listItemTxt = '';
+
+    let children = node.childNodes,
+        childrenLenght = children.length;
+
+    for (let i = 0; i < childrenLenght; ++i) {
+      let child = children[i];
+      let childOutput = showdown.subParser('makeMarkdown.node')(child, options, globals);
+      // A block child must begin on its own line, otherwise the indentation step below
+      // glues it to the preceding inline text (e.g. `a<p>…` would render as `- aDetails`
+      // instead of `- a` followed by an indented paragraph). Block subparser output ends
+      // with a blank line, so the trailing newlines mark a block child. A non-list block
+      // also needs a blank line before it to stay a separate block inside the item, the
+      // same separation two `<p>` children get, while a nested list stays tight with one.
+      if (child.nodeType === 1 && /\n\n$/.test(childOutput) &&
+          listItemTxt !== '' && !/\n$/.test(listItemTxt)) {
+        listItemTxt += /^[ou]l$/i.test(child.tagName) ? '\n' : '\n\n';
+      }
+      listItemTxt += childOutput;
+    }
+    // if it's only one liner, we need to add a newline at the end
+    if (!/\n$/.test(listItemTxt)) {
+      listItemTxt += '\n';
+    } else {
+      // it's multiparagraph, so we need to indent
+      listItemTxt = listItemTxt
+        .split('\n')
+        .join('\n    ')
+        .replace(/^ {4}$/gm, '')
+        .replace(/\n\n+/g, '\n\n');
+    }
+
+    return listItemTxt;
+  })();
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.listItem.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: text},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
-    result = (function () {
-      let listItemTxt = '';
-
-      let children = node.childNodes,
-          childrenLenght = children.length;
-
-      for (let i = 0; i < childrenLenght; ++i) {
-        let child = children[i];
-        // A nested list must begin on its own line, otherwise the indentation step below
-        // glues it to the preceding inline text (e.g. `a<ul>…` would render as `- a- b`
-        // instead of `- a` followed by an indented `- b`).
-        if (child.nodeType === 1 && /^[ou]l$/i.test(child.tagName) &&
-            listItemTxt !== '' && !/\n$/.test(listItemTxt)) {
-          listItemTxt += '\n';
-        }
-        listItemTxt += showdown.subParser('makeMarkdown.node')(child, options, globals);
-      }
-      // if it's only one liner, we need to add a newline at the end
-      if (!/\n$/.test(listItemTxt)) {
-        listItemTxt += '\n';
-      } else {
-        // it's multiparagraph, so we need to indent
-        listItemTxt = listItemTxt
-          .split('\n')
-          .join('\n    ')
-          .replace(/^ {4}$/gm, '')
-          .replace(/\n\n+/g, '\n\n');
-      }
-
-      return listItemTxt;
-    })();
+    result = captureEvent.matches.text;
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.listItem.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.listItem.onEnd', result, options, globals, {_node: node}).output;
 });
 
-
-
+/**
+ * @file      makemarkdown/node.js
+ * @summary   The recursive HTML→Markdown dispatcher that routes each DOM node to the right construct subparser.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * The reverse-direction analogue of `blockGamut`/`spanGamut`: handles text nodes, HTML comments and
+ * unknown/raw elements itself, and dispatches known elements (headings, lists, links, tables, …) to
+ * their subparser, falling back to `renderRawElement` when a feature-gated construct's option is off.
+ * Emits `makeMarkdown.node.onStart`/`onCapture`/`onEnd` for every node — the one place to observe content without
+ * a dedicated subparser.
+ */
 showdown.subParser('makeMarkdown.node', function (node, options, globals, spansOnly) {
   'use strict';
 
   spansOnly = spansOnly || false;
 
-  let startEvent = new showdown.Event('makeMarkdown.node.onStart', node.outerHTML || node.nodeValue || '');
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML || node.nodeValue || '';
+  showdown.Event.dispatchStart('makeMarkdown.node.onStart', input, options, globals, {_node: node});
+
+  // node is the recursive dispatcher (the makeMarkdown analogue of blockGamut/spanGamut) and
+  // has no syntax of its own, but it IS the sole observation point for content with no
+  // dedicated subparser — HTML comments and unknown/raw elements — so it emits a capture whose
+  // output-override lets a listener replace the default dispatch. It has no inner content of
+  // its own, so the capture carries no `text` key.
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.node.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
     result = (function () {
       let txt = '';
@@ -13920,167 +14056,127 @@ showdown.subParser('makeMarkdown.node', function (node, options, globals, spansO
     })();
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.node.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.node.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/paragraph.js
+ * @summary   Renders a `<p>` element back to a Markdown paragraph, converting its inline children.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.paragraph.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.paragraph', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.paragraph.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.paragraph.onStart', input, options, globals, {_node: node});
+
+  let text = '';
+  if (node.hasChildNodes()) {
+    let children = node.childNodes,
+        childrenLength = children.length;
+    for (let i = 0; i < childrenLength; ++i) {
+      text += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
+    }
+  }
+  // some text normalization
+  text = text.trim();
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.paragraph.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: text},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
-    result = (function () {
-      let txt = '';
-      if (node.hasChildNodes()) {
-        let children = node.childNodes,
-            childrenLength = children.length;
-        for (let i = 0; i < childrenLength; ++i) {
-          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-        }
-      }
-
-      // some text normalization
-      txt = txt.trim();
-
-      return txt;
-    })();
+    result = captureEvent.matches.text;
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.paragraph.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.paragraph.onEnd', result, options, globals, {_node: node}).output;
 });
 
+/**
+ * @file      makemarkdown/pre.js
+ * @summary   Renders a bare `<pre>` (non-code) block, restoring its stashed content inside literal `<pre>` tags.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown): restores content from `globals.preList`.
+ * Emits `makeMarkdown.pre.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.pre', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.pre.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.pre.onStart', input, options, globals, {_node: node});
+
+  let num  = node.getAttribute('prenum'),
+      text = globals.preList[num];
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.pre.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: text},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
-    let num  = node.getAttribute('prenum');
-    result = '<pre>' + globals.preList[num] + '</pre>';
+    result = '<pre>' + captureEvent.matches.text + '</pre>';
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.pre.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.pre.onEnd', result, options, globals, {_node: node}).output;
 });
 
-showdown.subParser('makeMarkdown.strikethrough', function (node, options, globals) {
-  'use strict';
+/**
+ * @file      makemarkdown/strikethrough.js
+ * @summary   Renders `<del>`/`<s>` back to GFM `~~`-delimited strikethrough.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown), registered through the shared
+ * `makeMarkdownWrapMarkerSubParser` factory. Emits `makeMarkdown.strikethrough.onStart`/`onCapture`/`onEnd`.
+ */
 
-  let startEvent = new showdown.Event('makeMarkdown.strikethrough.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+// Registered through the shared makeMarkdownWrapMarkerSubParser factory (defined in
+// emphasis.js): strikethrough differs from its siblings only in the `~~` wrap marker and
+// its event family. Keeps its own registration and full three-phase event family.
+showdown.subParser('makeMarkdown.strikethrough', makeMarkdownWrapMarkerSubParser('strikethrough', '~~'));
 
-  let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
-  } else {
-    result = (function () {
-      let txt = '';
-      if (node.hasChildNodes()) {
-        txt += '~~';
-        let children = node.childNodes,
-            childrenLength = children.length;
-        for (let i = 0; i < childrenLength; ++i) {
-          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-        }
-        txt += '~~';
-      }
-      return txt;
-    })();
-  }
+/**
+ * @file      makemarkdown/strong.js
+ * @summary   Renders `<strong>`/`<b>` back to `**`-delimited strong.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown), registered through the shared
+ * `makeMarkdownWrapMarkerSubParser` factory. Emits `makeMarkdown.strong.onStart`/`onCapture`/`onEnd`.
+ */
 
-  let endEvent = new showdown.Event('makeMarkdown.strikethrough.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
-});
+// Registered through the shared makeMarkdownWrapMarkerSubParser factory (defined in
+// emphasis.js): strong differs from its siblings only in the `**` wrap marker and its
+// event family. Keeps its own registration and full three-phase event family.
+showdown.subParser('makeMarkdown.strong', makeMarkdownWrapMarkerSubParser('strong', '**'));
 
-showdown.subParser('makeMarkdown.strong', function (node, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makeMarkdown.strong.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
-
-  let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
-  } else {
-    result = (function () {
-      let txt = '';
-      if (node.hasChildNodes()) {
-        txt += '**';
-        let children = node.childNodes,
-            childrenLength = children.length;
-        for (let i = 0; i < childrenLength; ++i) {
-          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-        }
-        txt += '**';
-      }
-      return txt;
-    })();
-  }
-
-  let endEvent = new showdown.Event('makeMarkdown.strong.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
-});
-
+/**
+ * @file      makemarkdown/table.js
+ * @summary   Renders a `<table>` back to a GFM pipe table (header row, alignment delimiter row, body rows).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.table.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.table',
   /**
    *
@@ -14092,365 +14188,357 @@ showdown.subParser('makeMarkdown.table',
   function (node, options, globals) {
     'use strict';
 
-    let startEvent = new showdown.Event('makeMarkdown.table.onStart', node.outerHTML);
-    startEvent
-      .setOutput(null)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setMatches({node: node});
-    startEvent = globals.converter.dispatch(startEvent);
+    let input = node.outerHTML;
+    showdown.Event.dispatchStart('makeMarkdown.table.onStart', input, options, globals, {_node: node});
 
-    let result;
-    if (startEvent.output && startEvent.output !== '') {
-      result = startEvent.output;
-    } else {
-      result = (function () {
-        let txt = '',
-            tableArray = [[], []],
-            headings,
-            rows = [],
-            colCount,
-            i,
-            ii;
+    // the whole table is assembled here; the rendered markdown is exposed as the mutable,
+    // honored `text` on the capture event (individual cells keep their own tableCell lifecycle)
+    let text = (function () {
+      let txt = '',
+          tableArray = [[], []],
+          headings,
+          rows = [],
+          colCount,
+          i,
+          ii;
 
-        /**
+      /**
          * @param {Element} tr
          */
-        function iterateRow (tr) {
-          let children = tr.childNodes,
-              cols = [];
-          // we need to iterate by order, since td and th can be used interchangeably and in any order
-          // we will ignore malformed stuff, comments and floating text.
-          for (let i = 0; i < children.length; ++i) {
-            let childName = children[i].nodeName.toUpperCase();
-            if (childName === 'TD' || childName === 'TH') {
-              cols.push(children[i]);
-            }
-          }
-          return cols;
-        }
-
-
-        // first lets look for <thead>
-        // we will ignore thead without <tr> children
-        // also, since markdown doesn't support tables with multiple heading rows, only the first one will be transformed
-        // the rest will count as regular rows
-        if (node.querySelectorAll(':scope>thead').length !== 0 && node.querySelectorAll(':scope>thead>tr').length !== 0) {
-          let thead = node.querySelectorAll(':scope>thead>tr');
-
-          // thead>tr can have td and th children
-          for (i = 0; i < thead.length; ++i) {
-            rows.push(iterateRow(thead[i]));
+      function iterateRow (tr) {
+        let children = tr.childNodes,
+            cols = [];
+        // we need to iterate by order, since td and th can be used interchangeably and in any order
+        // we will ignore malformed stuff, comments and floating text.
+        for (let i = 0; i < children.length; ++i) {
+          let childName = children[i].nodeName.toUpperCase();
+          if (childName === 'TD' || childName === 'TH') {
+            cols.push(children[i]);
           }
         }
+        return cols;
+      }
 
-        // now let's look for tbody
-        // we will ignore tbody without <tr> children
-        if (node.querySelectorAll(':scope>tbody').length !== 0 && node.querySelectorAll(':scope>tbody>tr').length !== 0) {
-          let tbody = node.querySelectorAll(':scope>tbody>tr');
-          // tbody>tr can have td and th children, although th are not very screen reader friendly
-          for (i = 0; i < tbody.length; ++i) {
-            rows.push(iterateRow(tbody[i]));
+
+      // first lets look for <thead>
+      // we will ignore thead without <tr> children
+      // also, since markdown doesn't support tables with multiple heading rows, only the first one will be transformed
+      // the rest will count as regular rows
+      if (node.querySelectorAll(':scope>thead').length !== 0 && node.querySelectorAll(':scope>thead>tr').length !== 0) {
+        let thead = node.querySelectorAll(':scope>thead>tr');
+
+        // thead>tr can have td and th children
+        for (i = 0; i < thead.length; ++i) {
+          rows.push(iterateRow(thead[i]));
+        }
+      }
+
+      // now let's look for tbody
+      // we will ignore tbody without <tr> children
+      if (node.querySelectorAll(':scope>tbody').length !== 0 && node.querySelectorAll(':scope>tbody>tr').length !== 0) {
+        let tbody = node.querySelectorAll(':scope>tbody>tr');
+        // tbody>tr can have td and th children, although th are not very screen reader friendly
+        for (i = 0; i < tbody.length; ++i) {
+          rows.push(iterateRow(tbody[i]));
+        }
+      }
+
+      // now look for tfoot
+      if (node.querySelectorAll(':scope>tfoot').length !== 0 && node.querySelectorAll(':scope>tfoot>tr').length !== 0) {
+        let tfoot = node.querySelectorAll(':scope>tfoot>tr');
+        // tfoot>tr can have td and th children, although th are not very screen reader friendly
+        for (i = 0; i < tfoot.length; ++i) {
+          rows.push(iterateRow(tfoot[i]));
+        }
+      }
+
+      // lastly look for naked tr
+      if (node.querySelectorAll(':scope>tr').length !== 0) {
+
+        let tr = node.querySelectorAll(':scope>tr');
+        // tfoot>tr can have td and th children, although th are not very screen reader friendly
+        for (i = 0; i < tr.length; ++i) {
+          rows.push(iterateRow(tr[i]));
+        }
+      }
+
+      // TODO: implement <caption> in tables https://developer.mozilla.org/pt-BR/docs/Web/HTML/Element/caption
+      // note: <colgroup> is ignored, since they are basically styling
+
+      // we need now to account for cases of completely empty tables, like <table></table> or equivalent
+      if (rows.length === 0) {
+        // table is empty, return empty text
+        return txt;
+      }
+
+      // count the first row. We need it to trim the table (if table rows have inconsistent number of columns)
+      colCount = rows[0].length;
+
+      // let's shift the first row as a heading
+      headings = rows.shift();
+
+      for (i = 0; i < headings.length; ++i) {
+        let headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], options, globals),
+            align = '---';
+
+        if (headings[i].hasAttribute('style')) {
+          let style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
+          switch (style) {
+            case 'text-align:left;':
+              align = ':---';
+              break;
+            case 'text-align:right;':
+              align = '---:';
+              break;
+            case 'text-align:center;':
+              align = ':---:';
+              break;
           }
         }
-
-        // now look for tfoot
-        if (node.querySelectorAll(':scope>tfoot').length !== 0 && node.querySelectorAll(':scope>tfoot>tr').length !== 0) {
-          let tfoot = node.querySelectorAll(':scope>tfoot>tr');
-          // tfoot>tr can have td and th children, although th are not very screen reader friendly
-          for (i = 0; i < tfoot.length; ++i) {
-            rows.push(iterateRow(tfoot[i]));
+        // fall back to the deprecated `align` attribute when no inline text-align style matched
+        if (align === '---' && headings[i].hasAttribute('align')) {
+          switch (headings[i].getAttribute('align').toLowerCase()) {
+            case 'left':
+              align = ':---';
+              break;
+            case 'right':
+              align = '---:';
+              break;
+            case 'center':
+              align = ':---:';
+              break;
           }
         }
+        tableArray[0][i] = headContent.trim();
+        tableArray[1][i] = align;
+      }
 
-        // lastly look for naked tr
-        if (node.querySelectorAll(':scope>tr').length !== 0) {
+      // now iterate through the rows and create the pseudo output (not pretty yet)
+      for (i = 0; i < rows.length; ++i) {
+        let r = tableArray.push([]) - 1;
 
-          let tr = node.querySelectorAll(':scope>tr');
-          // tfoot>tr can have td and th children, although th are not very screen reader friendly
-          for (i = 0; i < tr.length; ++i) {
-            rows.push(iterateRow(tr[i]));
+        for (ii = 0; ii < colCount; ++ii) {
+          let cellContent = ' ';
+          if (typeof rows[i][ii] !== 'undefined') {
+            // Note: if rows[i][ii] is undefined, it means the row has fewer elements than the header,
+            // and empty content will be added
+            cellContent = showdown.subParser('makeMarkdown.tableCell')(rows[i][ii], options, globals);
+          }
+          tableArray[r].push(cellContent);
+        }
+      }
+
+      // now tidy up the output, aligning cells and stuff
+      let cellSpacesCount = 3;
+      for (i = 0; i < tableArray.length; ++i) {
+        for (ii = 0; ii < tableArray[i].length; ++ii) {
+          let strLen = tableArray[i][ii].length;
+          if (strLen > cellSpacesCount) {
+            cellSpacesCount = strLen;
           }
         }
+      }
 
-        // TODO: implement <caption> in tables https://developer.mozilla.org/pt-BR/docs/Web/HTML/Element/caption
-        // note: <colgroup> is ignored, since they are basically styling
-
-        // we need now to account for cases of completely empty tables, like <table></table> or equivalent
-        if (rows.length === 0) {
-          // table is empty, return empty text
-          return txt;
-        }
-
-        // count the first row. We need it to trim the table (if table rows have inconsistent number of columns)
-        colCount = rows[0].length;
-
-        // let's shift the first row as a heading
-        headings = rows.shift();
-
-        for (i = 0; i < headings.length; ++i) {
-          let headContent = showdown.subParser('makeMarkdown.tableCell')(headings[i], options, globals),
-              align = '---';
-
-          if (headings[i].hasAttribute('style')) {
-            let style = headings[i].getAttribute('style').toLowerCase().replace(/\s/g, '');
-            switch (style) {
-              case 'text-align:left;':
-                align = ':---';
-                break;
-              case 'text-align:right;':
-                align = '---:';
-                break;
-              case 'text-align:center;':
-                align = ':---:';
-                break;
-            }
-          }
-          // fall back to the deprecated `align` attribute when no inline text-align style matched
-          if (align === '---' && headings[i].hasAttribute('align')) {
-            switch (headings[i].getAttribute('align').toLowerCase()) {
-              case 'left':
-                align = ':---';
-                break;
-              case 'right':
-                align = '---:';
-                break;
-              case 'center':
-                align = ':---:';
-                break;
-            }
-          }
-          tableArray[0][i] = headContent.trim();
-          tableArray[1][i] = align;
-        }
-
-        // now iterate through the rows and create the pseudo output (not pretty yet)
-        for (i = 0; i < rows.length; ++i) {
-          let r = tableArray.push([]) - 1;
-
-          for (ii = 0; ii < colCount; ++ii) {
-            let cellContent = ' ';
-            if (typeof rows[i][ii] !== 'undefined') {
-              // Note: if rows[i][ii] is undefined, it means the row has fewer elements than the header,
-              // and empty content will be added
-              cellContent = showdown.subParser('makeMarkdown.tableCell')(rows[i][ii], options, globals);
-            }
-            tableArray[r].push(cellContent);
-          }
-        }
-
-        // now tidy up the output, aligning cells and stuff
-        let cellSpacesCount = 3;
-        for (i = 0; i < tableArray.length; ++i) {
-          for (ii = 0; ii < tableArray[i].length; ++ii) {
-            let strLen = tableArray[i][ii].length;
-            if (strLen > cellSpacesCount) {
-              cellSpacesCount = strLen;
-            }
-          }
-        }
-
-        for (i = 0; i < tableArray.length; ++i) {
-          for (ii = 0; ii < tableArray[i].length; ++ii) {
-            if (i === 1) {
-              if (tableArray[i][ii].slice(-1) === ':') {
-                tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(0, -1), cellSpacesCount - 1, '-') + ':';
-              } else {
-                tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
-              }
-
+      for (i = 0; i < tableArray.length; ++i) {
+        for (ii = 0; ii < tableArray[i].length; ++ii) {
+          if (i === 1) {
+            if (tableArray[i][ii].slice(-1) === ':') {
+              tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii].slice(0, -1), cellSpacesCount - 1, '-') + ':';
             } else {
-              tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount);
+              tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount, '-');
             }
-          }
-          txt += '| ' + tableArray[i].join(' | ') + ' |\n';
-        }
 
-        return txt.trim();
-      })();
+          } else {
+            tableArray[i][ii] = showdown.helper.padEnd(tableArray[i][ii], cellSpacesCount);
+          }
+        }
+        txt += '| ' + tableArray[i].join(' | ') + ' |\n';
+      }
+
+      return txt.trim();
+    })();
+
+    let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.table.onCapture', input, {
+      regexp: null,
+      matches: {_wholeMatch: input, _node: node, text: text},
+      attributes: null
+    }, options, globals);
+
+    let result;
+    if (captureEvent.output && captureEvent.output !== '') {
+      result = captureEvent.output;
+    } else {
+      result = captureEvent.matches.text;
     }
 
-    let endEvent = new showdown.Event('makeMarkdown.table.onEnd', result);
-    endEvent
-      .setOutput(result)
-      ._setGlobals(globals)
-      ._setOptions(options)
-      .setMatches({node: node});
-    endEvent = globals.converter.dispatch(endEvent);
-    return endEvent.output;
+    return showdown.Event.dispatchEnd('makeMarkdown.table.onEnd', result, options, globals, {_node: node}).output;
   }
 );
 
+/**
+ * @file      makemarkdown/tableCell.js
+ * @summary   Renders a single `<th>`/`<td>` cell's inline content for the table row builder.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.tableCell.onStart`/`onCapture`/`onEnd`.
+ */
 showdown.subParser('makeMarkdown.tableCell', function (node, options, globals) {
   'use strict';
 
-  let startEvent = new showdown.Event('makeMarkdown.tableCell.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let input = node.outerHTML;
+  showdown.Event.dispatchStart('makeMarkdown.tableCell.onStart', input, options, globals, {_node: node});
 
-  let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
-  } else {
-    result = (function () {
-      let txt = '';
-      if (!node.hasChildNodes()) {
-        return '';
-      }
-      let children = node.childNodes,
-          childrenLength = children.length;
-
-      for (let i = 0; i < childrenLength; ++i) {
-        txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals, true);
-      }
-      return txt.trim();
-    })();
+  let text = '';
+  if (node.hasChildNodes()) {
+    let children = node.childNodes,
+        childrenLength = children.length;
+    for (let i = 0; i < childrenLength; ++i) {
+      text += showdown.subParser('makeMarkdown.node')(children[i], options, globals, true);
+    }
+    text = text.trim();
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.tableCell.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
-});
-
-showdown.subParser('makeMarkdown.txt', function (node, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makeMarkdown.txt.onStart', node.nodeValue);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.tableCell.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: text},
+    attributes: null
+  }, options, globals);
 
   let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
   } else {
-    result = (function () {
-      let txt = node.nodeValue;
-
-      // multiple spaces are collapsed
-      txt = txt.replace(/ +/g, ' ');
-
-      // replace the custom ¨NBSP; with a space
-      txt = txt.replace(/¨NBSP;/g, ' ');
-
-      // ", <, > and & should replace escaped html entities
-      txt = showdown.helper.unescapeHTMLEntities(txt);
-
-      // reverse the `ellipsis` option: … -> ...  (only when the converter would have produced it)
-      if (options.ellipsis) {
-        txt = txt.replace(/…/g, '...');
-      }
-
-      // reverse the `emoji` option: turn unicode emoji back into their `:code:` form.
-      // Done before the magic-char escaping below so an emoji whose value contains a markdown
-      // metachar (e.g. asterisk -> *️⃣) becomes :asterisk: instead of an escaped \*.
-      // Note: like underline, this is symmetric but opt-in - any literal emoji the source HTML
-      // already contained is also rewritten to a code when this option is on.
-      if (options.emoji) {
-        let emojiReverse = showdown.helper.emojiReverse();
-        txt = txt.replace(emojiReverse.regex, function (wholeMatch) {
-          return ':' + emojiReverse.unicode[wholeMatch] + ':';
-        });
-      }
-
-      // escape markdown magic characters
-      // emphasis, strong and strikethrough - can appear everywhere
-      // we also escape pipe (|) because of tables
-      // and escape ` because of code blocks and spans
-      txt = txt.replace(/([*_~|`])/g, '\\$1');
-
-      // escape > because of blockquotes
-      txt = txt.replace(/^(\s*)>/g, '\\$1>');
-
-      // hash character, only troublesome at the beginning of a line because of headers
-      txt = txt.replace(/^#/gm, '\\#');
-
-      // horizontal rules
-      txt = txt.replace(/^(\s*)([-=]{3,})(\s*)$/, '$1\\$2$3');
-
-      // dot, because of ordered lists, only troublesome at the beginning of a line when preceded by an integer
-      txt = txt.replace(/^( {0,3}\d+)\./gm, '$1\\.');
-
-      // +, * and -, at the beginning of a line becomes a list, so we need to escape them also (asterisk was already escaped)
-      txt = txt.replace(/^( {0,3})([+-])/gm, '$1\\$2');
-
-      // images and links, ] followed by ( is problematic, so we escape it
-      txt = txt.replace(/](\s*)\(/g, '\\]$1\\(');
-
-      // reference URIs must also be escaped
-      txt = txt.replace(/^ {0,3}\[([\S \t]*?)]:/gm, '\\[$1]:');
-
-      return txt;
-    })();
+    result = captureEvent.matches.text;
   }
 
-  let endEvent = new showdown.Event('makeMarkdown.txt.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
-});
-
-showdown.subParser('makeMarkdown.underline', function (node, options, globals) {
-  'use strict';
-
-  let startEvent = new showdown.Event('makeMarkdown.underline.onStart', node.outerHTML);
-  startEvent
-    .setOutput(null)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  startEvent = globals.converter.dispatch(startEvent);
-
-  let result;
-  if (startEvent.output && startEvent.output !== '') {
-    result = startEvent.output;
-  } else {
-    result = (function () {
-      // showdown's forward parser emits <u> for the `underline` option (e.g. __text__).
-      // We mirror that here so <u> round-trips. Note: __ is standard-Markdown strong, so this
-      // only round-trips cleanly through a converter that has the `underline` option enabled.
-      let txt = '';
-      if (node.hasChildNodes()) {
-        txt += '__';
-        let children = node.childNodes,
-            childrenLength = children.length;
-        for (let i = 0; i < childrenLength; ++i) {
-          txt += showdown.subParser('makeMarkdown.node')(children[i], options, globals);
-        }
-        txt += '__';
-      }
-      return txt;
-    })();
-  }
-
-  let endEvent = new showdown.Event('makeMarkdown.underline.onEnd', result);
-  endEvent
-    .setOutput(result)
-    ._setGlobals(globals)
-    ._setOptions(options)
-    .setMatches({node: node});
-  endEvent = globals.converter.dispatch(endEvent);
-  return endEvent.output;
+  return showdown.Event.dispatchEnd('makeMarkdown.tableCell.onEnd', result, options, globals, {_node: node}).output;
 });
 
 /**
- * Created by Estevao on 31-05-2015.
+ * @file      makemarkdown/txt.js
+ * @summary   Renders a text node: collapses space runs, restores `¨NBSP;` sentinels, unescapes entities, and reverses `ellipsis`.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown). Emits `makeMarkdown.txt.onStart`/`onCapture`/`onEnd`.
+ */
+showdown.subParser('makeMarkdown.txt', function (node, options, globals) {
+  'use strict';
+
+  // text nodes have no outerHTML; their source is the node value
+  let input = node.nodeValue;
+  showdown.Event.dispatchStart('makeMarkdown.txt.onStart', input, options, globals, {_node: node});
+
+  let text = (function () {
+    let txt = node.nodeValue;
+
+    // multiple spaces are collapsed
+    txt = txt.replace(/ +/g, ' ');
+
+    // replace the custom ¨NBSP; with a space
+    txt = txt.replace(/¨NBSP;/g, ' ');
+
+    // ", <, > and & should replace escaped html entities
+    txt = showdown.helper.unescapeHTMLEntities(txt);
+
+    // reverse the `ellipsis` option: … -> ...  (only when the converter would have produced it)
+    if (options.ellipsis) {
+      txt = txt.replace(/…/g, '...');
+    }
+
+    // reverse the `emoji` option: turn unicode emoji back into their `:code:` form.
+    // Done before the magic-char escaping below so an emoji whose value contains a markdown
+    // metachar (e.g. asterisk -> *️⃣) becomes :asterisk: instead of an escaped \*.
+    // Note: like underline, this is symmetric but opt-in - any literal emoji the source HTML
+    // already contained is also rewritten to a code when this option is on.
+    if (options.emoji) {
+      let emojiReverse = showdown.helper.emojiReverse();
+      txt = txt.replace(emojiReverse.regex, function (wholeMatch) {
+        return ':' + emojiReverse.unicode[wholeMatch] + ':';
+      });
+    }
+
+    // escape markdown magic characters
+    // emphasis, strong and strikethrough - can appear everywhere
+    // we also escape pipe (|) because of tables
+    // and escape ` because of code blocks and spans
+    txt = txt.replace(/([*_~|`])/g, '\\$1');
+
+    // escape > because of blockquotes
+    txt = txt.replace(/^(\s*)>/g, '\\$1>');
+
+    // hash character, only troublesome at the beginning of a line because of headers
+    txt = txt.replace(/^#/gm, '\\#');
+
+    // horizontal rules
+    txt = txt.replace(/^(\s*)([-=]{3,})(\s*)$/, '$1\\$2$3');
+
+    // dot, because of ordered lists, only troublesome at the beginning of a line when preceded by an integer
+    txt = txt.replace(/^( {0,3}\d+)\./gm, '$1\\.');
+
+    // +, * and -, at the beginning of a line becomes a list, so we need to escape them also (asterisk was already escaped)
+    txt = txt.replace(/^( {0,3})([+-])/gm, '$1\\$2');
+
+    // images and links, ] followed by ( is problematic, so we escape it
+    txt = txt.replace(/](\s*)\(/g, '\\]$1\\(');
+
+    // reference URIs must also be escaped
+    txt = txt.replace(/^ {0,3}\[([\S \t]*?)]:/gm, '\\[$1]:');
+
+    return txt;
+  })();
+
+  let captureEvent = showdown.Event.dispatchCapture('makeMarkdown.txt.onCapture', input, {
+    regexp: null,
+    matches: {_wholeMatch: input, _node: node, text: text},
+    attributes: null
+  }, options, globals);
+
+  let result;
+  if (captureEvent.output && captureEvent.output !== '') {
+    result = captureEvent.output;
+  } else {
+    result = captureEvent.matches.text;
+  }
+
+  return showdown.Event.dispatchEnd('makeMarkdown.txt.onEnd', result, options, globals, {_node: node}).output;
+});
+
+/**
+ * @file      makemarkdown/underline.js
+ * @summary   Renders `<u>` back to `__`-delimited underline (round-trips cleanly only with the `underline` option on).
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * A `makeMarkdown.*` DOM-node subparser (HTML→Markdown), registered through the shared
+ * `makeMarkdownWrapMarkerSubParser` factory. Emits `makeMarkdown.underline.onStart`/`onCapture`/`onEnd`.
+ */
+
+// Registered through the shared makeMarkdownWrapMarkerSubParser factory (defined in
+// emphasis.js): showdown's forward parser emits <u> for the `underline` option (e.g.
+// __text__), so we mirror that here with the `__` wrap marker so <u> round-trips. Note:
+// __ is standard-Markdown strong, so this only round-trips cleanly through a converter
+// that has the `underline` option enabled. Keeps its own registration and full
+// three-phase event family.
+showdown.subParser('makeMarkdown.underline', makeMarkdownWrapMarkerSubParser('underline', '__'));
+
+/**
+ * @file      converter.js
+ * @summary   The `showdown.Converter` per-instance engine running the makeHtml/makeMarkdown pipelines and event loop.
+ * @author    Estêvão Soares dos Santos (Tivie) <https://github.com/tivie>
+ * @copyright 2018-2026 ShowdownJS
+ * @license   MIT
+ *
+ * Merges global and per-call options and holds the instance's listeners and extensions.
+ * `makeHtml(text)` runs the ordered subparser pipeline over a shared mutable `globals` object
+ * (emitting the document-level `makehtml.onStart`/`onPreParse`/`onEnd` events); `makeMarkdown(html)`
+ * walks the DOM produced by `helper.parseHTML` through the `makeMarkdown.node` dispatcher. Also
+ * provides `listen()`/`dispatch()` and reimplements the deprecated `lang`/`output` extensions as
+ * listeners.
  */
 
 /**
@@ -14474,6 +14562,108 @@ function warnDeprecatedExtType (type, event) {
   console.warn('DEPRECATION WARNING: "' + type + '" extensions are deprecated and will be ' +
     'removed in a future version. Use a "listener" extension on the "' + event + '" event instead.');
 }
+
+// --- makeHtml pipeline mechanisms (file-local; each has exactly one caller — the makeHtml
+// pipeline below — so they live here rather than on showdown.helper). None emits events. ------
+
+// `$` and `¨` are swapped for the two-char sentinels `¨D`/`¨T` at the very start of
+// makeHtml so they survive the pipeline without being read as regex-replacement
+// metacharacters or as showdown's `¨` escape marker; they are restored verbatim at the
+// end by showdown.helper.restoreDollarsAndTremas (which reverses in the opposite order,
+// and is also used by makehtml.metadata). The producer replaces `¨` first (so it doesn't
+// double-hit the `¨` introduced for `$`).
+
+/**
+ * Hide literal `$` and `¨` behind the `¨D`/`¨T` sentinels.
+ * @param {string} text
+ * @returns {string}
+ */
+function hashDollarsAndTremas (text) {
+  return text.replace(/¨/g, '¨T').replace(/\$/g, '¨D');
+}
+
+/**
+ * CommonMark tab expansion: tabs are expanded to spaces using 4-column tab stops,
+ * but only in the part of a line that defines block structure - the leading
+ * whitespace plus an optional single list/block-quote marker and the whitespace
+ * after it. Tabs in content (after that prefix) are preserved. Lines without a tab
+ * in their prefix are returned unchanged.
+ * @param {string} text
+ * @returns {string}
+ */
+function expandCmTabs (text) {
+  if (text.indexOf('\t') === -1) {
+    return text;
+  }
+  const prefixRgx = /^[ \t]*(?:(?:[-+*]|\d{1,9}[.)]|>)[ \t]*)?/;
+  const thematicBreakRgx = /^ {0,3}([-*_])(?:[ \t]*\1){2,}[ \t]*$/;
+  return text.split('\n').map(function (line) {
+    // a thematic break (e.g. `*\t*\t*`) is not a list item: do not let the marker
+    // branch of the prefix expansion mangle it
+    if (thematicBreakRgx.test(line)) {
+      return line;
+    }
+    let prefix = prefixRgx.exec(line)[0];
+    if (prefix.indexOf('\t') === -1) {
+      return line;
+    }
+    let out = '',
+        col = 0;
+    for (let k = 0; k < prefix.length; ++k) {
+      let ch = prefix.charAt(k);
+      if (ch === '\t') {
+        let adv = 4 - (col % 4);
+        out += new Array(adv + 1).join(' ');
+        col += adv;
+      } else {
+        out += ch;
+        col++;
+      }
+    }
+    return out + line.slice(prefix.length);
+  }).join('\n');
+}
+
+function normalizeLeadingTabs (text) {
+  // 1. (1 to 3 spaces followed by a tab at the start of the line) becomes (1 tab)
+  text = text.replace(/^ {1,3}\t/gm, '\t');
+
+  // 2.
+  return text;
+}
+
+// Shared factory for the two "hash a raw code element" passes — hashCodeTags and its
+// near-clone hashPreCodeTags. Both run the same recursive open/close scan plus encodeCode,
+// differing only in the open/close tag patterns and how the hashed block is stored.
+function makeHashCodeTagsHelper (openPattern, closePattern, store) {
+  'use strict';
+  return function (text, options, globals) {
+    let repFunc = function (wholeMatch, match, left, right) {
+      // encode html entities
+      let codeblock = left + showdown.helper.encodeCode(match) + right;
+      return store(wholeMatch, codeblock, globals);
+    };
+    return showdown.helper.replaceRecursiveRegExp(text, repFunc, openPattern, closePattern, 'gim');
+  };
+}
+
+// Hash naked <code>
+const hashCodeTags = makeHashCodeTagsHelper(
+  '<code\\b[^>]*>',
+  '</code>',
+  function (wholeMatch, codeblock, globals) {
+    return '¨C' + (globals.gHtmlSpans.push(codeblock) - 1) + 'C';
+  }
+);
+
+// Hash raw <pre><code> blocks (stored in ghCodeBlocks, as githubCodeBlock does).
+const hashPreCodeTags = makeHashCodeTagsHelper(
+  '^ {0,3}<pre\\b[^>]*>\\s*<code\\b[^>]*>',
+  '^ {0,3}</code>\\s*</pre>',
+  function (wholeMatch, codeblock, globals) {
+    return '\n\n¨G' + (globals.ghCodeBlocks.push({text: wholeMatch, codeblock: codeblock}) - 1) + 'G\n\n';
+  }
+);
 
 /**
  * Showdown Converter class
@@ -14620,7 +14810,21 @@ showdown.Converter = function (converterOptions) {
    */
   function _wrapLegacyExtension (ext) {
     return function (event) {
-      return showdown.subParser('makehtml.runExtension')(ext, event.input, event.options, { converter: event.converter });
+      // Inlined former makehtml.runExtension: apply a legacy lang/output extension's
+      // filter (or regex/replace) to the event's text.
+      let text = event.input;
+      if (ext.filter) {
+        text = ext.filter(text, event.converter, event.options);
+
+      } else if (ext.regex) {
+        // TODO remove this when old extension loading mechanism is deprecated
+        let re = ext.regex;
+        if (!(re instanceof RegExp)) {
+          re = new RegExp(re, 'g');
+        }
+        text = text.replace(re, ext.replace);
+      }
+      return text;
     };
   }
 
@@ -14746,7 +14950,6 @@ showdown.Converter = function (converterOptions) {
       gUrls:           {},
       gTitles:         {},
       gDimensions:     {},
-      gListLevel:      0,
       hashLinkCounts:  {},
       converter:       this,
       ghCodeBlocks:    [],
@@ -14760,23 +14963,11 @@ showdown.Converter = function (converterOptions) {
     // document level onStart event, emitted with the raw markdown before any escaping or
     // normalization. Listeners here see literal `$`/`¨` (unlike onPreParse, which runs after
     // escaping) and can rewrite the source wholesale.
-    let startEvent = new showdown.Event('makehtml.onStart', text);
-    startEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    startEvent = this.dispatch(startEvent);
-    text = startEvent.output;
+    text = showdown.Event.dispatchStart('makehtml.onStart', text, options, globals).output;
 
-    // This lets us use ¨ trema as an escape char to avoid md5 hashes
-    // The choice of character is arbitrary; anything that isn't
-    // magic in Markdown will work.
-    text = text.replace(/¨/g, '¨T');
-
-    // Replace $ with ¨D
-    // RegExp interprets $ as a special character
-    // when it's in a replacement string
-    text = text.replace(/\$/g, '¨D');
+    // Hide literal ¨ and $ behind the ¨T/¨D sentinels: ¨ is showdown's escape marker and
+    // a bare $ is special in RegExp replacement strings. Restored at the end of makeHtml.
+    text = hashDollarsAndTremas(text);
 
     // Standardize line endings
     text = text.replace(/\r\n/g, '\n'); // DOS to Unix
@@ -14794,7 +14985,7 @@ showdown.Converter = function (converterOptions) {
 
     // detab
     //text = showdown.subParser('makehtml.detab')(text, options, globals);
-    text = showdown.helper.normalizeLeadingTabs(text);
+    text = normalizeLeadingTabs(text);
 
     /**
      * Strip any lines consisting only of spaces and tabs.
@@ -14807,39 +14998,26 @@ showdown.Converter = function (converterOptions) {
     // document level onPreParse event, emitted after escaping/normalization and immediately
     // before the subparsers run. This is where `lang` extensions are invoked (as listeners).
     // Input here contains the `¨D`/`¨T` placeholders for escaped `$`/`¨`.
-    let preParseEvent = new showdown.Event('makehtml.onPreParse', text);
-    preParseEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    preParseEvent = this.dispatch(preParseEvent);
-    text = preParseEvent.output;
+    text = showdown.Event.dispatchStart('makehtml.onPreParse', text, options, globals).output;
 
     // run the sub parsers
     text = showdown.subParser('makehtml.metadata')(text, options, globals);
-    text = showdown.subParser('makehtml.hashPreCodeTags')(text, options, globals);
+    text = hashPreCodeTags(text, options, globals);
+    // One block-stage ordering for every flavor: the HTML-block scan runs BEFORE githubCodeBlock.
+    // Leaf blocks are recognized in document order, so an open HTML block (e.g. a `<div>` with no
+    // following blank line) absorbs a fence that follows it; the (fence-aware) htmlBlock scan must
+    // therefore see the literal fenced source first. githubCodeBlock then claims fenced code:
+    // under cmSpec (`topLevelOnly`) only fences at indent 0 — indent 1-3 fences nested in list
+    // items / block quotes are handled by the container parsers (and a later blockGamut pass for
+    // genuinely top-level indented fences); the legacy flavors get its full {0,3}-indent +
+    // unclosed-fence passes. Only `expandCmTabs` (a CommonMark tab-normalization rule) stays
+    // cmSpec-gated; the ordering itself is unconditional (unified at U-8c).
     if (options.cmSpec) {
-      // Container mode parses leaf blocks in document order: an open HTML block (e.g. a
-      // `<div>` with no following blank line) absorbs a fence that follows it, so the
-      // (fence-aware) HTML-block scan must run before githubCodeBlock. githubCodeBlock then
-      // only claims fences at indent 0; indent 1-3 fences nested in list items / block
-      // quotes are handled by the container parsers (and a later blockGamut pass for
-      // genuinely top-level indented fences).
-      if (options.cmSpec) {
-        text = showdown.helper.expandCmTabs(text);
-      }
-      text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals, true);
-      text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals, true);
-    } else {
-      text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals);
-      // CommonMark tab expansion runs after fenced/pre code is hashed (so their content
-      // tabs are protected) and before the block parsers, which key off indentation.
-      if (options.cmSpec) {
-        text = showdown.helper.expandCmTabs(text);
-      }
-      text = showdown.subParser('makehtml.hashHTMLBlocks')(text, options, globals, true);
+      text = expandCmTabs(text);
     }
-    text = showdown.subParser('makehtml.hashCodeTags')(text, options, globals);
+    text = showdown.subParser('makehtml.htmlBlock')(text, options, globals);
+    text = showdown.subParser('makehtml.githubCodeBlock')(text, options, globals, options.cmSpec);
+    text = hashCodeTags(text, options, globals);
     // Footnotes (GFM): collect `[^id]: ...` definitions and replace `[^id]` references
     // before stripLinkDefinitions (whose scanner would otherwise claim `[^id]:` lines).
     text = showdown.subParser('makehtml.footnotes')(text, options, globals, 'strip');
@@ -14852,37 +15030,37 @@ showdown.Converter = function (converterOptions) {
     // decode character references (gated by the decodeEntities option) after inline parsing,
     // while code spans/blocks are still hashed, so decoded chars are not re-parsed
     text = showdown.subParser('makehtml.decodeEntities')(text, options, globals);
-    // restore raw CommonMark HTML blocks now, after decodeEntities, so their verbatim
-    // content (e.g. `<a href="&ouml;&ouml;.html">`) keeps its entities undecoded
+    // restore raw HTML blocks now, after decodeEntities, so their verbatim content
+    // (e.g. `<a href="&ouml;&ouml;.html">`) keeps its entities undecoded for every flavor. Raw
+    // blocks can nest (the legacy balanced-tag scanner hashes an inner block-level tag before the
+    // outer one absorbs it), so restore repeatedly until no ¨R remains — a single String.replace
+    // pass would not re-scan the content it just inserted. cmSpec never nests, so this loops
+    // exactly once there. The guard bounds iterations by the block count (max possible nesting
+    // depth); the ¨ escape marker is already hidden as ¨T by this point, so stored content cannot
+    // reintroduce a spurious ¨R placeholder.
     if (globals.gHtmlRawBlocks.length) {
-      text = text.replace(/¨R(\d+)R/g, function (wm, n) {
-        return globals.gHtmlRawBlocks[n];
-      });
+      let rawGuard = 0;
+      while (/¨R\d+R/.test(text) && rawGuard++ <= globals.gHtmlRawBlocks.length) {
+        text = text.replace(/¨R(\d+)R/g, function (wm, n) {
+          return globals.gHtmlRawBlocks[n];
+        });
+      }
     }
-    text = showdown.subParser('makehtml.unhashHTMLSpans')(text, options, globals);
-    text = showdown.subParser('makehtml.unescapeSpecialChars')(text, options, globals);
+    text = showdown.helper.unhashHTMLSpans(text, options, globals);
+    text = showdown.helper.unescapePlaceholders(text);
     // GFM disallowed-raw-html tagfilter (opt-in): neutralize a small HTML tag blacklist in
     // the now-restored raw HTML. Runs late so it sees the final tags, not placeholders.
     text = showdown.subParser('makehtml.disallowedHtmlTags')(text, options, globals);
 
-    // attacklab: Restore dollar signs
-    text = text.replace(/¨D/g, '$$');
-
-    // attacklab: Restore tremas
-    text = text.replace(/¨T/g, '¨');
+    // Restore the ¨D/¨T sentinels back to literal $ and ¨
+    text = showdown.helper.restoreDollarsAndTremas(text);
 
     // render a complete html document instead of a partial if the option is enabled
     text = showdown.subParser('makehtml.completeHTMLDocument')(text, options, globals);
 
     // document level onEnd event, emitted with the final HTML. This is where `output`
     // extensions are invoked (as listeners) and where listeners can post-process the output.
-    let endEvent = new showdown.Event('makehtml.onEnd', text);
-    endEvent
-      .setOutput(text)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    endEvent = this.dispatch(endEvent);
-    text = endEvent.output;
+    text = showdown.Event.dispatchEnd('makehtml.onEnd', text, options, globals).output;
 
     // update metadata
     metadata = globals.metadata;
@@ -14900,18 +15078,20 @@ showdown.Converter = function (converterOptions) {
     src = src.replace(/\r\n/g, '\n');
     src = src.replace(/\r/g, '\n'); // old macs
 
-    // document level onStart event (lets listeners rewrite the raw html before parsing)
-    let mdStartEvent = new showdown.Event('makeMarkdown.onStart', src);
-    mdStartEvent
-      .setOutput(src)
-      ._setOptions(options);
-    mdStartEvent = this.dispatch(mdStartEvent);
-    src = mdStartEvent.output;
+    // document level onStart event (lets listeners rewrite the raw html before parsing).
+    // The per-document globals are not built yet, so a minimal `{converter: this}` is
+    // passed to the lifecycle helper (it dispatches via globals.converter).
+    src = showdown.Event.dispatchStart('makeMarkdown.onStart', src, options, { converter: this }).output;
 
     // due to an edge case, we need to find this: > <
     // to prevent removing of non silent white spaces
     // ex: <em>this is</em> <strong>sparta</strong>
-    src = src.replace(/>[ \t]+</, '>¨NBSP;<');
+    //
+    // The `g` flag is load-bearing: without it only the FIRST such run per document is
+    // protected and every later pair of adjacent inline elements gets jammed together
+    // (`<em>a</em> <strong>b</strong> <em>c</em>` → `*a* **b***c*`). Guarded by the
+    // inline-elements-adjacent-whitespace fixture in the makemarkdown standard suite.
+    src = src.replace(/>[ \t]+</g, '>¨NBSP;<');
 
     let doc = showdown.helper.parseHTML(src);
 
@@ -14992,13 +15172,7 @@ showdown.Converter = function (converterOptions) {
     }
 
     // document level onEnd event (lets listeners post-process the generated markdown)
-    let mdEndEvent = new showdown.Event('makeMarkdown.onEnd', mdDoc);
-    mdEndEvent
-      .setOutput(mdDoc)
-      ._setGlobals(globals)
-      ._setOptions(options);
-    mdEndEvent = this.dispatch(mdEndEvent);
-    mdDoc = mdEndEvent.output;
+    mdDoc = showdown.Event.dispatchEnd('makeMarkdown.onEnd', mdDoc, options, globals).output;
 
     return mdDoc;
   };
@@ -15052,16 +15226,13 @@ showdown.Converter = function (converterOptions) {
    * @param {string} name
    */
   this.setFlavor = function (name) {
-    if (!Object.prototype.hasOwnProperty.call(flavor, name)) {
+    let preset = showdown.getFlavorOptions(name);
+    if (!preset) {
       throw Error(name + ' flavor was not found');
     }
-    let preset = flavor[name];
     setConvFlavor = name;
-    for (let option in preset) {
-      if (Object.prototype.hasOwnProperty.call(preset, option)) {
-        options[option] = preset[option];
-      }
-    }
+    showdown.helper.applyFlavor(preset, options);
+    return this;
   };
 
   /**

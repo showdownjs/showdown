@@ -21,14 +21,18 @@ showdown.subParser('makeMarkdown.listItem', function (node, options, globals) {
 
     for (let i = 0; i < childrenLenght; ++i) {
       let child = children[i];
-      // A nested list must begin on its own line, otherwise the indentation step below
-      // glues it to the preceding inline text (e.g. `a<ul>…` would render as `- a- b`
-      // instead of `- a` followed by an indented `- b`).
-      if (child.nodeType === 1 && /^[ou]l$/i.test(child.tagName) &&
+      let childOutput = showdown.subParser('makeMarkdown.node')(child, options, globals);
+      // A block child must begin on its own line, otherwise the indentation step below
+      // glues it to the preceding inline text (e.g. `a<p>…` would render as `- aDetails`
+      // instead of `- a` followed by an indented paragraph). Block subparser output ends
+      // with a blank line, so the trailing newlines mark a block child. A non-list block
+      // also needs a blank line before it to stay a separate block inside the item, the
+      // same separation two `<p>` children get, while a nested list stays tight with one.
+      if (child.nodeType === 1 && /\n\n$/.test(childOutput) &&
           listItemTxt !== '' && !/\n$/.test(listItemTxt)) {
-        listItemTxt += '\n';
+        listItemTxt += /^[ou]l$/i.test(child.tagName) ? '\n' : '\n\n';
       }
-      listItemTxt += showdown.subParser('makeMarkdown.node')(child, options, globals);
+      listItemTxt += childOutput;
     }
     // if it's only one liner, we need to add a newline at the end
     if (!/\n$/.test(listItemTxt)) {
